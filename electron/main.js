@@ -70,19 +70,19 @@ function createWindow() {
 
   win.webContents.on('did-fail-load', (_, errorCode, errorDescription) => {
     console.error(`Window failed to load: ${errorCode} - ${errorDescription}`);
-    win.loadFile(path.join(__dirname, '../dist/fallback.html'));
+    win.loadFile(path.join(__dirname, '../dist/index.html'));
   });
 
   const loadApp = async () => {
     try {
       if (isDevelopment) {
-        await win.loadURL('http://localhost:5173');
+        win.loadURL('http://localhost:5173');
       } else {
-        await win.loadFile(path.join(__dirname, '../dist/index.html'));
+        win.loadFile(path.join(__dirname, '../dist/index.html'));
       }
     } catch (error) {
       console.error('Failed to load:', error);
-      win.loadFile(path.join(__dirname, '../dist/fallback.html'));
+      win.loadFile(path.join(__dirname, '../dist/index.html'));
     }
   };
 
