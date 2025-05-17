@@ -1,59 +1,57 @@
-<<<<<<< HEAD
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
-=======
 # Wingman
-Orbital-25 Apollo
->>>>>>> edb3df5579430047a34925b13f01f572747a63a3
+
+Wingman is a modern productivity desktop app built with **Electron**, **React**, and **Vite**.  
+It features a dashboard, calendar, diary, and chatbot assistant—all in a sleek, dark-themed interface.
+
+## Features
+
+- **Dashboard**: See your day at a glance with upcoming events, quick stats, and recent diary entries.
+- **Calendar**: Manage your schedule with day, week, and month views.
+- **Diary**: Write and review personal entries, with search and organization tools.
+- **Chatbot (Wingman)**: Get quick help, reminders, or just chat with your AI assistant.
+- **Responsive Design**: Works great on all screen sizes.
+- **Desktop App**: Runs as a standalone application thanks to Electron.
+
+## Getting Started
+
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/Yxiang-828/Wingman.git
+   cd Wingman
+   ```
+
+2. **Install dependencies:**
+   ```sh
+   npm install
+   ```
+
+3. **Run in development mode:**
+   ```sh
+   npm run dev
+   ```
+
+4. **Build for production:**
+   ```sh
+   npm run build
+   ```
+
+5. **Run as Electron app:**
+   ```sh
+   npm run electron
+   ```
+
+## Packaging
+
+To create a distributable desktop app, use:
+```sh
+npm run pack
+```
+*(Requires [electron-builder](https://www.electron.build/) or similar setup.)*
+
+## License
+
+MIT
+
+---
+
+*Made with ❤️ using Electron, React, and Vite.*
