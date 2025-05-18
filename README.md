@@ -12,7 +12,7 @@ It features a dashboard, calendar, diary, and chatbot assistant—all in a sleek
 - **Responsive Design**: Works great on all screen sizes.
 - **Desktop App**: Runs as a standalone application thanks to Electron.
 
-## Getting Started
+## Getting Started (Or visit release page for beta)
 
 1. **Clone the repository:**
    ```sh
