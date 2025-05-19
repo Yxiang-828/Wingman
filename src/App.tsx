@@ -11,6 +11,9 @@ import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
 import Profile from "./Pages/Profile";
 import "./main.css";
+import ProfileSettings from "./components/Sidebar/ProfileSettings";
+import ProfileAvatar from "./components/Sidebar/ProfileAvatar";
+import Notifications from "./Pages/Notifications";
 
 const App = () => {
   return (
@@ -21,10 +24,14 @@ const App = () => {
           <Header />
           <main className="flex-1 p-6 overflow-auto">
             <Routes>
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/" element={<Dashboard />} />
               <Route path="/calendar/*" element={<Calendar />} />
               <Route path="/chatbot" element={<ChatBot />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/*" element={<Profile />}>
+                <Route path="settings" element={<ProfileSettings />} />
+                <Route path="avatar" element={<ProfileAvatar />} />
+              </Route>
               <Route path="/diary/*" element={<Diary />}>
                 <Route path="write" element={<WriteEntry />} />
                 <Route path="view" element={<ViewEntries />} />

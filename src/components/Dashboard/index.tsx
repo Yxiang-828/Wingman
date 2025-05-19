@@ -64,7 +64,8 @@ const Dashboard: React.FC = () => {
       {/* Left column: Dashboard title and New Task button stacked at the top */}
       <div className="flex flex-col items-center md:items-start md:col-span-1 col-span-3 pt-8 gap-4">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <button className="action-btn">
+        <button className="action-btn"
+        onClick={() => navigate("/calendar")}>
           <span>✨</span>
           New Task
         </button>
@@ -158,7 +159,8 @@ const Dashboard: React.FC = () => {
                 </div>
               ))}
               {/* Button to write a new diary entry */}
-              <button className="action-btn w-full mt-4">
+              <button className="action-btn w-full mt-4"
+                  onClick={() => navigate("/diary/write")}>
                 <span>✏️</span>
                 Write New Entry
               </button>

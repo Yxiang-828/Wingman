@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../main.css";
 
 const Header: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  const navigate = useNavigate();
 
   // Update the date time every minute
   React.useEffect(() => {
@@ -50,10 +52,16 @@ const Header: React.FC = () => {
             {formatTime(currentDateTime)}
           </div>
         </div>
-        <button className="rounded-full bg-card p-2 hover-glow-tile">
+        <button
+          className="rounded-full bg-card p-2 hover-glow-tile"
+          onClick={() => navigate("/notifications")}
+        >
           <span className="icon-rotate">🔔</span>
         </button>
-        <button className="rounded-full bg-card p-2 hover-glow-tile">
+        <button
+          className="rounded-full bg-card p-2 hover-glow-tile"
+          onClick={() => navigate("/profile/settings")}
+        >
           <span className="icon-rotate">⚙️</span>
         </button>
       </div>
