@@ -87,7 +87,7 @@ const Sidebar: React.FC = () => {
       submenu: [
         { title: "Settings", path: "/profile/settings" },
         { title: "Avatar", path: "/profile/avatar" },
-        { title: "Preferences", path: "/profile/preferences" },
+        // { title: "Preferences", path: "/profile/preferences" },
       ],
     },
     {
@@ -122,7 +122,7 @@ const Sidebar: React.FC = () => {
       <NavSection items={menuItems} />
 
       {/* Quick Add Button */}
-      <QuickAdd />
+    {/* <QuickAdd /> */}
     </aside>
   );
 };
