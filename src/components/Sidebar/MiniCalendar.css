@@ -1,0 +1,83 @@
+/* MiniCalendar.css */
+
+/* Shrink size */
+.react-calendar--small {
+  font-size: 10px;
+  max-width: 220px; /* adjust as needed */
+  overflow: visible;
+  background: var(--bg-card, #23232b); /* fallback to dark gray if --bg-card not set */
+  border-radius: 12px;
+  box-shadow: 0 2px 12px 0 rgba(196, 70, 70, 0.133);
+  padding: 10px 0 12px 0;
+  transition: transform 0.15s;
+}
+
+/* Optional: adjust tile padding for compactness */
+.react-calendar--small .react-calendar__tile {
+  padding: 8px 6px; /* more space for shadow */
+  position: relative; /* ensure stacking context */
+  overflow: visible;  /* allow shadow to show */
+  box-sizing: border-box;
+}
+
+/* Tremble animation on hover */
+.react-calendar--small .react-calendar__tile:hover,
+.react-calendar--small .react-calendar__tile:active,
+.react-calendar--small .react-calendar__tile:focus {
+  box-shadow: 0 0 12px 2px var(--accent-primary, #646cff), 0 0 2px 1px var(--accent-secondary, #535bf2);
+  animation: tremble 0.25s ease-in-out;
+  cursor: pointer;
+  z-index: 2; /* ensure it's above others */
+  position: relative; /* needed for z-index to work */
+}
+
+/* Ensure days are visible */
+.react-calendar--small .react-calendar__month-view__days {
+  overflow: visible;
+}
+
+/* Navigation styles */
+.react-calendar--small .react-calendar__navigation {
+  background: var(--bg-card, #1e1e1e); /* or your sidebar bg */
+  z-index: 3;
+  position: relative;
+  overflow: visible;  /* allow shadow to show */
+}
+
+/* Navigation label styles */
+.react-calendar--small .react-calendar__navigation__label {
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  font-size: 0.6rem;
+  font-weight: 500;
+  border-radius: 6px;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+  z-index: 2;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Today highlight */
+.today-highlight {
+  color: #23232b !important;
+  border-radius: 4px !important;
+  font-weight: bold;
+  box-shadow: 0 0 0 1px #ffd966aa, 0 0 1px 0.5px #ffd96655;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  overflow: visible;  /* allow shadow to show */
+}
+
+/* Tremble keyframes */
+@keyframes tremble {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-1px); }
+  50% { transform: translateX(1px); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../main.css";
+import "../../main.css";
 
 const Header: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -38,7 +38,7 @@ const Header: React.FC = () => {
   return (
     <header className="header p-4 flex items-center justify-between bg-card text-light">
       <div className="flex items-center gap-2">
-        <span className="text-xl font-bold">Welcome back, User! </span>
+        <span className="text-xl font-bold">Welcome back, Leader! </span>
       </div>
 
       <div className="ml-auto flex items-center gap-6 px-4">

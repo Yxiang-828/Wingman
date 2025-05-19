@@ -1,0 +1,172 @@
+.calendar-container {
+  background: var(--bg-card, #1e1e1e);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  padding: 2rem;
+  min-height: 80vh;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-header {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-view-toggle button {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 1rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.calendar-view-toggle .active,
+.calendar-view-toggle button:hover {
+  background: var(--accent-primary);
+  color: #fff;
+}
+
+.calendar-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.timeblock-visualizer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.timeblock {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.98rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  margin-bottom: 0.2rem;
+}
+
+.timeblock-time {
+  font-size: 0.92rem;
+  opacity: 0.7;
+}
+
+.calendar-months-view .months-grid {
+  margin-top: 2rem;
+}
+.month-cell {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 2rem; /* ensure month cells are also rounded */
+}
+
+
+
+.calendar-months-view .calendar-nav-btn {
+  z-index: 10;
+  position: relative;
+}
+
+.calendar-btn { 
+  margin-left: 1rem;
+  margin-right: 1rem;
+  box-shadow: 0 2px 8px 1px rgba(100, 108, 255, 0.10); /* less bright */
+  transition: 
+    box-shadow 0.2s,
+    filter 0.2s,
+    transform 0.2s;
+  filter: drop-shadow(0 0 4px #646cff33); /* less bright */
+  border-radius: 2rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.calendar-btn:hover {
+  box-shadow: 0 4px 12px 2px #646cff44; /* less bright */
+  filter: drop-shadow(0 0 8px #646cff55); /* less bright */
+  transform: rotate(1deg);
+}
+
+.calendar-months-view {
+  min-height: 230vh; /* or any height you prefer */
+  height: auto;
+  overflow-y: visible;
+}
+
+.calendar-week-view {
+  min-height: 250vh;   /* or any height you prefer */
+  height: auto;
+  overflow-y: visible;
+}
+
+/* Month View Header */
+.monthview-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.monthview-title {
+  text-align: center;
+  margin: 0 1rem;
+}
+
+/* Week Days */
+.week-days {
+  margin-top: 2rem; /* Adjust this value as needed */
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .calendar-container {
+    padding: 1rem;
+  }
+}
+
+.calendar-day-view {
+  background: var(--bg-card, #1e1e1e);
+  border-radius: 1.5rem;
+  box-shadow: var(--card-shadow, 0 2px 16px rgba(0,0,0,0.12));
+  padding: 2rem;
+  min-height: 250vh;   /* Adjust as needed */
+  max-width: 600px;   /* Adjust width as needed */
+  margin: 2rem auto;  /* Center horizontally with margin at top/bottom */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-day-view .calendar-btn {
+  margin-top: 2rem; /* Adjust as needed */
+}
+
+/* Tasks Section */
+.tasks-section {
+  margin-bottom: 2rem;
+}
+.tasks-section input[type="text"] {
+  background: var(--bg-dark, #181818);
+  color: var(--text-light, #fff);
+  border: 1px solid var(--accent-primary, #646cff);
+}
+
+

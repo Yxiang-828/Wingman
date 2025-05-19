@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../main.css";
+import "../../main.css";
 
 // Event type for upcoming events
 interface Event {
@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="dashboard grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="dashboard">
       {/* Left column: Dashboard title and New Task button stacked at the top */}
       <div className="flex flex-col items-center md:items-start md:col-span-1 col-span-3 pt-8 gap-4">
         <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -203,4 +203,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-

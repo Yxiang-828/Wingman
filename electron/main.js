@@ -32,7 +32,13 @@ function updateMoodIcons(win) {
     if (app.dock) app.dock.setIcon(icon); // macOS
     if (win) win.setIcon(icon); // Windows/Linux
     console.log(`Mood updated to ${currentMood} at ${new Date().toLocaleTimeString()}`);
-    
+
+    // --- ADD THIS: send mood to renderer ---
+    if (win && win.webContents) {
+      win.webContents.send('mood-changed', currentMood);
+    }
+    // ---------------------------------------
+
     // Schedule next mood change
     moodTimeout = setTimeout(() => {
       currentMood = getRandomMood();
