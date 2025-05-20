@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { loginUser, registerUser } from "../../api/User";
+import { loginUser, registerUser } from "../../api/user";
 import { useNavigate } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
@@ -30,37 +30,43 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const user = await loginUser(password);
-      onLogin(user);
-      navigate("/", { state: { showGreeting: true } });
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    // setLoading(true);
+    // setError(null);
+    // try {
+    //   const user = await loginUser(password);
+    //   onLogin(user);
+    //   navigate("/", { state: { showGreeting: true } });
+    // } catch (err: any) {
+    //   setError(err.message);
+    // } finally {
+    //   setLoading(false);
+    // }
+    // BYPASS AUTH: Let any user in
+    onLogin({ name: "Test User", email: "test@example.com" });
+    navigate("/", { state: { showGreeting: true } });
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
-      setLoading(false);
-      return;
-    }
-    try {
-      const user = await registerUser(name, password, email);
-      onLogin(user);
-      navigate("/profile", { state: { showSetup: true } });
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    // setLoading(true);
+    // setError(null);
+    // if (!email.includes("@")) {
+    //   setError("Please enter a valid email address.");
+    //   setLoading(false);
+    //   return;
+    // }
+    // try {
+    //   const user = await registerUser(name, password, email);
+    //   onLogin(user);
+    //   navigate("/profile", { state: { showSetup: true } });
+    // } catch (err: any) {
+    //   setError(err.message);
+    // } finally {
+    //   setLoading(false);
+    // }
+    // BYPASS AUTH: Let any user in
+    onLogin({ name, email });
+    navigate("/profile", { state: { showSetup: true } });
   };
 
   return (

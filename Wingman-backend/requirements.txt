@@ -1,10 +1,17 @@
-fastapi==0.108.0
-uvicorn[standard]==0.25.0
-supabase==2.15.1
-pydantic==2.5.2
-pydantic-settings==2.1.0
-python-dotenv==1.0.0
-python-multipart==0.0.6
-email-validator==2.1.0
-httpx==0.28.1
-pytest==7.4.3
+annotated-types==0.7.0
+pydantic==2.11.4
+pydantic-settings==2.9.1
+pydantic_core==2.33.2
+python-dotenv==1.1.0
+typing-inspection==0.4.0
+typing_extensions==4.13.2
+pip install fastapi uvicorn supabase pydantic pydantic-settings python-dotenv annotated-types typing-inspection typing_extensionspip install fastapi uvicorn supabase pydantic pydantic-settings python-dotenv annotated-types typing-inspection typing_extensions
+npm install
+npm install react react-dom typescript @types/react @types/react-dom 
+npm install axios @supabase/supabase-js react-router-dom
+npm install electron
+
+cd Wingman-backend 
+.venv\Scripts\activate 
+uvicorn main:app --reload
+npm run dev:full
