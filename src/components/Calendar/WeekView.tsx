@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
+import { isSameDay } from "date-fns";
 import "./Calendar.css";
 
 function getSemester(month: number) {
@@ -185,7 +186,14 @@ const WeekView: React.FC = () => {
             <div
               key={index}
               className={`week-day ${isToday ? "today" : ""}`}
-              onClick={() => navigate(`/calendar/day?date=${dateStr}`)}
+              onClick={() => {
+                const dateStr = [
+                  day.getFullYear(),
+                  (day.getMonth() + 1).toString().padStart(2, "0"),
+                  day.getDate().toString().padStart(2, "0"),
+                ].join("-");
+                navigate(`/calendar/day?date=${dateStr}`);
+              }}
             >
               <div className="week-day-header">
                 <span className="week-day-title">

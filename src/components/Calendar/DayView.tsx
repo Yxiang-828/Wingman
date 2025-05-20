@@ -67,10 +67,8 @@ const DayView: React.FC = () => {
       }
 
       if (dateStr) {
-        const newDate = new Date(dateStr);
-        if (isNaN(newDate.getTime())) {
-          throw new Error("Invalid date");
-        }
+        const [year, month, day] = dateStr.split("-").map(Number);
+        const newDate = new Date(year, month - 1, day);
         setDate(newDate);
         // Fetch data for this date
         fetchData(dateStr);
