@@ -15,6 +15,7 @@ dist-ssr
 # Ignore environment files
 .env
 Wingman-backend/.env
+Wingman-backend/.venv
 
 # Editor directories and files
 .vscode/*

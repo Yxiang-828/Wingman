@@ -195,6 +195,12 @@ const ChatBot = () => {
             key={message.id}
             sender={message.sender}
             text={message.text}
+            className={
+              message.text ===
+              "Hey! I'm your Wingman. How can I help you today?"
+                ? "wingman-greeting"
+                : ""
+            }
           />
         ))}
         <div ref={chatEndRef} />

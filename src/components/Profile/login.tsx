@@ -68,11 +68,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       <div className="blob"></div>
       <div className="login-card animate-fade-in">
         <div className="mb-6 flex flex-col items-center">
-          <img
-            src={moodIcons[mood]}
-            alt="Logo"
-            className="logo-img"
-          />
+          <img src={moodIcons[mood]} alt="Logo" className="logo-img" />
           <h1 className="text-3xl font-bold mb-1">Wingman</h1>
           <p className="text-accent-primary font-medium mb-2">
             {step === "login" ? "Welcome back, Leader!" : "Join the Crew!"}
@@ -105,7 +101,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             >
               New user? Register
             </button>
-            {error && <div className="error text-red-400 text-center">{error}</div>}
+            {error && (
+              <div className="error text-red-400 text-center">{error}</div>
+            )}
           </form>
         ) : (
           <form onSubmit={handleRegister} className="w-72 flex flex-col gap-4">
@@ -150,7 +148,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             >
               Back to Login
             </button>
-            {error && <div className="error text-red-400 text-center">{error}</div>}
+            {error && (
+              <div className="error text-red-400 text-center">{error}</div>
+            )}
           </form>
         )}
       </div>

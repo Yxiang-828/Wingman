@@ -52,7 +52,8 @@
 .day-nav-btn:hover {
   background: rgba(35, 35, 55, 0.7);
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.25), 0 0 0 1px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.25),
+    0 0 0 1px rgba(100, 108, 255, 0.3);
 }
 
 .day-view-stats {
@@ -62,7 +63,7 @@
 }
 
 .day-stat-card {
-  background: rgba(25, 25, 45, 0.5);
+  background: var(--bg-card, #fff);
   border-radius: 12px;
   padding: 0.8rem 1.2rem;
   flex: 1;
@@ -169,7 +170,7 @@
 
 /* Form styling for new items */
 .day-form {
-  background: rgba(25, 25, 45, 0.5);
+  background: var(--bg-card, #fff);
   padding: 1.2rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
@@ -314,12 +315,13 @@
   overflow: hidden;
 }
 
-.hour-btn:hover, 
+.hour-btn:hover,
 .hour-btn:focus {
   background: #353552;
   color: #fff;
   transform: rotate(3deg) scale(1.05) translateY(-2px);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.25), 0 0 0 1px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.25),
+    0 0 0 1px rgba(100, 108, 255, 0.3);
   outline: none;
   z-index: 1;
 }
@@ -327,7 +329,8 @@
 .hour-btn.selected {
   background: #646cff;
   color: #fff;
-  box-shadow: 0 0 12px rgba(100, 108, 255, 0.4), 0 0 0 1px rgba(100, 108, 255, 0.6);
+  box-shadow: 0 0 12px rgba(100, 108, 255, 0.4),
+    0 0 0 1px rgba(100, 108, 255, 0.6);
 }
 
 /* AM/PM buttons */
@@ -364,7 +367,7 @@
 
 /* Event Item Styling */
 .event-item {
-  background: rgba(25, 25, 45, 0.5);
+  background: var(--bg-card, #fff);
   border-radius: 12px;
   padding: 1rem;
   display: grid;
@@ -378,9 +381,15 @@
   border-left: 3px solid transparent;
 }
 
-.event-meeting { border-left-color: #646cff; }
-.event-personal { border-left-color: #4ade80; }
-.event-reminder { border-left-color: #f87171; }
+.event-meeting {
+  border-left-color: #646cff;
+}
+.event-personal {
+  border-left-color: #4ade80;
+}
+.event-reminder {
+  border-left-color: #f87171;
+}
 
 .event-item:hover {
   transform: translateY(-3px);
@@ -389,7 +398,7 @@
 }
 
 .event-time {
-  background: rgba(20, 20, 35, 0.8);
+  background: var(--bg-card, #fff);
   padding: 0.5rem 0.8rem;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.9);
@@ -448,9 +457,18 @@
   text-transform: capitalize;
 }
 
-.event-meeting .event-type { background: rgba(100, 108, 255, 0.2); color: #b8baff; }
-.event-personal .event-type { background: rgba(74, 222, 128, 0.2); color: #a7f3c1; }
-.event-reminder .event-type { background: rgba(248, 113, 113, 0.2); color: #ffc0c0; }
+.event-meeting .event-type {
+  background: rgba(100, 108, 255, 0.2);
+  color: #b8baff;
+}
+.event-personal .event-type {
+  background: rgba(74, 222, 128, 0.2);
+  color: #a7f3c1;
+}
+.event-reminder .event-type {
+  background: rgba(248, 113, 113, 0.2);
+  color: #ffc0c0;
+}
 
 .event-actions {
   display: flex;
@@ -483,7 +501,7 @@
 
 /* Task Item Styling with Time */
 .task-item {
-  background: rgba(25, 25, 45, 0.5);
+  background: var(--bg-card, #fff);
   border-radius: 12px;
   padding: 1rem;
   display: grid;
@@ -605,7 +623,7 @@
 
 /* Empty states */
 .day-empty-state {
-  background: rgba(25, 25, 45, 0.3);
+  background: var(--bg-card, #fff);
   border-radius: 12px;
   padding: 2rem;
   text-align: center;
@@ -647,7 +665,7 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 1rem;
-  background: rgba(30, 30, 50, 0.3);
+  background: var(--bg-card, #fff);
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
@@ -690,7 +708,7 @@
 }
 
 .week-day {
-  background: rgba(25, 25, 35, 0.6);
+  background: var(--bg-card, #fff);
   border-radius: 12px;
   padding: 1rem;
   min-height: 200px;
@@ -745,19 +763,22 @@
   overflow: hidden;
 }
 
-.week-events, .week-tasks {
+.week-events,
+.week-tasks {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.week-events h4, .week-tasks h4 {
+.week-events h4,
+.week-tasks h4 {
   margin: 0;
   font-size: 0.8rem;
   opacity: 0.8;
 }
 
-.week-events-list, .week-tasks-list {
+.week-events-list,
+.week-tasks-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -766,30 +787,39 @@
   gap: 0.35rem;
 }
 
-.week-event, .week-task {
+.week-event,
+.week-task {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.8rem;
   padding: 0.3rem 0.5rem;
   border-radius: 4px;
-  background: rgba(20, 20, 30, 0.4);
+  background: var(--bg-card, #fff);
 }
 
 .week-event {
   border-left: 2px solid;
 }
 
-.week-event-meeting { border-color: #646cff; }
-.week-event-personal { border-color: #4ade80; }
-.week-event-reminder { border-color: #f87171; }
+.week-event-meeting {
+  border-color: #646cff;
+}
+.week-event-personal {
+  border-color: #4ade80;
+}
+.week-event-reminder {
+  border-color: #f87171;
+}
 
-.week-event-time, .week-task-status {
+.week-event-time,
+.week-task-status {
   flex-shrink: 0;
   font-weight: 600;
 }
 
-.week-event-title, .week-task-text {
+.week-event-title,
+.week-task-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -841,9 +871,15 @@
 
 /* Highlight animation for navigated items */
 @keyframes highlight-pulse {
-  0% { box-shadow: 0 0 0 rgba(100, 108, 255, 0.3); }
-  50% { box-shadow: 0 0 15px rgba(100, 108, 255, 0.8); }
-  100% { box-shadow: 0 0 0 rgba(100, 108, 255, 0.3); }
+  0% {
+    box-shadow: 0 0 0 rgba(100, 108, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(100, 108, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(100, 108, 255, 0.3);
+  }
 }
 
 .highlighted {
@@ -871,7 +907,7 @@
 }
 
 .calendar-view-toggle button:hover,
-.calendar-btn:hover, 
+.calendar-btn:hover,
 .day-nav-btn:hover {
   transform: rotate(2deg) translateY(-2px);
   box-shadow: 0 0 12px rgba(100, 108, 255, 0.6);

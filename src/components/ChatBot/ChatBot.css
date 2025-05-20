@@ -1,10 +1,22 @@
 @keyframes run-away {
-  0%   { transform: translateX(0); }
-  20%  { transform: translateX(10px); }
-  40%  { transform: translateX(-30px); }
-  60%  { transform: translateX(40px); }
-  80%  { transform: translateX(-60px); }
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(10px);
+  }
+  40% {
+    transform: translateX(-30px);
+  }
+  60% {
+    transform: translateX(40px);
+  }
+  80% {
+    transform: translateX(-60px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .mood-icon-tooltip {
@@ -90,7 +102,7 @@
   flex: 1;
   padding: 0.7rem 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background: var(--bg-dark, #181818);
   color: var(--text-light, #fff);
   font-size: 1rem;
@@ -157,4 +169,8 @@
   height: 32px !important;
   border-radius: 50%;
   object-fit: cover;
+}
+
+body.light-theme .wingman-greeting {
+  color: #fff !important;
 }

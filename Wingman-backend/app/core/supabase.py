@@ -14,7 +14,9 @@ try:
     response = supabase.table("tasks").select("count", count="exact").execute()
     print(f"Supabase connection successful. Found {response.count} tasks.")
 except Exception as e:
+    import traceback
     print(f"Supabase connection failed: {e}")
+    traceback.print_exc()
     # Provide a fallback for development
     from unittest.mock import MagicMock
     supabase = MagicMock()

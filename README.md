@@ -48,7 +48,7 @@ git clone https://github.com/yourusername/Wingman.git
 cd Wingman
 
 # Install dependencies
-npm install
+npm install @supabase/supabase-js
 
 # Start development server
 npm run dev
@@ -61,7 +61,11 @@ npm run dev
 cd backend
 
 # Install Python dependencies
-pip install -r requirements.txt
+pip install supabase
+pip install fastapi uvicorn supabase pydantic pydantic-settings pydantic_core annotated-types typing-inspection typing_extensions python-dotenv
+
+npm install
+npm install react react-dom typescript @types/react @types/react-dom
 
 # Start the FastAPI server
 uvicorn main:app --reload
@@ -116,44 +120,47 @@ Backend
 cd Wingman-backend
 
 # Create and activate a virtual environment
+
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\Activate.ps1
+source .venv/bin/activate # On Windows: .venv\Scripts\Activate.ps1
 
 # Install dependencies
+
 pip install -r requirements.txt
 
 # Start the server
-python main.py
 
+python main.py
 
 Project Structure
 
 Wingman/
 ├── src/
-│   ├── api/            # API client functions
-│   ├── components/     # React components
-│   │   ├── Calendar/
-│   │   ├── ChatBot/
-│   │   ├── Dashboard/
-│   │   ├── Diary/
-│   │   ├── Header/
-│   │   ├── Profile/
-│   │   └── Sidebar/
-│   ├── context/        # React context providers
-│   ├── Hooks/          # Custom React hooks
-│   ├── Pages/          # Top-level page components
-│   ├── services/       # Utility services
-│   ├── types/          # TypeScript type definitions
-│   ├── App.tsx         # Main application component
-│   └── main.tsx        # Application entry point
-└── Wingman-backend/    # Python FastAPI backend
-    ├── app/
-    │   ├── api/
-    │   ├── core/
-    │   └── services/
-    └── main.py
+│ ├── api/ # API client functions
+│ ├── components/ # React components
+│ │ ├── Calendar/
+│ │ ├── ChatBot/
+│ │ ├── Dashboard/
+│ │ ├── Diary/
+│ │ ├── Header/
+│ │ ├── Profile/
+│ │ └── Sidebar/
+│ ├── context/ # React context providers
+│ ├── Hooks/ # Custom React hooks
+│ ├── Pages/ # Top-level page components
+│ ├── services/ # Utility services
+│ ├── types/ # TypeScript type definitions
+│ ├── App.tsx # Main application component
+│ └── main.tsx # Application entry point
+└── Wingman-backend/ # Python FastAPI backend
+├── app/
+│ ├── api/
+│ ├── core/
+│ └── services/
+└── main.py
 
 ---
+
 Configuration
 
 VITE_API_URL=http://localhost:8000
@@ -168,9 +175,9 @@ Here’s a clean, formatted version of your usage and feature guide for your web
 
 After starting both the **frontend** and **backend** servers:
 
-* 🔗 **Access the web app** at: [http://localhost:5173](http://localhost:5173)
-* 🔐 **Login** using the 6-digit password
-* 🧭 **Navigate** using the sidebar to explore all features
+- 🔗 **Access the web app** at: [http://localhost:5173](http://localhost:5173)
+- 🔐 **Login** using the 6-digit password
+- 🧭 **Navigate** using the sidebar to explore all features
 
 ---
 
@@ -180,11 +187,11 @@ After starting both the **frontend** and **backend** servers:
 
 Get a quick daily snapshot:
 
-* 💬 **Motivational Quotes** and a summary of your day
-* ✅ **Today's Tasks** with live completion status
-* 📅 **Upcoming Events** with time and category labels
-* 📖 **Recent Diary Entries** with mood and preview
-* 🤖 **Quick Access** to the Chat Assistant
+- 💬 **Motivational Quotes** and a summary of your day
+- ✅ **Today's Tasks** with live completion status
+- 📅 **Upcoming Events** with time and category labels
+- 📖 **Recent Diary Entries** with mood and preview
+- 🤖 **Quick Access** to the Chat Assistant
 
 ---
 
@@ -192,9 +199,9 @@ Get a quick daily snapshot:
 
 Stay organized with flexible views:
 
-* 🗓 **Day View**: Detailed agenda for a single day
-* 📅 **Week View**: Overview of the current week, with quick-add functionality
-* 📆 **Month View**: Monthly planner with smooth navigation
+- 🗓 **Day View**: Detailed agenda for a single day
+- 📅 **Week View**: Overview of the current week, with quick-add functionality
+- 📆 **Month View**: Monthly planner with smooth navigation
 
 ---
 
@@ -202,9 +209,9 @@ Stay organized with flexible views:
 
 Record, reflect, and search your thoughts:
 
-* ✍️ **New Entries** with mood tracking support
-* 📅 **View Past Entries** organized by date and emotion
-* 🔍 **Search Functionality** to revisit previous experiences
+- ✍️ **New Entries** with mood tracking support
+- 📅 **View Past Entries** organized by date and emotion
+- 🔍 **Search Functionality** to revisit previous experiences
 
 ---
 
@@ -212,23 +219,28 @@ Record, reflect, and search your thoughts:
 
 Get help or entertainment, your way:
 
-* 🎭 **Adjustable Style**: Choose between *serious* or *funny* replies
-* ⚡ **Quick Replies**: Handy suggestions to speed up chats
-* 💬 **Persistent Chat History**: Keep track of past conversations
+- 🎭 **Adjustable Style**: Choose between _serious_ or _funny_ replies
+- ⚡ **Quick Replies**: Handy suggestions to speed up chats
+- 💬 **Persistent Chat History**: Keep track of past conversations
 
 ---
 
 Development Scripts
+
 # Start frontend development server
+
 npm run dev
 
 # Start frontend and Electron together
+
 npm run dev:full
 
 # Build for production
+
 npm run build
 
 # Package the Electron app
+
 npm run electron:build
 
 ---
@@ -261,16 +273,16 @@ python -m venv Wingman-backend/.venv
 
 ### ⚙️ 3. Activate the Virtual Environment
 
-* **On Windows:**
+- **On Windows:**
 
 ```bash
 Wingman-backend\.venv\Scripts\activate
 ```
 
-* **On macOS/Linux:**
+- **On windows git bash:**
 
 ```bash
-source Wingman-backend/.venv/bin/activate
+source Wingman-backend/.venv/Scripts/activate
 ```
 
 ---
@@ -278,7 +290,7 @@ source Wingman-backend/.venv/bin/activate
 ### 📦 4. Install Dependencies
 
 ```bash
-pip install -r Wingman-backend/requirements.txt
+
 ```
 
 ---

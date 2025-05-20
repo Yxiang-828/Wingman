@@ -111,7 +111,11 @@
 
 /* Summary Card */
 .summary-card {
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.6) 0%, rgba(35, 35, 55, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.6) 0%,
+    rgba(35, 35, 55, 0.7) 100%
+  );
 }
 
 .quote-box {
@@ -161,7 +165,11 @@
 
 /* Events Card */
 .events-card {
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.6) 0%, rgba(35, 35, 55, 0.5) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.6) 0%,
+    rgba(35, 35, 55, 0.5) 100%
+  );
 }
 
 .events-list {
@@ -188,9 +196,15 @@
   overflow: hidden;
 }
 
-.event-meeting { border-left: 3px solid #646cff; }
-.event-personal { border-left: 3px solid #4ade80; }
-.event-reminder { border-left: 3px solid #f87171; }
+.event-meeting {
+  border-left: 3px solid #646cff;
+}
+.event-personal {
+  border-left: 3px solid #4ade80;
+}
+.event-reminder {
+  border-left: 3px solid #f87171;
+}
 
 .event-item:hover {
   transform: translateY(-3px) translateX(2px);
@@ -224,7 +238,11 @@
 
 /* Tasks Card */
 .tasks-card {
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.5) 0%, rgba(35, 35, 55, 0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.5) 0%,
+    rgba(35, 35, 55, 0.6) 100%
+  );
 }
 
 .tasks-list {
@@ -297,7 +315,11 @@
 
 /* Diary Card */
 .diary-card {
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.5) 0%, rgba(35, 35, 55, 0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.5) 0%,
+    rgba(35, 35, 55, 0.6) 100%
+  );
 }
 
 .entries-list {
@@ -378,7 +400,11 @@
 
 /* Chat Card */
 .chat-card {
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.5) 0%, rgba(35, 35, 55, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 40, 0.5) 0%,
+    rgba(35, 35, 55, 0.7) 100%
+  );
 }
 
 .chat-preview {
@@ -473,7 +499,7 @@
   .dashboard-content {
     grid-template-columns: 1fr;
   }
-  
+
   .summary-stats {
     grid-template-columns: 1fr;
   }
