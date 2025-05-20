@@ -13,9 +13,10 @@ export interface MenuItem {
 
 export interface NavSectionProps {
   items: Array<MenuItem>;
+  collapsed?: boolean;
 }
 
-const NavSection: React.FC<NavSectionProps> = ({ items }) => {
+const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => {
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {}
@@ -29,44 +30,48 @@ const NavSection: React.FC<NavSectionProps> = ({ items }) => {
   };
 
   return (
-    <nav className="flex flex-col space-y-1 px-2">
+    <nav className="sidebar-nav">
       {items.map((item, index) => (
         <div key={index} className="nav-item">
           {item.submenu ? (
             <div
-              className={`sidebar-link flex items-center justify-between p-2 rounded-md hover:bg-accent-primary/10 ${
-                location.pathname === item.path ? "bg-accent-primary/20" : ""
+              className={`sidebar-link flex items-center justify-between ${
+                location.pathname === item.path ? "active" : ""
               }`}
               onClick={() => toggleSubmenu(item.title)}
               style={{ cursor: "pointer" }}
+              title={collapsed ? item.title : ""}
             >
-              <div className="flex items-center gap-3">
-                {item.icon}
-                <span className="text-sm font-medium">{item.title}</span>
+              <div className="sidebar-link-content">
+                <span className="sidebar-icon">{item.icon}</span>
+                {!collapsed && <span className="sidebar-text">{item.title}</span>}
               </div>
-              <span className="icon-rotate text-xs">
-                {expandedItems[item.title] ? "▼" : "▶"}
-              </span>
+              {!collapsed && (
+                <span className="icon-rotate submenu-arrow">
+                  {expandedItems[item.title] ? "▼" : "▶"}
+                </span>
+              )}
             </div>
           ) : (
             <Link
               to={item.path!}
-              className={`sidebar-link flex items-center justify-between p-2 rounded-md hover:bg-accent-primary/10 ${
-                location.pathname === item.path ? "bg-accent-primary/20" : ""
+              className={`sidebar-link ${
+                location.pathname === item.path ? "active" : ""
               }`}
+              title={collapsed ? item.title : ""}
             >
-              <div className="flex items-center gap-3">
-                {item.icon}
-                <span className="text-sm font-medium">{item.title}</span>
+              <div className="sidebar-link-content">
+                <span className="sidebar-icon">{item.icon}</span>
+                {!collapsed && <span className="sidebar-text">{item.title}</span>}
               </div>
             </Link>
           )}
 
-          {item.submenu && (
+          {item.submenu && !collapsed && (
             <div
               className={`sidebar-submenu${
                 expandedItems[item.title] ? " open" : ""
-              } ml-4 mt-1 space-y-1`}
+              }`}
             >
               {expandedItems[item.title] &&
                 item.submenu.map((subItem, subIndex) => (
@@ -74,7 +79,7 @@ const NavSection: React.FC<NavSectionProps> = ({ items }) => {
                     key={subIndex}
                     to={subItem.path}
                     className={`sidebar-submenu-item${
-                      location.pathname === subItem.path ? " bg-accent-primary/20" : ""
+                      location.pathname === subItem.path ? " active" : ""
                     }`}
                   >
                     {subItem.title}

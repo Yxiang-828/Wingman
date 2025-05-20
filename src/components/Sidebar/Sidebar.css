@@ -1,0 +1,296 @@
+/* Basic sidebar styling - push style */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px; /* Start collapsed */
+  width: 280px;
+  height: 100vh;
+  background: #15151f; /* Darker, almost black but with a hint of blue-purple */
+  z-index: 100;
+  transition: left 0.3s ease;
+  padding: 1rem;
+  overflow-y: auto;
+  box-shadow: none;
+}
+
+/* Visible state - make room for sidebar */
+.sidebar.visible {
+  left: 0;
+  box-shadow: 3px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Main content wrapper that shifts right */
+.main-content-wrapper {
+  transition: margin-left 0.3s ease;
+  width: 100%;
+}
+
+/* Push main content when sidebar is visible */
+.main-content-wrapper.sidebar-visible {
+  margin-left: 280px;
+}
+
+/* Updated sidebar toggle button - wider but keeping round icon */
+.sidebar-toggle {
+  position: fixed;
+  left: 0; /* Keep it on the left side */
+  top: 50%; /* Start at center */
+  transform: translateY(-50%);
+  width: 24px; /* Increased width while still thin */
+  height: 80px;
+  border: none;
+  border-radius: 0 50px 50px 0;
+  cursor: pointer;
+  z-index: 101;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: visible;
+  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+  animation: float-vertical 15s ease-in-out infinite alternate; /* Very slow up/down animation */
+}
+
+/* Create a floating animation that spans 50vh centered on the screen */
+@keyframes float-vertical {
+  0% {
+    top: calc(50% - 25vh); /* Start 25vh above center */
+  }
+  100% {
+    top: calc(50% + 25vh); /* End 25vh below center */
+  }
+}
+
+.sidebar-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #353563 0%, #1e1e38 100%);
+  border-radius: 0 50px 50px 0;
+  z-index: -1;
+}
+
+.sidebar-toggle.open {
+  left: 280px; /* Stay on left when open */
+  animation-play-state: paused; /* Pause the animation when open */
+}
+
+.sidebar-toggle:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.sidebar-toggle-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: bounce 2s infinite;
+  object-fit: cover; /* Ensures image fills the circle */
+}
+
+/* Keep bounce animation for the icon */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Styled sidebar components */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+}
+
+.sidebar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #8186ff; /* Brighter text for the title */
+  margin: 0;
+  text-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+}
+
+/* Navigation styling - improve contrast and effects */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-item {
+  margin-bottom: 4px;
+}
+
+/* Remove background from links by default */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #e0e0ff;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background: transparent; /* No background by default */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Default soft shadow */
+  margin-bottom: 2px;
+}
+
+.sidebar-link-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 3px rgba(100, 108, 255, 0.3));
+}
+
+.sidebar-text {
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Hover adds subtle background and shadow */
+.sidebar-link:hover {
+  background: rgba(100, 108, 255, 0.08); /* Very subtle background */
+  border-color: rgba(100, 108, 255, 0.2);
+  transform: translateX(3px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4), 
+              0 0 8px rgba(100, 108, 255, 0.2); /* Stronger glow on hover */
+}
+
+/* Active state - more subtle */
+.sidebar-link.active {
+  background: rgba(100, 108, 255, 0.12);
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(100, 108, 255, 0.4);
+  border-left: 3px solid #646cff;
+}
+
+/* Submenu styling enhancements */
+.sidebar-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  margin-left: 1rem;
+}
+
+.sidebar-submenu.open {
+  height: auto;
+  opacity: 1;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(100, 108, 255, 0.3);
+}
+
+/* No background on submenu items by default */
+.sidebar-submenu-item {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: #d0d0f0; /* Slightly dimmer than main items */
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  position: relative;
+  background: transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); /* Subtle default shadow */
+  margin-bottom: 1px;
+}
+
+/* Add background and shadow only on hover */
+.sidebar-submenu-item:hover {
+  background: rgba(100, 108, 255, 0.08);
+  color: white;
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.4), 
+              0 0 5px rgba(100, 108, 255, 0.2); /* Stronger glow on hover */
+}
+
+.sidebar-submenu-item.active {
+  background: rgba(100, 108, 255, 0.12);
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 0 8px rgba(100, 108, 255, 0.2);
+}
+
+/* Submenu indicator */
+.submenu-arrow {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  transition: transform 0.2s;
+  color: #8186ff;
+}
+
+/* Make MiniCalendar component fit better with transparent background */
+.sidebar .react-calendar--small {
+  margin: 0 auto 20px;
+  max-width: 100%;
+  background: transparent !important; /* No background */
+  border: 1px solid rgba(100, 108, 255, 0.15);
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Default soft shadow */
+  transition: box-shadow 0.3s ease;
+}
+
+.sidebar .react-calendar--small:hover {
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3); /* Glow effect on hover */
+}
+
+/* Calendar day styling - transparent with hover glow */
+.sidebar .react-calendar--small .react-calendar__tile {
+  border-radius: 4px;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.sidebar .react-calendar--small .react-calendar__tile:hover {
+  background: rgba(100, 108, 255, 0.12);
+  box-shadow: 0 0 8px rgba(100, 108, 255, 0.4);
+}
+
+/* Scrollbar styling */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 108, 255, 0.3);
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Hover functionality (optional) */
+@media (min-width: 768px) {
+  /* Only add hover functionality on larger screens */
+  .sidebar:not(.visible):hover {
+    left: 0;
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.3);
+  }
+}

@@ -4,6 +4,7 @@ from datetime import date
 class TaskBase(BaseModel):
     date: date
     text: str
+    time: str = ""  # Add default empty string for time
     completed: bool = False
 
 class TaskCreate(TaskBase):

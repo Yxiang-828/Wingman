@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import NavSection from "./NavSection";
+import { useNavigate, useLocation } from "react-router-dom";
 import MiniCalendar from "./MiniCalendar";
+import NavSection from "./NavSection";
+import type { MenuItem } from "./NavSection";
 import QuickAdd from "./QuickAdd";
 import "../../main.css";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
+import "./Sidebar.css";
 
 // Extend the Window interface to include electronAPI
 declare global {
@@ -21,7 +23,7 @@ const CalendarIcon = () => <span className="icon-rotate">📅</span>;
 const DiaryIcon = () => <span className="icon-rotate">📝</span>;
 const ProfileIcon = () => <span className="icon-rotate">👤</span>;
 
-const moodIcons = {
+const moodIcons: Record<string, string> = {
   productive: productiveIcon,
   moody: moodyIcon,
 };
@@ -29,19 +31,33 @@ const moodIcons = {
 const Sidebar: React.FC = () => {
   const [wingmanMood, setWingmanMood] =
     useState<keyof typeof moodIcons>("productive");
+  const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (window.electronAPI?.onMoodChange) {
       window.electronAPI.onMoodChange((mood: string) => {
         if (mood === "productive" || mood === "moody") {
-          setWingmanMood(mood);
+          setWingmanMood(mood as keyof typeof moodIcons);
         }
       });
     }
   }, []);
 
-  const menuItems = [
+  const toggleSidebar = () => {
+    const newVisibility = !isVisible;
+    setIsVisible(newVisibility);
+
+    // Dispatch event to inform App about visibility change
+    window.dispatchEvent(
+      new CustomEvent("sidebar-visibility-change", {
+        detail: { isVisible: newVisibility },
+      })
+    );
+  };
+
+  const menuItems: MenuItem[] = [
     {
       title: "Dashboard",
       path: "/",
@@ -87,7 +103,6 @@ const Sidebar: React.FC = () => {
       submenu: [
         { title: "Settings", path: "/profile/settings" },
         { title: "Avatar", path: "/profile/avatar" },
-        // { title: "Preferences", path: "/profile/preferences" },
       ],
     },
     {
@@ -98,32 +113,51 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="sidebar">
-      {/* Logo Header */}
-      <div className="flex items-center justify-center mb-6 p-4">
-        <h1 className="text-2xl font-bold m-0">Wingman</h1>
-      </div>
+    <>
+      {/* Toggle button that's always visible */}
+      <button
+        className={`sidebar-toggle ${isVisible ? "open" : ""}`}
+        onClick={toggleSidebar}
+        aria-label="Toggle sidebar"
+      >
+        <img
+          src={
+            isVisible
+              ? moodIcons[wingmanMood === "productive" ? "moody" : "productive"]
+              : moodIcons[wingmanMood]
+          }
+          alt="Toggle sidebar"
+          className="sidebar-toggle-icon"
+        />
+      </button>
 
-      {/* Mini Calendar */}
-      <MiniCalendar
-        events={[
-          { date: new Date(), count: 3 },
-          { date: new Date(2025, 4, 20), count: 2 },
-        ]}
-        onDateSelect={(date) => {
-          const formatted = `${date.getFullYear()}-${(date.getMonth() + 1)
-            .toString()
-            .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-          navigate(`/calendar/day?date=${formatted}`);
-        }}
-      />
+      {/* Sidebar that slides in/out */}
+      <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
+        {/* Logo Header */}
+        <div className="sidebar-header">
+          <h1 className="sidebar-title">Wingman</h1>
+        </div>
 
-      {/* Navigation Section */}
-      <NavSection items={menuItems} />
+        {/* Mini Calendar */}
+        <MiniCalendar
+          events={[
+            { date: new Date(), count: 3 },
+            { date: new Date(2025, 4, 20), count: 2 },
+          ]}
+          onDateSelect={(date) => {
+            const formatted = `${date.getFullYear()}-${(date.getMonth() + 1)
+              .toString()
+              .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+            navigate(`/calendar/day?date=${formatted}`);
+          }}
+        />
 
-      {/* Quick Add Button */}
-    {/* <QuickAdd /> */}
-    </aside>
+        {/* Navigation Section */}
+        <NavSection items={menuItems} />
+
+        <QuickAdd />
+      </aside>
+    </>
   );
 };
 

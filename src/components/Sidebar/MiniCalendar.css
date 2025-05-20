@@ -5,11 +5,15 @@
   font-size: 10px;
   max-width: 220px; /* adjust as needed */
   overflow: visible;
-  background: var(--bg-card, #23232b); /* fallback to dark gray if --bg-card not set */
+  background: transparent; /* Transparent background */
   border-radius: 12px;
-  box-shadow: 0 2px 12px 0 rgba(196, 70, 70, 0.133);
+  box-shadow: 0 2px 12px 0 rgba(196, 70, 70, 0.3); /* Red box shadow */
   padding: 10px 0 12px 0;
   transition: transform 0.15s;
+}
+
+.react-calendar--small:hover {
+  box-shadow: 0 4px 16px 0 rgba(196, 70, 70, 0.4); /* Enhanced red shadow on hover */
 }
 
 /* Optional: adjust tile padding for compactness */
@@ -18,6 +22,7 @@
   position: relative; /* ensure stacking context */
   overflow: visible;  /* allow shadow to show */
   box-sizing: border-box;
+  background: transparent; /* Transparent background for tiles */
 }
 
 /* Tremble animation on hover */
@@ -71,6 +76,34 @@
   position: relative;
   z-index: 1;
   overflow: visible;  /* allow shadow to show */
+}
+
+/* Event styles */
+.has-event {
+  position: relative;
+}
+
+.event-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  height: 16px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.event-count {
+  font-size: 9px;
+  background: rgba(100, 108, 255, 0.3);
+  color: white;
+  border-radius: 50%;
+  height: 14px;
+  width: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Tremble keyframes */

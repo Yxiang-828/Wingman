@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Ignore environment files
+.env
+Wingman-backend/.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
+import HumorSetting from "./HumorSetting";
 import MessageBubble from "./MessageBubble";
 import QuickReplies from "./QuickReplies";
-import HumorSetting from "./HumorSetting";
+import { fetchChatHistory, sendChatMessage } from "../../api/chat";
 import "./ChatBot.css";
 
 const moodIcons = {
@@ -20,6 +22,7 @@ type Message = {
   id: number;
   sender: "user" | "wingman";
   text: string;
+  timestamp?: string;
 };
 
 const initialMessages: Message[] = [
@@ -27,6 +30,7 @@ const initialMessages: Message[] = [
     id: 1,
     sender: "wingman",
     text: "Hey! I'm your Wingman. How can I help you today?",
+    timestamp: new Date().toISOString(),
   },
 ];
 
@@ -39,12 +43,50 @@ const ChatBot = () => {
   const [humor, setHumor] = useState<"serious" | "funny">("serious");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatBoxRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const initialMessageHandled = useRef(false);
+  const [user, setUser] = useState<any>(() => {
+    const storedUser = localStorage.getItem("wingmanUser");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
+  useEffect(() => {
+    // Initialize from Supabase if user exists
+    if (user) {
+      loadChatHistory(user.id);
+    }
+  }, [user]);
+
+  // Load chat history from Supabase
+  const loadChatHistory = async (userId: string) => {
+    try {
+      console.log("Loading chat history from Supabase for user:", userId);
+      const history = await fetchChatHistory(userId);
+
+      if (history && history.length > 0) {
+        // Format the messages for display
+        const formattedMessages = history.map((msg) => ({
+          id: msg.id,
+          sender: msg.user_id === "wingman" ? "wingman" : "user",
+          text: msg.message,
+          timestamp: msg.timestamp,
+        }));
+
+        // Only replace initial messages if we have chat history
+        if (formattedMessages.length > 0) {
+          setMessages(formattedMessages);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load chat history:", error);
+    }
+  };
 
   useEffect(() => {
     if (window.electronAPI?.onMoodChange) {
       window.electronAPI.onMoodChange((mood: string) => {
         if (mood === "productive" || mood === "moody") {
-          setWingmanMood(mood);
+          setWingmanMood(mood as "productive" | "moody");
         }
       });
     }
@@ -57,54 +99,103 @@ const ChatBot = () => {
     });
   }, [messages]);
 
-  // Simulate LLM response (replace with real LLM call)
-  const getLLMResponse = async (userMsg: string) => {
-    // You can replace this with your LLM API call
-    if (humor === "funny") {
-      return "😄 That's hilarious! But here's what I think...";
+  useEffect(() => {
+    const initialMessage = location.state?.initialMessage;
+    if (initialMessage && !initialMessageHandled.current) {
+      handleSend(initialMessage);
+      initialMessageHandled.current = true;
     }
-    return "Here's my thoughtful response!";
+    // eslint-disable-next-line
+  }, [location.state?.initialMessage]);
+
+  // Get AI response to message
+  const getLLMResponse = async (userMsg: string) => {
+    try {
+      if (!user) return "Please log in first";
+
+      const timestamp = new Date().toISOString();
+      const response = await sendChatMessage(user.id, userMsg, timestamp);
+
+      return response.response || "Sorry, I didn't understand that.";
+    } catch (error) {
+      console.error("Failed to get response:", error);
+      return "Sorry, I encountered an error. Please try again.";
+    }
   };
 
+  // Send message and get response
   const handleSend = async (msg: string) => {
     if (!msg.trim()) return;
+
+    // If no user is logged in, we can't save to Supabase
+    if (!user) {
+      alert("Please log in to save your chat history.");
+      return;
+    }
+
+    const timestamp = new Date().toISOString();
+
+    // Create user message object
     const userMessage: Message = {
       id: Date.now(),
       sender: "user",
       text: msg,
+      timestamp,
     };
+
+    // Add to local state
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    // Simulate LLM response
-    const response = await getLLMResponse(msg);
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now() + 1, sender: "wingman", text: response },
-    ]);
+
+    try {
+      // Send to Supabase and get response
+      console.log("Sending message to Supabase:", msg);
+      const response = await sendChatMessage(user.id, msg, timestamp);
+
+      // Create bot message
+      const botMessage: Message = {
+        id: Date.now() + 1,
+        sender: "wingman",
+        text: response.response || "Sorry, I didn't understand that.",
+        timestamp: new Date().toISOString(),
+      };
+
+      // Add bot response to local state
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+
+      // Add error message if API call fails
+      const errorMessage: Message = {
+        id: Date.now() + 1,
+        sender: "wingman",
+        text: "Sorry, I encountered an error. Please try again later.",
+        timestamp: new Date().toISOString(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+    }
   };
 
   return (
     <section className="chatbot p-6 bg-dark rounded-lg shadow-md hover-glow-tile">
       <h1 className="text-light text-2xl font-semibold mb-4 flex items-center gap-3">
-        <span className="mood-icon-tooltip">
-          <img
-            src={moodIcons[wingmanMood] || productiveIcon}
-            alt={wingmanMood}
-            className={
-              wingmanMood === "productive" ? "run-away-on-hover" : "icon-rotate"
-            }
-            style={{ width: 38, height: 38, borderRadius: "50%" }}
-          />
-          <span className="mood-tooltip-text">
-            {moodLabels[wingmanMood] || "productive spirit"}
-          </span>
-        </span>
+        <img
+          src={moodIcons[wingmanMood]}
+          alt={`Wingman in ${moodLabels[wingmanMood]} mood`}
+          className="mood-icon"
+          style={{ width: "32px", height: "32px" }}
+        />
         Wingman
       </h1>
       <HumorSetting humor={humor} setHumor={setHumor} />
       <div ref={chatBoxRef} className="chatbot-messages">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} sender={msg.sender} text={msg.text} />
+        {messages.map((message) => (
+          <MessageBubble
+            key={message.id}
+            sender={message.sender}
+            text={message.text}
+          />
         ))}
         <div ref={chatEndRef} />
       </div>
@@ -123,8 +214,8 @@ const ChatBot = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <button type="submit" className="action-btn chatbot-send-btn">
-          <span>📤</span>
+        <button type="submit" className="chatbot-send-btn">
+          Send
         </button>
       </form>
     </section>

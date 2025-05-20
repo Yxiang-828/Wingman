@@ -1,25 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.core.database import get_db
+from fastapi import APIRouter, HTTPException
 from app.api.v1.schemas.task import TaskCreate, TaskUpdate, TaskInDB
-from app.services.tasks import task_crud
+from app.tasks.task import get_tasks_by_date, create_task, update_task, delete_task
 from typing import List
 from datetime import date
+import traceback
 
 router = APIRouter()
 
-@router.get("/tasks/{date}", response_model=List[TaskInDB])
-def get_tasks(date: date, db: Session = Depends(get_db)):
-    return task_crud.get_tasks_by_date(db, date)
+@router.get("/tasks", response_model=List[TaskInDB])
+def get_tasks(date: str):
+    result = get_tasks_by_date(date)
+    return result or []  # Always return a list
 
-@router.post("/tasks/", response_model=TaskInDB)
-def create_task(task: TaskCreate, db: Session = Depends(get_db)):
-    return task_crud.create_task(db, task)
+@router.post("/tasks", response_model=TaskInDB)
+def create_task_endpoint(task: TaskCreate):
+    try:
+        return create_task(task)
+    except Exception as e:
+        traceback.print_exc()  # Print the full traceback
+        raise HTTPException(status_code=500, detail=f"Error creating task: {str(e)}")
 
 @router.put("/tasks/{task_id}", response_model=TaskInDB)
-def update_task(task_id: int, task: TaskUpdate, db: Session = Depends(get_db)):
-    return task_crud.update_task(db, task_id, task)
+def update_task_endpoint(task_id: int, task: TaskUpdate):
+    return update_task(task_id, task)
 
 @router.delete("/tasks/{task_id}", response_model=TaskInDB)
-def delete_task(task_id: int, db: Session = Depends(get_db)):
-    return task_crud.delete_task(db, task_id)
+def delete_task_endpoint(task_id: int):
+    return delete_task(task_id)

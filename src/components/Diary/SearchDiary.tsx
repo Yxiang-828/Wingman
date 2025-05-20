@@ -1,30 +1,27 @@
 import React, { useState } from "react";
 import "./Diary.css";
-
-const dummyEntries = [
-  {
-    id: 1,
-    title: "Productive Day",
-    content: "Finished the frontend implementation...",
-    date: "2025-05-15",
-    mood: "excited",
-  },
-  {
-    id: 2,
-    title: "Weekend Plans",
-    content: "Thinking about visiting the new art exhibition...",
-    date: "2025-05-14",
-    mood: "happy",
-  },
-];
+import { fetchDiaryEntries } from "../../api/Diary";
+import type { DiaryEntry } from "../../api/Diary";
 
 const SearchDiary: React.FC = () => {
   const [query, setQuery] = useState("");
-  const results = dummyEntries.filter(
-    entry =>
-      entry.title.toLowerCase().includes(query.toLowerCase()) ||
-      entry.content.toLowerCase().includes(query.toLowerCase())
-  );
+  const [results, setResults] = useState<DiaryEntry[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  const handleSearch = async () => {
+    setSearching(true);
+    // For demo: fetch today's entries and filter client-side
+    const today = new Date().toISOString().slice(0, 10);
+    const allEntries = await fetchDiaryEntries(today);
+    setResults(
+      allEntries.filter(
+        (entry) =>
+          entry.title.toLowerCase().includes(query.toLowerCase()) ||
+          entry.content.toLowerCase().includes(query.toLowerCase())
+      )
+    );
+    setSearching(false);
+  };
 
   return (
     <div className="diary-card">
@@ -33,11 +30,18 @@ const SearchDiary: React.FC = () => {
         type="text"
         placeholder="Search entries..."
         value={query}
-        onChange={e => setQuery(e.target.value)}
+        onChange={(e) => setQuery(e.target.value)}
         className="diary-search"
       />
+      <button
+        onClick={handleSearch}
+        className="action-btn"
+        disabled={searching}
+      >
+        {searching ? "Searching..." : "Search"}
+      </button>
       <ul>
-        {results.map(entry => (
+        {results.map((entry) => (
           <li key={entry.id} className="diary-entry">
             <h3>{entry.title}</h3>
             <p className="diary-date">{entry.date}</p>

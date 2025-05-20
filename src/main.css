@@ -212,6 +212,23 @@ button:focus-visible {
   box-shadow: 0 0 10px var(--glow-secondary);
 }
 
+/* Replace button with .basic-button */
+.basic-button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+.basic-button:hover {
+  border-color: #646cff;
+}
+
 /* Action button styles */
 .action-btn {
   background-color: var(--accent-primary);
@@ -548,4 +565,26 @@ input:focus, textarea:focus, select:focus {
   .sidebar * {
   color: #fff !important;
 }
+}
+
+/* Add these specific styles to ensure Calendar buttons work properly */
+.calendar-btn,
+.day-form-btn,
+.day-nav-btn,
+.hour-btn {
+  background: rgba(30, 30, 50, 0.6);
+  color: white;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.calendar-btn:hover,
+.day-form-btn:hover,
+.day-nav-btn:hover,
+.hour-btn:hover {
+  transform: translateY(-2px) rotate(2deg);
+  box-shadow: 0 0 12px rgba(100, 108, 255, 0.6);
+  background: rgba(30, 30, 50, 0.7) !important; /* Force this to override globals */
+  border-color: rgba(100, 108, 255, 0.4);
 }
