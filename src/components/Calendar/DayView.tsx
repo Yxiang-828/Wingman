@@ -66,42 +66,40 @@ const DayView: React.FC = () => {
   useEffect(() => {
     try {
       const query = new URLSearchParams(location.search);
-      const dateParam = query.get("date");
-      const focusParam = query.get("focus"); // Get focus parameter
-      
-      // Parse highlight parameter (for highlighting items)
+      const dateStr = query.get("date");
       const highlight = query.get("highlight");
+
       if (highlight) {
         setHighlightId(highlight);
-      }
-      
-      // Set active tab based on focus parameter
-      if (focusParam === "events") {
-        setActiveTab("events");
-      } else if (focusParam === "tasks") {
-        setActiveTab("tasks");
-      }
-      
-      // Parse date
-      if (dateParam) {
-        const newDate = new Date(dateParam);
-        if (!isNaN(newDate.getTime())) {
-          setDate(newDate);
-          const dateStr = newDate.toISOString().split('T')[0];
-          fetchData(dateStr);
-        } else {
-          setDateError("Invalid date format");
+        // Set the active tab based on what's being highlighted
+        if (highlight.startsWith("task-")) {
+          setActiveTab("tasks");
+        } else if (highlight.startsWith("event-")) {
+          setActiveTab("events");
         }
-      } else {
-        // Default to today if no date specified
-        const today = new Date();
-        setDate(today);
-        const dateStr = today.toISOString().split('T')[0];
+      }
+
+      if (dateStr) {
+        const [year, month, day] = dateStr.split("-").map(Number);
+        // Create date with noon UTC time to avoid timezone issues
+        const newDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+        setDate(newDate);
+        // Fetch data for this date
         fetchData(dateStr);
+      } else {
+        // Default to today if no date provided
+        const today = new Date();
+        const todayStr = today.toISOString().split("T")[0];
+        setDate(today);
+        fetchData(todayStr);
       }
     } catch (err) {
-      console.error("Error parsing URL parameters:", err);
-      setDateError("Error parsing parameters");
+      console.error("Error parsing date:", err);
+      setDateError("Invalid date format in URL");
+      // Default to today
+      const today = new Date();
+      setDate(today);
+      fetchData(today.toISOString().split("T")[0]);
     }
   }, [location.search]);
 
@@ -567,19 +565,6 @@ const DayView: React.FC = () => {
     }
   };
 
-  // Add these navigation handlers
-  const navigateToCompleted = () => {
-    navigate('/completed-tasks');
-  };
-
-  const navigateToPendingTasks = () => {
-    navigate('/notifications?tab=task');
-  };
-
-  const navigateToEvents = () => {
-    navigate('/notifications?tab=event');
-  };
-
   // Return the UI
   return (
     <div className="day-view-container">
@@ -605,27 +590,27 @@ const DayView: React.FC = () => {
       </div>
 
       <div className="day-view-stats">
-        <div className="day-stat-card" onClick={navigateToEvents}>
+        <div className="day-stat-card">
           <div className="day-stat-icon">📅</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.events}</div>
             <div className="day-stat-label">Events</div>
           </div>
         </div>
-        
-        <div className="day-stat-card" onClick={navigateToCompleted}>
+
+        <div className="day-stat-card">
           <div className="day-stat-icon">✓</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.completedTasks}</div>
-            <div className="day-stat-label">Completed Tasks</div>
+            <div className="day-stat-label">Completed</div>
           </div>
         </div>
-        
-        <div className="day-stat-card" onClick={navigateToPendingTasks}>
+
+        <div className="day-stat-card">
           <div className="day-stat-icon">⏳</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.pendingTasks}</div>
-            <div className="day-stat-label">Pending Tasks</div>
+            <div className="day-stat-label">Pending</div>
           </div>
         </div>
       </div>
@@ -693,7 +678,6 @@ const DayView: React.FC = () => {
                   <TimeInput
                     value={newEvent.time}
                     onChange={(time) => setNewEvent({ ...newEvent, time })}
-                    placeholder="Event time (HH:MM)"
                   />
                 </div>
                 <div className="day-form-group full-width">
@@ -885,7 +869,7 @@ const DayView: React.FC = () => {
                     onChange={(time) =>
                       setNewTask((prev) => ({ ...prev, time }))
                     }
-                    placeholder="Task time (optional)"
+                    placeholder="Time by ... (24h)"
                   />
                 </div>
               </div>
