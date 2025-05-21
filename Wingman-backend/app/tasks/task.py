@@ -5,7 +5,7 @@ from app.core.supabase import supabase
 def get_tasks_by_date(date_str):
     try:
         # Ensure consistent date format handling
-        response = supabase.table("tasks").select("*").eq("date", date_str).execute()
+        response = supabase.table("tasks").select("*").eq("task_date", date_str).execute()
         return response.data
     except Exception as e:
         print(f"Error fetching tasks: {e}")
@@ -18,6 +18,11 @@ def create_task(task: TaskCreate):
         if isinstance(data["date"], date):
             data["date"] = data["date"].isoformat()
         
+        # Map "date" to "task_date" when sending to the database
+        if "date" in data:
+            data["task_date"] = data["date"]
+            del data["date"]  # Remove original "date" field
+            
         print(f"Creating task with data: {data}")
         response = supabase.table("tasks").insert(data).execute()
         
@@ -26,8 +31,8 @@ def create_task(task: TaskCreate):
         else:
             print(f"No data returned from insert: {response}")
             # Return something to avoid None errors
-            return {"id": 0, "date": data["date"], "text": data["text"], 
-                   "time": data["time"], "completed": data["completed"]}
+            return {"id": 0, "task_date": data["task_date"], "text": data["text"], 
+                   "task_time": data.get("task_time", ""), "completed": data["completed"]}
     except Exception as e:
         print(f"Error creating task: {e}")
         raise  # Re-raise to see the actual error

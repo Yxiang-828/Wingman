@@ -5,13 +5,19 @@ def get_events_by_date(date_value):
     # Accepts string or date
     if isinstance(date_value, date):
         date_value = date_value.isoformat()
-    response = supabase.table("calendar_events").select("*").eq("date", date_value).execute()
+    response = supabase.table("calendar_events").select("*").eq("event_date", date_value).execute()
     return response.data
 
 def create_event(event):
     data = dict(event)
     if "date" in data and isinstance(data["date"], date):
         data["date"] = data["date"].isoformat()
+        
+    # Map to correct field name in database
+    if "date" in data:
+        data["event_date"] = data["date"]
+        del data["date"]
+        
     response = supabase.table("calendar_events").insert(data).execute()
     return response.data[0] if response.data else None
 

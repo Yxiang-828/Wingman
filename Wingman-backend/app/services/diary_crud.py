@@ -3,9 +3,10 @@ from app.core.supabase import supabase
 from app.api.v1.schemas.diary import DiaryCreate, DiaryUpdate
 
 def get_entries_by_date(date_value):
+    # Accepts string or date
     if isinstance(date_value, date):
         date_value = date_value.isoformat()
-    response = supabase.table("diary_entries").select("*").eq("date", date_value).execute()
+    response = supabase.table("diary_entries").select("*").eq("entry_date", date_value).execute()
     return response.data
 
 def create_entry(entry: DiaryCreate):
