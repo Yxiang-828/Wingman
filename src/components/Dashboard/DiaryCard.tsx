@@ -1,38 +1,63 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiary } from "../../context/DiaryContext";
+import DiaryDetailPopup from "../Diary/DiaryDetailPopup";
+import { formatDate } from "../../utils/dateUtils";
+import { truncateText } from "../../utils/helpers";
 import "./Dashboard.css";
 
-const DiaryCard: React.FC = () => {
+interface DiaryCardProps {
+  entries?: any[]; // Make entries optional
+}
+
+const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
   const navigate = useNavigate();
-  const { entries, loading } = useDiary();
-  const [recentEntries, setRecentEntries] = useState<any[]>([]);
+  const { entries, loading, deleteEntry, refreshEntries } = useDiary();
+  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
+  const dashboardRef = useRef<HTMLElement | null>(null);
+  const [displayEntries, setDisplayEntries] = useState<any[]>([]);
 
+  // Find dashboard container for modal positioning
   useEffect(() => {
-    if (!loading && entries.length > 0) {
-      // Sort by date, newest first, and take the first 2
-      const sorted = [...entries]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 2);
+    dashboardRef.current = document.querySelector('.dashboard') || 
+                           document.querySelector('.dashboard-container') || 
+                           document.getElementById('dashboard');
+  }, []);
 
-      // Format for display
-      const formatted = sorted.map((entry) => ({
-        id: entry.id,
-        title: entry.title,
-        preview:
-          entry.content.length > 100
-            ? entry.content.substring(0, 100) + "..."
-            : entry.content,
-        date: new Date(entry.date).toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-      }));
-
-      setRecentEntries(formatted);
+  // If entries are passed as props, use those; otherwise, use entries from context
+  useEffect(() => {
+    // Display recent diary entries summary in dashboard
+    // Fetch diary entries and map them here with title + date + snippet
+    if (propEntries && propEntries.length > 0) {
+      setDisplayEntries(propEntries.slice(0, 3));  // Show at most 3 entries
+    } else if (entries && entries.length > 0) {
+      // Sort entries by date (newest first) and take the most recent ones
+      const sortedEntries = [...entries].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      setDisplayEntries(sortedEntries.slice(0, 3));  // Show at most 3 entries
+    } else {
+      setDisplayEntries([]);
     }
-  }, [entries, loading]);
+  }, [propEntries, entries]);
+
+  // Refresh diary entries when component mounts
+  useEffect(() => {
+    refreshEntries();
+  }, []);
+
+  const handleEntryClick = (entry: any) => {
+    setSelectedEntry(entry);
+  };
+
+  const handleDelete = (id: number) => {
+    deleteEntry(id);
+    setSelectedEntry(null);
+  };
+
+  const handleEdit = (id: number) => {
+    navigate(`/diary/edit?id=${id}`); // Make sure we use the correct path
+  };
 
   return (
     <div className="dashboard-card diary-card">
@@ -46,22 +71,27 @@ const DiaryCard: React.FC = () => {
         </button>
       </div>
       {loading ? (
-        <div className="loading-indicator">Loading entries...</div>
-      ) : recentEntries.length > 0 ? (
+        <div className="card-loading">Loading entries...</div>
+      ) : displayEntries && displayEntries.length > 0 ? (
         <ul className="entries-list">
-          {recentEntries.map((entry) => (
-            <li key={entry.id} className="entry-item">
+          {displayEntries.map((entry) => (
+            <li
+              key={entry.id}
+              className="entry-item"
+              onClick={() => handleEntryClick(entry)}
+            >
               <div className="entry-header">
                 <h3>{entry.title}</h3>
-                <span className="entry-date">{entry.date}</span>
+                <span className="entry-date">
+                  {formatDate(entry.date)}
+                </span>
               </div>
-              <p className="entry-preview">{entry.preview}</p>
-              <button 
-                className="entry-read-more"
-                onClick={() => navigate(`/diary/view?id=${entry.id}`)}
-              >
-                Read more
-              </button>
+              <p className="entry-preview">
+                {truncateText(entry.content, 100)}
+              </p>
+              <div className="entry-actions">
+                <span className="entry-read-more">Read more</span>
+              </div>
             </li>
           ))}
         </ul>
@@ -75,6 +105,17 @@ const DiaryCard: React.FC = () => {
             Write First Entry
           </button>
         </div>
+      )}
+
+      {/* Popup for diary entry details - now using the dashboard container */}
+      {selectedEntry && (
+        <DiaryDetailPopup
+          entry={selectedEntry}
+          onClose={() => setSelectedEntry(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          container={dashboardRef.current || undefined}
+        />
       )}
     </div>
   );

@@ -1,14 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import type { Task } from '../../api/Task'; // Import as type
-import type { CalendarEvent } from '../../api/Calendar'; // Import as type
-import { format } from 'date-fns'; // For date formatting
+import type { Task } from '../../api/Task';
+import type { CalendarEvent } from '../../api/Calendar';
+import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import Portal from './Portal';
 import './DetailPopup.css';
 
 interface DetailPopupProps {
   item: Task | CalendarEvent;
   onClose: () => void;
   onComplete?: (taskId: number) => Promise<void>;
+  container?: HTMLElement;
 }
 
 // Function to check if an object is a Task
@@ -26,7 +28,7 @@ const formatDateDisplay = (dateStr: string): string => {
   }
 };
 
-const DetailPopup: React.FC<DetailPopupProps> = ({ item, onClose, onComplete }) => {
+const DetailPopup: React.FC<DetailPopupProps> = ({ item, onClose, onComplete, container }) => {
   const navigate = useNavigate();
   const popupRef = useRef<HTMLDivElement>(null);
   
@@ -45,24 +47,44 @@ const DetailPopup: React.FC<DetailPopupProps> = ({ item, onClose, onComplete }) 
   }, [onClose]);
   
   // Navigate to day view with this item highlighted
-  const navigateToItem = () => {
+  const navigateToItem = (e: React.MouseEvent) => {
+    // Stop event propagation to prevent the overlay click from firing
+    e.stopPropagation();
+    
     const type = isTask(item) ? 'task' : 'event';
     navigate(`/calendar/day?date=${item.date}&highlight=${type}-${item.id}`);
     onClose();
   };
   
   // Complete task if applicable
-  const handleCompleteTask = async () => {
+  const handleCompleteTask = async (e: React.MouseEvent) => {
+    // Stop event propagation to prevent the overlay click from firing
+    e.stopPropagation();
+    
     if (isTask(item) && onComplete) {
-      await onComplete(item.id);
-      onClose();
+      try {
+        await onComplete(item.id);
+        onClose();
+      } catch (error) {
+        console.error("Error completing task:", error);
+      }
     }
   };
   
-  return (
+  const popupContent = (
+    // Remove the onClick from the overlay div to prevent it from capturing all clicks
     <div className="detail-popup-overlay">
-      <div ref={popupRef} className="detail-popup">
-        <button className="detail-popup-close" onClick={onClose}>×</button>
+      {/* Add stopPropagation to the popup div to prevent clicks from bubbling up */}
+      <div ref={popupRef} className="detail-popup" onClick={(e) => e.stopPropagation()}>
+        <button 
+          className="detail-popup-close" 
+          onClick={(e) => {
+            e.stopPropagation(); 
+            onClose();
+          }}
+        >
+          ×
+        </button>
         
         {isTask(item) ? (
           // Task details
@@ -81,7 +103,9 @@ const DetailPopup: React.FC<DetailPopupProps> = ({ item, onClose, onComplete }) 
               {item.time && <div className="detail-time">Time: {item.time}</div>}
               
               <div className="detail-popup-actions">
-                {!item.completed && (
+                {/* Ensure buttons inside modal retain full functionality */}
+                {/* Don't break React onClick handlers or context */}
+                {!item.completed && onComplete && (
                   <button 
                     className="detail-action-btn complete"
                     onClick={handleCompleteTask}
@@ -134,6 +158,9 @@ const DetailPopup: React.FC<DetailPopupProps> = ({ item, onClose, onComplete }) 
       </div>
     </div>
   );
+  
+  // Render using Portal
+  return <Portal container={container}>{popupContent}</Portal>;
 };
 
 export default DetailPopup;

@@ -5,19 +5,26 @@ import React, {
   useEffect,
   type ReactNode,
 } from "react";
-import type { DiaryEntry } from "../api/Diary";
-import { fetchDiaryEntries, addDiaryEntry, updateDiaryEntry, deleteDiaryEntry } from "../api/Diary";
+import {
+  fetchDiaryEntries,
+  fetchDiaryEntry,
+  addDiaryEntry,
+  updateDiaryEntry,
+  deleteDiaryEntry,
+  type DiaryEntry,
+} from "../api/Diary";
 
-interface DiaryContextType {
+interface DiaryContextProps {
   entries: DiaryEntry[];
   loading: boolean;
-  addEntry: (entry: Omit<DiaryEntry, "id">) => Promise<DiaryEntry>;
-  updateEntry: (entry: DiaryEntry) => Promise<DiaryEntry>;
-  deleteEntry: (id: number) => Promise<void>;
   refreshEntries: () => Promise<void>;
+  getEntryById: (id: number) => Promise<DiaryEntry>;
+  addEntry: (entry: Omit<DiaryEntry, "id">) => Promise<DiaryEntry>;
+  updateEntry: (id: number, entry: Partial<DiaryEntry>) => Promise<DiaryEntry>;
+  deleteEntry: (id: number) => Promise<void>;
 }
 
-const DiaryContext = createContext<DiaryContextType | null>(null);
+const DiaryContext = createContext<DiaryContextProps | null>(null);
 
 export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -25,53 +32,75 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    refreshEntries();
+  }, []);
+
   const refreshEntries = async () => {
     setLoading(true);
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const data = await fetchDiaryEntries(today);
+      const data = await fetchDiaryEntries();
       setEntries(data);
     } catch (error) {
-      console.error("Failed to fetch diary entries:", error);
+      console.error("Error fetching diary entries:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const addEntry = async (
-    entry: Omit<DiaryEntry, "id">
-  ): Promise<DiaryEntry> => {
-    const newEntry = await addDiaryEntry(entry);
-    setEntries((prev) => [...prev, newEntry]);
-    return newEntry;
+  const getEntryById = async (id: number) => {
+    try {
+      const entry = await fetchDiaryEntry(id);
+      return entry;
+    } catch (error) {
+      console.error(`Error fetching diary entry ${id}:`, error);
+      throw error;
+    }
   };
 
-  const updateEntry = async (entry: DiaryEntry): Promise<DiaryEntry> => {
-    const updatedEntry = await updateDiaryEntry(entry);
-    setEntries((prev) =>
-      prev.map((e) => (e.id === entry.id ? updatedEntry : e))
-    );
-    return updatedEntry;
+  const addEntry = async (entry: Omit<DiaryEntry, "id">) => {
+    try {
+      const newEntry = await addDiaryEntry(entry);
+      await refreshEntries(); // Refresh the entries list
+      return newEntry;
+    } catch (error) {
+      console.error("Error adding diary entry:", error);
+      throw error;
+    }
   };
 
-  const deleteEntry = async (id: number): Promise<void> => {
-    await deleteDiaryEntry(id);
-    setEntries((prev) => prev.filter((e) => e.id !== id));
+  const updateEntry = async (id: number, entry: Partial<DiaryEntry>) => {
+    try {
+      const updatedEntry = await updateDiaryEntry(id, entry);
+      await refreshEntries(); // Refresh the entries list
+      return updatedEntry;
+    } catch (error) {
+      console.error(`Error updating diary entry ${id}:`, error);
+      throw error;
+    }
   };
 
-  useEffect(() => {
-    refreshEntries();
-  }, []);
+  const deleteEntry = async (id: number) => {
+    try {
+      await deleteDiaryEntry(id);
+      // Update local state without refreshing from server
+      setEntries(entries.filter((entry) => entry.id !== id));
+    } catch (error) {
+      console.error(`Error deleting diary entry ${id}:`, error);
+      throw error;
+    }
+  };
 
   return (
     <DiaryContext.Provider
       value={{
         entries,
         loading,
+        refreshEntries,
+        getEntryById,
         addEntry,
         updateEntry,
         deleteEntry,
-        refreshEntries,
       }}
     >
       {children}

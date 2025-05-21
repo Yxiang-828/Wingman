@@ -1,20 +1,24 @@
 from pydantic import BaseModel
+from typing import Optional
 from datetime import date
 
 class DiaryBase(BaseModel):
-    date: date
+    entry_date: date
     title: str
     content: str
-    mood: str = "neutral"
+    mood: Optional[str] = None
 
 class DiaryCreate(DiaryBase):
-    pass
+    user_id: str
 
 class DiaryUpdate(DiaryBase):
-    pass
+    entry_date: Optional[date] = None
+    title: Optional[str] = None
+    content: Optional[str] = None
 
 class DiaryInDB(DiaryBase):
     id: int
-
+    user_id: str
+    
     class Config:
         orm_mode = True

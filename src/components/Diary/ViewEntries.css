@@ -1,0 +1,283 @@
+.view-entries-container {
+  max-width: 800px;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.view-entries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  padding-bottom: 1rem;
+}
+
+.view-entries-header h2 {
+  font-size: 1.8rem;
+  margin: 0;
+  background: linear-gradient(90deg, #fff, #b8b9ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.view-entries-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.search-entries-btn,
+.write-entry-btn {
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 0.95rem;
+}
+
+.search-entries-btn {
+  background: rgba(30, 30, 50, 0.5);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  color: white;
+}
+
+.search-entries-btn:hover {
+  background: rgba(30, 30, 50, 0.7);
+  transform: translateY(-2px);
+}
+
+.write-entry-btn {
+  background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
+  border: none;
+  color: white;
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+.write-entry-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+}
+
+/* Month groups */
+.entries-by-month {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.month-group {
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(25, 25, 45, 0.3);
+  transition: all 0.3s ease;
+}
+
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(30, 30, 50, 0.5);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.month-header:hover {
+  background: rgba(30, 30, 50, 0.7);
+}
+
+.month-header h3 {
+  font-size: 1.2rem;
+  margin: 0;
+  color: white;
+  font-weight: 600;
+}
+
+.entry-count {
+  font-size: 0.85rem;
+  background: rgba(30, 30, 50, 0.6);
+  padding: 0.3rem 0.6rem;
+  border-radius: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.expand-indicator {
+  font-size: 0.8rem;
+  color: rgba(100, 108, 255, 0.8);
+  transition: transform 0.3s ease;
+}
+
+.month-header.expanded .expand-indicator {
+  transform: rotate(180deg);
+}
+
+.month-entries {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out;
+}
+
+.month-entries.expanded {
+  max-height: 2000px; /* Large enough to contain content */
+}
+
+/* Entry preview cards */
+.diary-entry-preview {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.diary-entry-preview:last-child {
+  border-bottom: none;
+}
+
+.diary-entry-preview:hover {
+  background: rgba(30, 30, 50, 0.3);
+  transform: translateX(5px);
+}
+
+.entry-preview-header {
+  margin-bottom: 0.75rem;
+}
+
+.entry-preview-date-mood {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.entry-preview-date {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.2rem 0.5rem;
+  background: rgba(30, 30, 50, 0.4);
+  border-radius: 4px;
+}
+
+.entry-preview-mood {
+  font-size: 1.2rem;
+}
+
+.entry-preview-title {
+  font-size: 1.2rem;
+  margin: 0;
+  color: white;
+  font-weight: 600;
+}
+
+.entry-preview-content {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.75rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.entry-preview-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.read-more {
+  font-size: 0.9rem;
+  color: rgba(100, 108, 255, 0.8);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.diary-entry-preview:hover .read-more {
+  color: rgba(100, 108, 255, 1);
+  transform: translateX(3px);
+}
+
+/* Success message */
+.success-message {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: rgba(74, 222, 128, 0.9);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  animation: fade-in-up 0.5s ease forwards;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  color: white;
+  transform: rotate(90deg);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Loading and empty states */
+.diary-loading {
+  text-align: center;
+  padding: 3rem 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .view-entries-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .view-entries-actions {
+    width: 100%;
+  }
+  
+  .search-entries-btn,
+  .write-entry-btn {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .month-header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .diary-entry-preview {
+    padding: 1rem;
+  }
+}

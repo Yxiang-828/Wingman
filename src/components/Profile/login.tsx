@@ -34,6 +34,28 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     setLoading(true);
     setError(null);
     try {
+      // === DEV BYPASS === (remove in production)
+      // If the username is "demo" and password is "123456", log in without API call
+      if (username === "demo" && password === "123456") {
+        const demoUser = {
+          id: "ae2e87ae-ecf5-4c21-a739-bea18996af15", // Demo user ID
+          username: "demo",
+          name: "Demo User",
+          email: "demo@example.com",
+        };
+
+        // Store the user in localStorage
+        localStorage.setItem("user", JSON.stringify(demoUser));
+
+        // Call the onLogin callback with the user object
+        onLogin(demoUser);
+
+        // Navigate to the dashboard
+        navigate("/", { state: { showGreeting: true } });
+        return;
+      }
+
+      // Normal API login flow for non-demo users
       const res = await fetch("/api/v1/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

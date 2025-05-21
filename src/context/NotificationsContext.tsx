@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useData } from './DataContext';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import type { Task } from '../api/Task'; // Import as type
 import type { CalendarEvent } from '../api/Calendar'; // Import as type
+import DetailPopup from '../components/Common/DetailPopup'; // Add this import
+import { useData } from './DataContext';
 import { format } from 'date-fns'; // For date formatting
 
 // Define the notification type structure
@@ -41,6 +42,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [readMap, setReadMap] = useState<Record<string, boolean>>({});
   const [dismissedIds, setDismissedIds] = useState<string[]>([]);
   const [currentPopupItem, setCurrentPopupItem] = useState<Task | CalendarEvent | null>(null);
+  const dashboardRef = useRef<HTMLElement | null>(null);
   
   // Calculate unread count
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -187,6 +189,13 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
   
+  // When the component mounts, find the dashboard container
+  useEffect(() => {
+    dashboardRef.current = document.querySelector('.dashboard') || 
+                           document.querySelector('.dashboard-container') || 
+                           document.getElementById('dashboard');
+  }, []);
+  
   // Show popup for task or event
   const showPopupFor = (item: Task | CalendarEvent) => {
     setCurrentPopupItem(item);
@@ -215,6 +224,14 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       }}
     >
       {children}
+      {currentPopupItem && (
+        <DetailPopup 
+          item={currentPopupItem} 
+          onClose={closePopup}
+          onComplete={completeTask}
+          container={dashboardRef.current || undefined}
+        />
+      )}
     </NotificationsContext.Provider>
   );
 };

@@ -1,53 +1,44 @@
 .mood-selector {
-  margin-bottom: 1rem;
-  width: 100%;
-}
-
-.mood-emoji-container {
   display: flex;
-  justify-content: space-between;
   gap: 0.5rem;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
-.mood-emoji-item {
+.mood-option {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0.5rem;
+  border-radius: 10px;
   cursor: pointer;
-  padding: 0.75rem 0.5rem;
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  background: rgba(30, 30, 50, 0.3);
-  border: 2px solid transparent;
-  flex: 1;
+  transition: all 0.2s ease;
+  min-width: 60px;
+  border: 1px solid rgba(100, 108, 255, 0.1);
+  background: rgba(30, 30, 50, 0.4);
 }
 
-.mood-emoji-item:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  background: rgba(40, 40, 60, 0.4);
-}
-
-.mood-emoji-item.selected {
-  border-color: #646cff;
+.mood-option:hover {
   background: rgba(100, 108, 255, 0.15);
-  box-shadow: 0 5px 20px rgba(100, 108, 255, 0.25);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+}
+
+.mood-option.selected {
+  background: rgba(100, 108, 255, 0.25);
+  border: 1px solid rgba(100, 108, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.1);
 }
 
 .mood-emoji {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  animation: pulse 2s infinite ease-in-out;
-}
-
-.mood-emoji-item:hover .mood-emoji {
-  animation: wobble 1s ease;
+  font-size: 1.3rem;
+  margin-bottom: 0.25rem;
 }
 
 .mood-label {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
 }
 
 /* Animations */
@@ -77,5 +68,20 @@
   
   .mood-emoji {
     font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mood-option {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .mood-emoji {
+    font-size: 1.5rem;
+  }
+  
+  .mood-label {
+    font-size: 0.7rem;
   }
 }

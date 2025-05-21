@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { DataProvider } from "./context/DataContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
@@ -16,6 +17,7 @@ import Diary from "./components/Diary/index";
 import WriteEntry from "./components/Diary/WriteEntry";
 import ViewEntries from "./components/Diary/ViewEntries";
 import SearchDiary from "./components/Diary/SearchDiary";
+import EditEntry from "./components/Diary/EditEntry";
 import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
 import Profile from "./Pages/Profile";
@@ -26,11 +28,13 @@ import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";
 import { startNotificationCleanupService } from './services/NotificationCleanupService';
 import "./main.css";
+import './styles/scrollbars.css';
 
 // Create an AppContent component that will be inside the Router
 const AppContent = () => {
   const [user, setUser] = useState<any>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const location = useLocation();
 
   // Listen for sidebar visibility changes
   useEffect(() => {
@@ -46,34 +50,11 @@ const AppContent = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const checkUserSession = async () => {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          const user = JSON.parse(storedUser);
-          
-          // Optional: Verify if the user's session is still valid
-          // This could be a simple API call to verify the user ID exists
-          const response = await fetch(`/api/v1/user/verify?id=${user.id}`);
-          if (!response.ok) {
-            // User session is invalid
-            console.warn("User session is invalid, redirecting to login");
-            localStorage.removeItem('user');
-            setUser(null);
-          }
-        } catch (e) {
-          console.error("Error checking user session:", e);
-          localStorage.removeItem('user');
-          setUser(null);
-        }
-      }
-    };
-    
-    checkUserSession();
-  }, []);
-
-  if (!user) {
+  // Add /login route to the excluded paths
+  const isLoginPage = location.pathname === '/login';
+  
+  // Always show login unless user is authenticated
+  if (!user && !isLoginPage) {
     return <Login onLogin={setUser} />;
   }
 
@@ -89,6 +70,7 @@ const AppContent = () => {
           <Header />
           <main className="flex-1 p-6 overflow-auto">
             <Routes>
+              <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/" element={<Dashboard />} />
               <Route path="/calendar/*" element={<Calendar />} />
@@ -101,6 +83,7 @@ const AppContent = () => {
                 <Route path="write" element={<WriteEntry />} />
                 <Route path="view" element={<ViewEntries />} />
                 <Route path="search" element={<SearchDiary />} />
+                <Route path="edit" element={<EditEntry />} />
               </Route>
               <Route path="/home" element={<Home />} />
               {/* Redirect all unknown routes to login or dashboard */}

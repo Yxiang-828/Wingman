@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
 import { useNotifications } from "../../context/NotificationsContext";
@@ -12,8 +12,18 @@ interface TasksCardProps {
 
 const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const navigate = useNavigate();
+  const dashboardRef = useRef<HTMLDivElement | null>(null);
   const { showPopupFor, currentPopupItem, closePopup, completeTask } =
     useNotifications();
+
+  // Get reference to dashboard container for modal positioning
+  useEffect(() => {
+    // Find the dashboard container
+    dashboardRef.current =
+      document.querySelector(".dashboard") ||
+      document.querySelector(".dashboard-container") ||
+      document.getElementById("dashboard");
+  }, []);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -74,6 +84,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           item={currentPopupItem}
           onClose={closePopup}
           onComplete={completeTask}
+          container={dashboardRef.current || undefined}
         />
       )}
     </div>
