@@ -863,3 +863,87 @@
   box-shadow: 0 0 12px rgba(100, 108, 255, 0.6);
   background: transparent;
 }
+
+/* Add these styles to your Calendar.css file */
+
+/* Edit form styling */
+.task-edit-form,
+.event-edit-form {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.edit-form-grid textarea,
+.edit-form-grid input,
+.edit-form-grid select {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  background: rgba(25, 25, 45, 0.5);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.edit-form-grid textarea {
+  grid-column: span 2;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.edit-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.edit-save-btn,
+.edit-cancel-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-save-btn {
+  background: rgba(74, 222, 128, 0.2);
+  color: #a7f3c1;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.edit-save-btn:hover {
+  background: rgba(74, 222, 128, 0.3);
+  transform: translateY(-1px);
+}
+
+.edit-cancel-btn {
+  background: rgba(255, 77, 77, 0.1);
+  color: rgba(255, 150, 150, 0.9);
+  border: 1px solid rgba(255, 77, 77, 0.2);
+}
+
+.edit-cancel-btn:hover {
+  background: rgba(255, 77, 77, 0.2);
+}
+
+/* Task/Event action button styles */
+.task-btn.edit,
+.event-btn.edit {
+  background: rgba(100, 108, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.task-btn.edit:hover,
+.event-btn.edit:hover {
+  background: rgba(100, 108, 255, 0.3);
+  color: white;
+}

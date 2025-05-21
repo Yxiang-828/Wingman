@@ -41,10 +41,10 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     if (!user.id) {
-      throw new Error('No user ID found for event creation');
+      throw new Error('You must be logged in to create events');
     }
     
-    console.log("Adding event:", event);
+    console.log("Adding event with user ID:", user.id);
     
     // Ensure date is properly formatted and user_id is included
     const formattedEvent = {
@@ -61,6 +61,15 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
       body: JSON.stringify(formattedEvent),
     });
     
+    if (response.status === 404 && response.statusText.includes("User")) {
+      // Special handling for user not found - suggest logging in again
+      alert("Your user session is invalid. Please log out and log in again.");
+      
+      // Auto-redirect to login
+      window.location.href = '/login';
+      throw new Error('User session expired. Please log in again.');
+    }
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Server error response:", errorText);
@@ -74,39 +83,62 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
   }
 };
 
+export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
+  try {
+    console.log("API: Updating event:", event);
+    
+    // Create a copy and remove the id field to prevent Supabase identity column error
+    const { id, ...eventData } = event;
+    
+    // Make sure we're including the user ID
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.id) {
+      eventData.user_id = user.id;
+    }
+    
+    const response = await fetch(`/api/v1/calendar/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventData),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error response:", errorText);
+      throw new Error(`Failed to update event: ${response.status} ${response.statusText}`);
+    }
+    
+    const result = await response.json();
+    
+    // Handle the special case where we got a success message but not the full event
+    if (result.message && !result.title) {
+      // Return the original event with any updates applied
+      return { ...event, ...result };
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error updating event:', error);
+    throw error;
+  }
+};
+
 export const deleteEvent = async (id: number): Promise<void> => {
   try {
+    console.log("API: Deleting event:", id);
     const response = await fetch(`/api/v1/calendar/${id}`, {
       method: 'DELETE',
     });
     
     if (!response.ok) {
-      throw new Error('Failed to delete event');
+      const errorText = await response.text();
+      console.error("Server error response:", errorText);
+      throw new Error(`Failed to delete event: ${response.status} ${response.statusText}`);
     }
   } catch (error) {
     console.error('Error deleting event:', error);
-    throw error;
-  }
-};
-
-// Make sure this function exists and is properly exported
-export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
-  try {
-    const response = await fetch(`/api/v1/calendar/${event.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(event),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to update event');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error updating event:', error);
     throw error;
   }
 };

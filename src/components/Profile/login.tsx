@@ -41,6 +41,10 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       });
       if (!res.ok) throw new Error("Invalid username or password");
       const user = await res.json();
+
+      // Store the full user object in localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+
       onLogin(user);
       navigate("/", { state: { showGreeting: true } });
     } catch (err: any) {
@@ -61,6 +65,10 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     }
     try {
       const user = await registerUser(name, password, email);
+
+      // Store the full user object in localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+
       onLogin(user);
       navigate("/profile", { state: { showSetup: true } });
     } catch (err: any) {

@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { DataProvider } from "./context/DataContext";
+import { NotificationsProvider } from "./context/NotificationsContext";
 import { DiaryProvider } from "./context/DiaryContext";
 import Sidebar from "./components/Sidebar/index";
 import Header from "./components/Header/index";
@@ -23,6 +24,7 @@ import Login from "./components/Profile/Login";
 import ScrollToTop from "./components/ScrollToTop";
 import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";
+import { startNotificationCleanupService } from './services/NotificationCleanupService';
 import "./main.css";
 
 // Create an AppContent component that will be inside the Router
@@ -42,6 +44,33 @@ const AppContent = () => {
         handleSidebarChange
       );
     };
+  }, []);
+
+  useEffect(() => {
+    const checkUserSession = async () => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          
+          // Optional: Verify if the user's session is still valid
+          // This could be a simple API call to verify the user ID exists
+          const response = await fetch(`/api/v1/user/verify?id=${user.id}`);
+          if (!response.ok) {
+            // User session is invalid
+            console.warn("User session is invalid, redirecting to login");
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+        } catch (e) {
+          console.error("Error checking user session:", e);
+          localStorage.removeItem('user');
+          setUser(null);
+        }
+      }
+    };
+    
+    checkUserSession();
   }, []);
 
   if (!user) {
@@ -86,15 +115,27 @@ const AppContent = () => {
 
 // Main App component now only sets up providers and router
 const App = () => {
+  useEffect(() => {
+    // Start the notification cleanup service
+    const stopCleanupService = startNotificationCleanupService();
+    
+    // Clean up when component unmounts
+    return () => {
+      stopCleanupService();
+    };
+  }, []);
+
   return (
-    <DataProvider>
+    <Router>
       <DiaryProvider>
-        <Router>
-          <ScrollToTop />
-          <AppContent />
-        </Router>
+        <DataProvider>
+          <NotificationsProvider>
+            <ScrollToTop />
+            <AppContent />
+          </NotificationsProvider>
+        </DataProvider>
       </DiaryProvider>
-    </DataProvider>
+    </Router>
   );
 };
 

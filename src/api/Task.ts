@@ -60,6 +60,15 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
       body: JSON.stringify(formattedTask),
     });
     
+    if (response.status === 404 && response.statusText.includes("User")) {
+      // Special handling for user not found - suggest logging in again
+      alert("Your user session is invalid. Please log out and log in again.");
+      
+      // Auto-redirect to login
+      window.location.href = '/login';
+      throw new Error('User session expired. Please log in again.');
+    }
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Server error response:", errorText);
@@ -75,19 +84,40 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
 
 export const updateTask = async (task: Task): Promise<Task> => {
   try {
-    const response = await fetch(`/api/v1/tasks/${task.id}`, {
+    console.log("API: Updating task:", task);
+    
+    // Create a copy and remove the id field to prevent Supabase identity column error
+    const { id, ...taskData } = task;
+    
+    // Make sure we're including the user ID
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.id) {
+      taskData.user_id = user.id;
+    }
+    
+    const response = await fetch(`/api/v1/tasks/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(task),
+      body: JSON.stringify(taskData),
     });
     
     if (!response.ok) {
-      throw new Error('Failed to update task');
+      const errorText = await response.text();
+      console.error("Server error response:", errorText);
+      throw new Error(`Failed to update task: ${response.status} ${response.statusText}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    
+    // Handle the special case where we got a success message but not the full task
+    if (result.message && !result.text) {
+      // Return the original task with any updates applied
+      return { ...task, ...result };
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error updating task:', error);
     throw error;

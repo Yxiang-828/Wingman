@@ -6,12 +6,12 @@ import React, {
   type ReactNode,
 } from "react";
 import type { Task } from "../api/Task";
-import type { CalendarEvent } from "../api/Calendar"; // Only import CalendarEvent as type
+import type { CalendarEvent } from "../api/Calendar"; 
 import { fetchTasks, updateTask, addTask, deleteTask } from "../api/Task";
 import {
   fetchEvents,
   addEvent,
-  updateEvent, // Import the actual function
+  updateEvent,
   deleteEvent,
 } from "../api/Calendar";
 
@@ -27,6 +27,8 @@ interface DataContextType {
   toggleTask: (task: Task) => Promise<Task>;
   addNewTask: (task: Omit<Task, "id">) => Promise<Task>;
   addNewEvent: (event: Omit<CalendarEvent, "id">) => Promise<CalendarEvent>;
+  updateExistingTask: (task: Task) => Promise<Task>;
+  updateExistingEvent: (event: CalendarEvent) => Promise<CalendarEvent>;
   deleteExistingTask: (id: number) => Promise<void>;
   deleteExistingEvent: (id: number) => Promise<void>;
 }
@@ -183,11 +185,62 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  // New method: Update an existing task
+  const updateExistingTask = async (task: Task): Promise<Task> => {
+    try {
+      console.log("Updating task via context:", task);
+      const updatedTask = await updateTask(task);
+      
+      // Update both global state and cache
+      setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+      
+      // Invalidate cache for this date
+      if (task.date) {
+        invalidateCache(task.date);
+      }
+      
+      return updatedTask;
+    } catch (error) {
+      console.error("Error updating task:", error);
+      throw error;
+    }
+  };
+
+  // New method: Update an existing event
+  const updateExistingEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
+    try {
+      console.log("Updating event via context:", event);
+      const updatedEvent = await updateEvent(event);
+      
+      // Update both global state and cache
+      setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+      
+      // Invalidate cache for this date
+      if (event.date) {
+        invalidateCache(event.date);
+      }
+      
+      return updatedEvent;
+    } catch (error) {
+      console.error("Error updating event:", error);
+      throw error;
+    }
+  };
+
   // Delete a task
   const deleteExistingTask = async (id: number): Promise<void> => {
     try {
+      // Find the task to get its date before deletion
+      const taskToDelete = tasks.find(t => t.id === id);
+      const dateToInvalidate = taskToDelete?.date;
+      
       await deleteTask(id);
-      setTasks((prev) => prev.filter((t) => t.id !== id));
+      setTasks(prev => prev.filter(t => t.id !== id));
+      
+      // Invalidate cache if we found the date
+      if (dateToInvalidate) {
+        invalidateCache(dateToInvalidate);
+      }
     } catch (error) {
       console.error("Error deleting task:", error);
       throw error;
@@ -197,8 +250,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   // Delete an event
   const deleteExistingEvent = async (id: number): Promise<void> => {
     try {
+      // Find the event to get its date before deletion
+      const eventToDelete = events.find(e => e.id === id);
+      const dateToInvalidate = eventToDelete?.date;
+      
       await deleteEvent(id);
-      setEvents((prev) => prev.filter((e) => e.id !== id));
+      setEvents(prev => prev.filter(e => e.id !== id));
+      
+      // Invalidate cache if we found the date
+      if (dateToInvalidate) {
+        invalidateCache(dateToInvalidate);
+      }
     } catch (error) {
       console.error("Error deleting event:", error);
       throw error;
@@ -239,6 +301,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         toggleTask,
         addNewTask,
         addNewEvent,
+        updateExistingTask,
+        updateExistingEvent,
         deleteExistingTask,
         deleteExistingEvent,
       }}

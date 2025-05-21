@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
+import { useNotifications } from "../../context/NotificationsContext";
+import DetailPopup from "../Common/DetailPopup";
 import "./Dashboard.css";
 
 interface TasksCardProps {
@@ -10,6 +12,8 @@ interface TasksCardProps {
 
 const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const navigate = useNavigate();
+  const { showPopupFor, currentPopupItem, closePopup, completeTask } =
+    useNotifications();
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -20,8 +24,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   };
 
   const handleTaskClick = (task: Task) => {
-    // Update task in Supabase via context
-    onToggleTask(task);
+    showPopupFor(task);
   };
 
   // Make sure each task has a unique key by using its ID
@@ -65,6 +68,13 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
             Add Task
           </button>
         </div>
+      )}
+      {currentPopupItem && (
+        <DetailPopup
+          item={currentPopupItem}
+          onClose={closePopup}
+          onComplete={completeTask}
+        />
       )}
     </div>
   );
