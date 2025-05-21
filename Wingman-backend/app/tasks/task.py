@@ -76,39 +76,48 @@ def create_task(task):
 
 def update_task(task_id: int, task: dict):
     try:
+        print(f"Backend Service: update_task called for ID {task_id}")
         data = dict(task)
         
         # Remove the id field as it's an identity column
         if "id" in data:
             del data["id"]
+            print(f"Backend Service: Removed id field from update data")
         
         # Map between frontend and DB field names
         if "date" in data:
             data["task_date"] = data["date"]
             del data["date"]
+            print(f"Backend Service: Mapped date → task_date: {data['task_date']}")
             
         if "time" in data:
             data["task_time"] = data["time"]
             del data["time"]
+            print(f"Backend Service: Mapped time → task_time: {data['task_time']}")
             
         if isinstance(data.get("task_date"), date):
             data["task_date"] = data["task_date"].isoformat()
+            print(f"Backend Service: Converted task_date to ISO string: {data['task_date']}")
             
-        print(f"Updating task {task_id} with data: {data}")
+        print(f"Backend Service: Final update data: {data}")
         # Execute the update query
+        print(f"Backend Service: Executing update against database")
         response = supabase.table("tasks").update(data).eq("id", task_id).execute()
         
         # If no data returned, fetch the updated task
         if not response.data or len(response.data) == 0:
+            print(f"Backend Service: No data returned from update, fetching task")
             get_response = supabase.table("tasks").select("*").eq("id", task_id).execute()
             if get_response.data and len(get_response.data) > 0:
                 task_data = get_response.data[0]
                 # Add date and time for frontend consistency
                 task_data["date"] = task_data["task_date"]
                 task_data["time"] = task_data.get("task_time", "")
+                print(f"Backend Service: Found task after update: {task_data}")
                 return task_data
             
             # If still no data, return a basic success response
+            print(f"Backend Service: Task not found after update, returning basic success")
             return {
                 "id": task_id,
                 "message": "Task updated successfully",
@@ -122,9 +131,11 @@ def update_task(task_id: int, task: dict):
         # Add date and time for frontend consistency
         task_data["date"] = task_data["task_date"]
         task_data["time"] = task_data.get("task_time", "")
+        print(f"Backend Service: Returning updated task: {task_data}")
         return task_data
     except Exception as e:
-        print(f"Error in update_task: {e}")
+        print(f"Backend Service: Error in update_task: {str(e)}")
+        traceback.print_exc()
         # Return a meaningful error response instead of None
         return {
             "id": task_id,

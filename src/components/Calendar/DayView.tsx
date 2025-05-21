@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
-import { useNotifications } from '../../context/NotificationsContext';
+import { useNotifications } from "../../context/NotificationsContext";
 import { updateTask } from "../../api/Task";
 import { updateEvent } from "../../api/Calendar";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import TimeInput from "../Common/TimeInput"; // Import the TimeInput component
-import DetailPopup from '../Common/DetailPopup';
+import DetailPopup from "../Common/DetailPopup";
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -31,7 +31,8 @@ const DayView: React.FC = () => {
     deleteExistingEvent,
   } = useData();
 
-  const { showPopupFor, currentPopupItem, closePopup, completeTask } = useNotifications();
+  const { showPopupFor, currentPopupItem, closePopup, completeTask } =
+    useNotifications();
 
   // Local states for UI management
   const [date, setDate] = useState<Date | null>(null);
@@ -185,18 +186,18 @@ const DayView: React.FC = () => {
   const handleDeleteTask = async (id: number) => {
     try {
       console.log("Deleting task:", id);
-      
+
       // Show confirmation dialog
       if (!confirm("Are you sure you want to delete this task?")) {
         return;
       }
-      
+
       // Use the context method for deletion
       await deleteExistingTask(id);
-      
+
       // Update local state - redundant but ensures UI sync
-      setCurrentDateTasks(prev => prev.filter(task => task.id !== id));
-      
+      setCurrentDateTasks((prev) => prev.filter((task) => task.id !== id));
+
       console.log("Task deleted successfully");
     } catch (error) {
       console.error("Failed to delete task:", error);
@@ -207,25 +208,25 @@ const DayView: React.FC = () => {
   // Unified handler for event submission (both add and edit)
   const handleEventSubmit = async (e: React.FormEvent, isEditing: boolean) => {
     e.preventDefault();
-    
+
     if (!date) return;
-    
+
     const dateStr = date.toISOString().split("T")[0];
     const eventData = isEditing ? editEventForm : newEvent;
-    
+
     // Validation
     if (!eventData.title.trim() || !eventData.time || !eventData.type) {
       alert("Please fill all required fields");
       return;
     }
-    
+
     try {
       if (isEditing && editingEvent) {
         console.log("Updating existing event:", {
           ...editingEvent,
-          ...eventData
+          ...eventData,
         });
-        
+
         // Update existing event
         const updatedEvent = await updateEvent({
           ...editingEvent,
@@ -234,15 +235,15 @@ const DayView: React.FC = () => {
           type: eventData.type,
           description: eventData.description || "",
         });
-        
+
         // Update local state - redundant with context but ensures UI sync
-        setCurrentDateEvents(prev => 
-          prev.map(e => e.id === updatedEvent.id ? updatedEvent : e)
+        setCurrentDateEvents((prev) =>
+          prev.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
         );
-        
+
         // Clear editing state
         setEditingEvent(null);
-        
+
         console.log("Event updated successfully:", updatedEvent);
       } else {
         console.log("Adding new event to Supabase:", {
@@ -252,7 +253,7 @@ const DayView: React.FC = () => {
           type: eventData.type,
           description: eventData.description || "",
         });
-        
+
         // Create new event
         const newEventItem = await addNewEvent({
           title: eventData.title.trim(),
@@ -261,18 +262,20 @@ const DayView: React.FC = () => {
           type: eventData.type,
           description: eventData.description || "",
         });
-        
+
         // Update local state
-        setCurrentDateEvents(prev => [...prev, newEventItem]);
-        
+        setCurrentDateEvents((prev) => [...prev, newEventItem]);
+
         // Reset form
         setNewEvent({ title: "", time: "", type: "", description: "" });
-        
+
         console.log("Event added successfully:", newEventItem);
       }
     } catch (error) {
       console.error("Event operation failed:", error);
-      alert(`Failed to ${isEditing ? 'update' : 'create'} event. Please try again.`);
+      alert(
+        `Failed to ${isEditing ? "update" : "create"} event. Please try again.`
+      );
     }
   };
 
@@ -280,18 +283,18 @@ const DayView: React.FC = () => {
   const handleDeleteEvent = async (id: number) => {
     try {
       console.log("Deleting event:", id);
-      
+
       // Show confirmation dialog
       if (!confirm("Are you sure you want to delete this event?")) {
         return;
       }
-      
+
       // Use the context method for deletion
       await deleteExistingEvent(id);
-      
+
       // Update local state - redundant but ensures UI sync
-      setCurrentDateEvents(prev => prev.filter(event => event.id !== id));
-      
+      setCurrentDateEvents((prev) => prev.filter((event) => event.id !== id));
+
       console.log("Event deleted successfully");
     } catch (error) {
       console.error("Failed to delete event:", error);
@@ -319,15 +322,15 @@ const DayView: React.FC = () => {
   // Navigation between days
   const handlePrevDay = () => {
     if (!date) return;
-    
+
     try {
       // Create a simple date object without time components
       const prevDay = new Date(date);
       prevDay.setDate(prevDay.getDate() - 1);
-      
+
       // Format using consistent method
-      const prevDayStr = prevDay.toISOString().split('T')[0];
-      
+      const prevDayStr = prevDay.toISOString().split("T")[0];
+
       // Navigate with the formatted date
       navigate(`/calendar/day?date=${prevDayStr}`);
     } catch (error) {
@@ -342,10 +345,10 @@ const DayView: React.FC = () => {
       // Create a simple date object without time components
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
-      
+
       // Format using consistent method
-      const nextDayStr = nextDay.toISOString().split('T')[0];
-      
+      const nextDayStr = nextDay.toISOString().split("T")[0];
+
       // Navigate with the formatted date
       navigate(`/calendar/day?date=${nextDayStr}`);
     } catch (error) {
@@ -411,24 +414,26 @@ const DayView: React.FC = () => {
   // Handle saving task edits
   const handleSaveTaskEdit = async () => {
     if (!editingTask) return;
-    
+
     try {
       const updatedTask = {
         ...editingTask,
         text: editTaskForm.text.trim(),
         time: editTaskForm.time,
       };
-      
+
       console.log("Saving updated task:", updatedTask);
-      
+
       // Use the updateTask function
       const result = await updateTask(updatedTask);
-      
+
       // Update local state
-      setCurrentDateTasks(prev => 
-        prev.map(task => task.id === result.id ? { ...task, ...result } : task)
+      setCurrentDateTasks((prev) =>
+        prev.map((task) =>
+          task.id === result.id ? { ...task, ...result } : task
+        )
       );
-      
+
       // Clear editing state
       setEditingTask(null);
     } catch (error) {
@@ -451,7 +456,7 @@ const DayView: React.FC = () => {
   // Handle saving event edits
   const handleSaveEventEdit = async () => {
     if (!editingEvent) return;
-    
+
     try {
       // Start with a copy of the original event
       const updatedEvent = {
@@ -461,17 +466,19 @@ const DayView: React.FC = () => {
         type: editEventForm.type,
         description: editEventForm.description || "",
       };
-      
+
       console.log("Saving updated event:", updatedEvent);
-      
+
       // Use the updateEvent function
       const result = await updateEvent(updatedEvent);
-      
+
       // Update local state
-      setCurrentDateEvents(prev => 
-        prev.map(event => event.id === result.id ? { ...event, ...result } : event)
+      setCurrentDateEvents((prev) =>
+        prev.map((event) =>
+          event.id === result.id ? { ...event, ...result } : event
+        )
       );
-      
+
       // Clear editing state
       setEditingEvent(null);
     } catch (error) {
@@ -490,18 +497,18 @@ const DayView: React.FC = () => {
   // Unified handler for task submission (both add and edit)
   const handleTaskSubmit = async (e: React.FormEvent, isEditing: boolean) => {
     e.preventDefault();
-    
+
     if (!date) return;
-    
+
     const dateStr = date.toISOString().split("T")[0];
     const taskData = isEditing ? editTaskForm : newTask;
-    
+
     // Validation
     if (!taskData.text.trim()) {
       alert("Please enter a task description");
       return;
     }
-    
+
     try {
       if (isEditing && editingTask) {
         console.log("Updating existing task:", {
@@ -509,22 +516,22 @@ const DayView: React.FC = () => {
           text: taskData.text.trim(),
           time: taskData.time || "",
         });
-        
+
         // Update existing task
         const updatedTask = await updateExistingTask({
           ...editingTask,
           text: taskData.text.trim(),
           time: taskData.time || "",
         });
-        
+
         // Update local state
-        setCurrentDateTasks(prev => 
-          prev.map(t => t.id === updatedTask.id ? updatedTask : t)
+        setCurrentDateTasks((prev) =>
+          prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
         );
-        
+
         // Clear editing state
         setEditingTask(null);
-        
+
         console.log("Task updated successfully:", updatedTask);
       } else {
         console.log("Adding task to Supabase:", {
@@ -533,7 +540,7 @@ const DayView: React.FC = () => {
           time: taskData.time || "",
           completed: false,
         });
-        
+
         // Create new task
         const newTaskItem = await addNewTask({
           date: dateStr,
@@ -541,18 +548,20 @@ const DayView: React.FC = () => {
           time: taskData.time || "",
           completed: false,
         });
-        
+
         // Update local state
-        setCurrentDateTasks(prev => [...prev, newTaskItem]);
-        
+        setCurrentDateTasks((prev) => [...prev, newTaskItem]);
+
         // Reset form
         setNewTask({ text: "", time: "" });
-        
+
         console.log("Task added successfully:", newTaskItem);
       }
     } catch (error) {
       console.error("Task operation failed:", error);
-      alert(`Failed to ${isEditing ? 'update' : 'create'} task. Please try again.`);
+      alert(
+        `Failed to ${isEditing ? "update" : "create"} task. Please try again.`
+      );
     }
   };
 
@@ -628,7 +637,10 @@ const DayView: React.FC = () => {
               <h2 className="day-section-title">{getSectionLabel("Events")}</h2>
             </div>
 
-            <form onSubmit={(e) => handleEventSubmit(e, false)} className="day-form">
+            <form
+              onSubmit={(e) => handleEventSubmit(e, false)}
+              className="day-form"
+            >
               <div className="day-form-grid">
                 <div className="day-form-group">
                   <label htmlFor="event-title">Title</label>
@@ -708,20 +720,24 @@ const DayView: React.FC = () => {
                           <input
                             type="text"
                             value={editEventForm.title}
-                            onChange={(e) => setEditEventForm({
-                              ...editEventForm,
-                              title: e.target.value
-                            })}
+                            onChange={(e) =>
+                              setEditEventForm({
+                                ...editEventForm,
+                                title: e.target.value,
+                              })
+                            }
                             className="day-form-input"
                             placeholder="Event title"
                           />
-                          
+
                           <select
                             value={editEventForm.type}
-                            onChange={(e) => setEditEventForm({
-                              ...editEventForm,
-                              type: e.target.value
-                            })}
+                            onChange={(e) =>
+                              setEditEventForm({
+                                ...editEventForm,
+                                type: e.target.value,
+                              })
+                            }
                             className="day-form-select"
                           >
                             <option value="">Select type</option>
@@ -729,30 +745,34 @@ const DayView: React.FC = () => {
                             <option value="personal">Personal</option>
                             <option value="reminder">Reminder</option>
                           </select>
-                          
+
                           <TimeInput
                             value={editEventForm.time}
-                            onChange={(time) => setEditEventForm({
-                              ...editEventForm,
-                              time
-                            })}
+                            onChange={(time) =>
+                              setEditEventForm({
+                                ...editEventForm,
+                                time,
+                              })
+                            }
                             placeholder="Event time (HH:MM)"
                           />
-                          
+
                           <textarea
                             value={editEventForm.description}
-                            onChange={(e) => setEditEventForm({
-                              ...editEventForm,
-                              description: e.target.value
-                            })}
+                            onChange={(e) =>
+                              setEditEventForm({
+                                ...editEventForm,
+                                description: e.target.value,
+                              })
+                            }
                             className="day-form-input"
                             placeholder="Description"
                             rows={3}
                           ></textarea>
                         </div>
-                        
+
                         <div className="edit-form-actions">
-                          <button 
+                          <button
                             type="button"
                             className="edit-save-btn"
                             onClick={(e) => handleEventSubmit(e, true)}
@@ -776,7 +796,10 @@ const DayView: React.FC = () => {
                             {formatTime(event.time)}
                           </div>
                         </div>
-                        <div className="event-info" onClick={() => handleEventDetails(event)}>
+                        <div
+                          className="event-info"
+                          onClick={() => handleEventDetails(event)}
+                        >
                           <div className="event-title">{event.title}</div>
                           <div className="event-meta">
                             <div className="event-date">
@@ -825,7 +848,10 @@ const DayView: React.FC = () => {
               <h2 className="day-section-title">{getSectionLabel("Tasks")}</h2>
             </div>
 
-            <form onSubmit={(e) => handleTaskSubmit(e, false)} className="day-form">
+            <form
+              onSubmit={(e) => handleTaskSubmit(e, false)}
+              className="day-form"
+            >
               <div className="day-form-grid">
                 <input
                   type="text"
@@ -841,7 +867,9 @@ const DayView: React.FC = () => {
                   {/* Use the TimeInput component for task time too */}
                   <TimeInput
                     value={newTask.time}
-                    onChange={(time) => setNewTask(prev => ({ ...prev, time }))}
+                    onChange={(time) =>
+                      setNewTask((prev) => ({ ...prev, time }))
+                    }
                     placeholder="Task time (optional)"
                   />
                 </div>
@@ -871,26 +899,30 @@ const DayView: React.FC = () => {
                           <input
                             type="text"
                             value={editTaskForm.text}
-                            onChange={(e) => setEditTaskForm({
-                              ...editTaskForm,
-                              text: e.target.value
-                            })}
+                            onChange={(e) =>
+                              setEditTaskForm({
+                                ...editTaskForm,
+                                text: e.target.value,
+                              })
+                            }
                             className="day-form-input"
                             placeholder="Task description"
                           />
-                          
+
                           <TimeInput
                             value={editTaskForm.time}
-                            onChange={(time) => setEditTaskForm({
-                              ...editTaskForm,
-                              time
-                            })}
+                            onChange={(time) =>
+                              setEditTaskForm({
+                                ...editTaskForm,
+                                time,
+                              })
+                            }
                             placeholder="Task time (optional)"
                           />
                         </div>
-                        
+
                         <div className="edit-form-actions">
-                          <button 
+                          <button
                             type="button"
                             className="edit-save-btn"
                             onClick={(e) => handleTaskSubmit(e, true)}
@@ -915,7 +947,10 @@ const DayView: React.FC = () => {
                         >
                           {task.completed ? "✓" : "○"}
                         </div>
-                        <div className="task-info" onClick={() => handleTaskDetails(task)}>
+                        <div
+                          className="task-info"
+                          onClick={() => handleTaskDetails(task)}
+                        >
                           <div className="task-title">{task.text}</div>
                           <div className="task-meta">
                             {task.time && (

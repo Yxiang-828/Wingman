@@ -84,16 +84,33 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
 
 export const updateTask = async (task: Task): Promise<Task> => {
   try {
-    console.log("API: Updating task:", task);
+    console.log("API: updateTask called with task:", task);
     
     // Create a copy and remove the id field to prevent Supabase identity column error
     const { id, ...taskData } = task;
+    
+    // Ensure proper field mapping for backend
+    // Handle field name mapping between frontend and backend
+    if (task.date) {
+      taskData.task_date = task.date;  // Ensure backend field is set
+      console.log("API: Mapped date to task_date:", task.date);
+    }
+    
+    if (task.time) {
+      taskData.task_time = task.time;  // Ensure backend field is set
+      console.log("API: Mapped time to task_time:", task.time);
+    }
     
     // Make sure we're including the user ID
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.id) {
       taskData.user_id = user.id;
+      console.log("API: Added user_id:", user.id);
+    } else {
+      console.warn("API: No user.id found in localStorage");
     }
+    
+    console.log("API: Sending to backend:", taskData);
     
     const response = await fetch(`/api/v1/tasks/${id}`, {
       method: 'PUT',
@@ -103,23 +120,39 @@ export const updateTask = async (task: Task): Promise<Task> => {
       body: JSON.stringify(taskData),
     });
     
+    console.log("API: Backend response status:", response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Server error response:", errorText);
+      console.error("API: Server error response:", errorText);
       throw new Error(`Failed to update task: ${response.status} ${response.statusText}`);
     }
     
     const result = await response.json();
+    console.log("API: Backend response data:", result);
     
     // Handle the special case where we got a success message but not the full task
     if (result.message && !result.text) {
-      // Return the original task with any updates applied
-      return { ...task, ...result };
+      console.log("API: Got success message but not full task, returning merged object");
+      // Return the original task with updated completion status
+      return { ...task, completed: !task.completed, ...result };
     }
     
+    // Make sure the result has frontend field names
+    if (result.task_date) {
+      result.date = result.task_date;
+      console.log("API: Added date field from task_date");
+    }
+    
+    if (result.task_time) {
+      result.time = result.task_time;
+      console.log("API: Added time field from task_time");
+    }
+    
+    console.log("API: Returning final result:", result);
     return result;
   } catch (error) {
-    console.error('Error updating task:', error);
+    console.error('API: Error updating task:', error);
     throw error;
   }
 };

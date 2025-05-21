@@ -26,9 +26,10 @@ import Login from "./components/Profile/Login";
 import ScrollToTop from "./components/ScrollToTop";
 import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";
-import { startNotificationCleanupService } from './services/NotificationCleanupService';
+import { startNotificationCleanupService } from "./services/NotificationCleanupService";
 import "./main.css";
-import './styles/scrollbars.css';
+import "./styles/scrollbars.css";
+import ErrorBoundary from "./components/ErrorBoundary"; // Import the ErrorBoundary component
 
 // Create an AppContent component that will be inside the Router
 const AppContent = () => {
@@ -51,8 +52,8 @@ const AppContent = () => {
   }, []);
 
   // Add /login route to the excluded paths
-  const isLoginPage = location.pathname === '/login';
-  
+  const isLoginPage = location.pathname === "/login";
+
   // Always show login unless user is authenticated
   if (!user && !isLoginPage) {
     return <Login onLogin={setUser} />;
@@ -71,21 +72,70 @@ const AppContent = () => {
           <main className="flex-1 p-6 overflow-auto">
             <Routes>
               <Route path="/login" element={<Login onLogin={setUser} />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/calendar/*" element={<Calendar />} />
-              <Route path="/chatbot" element={<ChatBot />} />
-              <Route path="/profile/*" element={<Profile />}>
+              <Route
+                path="/notifications"
+                element={
+                  <ErrorBoundary>
+                    <Notifications />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/"
+                element={
+                  <ErrorBoundary>
+                    <Dashboard />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/calendar/*"
+                element={
+                  <ErrorBoundary>
+                    <Calendar />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/chatbot"
+                element={
+                  <ErrorBoundary>
+                    <ChatBot />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/profile/*"
+                element={
+                  <ErrorBoundary>
+                    <Profile />
+                  </ErrorBoundary>
+                }
+              >
                 <Route path="settings" element={<ProfileSettings />} />
                 <Route path="avatar" element={<ProfileAvatar />} />
               </Route>
-              <Route path="/diary/*" element={<Diary />}>
+              <Route
+                path="/diary/*"
+                element={
+                  <ErrorBoundary>
+                    <Diary />
+                  </ErrorBoundary>
+                }
+              >
                 <Route path="write" element={<WriteEntry />} />
                 <Route path="view" element={<ViewEntries />} />
                 <Route path="search" element={<SearchDiary />} />
                 <Route path="edit" element={<EditEntry />} />
               </Route>
-              <Route path="/home" element={<Home />} />
+              <Route
+                path="/home"
+                element={
+                  <ErrorBoundary>
+                    <Home />
+                  </ErrorBoundary>
+                }
+              />
               {/* Redirect all unknown routes to login or dashboard */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
@@ -101,7 +151,7 @@ const App = () => {
   useEffect(() => {
     // Start the notification cleanup service
     const stopCleanupService = startNotificationCleanupService();
-    
+
     // Clean up when component unmounts
     return () => {
       stopCleanupService();
@@ -114,7 +164,11 @@ const App = () => {
         <DataProvider>
           <NotificationsProvider>
             <ScrollToTop />
-            <AppContent />
+            <ErrorBoundary>
+              {" "}
+              {/* Wrap the AppContent with ErrorBoundary */}
+              <AppContent />
+            </ErrorBoundary>
           </NotificationsProvider>
         </DataProvider>
       </DiaryProvider>

@@ -8,7 +8,13 @@ import SummaryCard from "./SummaryCard";
 import "./Dashboard.css";
 
 const Dashboard: React.FC = () => {
-  const { tasks, events, loading: dataLoading, refreshData, toggleTask } = useData();
+  const {
+    tasks,
+    events,
+    loading: dataLoading,
+    refreshData,
+    toggleTask,
+  } = useData();
   const { entries, loading: diaryLoading, refreshEntries } = useDiary();
   const [todaysTasks, setTodaysTasks] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
@@ -23,10 +29,7 @@ const Dashboard: React.FC = () => {
     const loadDashboard = async () => {
       try {
         // Run these in parallel
-        await Promise.all([
-          refreshData(),
-          refreshEntries()
-        ]);
+        await Promise.all([refreshData(), refreshEntries()]);
       } catch (error) {
         console.error("Dashboard load error:", error);
       } finally {
@@ -46,22 +49,34 @@ const Dashboard: React.FC = () => {
     setTodaysTasks(todayTasks);
 
     // Filter upcoming events (today and future)
-    const upcoming = events.filter((event) => event.date >= today)
+    const upcoming = events
+      .filter((event) => event.date >= today)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 3); // Show max 3 upcoming events
     setUpcomingEvents(upcoming);
 
     // Sort diary entries by date (newest first) and take the most recent ones
     if (entries && entries.length > 0) {
-      const recent = [...entries].sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      ).slice(0, 3); // Show max 3 recent entries
+      const recent = [...entries]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 3); // Show max 3 recent entries
       setRecentDiaryEntries(recent);
     }
   }, [tasks, events, entries, today]);
 
-  const handleToggleTask = (task: any) => {
-    toggleTask(task);
+  // Update the handleToggleTask function:
+  const handleToggleTask = async (task: Task) => {
+    console.log("Dashboard: handleToggleTask called with task:", task);
+    try {
+      // The task is already toggled by the child component, so we just need to update our state
+      setTodaysTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+
+      console.log("Dashboard: Task state update complete");
+      return task;
+    } catch (error) {
+      console.error("Error toggling task:", error);
+      throw error;
+    }
   };
 
   // Show loading state only on initial load

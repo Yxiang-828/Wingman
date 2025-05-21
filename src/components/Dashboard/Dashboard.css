@@ -186,17 +186,18 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.event-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  background: rgba(25, 25, 45, 0.7);
 }
 
 .event-meeting { border-left: 3px solid #646cff; }
 .event-personal { border-left: 3px solid #4ade80; }
 .event-reminder { border-left: 3px solid #f87171; }
-
-.event-item:hover {
-  transform: translateY(-3px) translateX(2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-  background: rgba(25, 25, 45, 0.7);
-}
 
 .event-time {
   font-size: 0.85rem;
@@ -282,17 +283,37 @@
 }
 
 .task-status {
-  font-size: 1.2rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  color: #646cff;
+  font-size: 1.2rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+  cursor: pointer; /* Ensure it appears clickable */
+  background: rgba(30, 30, 50, 0.4);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+}
+
+.task-status:hover {
+  transform: scale(1.1);
+  background: rgba(100, 108, 255, 0.15); 
+  box-shadow: 0 0 8px rgba(100, 108, 255, 0.3);
 }
 
 .task-item.completed .task-status {
-  color: #4ade80;
+  background: rgba(74, 222, 128, 0.15);
+  color: rgba(74, 222, 128, 0.9);
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.task-item.completed .task-status:hover {
+  background: rgba(74, 222, 128, 0.25);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
 }
 
 /* Diary Card */

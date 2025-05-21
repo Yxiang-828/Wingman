@@ -30,13 +30,21 @@ def create_task_endpoint(task: dict):
 @router.put("/tasks/{task_id}", response_model=dict)
 def update_task_endpoint(task_id: int, task: dict):
     try:
+        print(f"Backend: Received update request for task {task_id}")
+        print(f"Backend: Task data: {task}")
+        
         result = update_task(task_id, task)
+        
         if not result:
+            print(f"Backend: No result returned from update_task")
             # Provide a fallback response
             return {"id": task_id, "message": "Update processed but no data returned"}
+        
+        print(f"Backend: Task updated successfully: {result}")
         return result
     except Exception as e:
         traceback.print_exc()
+        print(f"Backend: Error updating task: {str(e)}")
         raise HTTPException(
             status_code=500, 
             detail=f"Error updating task: {str(e)}"
