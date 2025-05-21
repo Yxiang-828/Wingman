@@ -8,86 +8,85 @@ import SummaryCard from "./SummaryCard";
 import "./Dashboard.css";
 
 const Dashboard: React.FC = () => {
+  // Use data from contexts
   const {
-    tasks,
-    events,
-    loading: dataLoading,
-    refreshData,
-    toggleTask,
+    fetchTasksByDate,
+    fetchEventsByDate,
+    toggleTask
   } = useData();
-  const { entries, loading: diaryLoading, refreshEntries } = useDiary();
-  const [todaysTasks, setTodaysTasks] = useState<any[]>([]);
-  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+  
+  const { entries, refreshEntries } = useDiary();
+  
+  const [todaysTasks, setTodaysTasks] = useState<Task[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([]);
   const [recentDiaryEntries, setRecentDiaryEntries] = useState<any[]>([]);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split("T")[0];
 
-  // Fetch data only once when component mounts
+  // Fetch data when component mounts
   useEffect(() => {
     const loadDashboard = async () => {
+      setIsLoading(true);
       try {
-        // Run these in parallel
-        await Promise.all([refreshData(), refreshEntries()]);
+        // Get only today's tasks and events
+        const today = new Date().toISOString().split('T')[0];
+        const [tasksData, eventsData] = await Promise.all([
+          fetchTasksByDate(today),
+          fetchEventsByDate(today)
+        ]);
+        
+        setTodaysTasks(tasksData);
+        setUpcomingEvents(eventsData); // Now these are today's events only
+        
+        // Also refresh diary entries
+        await refreshEntries();
       } catch (error) {
         console.error("Dashboard load error:", error);
       } finally {
-        setIsInitialLoad(false);
+        setIsLoading(false);
       }
     };
 
-    if (isInitialLoad) {
-      loadDashboard();
-    }
-  }, [isInitialLoad]);
+    loadDashboard();
+  }, []);
 
-  // Filter data when tasks, events, or entries change
+  // Update diary entries when entries change
   useEffect(() => {
-    // Filter tasks for today
-    const todayTasks = tasks.filter((task) => task.date === today);
-    setTodaysTasks(todayTasks);
-
-    // Filter upcoming events (today and future)
-    const upcoming = events
-      .filter((event) => event.date >= today)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 3); // Show max 3 upcoming events
-    setUpcomingEvents(upcoming);
-
-    // Sort diary entries by date (newest first) and take the most recent ones
     if (entries && entries.length > 0) {
+      // Sort by date (newest first) and take the most recent
       const recent = [...entries]
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 3); // Show max 3 recent entries
+        .slice(0, 3);
       setRecentDiaryEntries(recent);
     }
-  }, [tasks, events, entries, today]);
+  }, [entries]);
 
   // Update the handleToggleTask function:
   const handleToggleTask = async (task: Task) => {
-    console.log("Dashboard: handleToggleTask called with task:", task);
     try {
-      // The task is already toggled by the child component, so we just need to update our state
-      setTodaysTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-
-      console.log("Dashboard: Task state update complete");
-      return task;
+      const updatedTask = await toggleTask(task);
+      // Update our local state
+      setTodaysTasks(prev => 
+        prev.map(t => t.id === updatedTask.id ? updatedTask : t)
+      );
+      return updatedTask;
     } catch (error) {
       console.error("Error toggling task:", error);
       throw error;
     }
   };
 
-  // Show loading state only on initial load
-  if (isInitialLoad) {
+  // Show loading state
+  if (isLoading) {
     return <div className="dashboard-loading">Loading dashboard data...</div>;
   }
 
   return (
     <div className="dashboard-container">
-      <SummaryCard tasks={tasks} events={events} />
-      <div className="dashboard-grid">
+      <SummaryCard tasks={todaysTasks} events={upcomingEvents} />
+      <div className="dashboard">
         <TasksCard tasks={todaysTasks} onToggleTask={handleToggleTask} />
         <EventsCard events={upcomingEvents} />
         <DiaryCard entries={recentDiaryEntries} />

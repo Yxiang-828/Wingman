@@ -12,17 +12,14 @@ interface SummaryCardProps {
 const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
   const navigate = useNavigate();
   
-  // Today's date in YYYY-MM-DD format for navigation
-  const today = new Date().toISOString().split("T")[0];
-  
-  // Handle navigation to day view with focus on tasks
+  // Handle navigation to all tasks in notifications
   const navigateToTasks = () => {
-    navigate(`/calendar/day?date=${today}&focus=tasks`);
+    navigate(`/notifications?tab=task`);
   };
 
-  // Handle navigation to day view with focus on events
+  // Handle navigation to all events in notifications
   const navigateToEvents = () => {
-    navigate(`/calendar/day?date=${today}&focus=events`);
+    navigate(`/notifications?tab=event`);
   };
   
   // Handle navigation to completed tasks view
@@ -31,9 +28,16 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
   };
 
   // Calculate statistics
+  const today = new Date().toISOString().split("T")[0];
   const todayTasks = tasks.filter(task => task.date === today);
   const todayEvents = events.filter(event => event.date === today);
   const completedTasks = tasks.filter(task => task.completed);
+  
+  const stats = {
+    events: todayEvents.length,
+    pendingTasks: todayTasks.filter(task => !task.completed).length,
+    completedTasks: completedTasks.length,
+  };
   
   return (
     <div className="dashboard-card summary-card">
@@ -51,9 +55,9 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
           onClick={navigateToEvents}
           tabIndex={0}
           role="button"
-          aria-label="View today's events"
+          aria-label="View all events"
         >
-          <span className="stat-number">{todayEvents.length}</span>
+          <span className="stat-number">{stats.events}</span>
           <span className="stat-label">Today's Events</span>
         </div>
         
@@ -62,10 +66,10 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
           onClick={navigateToTasks}
           tabIndex={0}
           role="button"
-          aria-label="View today's tasks"
+          aria-label="View pending tasks"
         >
-          <span className="stat-number">{todayTasks.length}</span>
-          <span className="stat-label">Today's Tasks</span>
+          <span className="stat-number">{stats.pendingTasks}</span>
+          <span className="stat-label">Pending Tasks</span>
         </div>
         
         <div 
@@ -75,7 +79,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
           role="button"
           aria-label="View completed tasks"
         >
-          <span className="stat-number">{completedTasks.length}</span>
+          <span className="stat-number">{stats.completedTasks}</span>
           <span className="stat-label">Completed Tasks</span>
         </div>
       </div>

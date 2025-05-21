@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useNotifications } from "../context/NotificationsContext";
 import DetailPopup from "../components/Common/DetailPopup";
@@ -9,6 +9,9 @@ import "./Notifications.css";
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [displayLimit, setDisplayLimit] = useState(10);
+  const [hasMoreItems, setHasMoreItems] = useState(true);
+  const listRef = useRef<HTMLDivElement>(null);
   
   // Try/catch to handle potential missing context error
   try {
@@ -34,15 +37,70 @@ const Notifications: React.FC = () => {
     );
 
     // Filter notifications based on active tab
-    const filteredNotifications = notifications.filter((notification) => {
-      if (activeTab === "all") return true;
-      return notification.type === activeTab;
-    });
-
-    // Calculate type counts
-    const taskCount = notifications.filter((n) => n.type === "task").length;
-    const eventCount = notifications.filter((n) => n.type === "event").length;
-
+    const filteredNotifications = useMemo(() => {
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      
+      return notifications
+        .filter((notification) => {
+          // Keep events in the future
+          if (notification.type === "event" && notification.date >= todayStr) {
+            return true;
+          }
+          
+          // Keep tasks that are not completed and in the future
+          if (notification.type === "task" && !notification.completed && notification.date >= todayStr) {
+            return true;
+          }
+          
+          return false;
+        })
+        .filter((notification) => {
+          if (activeTab === "all") return true;
+          return notification.type === activeTab;
+        })
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, displayLimit);
+    }, [notifications, activeTab, displayLimit]);
+    
+    // Load more when scrolling to the bottom
+    useEffect(() => {
+      const handleScroll = () => {
+        if (!listRef.current || !hasMoreItems) return;
+        
+        const { scrollTop, scrollHeight, clientHeight } = listRef.current;
+        
+        if (scrollTop + clientHeight >= scrollHeight - 50) {
+          setDisplayLimit(prev => prev + 10);
+        }
+      };
+      
+      const listElement = listRef.current;
+      if (listElement) {
+        listElement.addEventListener('scroll', handleScroll);
+      }
+      
+      return () => {
+        if (listElement) {
+          listElement.removeEventListener('scroll', handleScroll);
+        }
+      };
+    }, [hasMoreItems]);
+    
+    // Check if we've loaded all items
+    useEffect(() => {
+      const totalFilteredItems = notifications.filter(n => {
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        
+        if (n.type === "event" && n.date >= todayStr) return true;
+        if (n.type === "task" && !n.completed && n.date >= todayStr) return true;
+        return false;
+      }).length;
+      
+      setHasMoreItems(displayLimit < totalFilteredItems);
+    }, [notifications, displayLimit]);
+    
     // Handle button action (e.g. Mark as complete)
     const handleAction = async (notification: any) => {
       if (notification.type === "task") {
@@ -141,7 +199,7 @@ const Notifications: React.FC = () => {
             }`}
             onClick={() => setActiveTab("task")}
           >
-            Tasks <span className="notifications-count">{taskCount}</span>
+            Tasks <span className="notifications-count">{notifications.filter(n => n.type === "task").length}</span>
           </button>
           <button
             className={`notifications-tab ${
@@ -149,11 +207,11 @@ const Notifications: React.FC = () => {
             }`}
             onClick={() => setActiveTab("event")}
           >
-            Events <span className="notifications-count">{eventCount}</span>
+            Events <span className="notifications-count">{notifications.filter(n => n.type === "event").length}</span>
           </button>
         </div>
 
-        <div className="notifications-list">
+        <div className="notifications-list" ref={listRef}>
           {filteredNotifications.length > 0 ? (
             filteredNotifications.map((notification) => (
               <div
@@ -226,6 +284,10 @@ const Notifications: React.FC = () => {
                 Go to Calendar
               </button>
             </div>
+          )}
+          
+          {hasMoreItems && (
+            <div className="loading-more">Loading more items...</div>
           )}
         </div>
         

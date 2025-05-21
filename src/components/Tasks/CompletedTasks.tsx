@@ -8,7 +8,12 @@ import "./CompletedTasks.css";
 
 const CompletedTasks: React.FC = () => {
   const navigate = useNavigate();
-  const { tasks, refreshData, toggleTask, deleteExistingTask } = useData();
+  const { 
+    taskCache, 
+    refreshData, 
+    toggleTask, 
+    deleteExistingTask 
+  } = useData();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
   
   const [loading, setLoading] = useState(true);
@@ -17,7 +22,7 @@ const CompletedTasks: React.FC = () => {
   const [filterDate, setFilterDate] = useState<string>("");
   
   // Group tasks by date for organization
-  const [groupedTasks, setGroupedTasks] = useState<Record<string, any[]>>({});
+  const [groupedTasks, setGroupedTasks] = useState<Record<string, any>>({});
   
   // Fetch and filter completed tasks
   useEffect(() => {
@@ -39,17 +44,18 @@ const CompletedTasks: React.FC = () => {
   
   // Filter and group tasks when tasks or filter changes
   useEffect(() => {
-    // Filter completed tasks
-    const filtered = tasks.filter(task => 
+    // Filter completed tasks from the cache
+    const allTasks = Object.values(taskCache).flat();
+    const completed = allTasks.filter(task => 
       task.completed && 
       (filterDate ? task.date === filterDate : true)
     );
     
-    setCompletedTasks(filtered);
+    setCompletedTasks(completed);
     
     // Group by date for display
     const grouped: Record<string, any[]> = {};
-    filtered.forEach(task => {
+    completed.forEach(task => {
       if (!grouped[task.date]) {
         grouped[task.date] = [];
       }
@@ -65,7 +71,7 @@ const CompletedTasks: React.FC = () => {
       });
     
     setGroupedTasks(sortedGrouped);
-  }, [tasks, filterDate]);
+  }, [taskCache, filterDate]);
   
   // Handle toggling a task back to incomplete
   const handleToggleTask = async (task: any) => {

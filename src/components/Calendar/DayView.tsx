@@ -16,17 +16,11 @@ const DayView: React.FC = () => {
 
   // Global data context
   const {
-    tasks,
-    events,
-    setTasks,
-    setEvents,
-    toggleTask,
     fetchTasksByDate,
     fetchEventsByDate,
+    toggleTask,
     addNewTask,
     addNewEvent,
-    updateExistingTask,
-    updateExistingEvent,
     deleteExistingTask,
     deleteExistingEvent,
   } = useData();
@@ -106,8 +100,10 @@ const DayView: React.FC = () => {
   // Fetch data for a specific date
   const fetchData = async (dateStr: string) => {
     try {
-      const tasksData = await fetchTasksByDate(dateStr);
-      const eventsData = await fetchEventsByDate(dateStr);
+      const [tasksData, eventsData] = await Promise.all([
+        fetchTasksByDate(dateStr),
+        fetchEventsByDate(dateStr),
+      ]);
 
       // Set current date data
       setCurrentDateTasks(tasksData);
@@ -131,6 +127,7 @@ const DayView: React.FC = () => {
       }, 100);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setDateError("Failed to load data for this date");
     }
   };
 
@@ -1006,6 +1003,14 @@ const DayView: React.FC = () => {
           onComplete={completeTask}
         />
       )}
+
+      {/* Add a button to navigate to completed tasks */}
+      <button
+        className="view-completed-btn"
+        onClick={() => navigate('/completed-tasks')}
+      >
+        View Completed Tasks
+      </button>
     </div>
   );
 };

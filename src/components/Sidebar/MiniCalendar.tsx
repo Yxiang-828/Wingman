@@ -11,44 +11,69 @@ interface MiniCalendarProps {
 
 const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
   const navigate = useNavigate();
-  const { tasks, events } = useData();
-  const [eventDates, setEventDates] = useState<
-    Array<{ date: Date; count: number }>
-  >([]);
+  const { eventCache, taskCache } = useData();
+  const [currentDate] = useState(new Date());
+  const [calendarDays, setCalendarDays] = useState<Date[]>([]);
+  const [eventsMap, setEventsMap] = useState<Record<string, number>>({});
 
-  // Group events and tasks by date
+  // Generate calendar days for current month
   useEffect(() => {
-    // Create a map to count events and tasks per date
-    const dateCountMap = new Map<string, number>();
+    const days: Date[] = [];
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-    // Add tasks to the map
-    tasks.forEach((task) => {
-      const dateKey = task.date;
-      dateCountMap.set(dateKey, (dateCountMap.get(dateKey) || 0) + 1);
+    // Create first day of month
+    const firstDay = new Date(year, month, 1);
+
+    // Fill in days from previous month to align with week
+    const firstDayOfWeek = firstDay.getDay();
+    for (let i = firstDayOfWeek; i > 0; i--) {
+      days.push(new Date(year, month, 1 - i));
+    }
+
+    // Fill in days for current month
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push(new Date(year, month, i));
+    }
+
+    setCalendarDays(days);
+  }, [currentDate]);
+
+  // Count events for each day
+  useEffect(() => {
+    const newEventsMap: Record<string, number> = {};
+
+    // Add null checks and default empty arrays
+    const allEvents = eventCache ? Object.values(eventCache).flat() : [];
+    const allTasks = taskCache ? Object.values(taskCache).flat() : [];
+
+    // Process events
+    allEvents.forEach((event) => {
+      if (event.date) {
+        newEventsMap[event.date] = (newEventsMap[event.date] || 0) + 1;
+      }
     });
 
-    // Add events to the map
-    events.forEach((event) => {
-      const dateKey = event.date;
-      dateCountMap.set(dateKey, (dateCountMap.get(dateKey) || 0) + 1);
+    // Process tasks
+    allTasks.forEach((task) => {
+      if (task.date) {
+        newEventsMap[task.date] = (newEventsMap[task.date] || 0) + 1;
+      }
     });
 
-    // Convert map to array of objects with date and count
-    const dates = Array.from(dateCountMap.entries()).map(
-      ([dateStr, count]) => ({
-        date: new Date(dateStr),
-        count,
-      })
-    );
+    setEventsMap(newEventsMap);
+  }, [eventCache, taskCache]);
 
-    setEventDates(dates);
-  }, [tasks, events]);
+  const formatDateKey = (date: Date): string => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
+  };
 
-  const handleDateClick = (date: Date) => {
-    // Convert to YYYY-MM-DD format
-    const dateStr = date.toISOString().split("T")[0];
-
-    // Navigate to day view with selected date
+  const handleDayClick = (date: Date) => {
+    const dateStr = formatDateKey(date);
     navigate(`/calendar/day?date=${dateStr}`);
 
     // Also call the callback if provided
@@ -57,13 +82,23 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
     }
   };
 
+  // Check if a date is today
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   return (
     <div className="px-4 mb-4">
       <Calendar
-        onClickDay={handleDateClick}
+        onClickDay={handleDayClick}
         className="react-calendar--small"
         tileClassName={({ date }) => {
-          const hasEvent = eventDates.some((e) => isSameDay(e.date, date));
+          const hasEvent = eventsMap[formatDateKey(date)] > 0;
           const today = new Date();
           const isToday =
             date.getFullYear() === today.getFullYear() &&
@@ -76,10 +111,11 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
           return classes.trim();
         }}
         tileContent={({ date }) => {
-          const eventInfo = eventDates.find((e) => isSameDay(e.date, date));
-          return eventInfo ? (
+          const dateKey = formatDateKey(date);
+          const eventCount = eventsMap[dateKey];
+          return eventCount ? (
             <div className="event-indicator">
-              <span className="event-count">{eventInfo.count}</span>
+              <span className="event-count">{eventCount}</span>
             </div>
           ) : null;
         }}

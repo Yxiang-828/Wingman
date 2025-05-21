@@ -43,15 +43,10 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     e.stopPropagation(); // Prevent triggering the task item click
     
     try {
-      console.log("Toggling task completion via status button:", task.id);
+      // Use the DataProvider to toggle the task
       const updatedTask = await toggleTask(task);
       
-      // Use a local state update first for immediate visual feedback
-      const updatedTasks = tasks.map(t => 
-        t.id === updatedTask.id ? updatedTask : t
-      );
-      
-      // Then propagate the change up to parent component
+      // Propagate the change up to parent component
       onToggleTask(updatedTask);
     } catch (error) {
       console.error("Error toggling task status:", error);

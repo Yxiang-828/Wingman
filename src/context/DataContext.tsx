@@ -3,319 +3,416 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
-import type { Task } from "../api/Task";
-import type { CalendarEvent } from "../api/Calendar"; 
-import { fetchTasks, updateTask, addTask, deleteTask } from "../api/Task";
+import { fetchTasks, addTask, updateTask, deleteTask } from "../api/Task";
 import {
   fetchEvents,
   addEvent,
   updateEvent,
   deleteEvent,
 } from "../api/Calendar";
+import { debounce } from "../utils/helpers";
 
-interface DataContextType {
-  tasks: Task[];
-  events: CalendarEvent[];
-  loading: boolean;
-  refreshData: () => Promise<void>;
-  fetchTasksByDate: (date: string) => Promise<Task[]>;
-  fetchEventsByDate: (date: string) => Promise<CalendarEvent[]>;
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  setEvents: React.Dispatch<React.SetStateAction<CalendarEvent[]>>;
-  toggleTask: (task: Task) => Promise<Task>;
-  addNewTask: (task: Omit<Task, "id">) => Promise<Task>;
-  addNewEvent: (event: Omit<CalendarEvent, "id">) => Promise<CalendarEvent>;
-  updateExistingTask: (task: Task) => Promise<Task>;
-  updateExistingEvent: (event: CalendarEvent) => Promise<CalendarEvent>;
-  deleteExistingTask: (id: number) => Promise<void>;
-  deleteExistingEvent: (id: number) => Promise<void>;
-}
+// Constants for cache
+const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes cache expiry
+const STORAGE_KEY_PREFIX = "wingman_data_cache_";
 
-const DataContext = createContext<DataContextType | null>(null);
+// Helper functions for cache management
+const loadCacheFromStorage = (key: string) => {
+  try {
+    const cache = localStorage.getItem(`${STORAGE_KEY_PREFIX}${key}`);
+    if (cache) {
+      const { data, timestamp } = JSON.parse(cache);
+      // Check if cache is expired
+      if (Date.now() - timestamp < CACHE_EXPIRY_MS) {
+        return data;
+      }
+    }
+  } catch (error) {
+    console.error(`Error loading cache for ${key}:`, error);
+  }
+  return null;
+};
+
+const saveCacheToStorage = (key: string, data: any) => {
+  try {
+    const cacheData = {
+      data,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(
+      `${STORAGE_KEY_PREFIX}${key}`,
+      JSON.stringify(cacheData)
+    );
+  } catch (error) {
+    console.error(`Error saving cache for ${key}:`, error);
+  }
+};
+
+// Create the data context
+const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Enhanced caching mechanism
+  // Centralized cache state
   const [taskCache, setTaskCache] = useState<Record<string, Task[]>>({});
-  const [eventCache, setEventCache] = useState<Record<string, CalendarEvent[]>>({});
+  const [eventCache, setEventCache] = useState<Record<string, CalendarEvent[]>>(
+    {}
+  );
 
-  // Fetch data for today on initial load
-  const refreshData = async () => {
-    setLoading(true);
-    const today = new Date().toISOString().slice(0, 10);
-
+  // Track when data was last fetched
+  const [lastFetched, setLastFetched] = useState<Record<string, number>>(() => {
     try {
-      // Fetch today's tasks and events in parallel
-      const [tasksData, eventsData] = await Promise.all([
-        fetchTasks(today),
-        fetchEvents(today),
-      ]);
-
-      setTasks(tasksData);
-      setEvents(eventsData);
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-    } finally {
-      setLoading(false);
+      const saved = localStorage.getItem(`${STORAGE_KEY_PREFIX}lastFetched`);
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
     }
-  };
+  });
 
-  // Enhanced fetch tasks function with caching
-  const fetchTasksByDate = async (date: string): Promise<Task[]> => {
-    try {
-      // Use cache if available and not expired
-      if (taskCache[date]) {
-        console.log(`Using cached tasks for ${date}`);
-        return taskCache[date];
-      }
-      
-      console.log(`Fetching tasks for ${date} from API`);
-      const tasksData = await fetchTasks(date);
-      
-      // Update cache
-      setTaskCache(prev => ({
-        ...prev,
-        [date]: tasksData
-      }));
-      
-      // Also update the global tasks array
-      const existingTaskIds = tasks.map(t => t.id);
-      const newTasks = tasksData.filter(t => !existingTaskIds.includes(t.id));
-      if (newTasks.length > 0) {
-        setTasks(prev => [...prev, ...newTasks]);
-      }
-      
-      return tasksData;
-    } catch (error) {
-      console.error(`Error fetching tasks for ${date}:`, error);
-      return [];
+  // Save lastFetched timestamps whenever they change
+  useEffect(() => {
+    localStorage.setItem(
+      `${STORAGE_KEY_PREFIX}lastFetched`,
+      JSON.stringify(lastFetched)
+    );
+  }, [lastFetched]);
+
+  // Load initial cache from localStorage on mount
+  useEffect(() => {
+    // Load task cache
+    const initialTaskCache = loadCacheFromStorage("tasks") || {};
+    if (Object.keys(initialTaskCache).length > 0) {
+      setTaskCache(initialTaskCache);
     }
-  };
 
-  // Enhanced fetch events function with caching
-  const fetchEventsByDate = async (date: string): Promise<CalendarEvent[]> => {
-    try {
-      // Use cache if available and not expired
-      if (eventCache[date]) {
-        console.log(`Using cached events for ${date}`);
-        return eventCache[date];
-      }
-      
-      console.log(`Fetching events for ${date} from API`);
-      const eventsData = await fetchEvents(date);
-      
-      // Update cache
-      setEventCache(prev => ({
-        ...prev,
-        [date]: eventsData
-      }));
-      
-      // Also update the global events array
-      const existingEventIds = events.map(e => e.id);
-      const newEvents = eventsData.filter(e => !existingEventIds.includes(e.id));
-      if (newEvents.length > 0) {
-        setEvents(prev => [...prev, ...newEvents]);
-      }
-      
-      return eventsData;
-    } catch (error) {
-      console.error(`Error fetching events for ${date}:`, error);
-      return [];
+    // Load event cache
+    const initialEventCache = loadCacheFromStorage("events") || {};
+    if (Object.keys(initialEventCache).length > 0) {
+      setEventCache(initialEventCache);
     }
-  };
+  }, []);
 
-  // Toggle task completed status
-  const toggleTask = async (task: Task): Promise<Task> => {
+  // Save cache to localStorage when it changes (debounced to avoid excessive writes)
+  const saveTaskCache = useCallback(
+    debounce((cache) => {
+      saveCacheToStorage("tasks", cache);
+    }, 1000),
+    []
+  );
+
+  const saveEventCache = useCallback(
+    debounce((cache) => {
+      saveCacheToStorage("events", cache);
+    }, 1000),
+    []
+  );
+
+  // Update local storage whenever cache changes
+  useEffect(() => {
+    saveTaskCache(taskCache);
+  }, [taskCache, saveTaskCache]);
+
+  useEffect(() => {
+    saveEventCache(eventCache);
+  }, [eventCache, saveEventCache]);
+
+  // Check if a date needs to be refreshed
+  const needsRefresh = useCallback(
+    (dateStr: string): boolean => {
+      const lastFetch = lastFetched[dateStr];
+      if (!lastFetch) return true;
+      return Date.now() - lastFetch > CACHE_EXPIRY_MS;
+    },
+    [lastFetched]
+  );
+
+  // Mark a date as freshly fetched
+  const markFetched = useCallback((dateStr: string) => {
+    setLastFetched((prev) => ({
+      ...prev,
+      [dateStr]: Date.now(),
+    }));
+  }, []);
+
+  // Fetch tasks with caching
+  const fetchTasksByDate = useCallback(
+    async (date: string): Promise<Task[]> => {
+      try {
+        // Return cached data if available and not expired
+        if (taskCache[date] && !needsRefresh(date)) {
+          console.log(`Using cached tasks for ${date}`);
+          return taskCache[date];
+        }
+
+        console.log(`Fetching tasks for ${date} from API`);
+        const tasksData = await fetchTasks(date);
+
+        // Update cache
+        setTaskCache((prev) => ({
+          ...prev,
+          [date]: tasksData,
+        }));
+
+        // Mark as fetched
+        markFetched(date);
+
+        return tasksData;
+      } catch (error) {
+        console.error(`Error fetching tasks for ${date}:`, error);
+        return taskCache[date] || []; // Return cached data on error if available
+      }
+    },
+    [taskCache, needsRefresh, markFetched]
+  );
+
+  // Fetch events with caching
+  const fetchEventsByDate = useCallback(
+    async (date: string): Promise<CalendarEvent[]> => {
+      try {
+        // Return cached data if available and not expired
+        if (eventCache[date] && !needsRefresh(date)) {
+          console.log(`Using cached events for ${date}`);
+          return eventCache[date];
+        }
+
+        console.log(`Fetching events for ${date} from API`);
+        const eventsData = await fetchEvents(date);
+
+        // Update cache
+        setEventCache((prev) => ({
+          ...prev,
+          [date]: eventsData,
+        }));
+
+        // Mark as fetched
+        markFetched(date);
+
+        return eventsData;
+      } catch (error) {
+        console.error(`Error fetching events for ${date}:`, error);
+        return eventCache[date] || []; // Return cached data on error if available
+      }
+    },
+    [eventCache, needsRefresh, markFetched]
+  );
+
+  // Clear specific date cache
+  const invalidateCache = useCallback((date: string) => {
+    setLastFetched((prev) => {
+      const newLastFetched = { ...prev };
+      delete newLastFetched[date];
+      return newLastFetched;
+    });
+  }, []);
+
+  // Clear all cache
+  const clearAllCache = useCallback(() => {
+    setTaskCache({});
+    setEventCache({});
+    setLastFetched({});
+    localStorage.removeItem(`${STORAGE_KEY_PREFIX}tasks`);
+    localStorage.removeItem(`${STORAGE_KEY_PREFIX}events`);
+    localStorage.removeItem(`${STORAGE_KEY_PREFIX}lastFetched`);
+  }, []);
+
+  // Toggle task (with cache update)
+  const toggleTask = useCallback(async (task: Task): Promise<Task> => {
     try {
       const updatedTask = { ...task, completed: !task.completed };
-      const result = await updateTask(updatedTask);
+      const savedTask = await updateTask(updatedTask);
 
-      // Update local state
-      setTasks((prev) => prev.map((t) => (t.id === result.id ? result : t)));
+      // Update cache
+      setTaskCache((prev) => {
+        const dateTasks = prev[task.date] || [];
+        return {
+          ...prev,
+          [task.date]: dateTasks.map((t) => (t.id === task.id ? savedTask : t)),
+        };
+      });
 
-      return result;
+      return savedTask;
     } catch (error) {
       console.error("Error toggling task:", error);
       throw error;
     }
-  };
+  }, []);
 
-  // Add a new task
-  const addNewTask = async (task: Omit<Task, "id">): Promise<Task> => {
+  // Add new task (with cache update)
+  const addNewTask = useCallback(async (task: Partial<Task>): Promise<Task> => {
     try {
-      const newTask = await addTask(task);
-      setTasks((prev) => [...prev, newTask]);
-      
-      // Invalidate cache for this date
-      if (task.date) {
-        invalidateCache(task.date);
-      }
-      
-      return newTask;
+      const savedTask = await addTask(task);
+
+      // Update cache
+      setTaskCache((prev) => {
+        const dateTasks = prev[savedTask.date] || [];
+        return {
+          ...prev,
+          [savedTask.date]: [...dateTasks, savedTask],
+        };
+      });
+
+      return savedTask;
     } catch (error) {
       console.error("Error adding task:", error);
       throw error;
     }
-  };
-
-  // Add a new event
-  const addNewEvent = async (
-    event: Omit<CalendarEvent, "id">
-  ): Promise<CalendarEvent> => {
-    try {
-      const newEvent = await addEvent(event);
-      setEvents((prev) => [...prev, newEvent]);
-      
-      // Invalidate cache for this date
-      if (event.date) {
-        invalidateCache(event.date);
-      }
-      
-      return newEvent;
-    } catch (error) {
-      console.error("Error adding event:", error);
-      throw error;
-    }
-  };
-
-  // New method: Update an existing task
-  const updateExistingTask = async (task: Task): Promise<Task> => {
-    try {
-      console.log("Updating task via context:", task);
-      const updatedTask = await updateTask(task);
-      
-      // Update both global state and cache
-      setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
-      
-      // Invalidate cache for this date
-      if (task.date) {
-        invalidateCache(task.date);
-      }
-      
-      return updatedTask;
-    } catch (error) {
-      console.error("Error updating task:", error);
-      throw error;
-    }
-  };
-
-  // New method: Update an existing event
-  const updateExistingEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
-    try {
-      console.log("Updating event via context:", event);
-      const updatedEvent = await updateEvent(event);
-      
-      // Update both global state and cache
-      setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
-      
-      // Invalidate cache for this date
-      if (event.date) {
-        invalidateCache(event.date);
-      }
-      
-      return updatedEvent;
-    } catch (error) {
-      console.error("Error updating event:", error);
-      throw error;
-    }
-  };
-
-  // Delete a task
-  const deleteExistingTask = async (id: number): Promise<void> => {
-    try {
-      // Find the task to get its date before deletion
-      const taskToDelete = tasks.find(t => t.id === id);
-      const dateToInvalidate = taskToDelete?.date;
-      
-      await deleteTask(id);
-      setTasks(prev => prev.filter(t => t.id !== id));
-      
-      // Invalidate cache if we found the date
-      if (dateToInvalidate) {
-        invalidateCache(dateToInvalidate);
-      }
-    } catch (error) {
-      console.error("Error deleting task:", error);
-      throw error;
-    }
-  };
-
-  // Delete an event
-  const deleteExistingEvent = async (id: number): Promise<void> => {
-    try {
-      // Find the event to get its date before deletion
-      const eventToDelete = events.find(e => e.id === id);
-      const dateToInvalidate = eventToDelete?.date;
-      
-      await deleteEvent(id);
-      setEvents(prev => prev.filter(e => e.id !== id));
-      
-      // Invalidate cache if we found the date
-      if (dateToInvalidate) {
-        invalidateCache(dateToInvalidate);
-      }
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      throw error;
-    }
-  };
-
-  // Function to invalidate cache for a specific date when data changes
-  const invalidateCache = (date: string) => {
-    setTaskCache(prev => {
-      const newCache = {...prev};
-      delete newCache[date];
-      return newCache;
-    });
-    
-    setEventCache(prev => {
-      const newCache = {...prev};
-      delete newCache[date];
-      return newCache;
-    });
-  };
-
-  // Initial data load
-  useEffect(() => {
-    refreshData();
   }, []);
 
-  return (
-    <DataContext.Provider
-      value={{
-        tasks,
-        events,
-        loading,
-        refreshData,
-        fetchTasksByDate,
-        fetchEventsByDate,
-        setTasks,
-        setEvents,
-        toggleTask,
-        addNewTask,
-        addNewEvent,
-        updateExistingTask,
-        updateExistingEvent,
-        deleteExistingTask,
-        deleteExistingEvent,
-      }}
-    >
-      {children}
-    </DataContext.Provider>
+  // Delete task (with cache update)
+  const deleteExistingTask = useCallback(
+    async (taskId: number): Promise<void> => {
+      try {
+        await deleteTask(taskId);
+
+        // Find and remove task from cache
+        setTaskCache((prev) => {
+          const newCache = { ...prev };
+          for (const date in newCache) {
+            const tasks = newCache[date];
+            const index = tasks.findIndex((t) => t.id === taskId);
+            if (index !== -1) {
+              newCache[date] = [
+                ...tasks.slice(0, index),
+                ...tasks.slice(index + 1),
+              ];
+              break;
+            }
+          }
+          return newCache;
+        });
+      } catch (error) {
+        console.error("Error deleting task:", error);
+        throw error;
+      }
+    },
+    []
   );
+
+  // Add new event (with cache update)
+  const addNewEvent = useCallback(
+    async (event: Partial<CalendarEvent>): Promise<CalendarEvent> => {
+      try {
+        const savedEvent = await addEvent(event);
+
+        // Update cache
+        setEventCache((prev) => {
+          const dateEvents = prev[savedEvent.date] || [];
+          return {
+            ...prev,
+            [savedEvent.date]: [...dateEvents, savedEvent],
+          };
+        });
+
+        return savedEvent;
+      } catch (error) {
+        console.error("Error adding event:", error);
+        throw error;
+      }
+    },
+    []
+  );
+
+  // Delete event (with cache update)
+  const deleteExistingEvent = useCallback(
+    async (eventId: number): Promise<void> => {
+      try {
+        await deleteEvent(eventId);
+
+        // Find and remove event from cache
+        setEventCache((prev) => {
+          const newCache = { ...prev };
+          for (const date in newCache) {
+            const events = newCache[date];
+            const index = events.findIndex((e) => e.id === eventId);
+            if (index !== -1) {
+              newCache[date] = [
+                ...events.slice(0, index),
+                ...events.slice(index + 1),
+              ];
+              break;
+            }
+          }
+          return newCache;
+        });
+      } catch (error) {
+        console.error("Error deleting event:", error);
+        throw error;
+      }
+    },
+    []
+  );
+
+  // Full refresh of all data
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Clear caches and refetch when needed
+      clearAllCache();
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      setError("Failed to refresh data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [clearAllCache]);
+
+  // Provide the context values
+  const value = {
+    loading,
+    error,
+    fetchTasksByDate,
+    fetchEventsByDate,
+    toggleTask,
+    addNewTask,
+    deleteExistingTask,
+    addNewEvent,
+    deleteExistingEvent,
+    refreshData,
+    invalidateCache,
+    clearAllCache,
+    taskCache,
+    eventCache,
+    lastFetched,
+    needsRefresh,
+  };
+
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
-export const useData = () => {
+// Hook for using the data context
+export const useData = (): DataContextType => {
   const context = useContext(DataContext);
-  if (context === null) {
+  if (context === undefined) {
     throw new Error("useData must be used within a DataProvider");
   }
   return context;
 };
+
+// Types to ensure in DataContext.tsx
+export interface DataContextType {
+  loading: boolean;
+  error: string | null;
+  fetchTasksByDate: (date: string) => Promise<Task[]>;
+  fetchEventsByDate: (date: string) => Promise<CalendarEvent[]>;
+  toggleTask: (task: Task) => Promise<Task>;
+  addNewTask: (task: Partial<Task>) => Promise<Task>;
+  deleteExistingTask: (taskId: number) => Promise<void>;
+  addNewEvent: (event: Partial<CalendarEvent>) => Promise<CalendarEvent>;
+  deleteExistingEvent: (eventId: number) => Promise<void>;
+  refreshData: () => Promise<void>;
+  invalidateCache: (date: string) => void;
+  clearAllCache: () => void;
+  taskCache: Record<string, Task[]>;
+  eventCache: Record<string, CalendarEvent[]>;
+  lastFetched: Record<string, number>;
+  needsRefresh: (date: string) => boolean;
+}

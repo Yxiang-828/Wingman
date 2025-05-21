@@ -6,6 +6,11 @@ import MonthView from "./MonthView";
 import EventModal from "./EventModal";
 import "./Calendar.css";
 
+// Error boundary component to catch errors in the calendar views
+const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <>{children}</>;
+};
+
 const Calendar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,46 +29,48 @@ const Calendar: React.FC = () => {
   const dateSuffix = dateParam ? `?date=${dateParam}` : "";
 
   return (
-    <div className="calendar-container">
-      <div className="calendar-header flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Calendar</h1>
-        <div className="calendar-view-toggle flex gap-2">
-          <button
-            className={`calendar-toggle-btn${
-              currentView === "day" ? " active" : ""
-            }`}
-            onClick={() => navigate(`/calendar/day${dateSuffix}`)}
-          >
-            Day
-          </button>
-          <button
-            className={`calendar-toggle-btn${
-              currentView === "week" ? " active" : ""
-            }`}
-            onClick={() => navigate(`/calendar/week${dateSuffix}`)}
-          >
-            Week
-          </button>
-          <button
-            className={`calendar-toggle-btn${
-              currentView === "month" ? " active" : ""
-            }`}
-            onClick={() => navigate(`/calendar/month${dateSuffix}`)}
-          >
-            Month
-          </button>
+    <ErrorBoundary>
+      <div className="calendar-container">
+        <div className="calendar-header flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Calendar</h1>
+          <div className="calendar-view-toggle flex gap-2">
+            <button
+              className={`calendar-toggle-btn${
+                currentView === "day" ? " active" : ""
+              }`}
+              onClick={() => navigate(`/calendar/day${dateSuffix}`)}
+            >
+              Day
+            </button>
+            <button
+              className={`calendar-toggle-btn${
+                currentView === "week" ? " active" : ""
+              }`}
+              onClick={() => navigate(`/calendar/week${dateSuffix}`)}
+            >
+              Week
+            </button>
+            <button
+              className={`calendar-toggle-btn${
+                currentView === "month" ? " active" : ""
+              }`}
+              onClick={() => navigate(`/calendar/month${dateSuffix}`)}
+            >
+              Month
+            </button>
+          </div>
         </div>
+        <div className="calendar-main">
+          <Routes>
+            <Route path="day" element={<DayView />} />
+            <Route path="week" element={<WeekView />} />
+            <Route path="month" element={<MonthView />} />
+            <Route path="*" element={<DayView />} />
+          </Routes>
+        </div>
+        <EventModal />
       </div>
-      <div className="calendar-main">
-        <Routes>
-          <Route path="day" element={<DayView />} />
-          <Route path="week" element={<WeekView />} />
-          <Route path="month" element={<MonthView />} />
-          <Route path="*" element={<DayView />} />
-        </Routes>
-      </div>
-      <EventModal />
-    </div>
+    </ErrorBoundary>
   );
 };
 

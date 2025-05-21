@@ -172,10 +172,7 @@ const App = () => {
       <DiaryProvider>
         <DataProvider>
           <NotificationsProvider>
-            <ScrollToTop />
             <ErrorBoundary>
-              {" "}
-              {/* Wrap the AppContent with ErrorBoundary */}
               <AppContent />
             </ErrorBoundary>
           </NotificationsProvider>

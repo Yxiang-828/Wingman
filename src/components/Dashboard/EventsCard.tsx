@@ -34,7 +34,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
   return (
     <div className="dashboard-card events-card">
       <div className="dashboard-card-header">
-        <h2>Upcoming Events</h2>
+        <h2>Today's Events</h2> {/* Changed from "Upcoming Events" */}
         <button
           className="card-action-btn"
           onClick={() => navigate("/calendar")}
@@ -75,7 +75,6 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
         </div>
       )}
       
-      {/* This is the missing part! */}
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}
