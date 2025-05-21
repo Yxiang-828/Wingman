@@ -5,6 +5,8 @@ import DetailPopup from "../components/Common/DetailPopup";
 import { useData } from "../context/DataContext";
 import { format } from "date-fns";
 import "./Notifications.css";
+import type { Task } from '../api/Task';
+import type { CalendarEvent } from '../api/Calendar';
 
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +17,7 @@ const Notifications: React.FC = () => {
   
   // Try/catch to handle potential missing context error
   try {
-    const { tasks, events, taskCache, eventCache } = useData();
+    const { taskCache, eventCache } = useData();
     const {
       notifications,
       unreadCount,
@@ -106,7 +108,7 @@ const Notifications: React.FC = () => {
       if (notification.type === "task") {
         await toggleTask(notification.sourceId);
       } else if (notification.type === "event") {
-        const event = events.find((e) => e.id === notification.sourceId);
+        const event = events.find((e: CalendarEvent) => e.id === notification.sourceId);
         if (event) {
           showPopupFor(event);
         }
@@ -133,7 +135,7 @@ const Notifications: React.FC = () => {
       } else if (notification.type === "event") {
         // Make sure eventCache exists and has entries before searching
         const allEvents = Object.values(eventCache || {}).flat();
-        const event = allEvents.find((e) => e.id === notification.sourceId);
+        const event = allEvents.find((e: CalendarEvent) => e.id === notification.sourceId);
         
         if (event) {
           showPopupFor(event);
@@ -172,6 +174,27 @@ const Notifications: React.FC = () => {
         return dateStr;
       }
     };
+
+    // Get tasks and events from the cache
+    const tasks: Task[] = useMemo(() => {
+      const allTasks: Task[] = [];
+      Object.values(taskCache).forEach(weekData => {
+        Object.values(weekData).forEach(tasksArray => {
+          allTasks.push(...tasksArray);
+        });
+      });
+      return allTasks;
+    }, [taskCache]);
+
+    const events: CalendarEvent[] = useMemo(() => {
+      const allEvents: CalendarEvent[] = [];
+      Object.values(eventCache).forEach(weekData => {
+        Object.values(weekData).forEach(eventsArray => {
+          allEvents.push(...eventsArray);
+        });
+      });
+      return allEvents;
+    }, [eventCache]);
 
     return (
       <div className="notifications-container">

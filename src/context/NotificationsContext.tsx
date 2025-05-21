@@ -25,7 +25,7 @@ interface NotificationsContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   dismissNotification: (id: string) => void;
-  completeTask: (taskId: number) => Promise<void>;
+  completeTask: (taskId: number) => Promise<Task | void>; // Allow both Task and void returns
   showPopupFor: (item: Task | CalendarEvent) => void;
   currentPopupItem: Task | CalendarEvent | null;
   closePopup: () => void;

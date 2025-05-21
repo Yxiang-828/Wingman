@@ -205,7 +205,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       markWeekFetched(weekId);
     } catch (error) {
       console.error(`Error fetching week ${weekId} data:`, error);
-      setError(`Failed to load data: ${error.message}`);
+      setError(`Failed to load data: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
       setRequestedWeekId(null);

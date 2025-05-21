@@ -1,6 +1,9 @@
 import { app, BrowserWindow, nativeImage } from 'electron';
+import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import electronUpdater from 'electron-updater';
+const { autoUpdater } = electronUpdater;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -84,6 +87,10 @@ function createWindow() {
       if (isDevelopment) {
         win.loadURL('http://localhost:5173');
       } else {
+        // Make sure this file correctly loads your app
+        // Check that it references the correct paths for production builds
+
+        // When in production mode, it should load from the dist directory:
         win.loadFile(path.join(__dirname, '../dist/index.html'));
       }
     } catch (error) {
@@ -102,9 +109,70 @@ function createWindow() {
   return win;
 }
 
-app.whenReady().then(() => {
-  createWindow();
+// Add this to the top of your file
+let backendProcess = null;
 
+function startBackend() {
+  // Path to the packaged Python executable and script
+  const pythonExecutable = path.join(process.resourcesPath, 'backend', '.venv', 'Scripts', 'python.exe');
+  const scriptPath = path.join(process.resourcesPath, 'backend', 'main.py');
+  
+  // In development, use the local paths
+  const devPythonExecutable = isDevelopment ? 
+    path.join(__dirname, '..', 'Wingman-backend', '.venv', 'Scripts', 'python.exe') : 
+    pythonExecutable;
+  const devScriptPath = isDevelopment ? 
+    path.join(__dirname, '..', 'Wingman-backend', 'main.py') : 
+    scriptPath;
+  
+  console.log('Starting backend server...');
+  console.log(`Python: ${devPythonExecutable}`);
+  console.log(`Script: ${devScriptPath}`);
+  
+  // Start the FastAPI server
+  backendProcess = spawn(devPythonExecutable, [devScriptPath]);
+  
+  backendProcess.stdout.on('data', (data) => {
+    console.log(`Backend: ${data}`);
+  });
+  
+  backendProcess.stderr.on('data', (data) => {
+    console.error(`Backend error: ${data}`);
+  });
+  
+  backendProcess.on('close', (code) => {
+    console.log(`Backend process exited with code ${code}`);
+  });
+}
+
+// Add this function
+function setupAutoUpdater() {
+  // Configure the updater
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'Yxiang-828',
+    repo: 'Wingman'
+  });
+
+  // Check for updates
+  autoUpdater.checkForUpdatesAndNotify();
+
+  // Listen for update events
+  autoUpdater.on('update-available', () => {
+    console.log('Update available');
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    console.log('Update downloaded');
+  });
+}
+
+// Call this after the app is ready
+app.whenReady().then(() => {
+  startBackend();
+  createWindow();
+  setupAutoUpdater();
+  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();

@@ -18,4 +18,4 @@ class TaskInDB(TaskBase):
     id: int
     
     class Config:
-        orm_mode = True
+        orm_mode = True  # Already using the correct style for v1.10.x

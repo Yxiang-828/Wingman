@@ -5,7 +5,7 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/Wingman/', // Change from './' to '/Wingman/' for GitHub Pages
+  base: process.env.ELECTRON ? './' : '/Wingman/', // Use relative path for Electron
   build: {
     outDir: 'dist',
     emptyOutDir: true,

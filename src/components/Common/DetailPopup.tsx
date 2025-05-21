@@ -5,10 +5,11 @@ import type { CalendarEvent } from "../../api/Calendar";
 import Portal from "./Portal";
 import "./DetailPopup.css";
 
+// Change the type definition to match what toggleTask returns
 interface DetailPopupProps {
   item: Task | CalendarEvent;
   onClose: () => void;
-  onComplete?: (taskId: number) => Promise<void>;
+  onComplete?: (taskId: number) => Promise<Task | void>; // Modified to accept Task return type
   container?: HTMLElement;
 }
 

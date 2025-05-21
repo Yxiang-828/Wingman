@@ -25,7 +25,7 @@ export const showTaskNotification = (task: Task) => {
   checkNotificationPermission().then(granted => {
     if (granted) {
       const notification = new Notification(`Task Reminder: ${task.text}`, {
-        body: `Due on ${formatDate(task.task_date)} ${task.task_time ? 'at ' + task.task_time : ''}`,
+        body: `Due on ${formatDate(task.task_date ?? '')} ${task.task_time ? 'at ' + task.task_time : ''}`,
         icon: '/src/assets/task-icon.png', // Create or use an appropriate icon
         tag: `task-${task.id}` // Prevents duplicate notifications for the same task
       });
@@ -43,7 +43,7 @@ export const showEventNotification = (event: CalendarEvent) => {
   checkNotificationPermission().then(granted => {
     if (granted) {
       const notification = new Notification(`Event: ${event.title}`, {
-        body: `${event.type} at ${event.event_time} on ${formatDate(event.event_date)}`,
+        body: `${event.type} at ${event.event_time ?? ''} on ${formatDate(event.event_date ?? '')}`,
         icon: `/src/assets/event-icon.png`, // Create or use an appropriate icon
         tag: `event-${event.id}` // Prevents duplicate notifications for the same event
       });
@@ -99,7 +99,7 @@ export const checkUpcomingNotifications = (tasks: Task[], events: CalendarEvent[
   
   todayEvents.forEach(event => {
     // Check if it's time to notify
-    const [hours, minutes] = event.event_time.split(':').map(Number);
+    const [hours, minutes] = event.event_time ? event.event_time.split(':').map(Number) : [0, 0];
     const eventTime = new Date(now);
     eventTime.setHours(hours, minutes, 0, 0);
     

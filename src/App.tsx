@@ -31,6 +31,7 @@ import "./main.css";
 import "./styles/scrollbars.css";
 import ErrorBoundary from "./components/ErrorBoundary"; // Import the ErrorBoundary component
 import CompletedTasks from "./components/Tasks/CompletedTasks";
+import GitHubPagesNotice from "./components/Common/GitHubPagesNotice"; // Import GitHubPagesNotice
 
 // Create an AppContent component that will be inside the Router
 const AppContent = () => {
@@ -151,6 +152,7 @@ const AppContent = () => {
           </main>
         </div>
       </div>
+      <GitHubPagesNotice /> {/* Add GitHubPagesNotice component here */}
     </div>
   );
 };

@@ -14,3 +14,6 @@ class UserInDB(BaseModel):
     username: str
     name: str
     email: str
+    
+    class Config:
+        orm_mode = True  # Add this if you need ORM mode
