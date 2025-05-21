@@ -15,14 +15,14 @@ const Notifications: React.FC = () => {
   
   // Try/catch to handle potential missing context error
   try {
-    const { tasks, events } = useData();
+    const { tasks, events, taskCache, eventCache } = useData();
     const {
       notifications,
       unreadCount,
       markAsRead,
       markAllAsRead,
       dismissNotification,
-      completeTask,
+      completeTask: toggleTask,
       showPopupFor,
       currentPopupItem,
       closePopup
@@ -104,7 +104,7 @@ const Notifications: React.FC = () => {
     // Handle button action (e.g. Mark as complete)
     const handleAction = async (notification: any) => {
       if (notification.type === "task") {
-        await completeTask(notification.sourceId);
+        await toggleTask(notification.sourceId);
       } else if (notification.type === "event") {
         const event = events.find((e) => e.id === notification.sourceId);
         if (event) {
@@ -120,14 +120,26 @@ const Notifications: React.FC = () => {
       
       // Find the corresponding task or event
       if (notification.type === "task") {
-        const task = tasks.find((t) => t.id === notification.sourceId);
+        // Make sure taskCache exists and has entries before searching
+        const allTasks = Object.values(taskCache || {}).flat();
+        const task = allTasks.find((t) => t.id === notification.sourceId);
+        
         if (task) {
           showPopupFor(task);
+        } else {
+          console.warn(`Task with ID ${notification.sourceId} not found`);
+          // Optionally show a message to the user that the task wasn't found
         }
       } else if (notification.type === "event") {
-        const event = events.find((e) => e.id === notification.sourceId);
+        // Make sure eventCache exists and has entries before searching
+        const allEvents = Object.values(eventCache || {}).flat();
+        const event = allEvents.find((e) => e.id === notification.sourceId);
+        
         if (event) {
           showPopupFor(event);
+        } else {
+          console.warn(`Event with ID ${notification.sourceId} not found`);
+          // Optionally show a message to the user that the event wasn't found
         }
       }
     };
@@ -293,10 +305,11 @@ const Notifications: React.FC = () => {
         
         {/* Popup for detailed view */}
         {currentPopupItem && (
-          <DetailPopup 
-            item={currentPopupItem} 
+          <DetailPopup
+            item={currentPopupItem}
             onClose={closePopup}
-            onComplete={completeTask}
+            onComplete={toggleTask}
+            container={document.body}
           />
         )}
       </div>

@@ -54,6 +54,7 @@
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(100, 108, 255, 0.1);
+  max-height: 400px;
 }
 
 .dashboard-card:hover {
@@ -197,6 +198,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .event-item {
@@ -204,7 +207,7 @@
   grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
   align-items: center;
-  padding: 0.8rem 1rem;
+  padding: 0.75rem;
   border-radius: 10px;
   background: rgba(22, 22, 35, 0.5);
   margin-bottom: 0.6rem;
@@ -240,6 +243,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 200px;
 }
 
 .event-badge {
@@ -261,6 +265,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .task-item {
@@ -268,12 +274,13 @@
   grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
   align-items: center;
-  padding: 0.8rem 1rem;
+  padding: 0.75rem;
   border-radius: 10px;
   background: rgba(22, 22, 35, 0.5);
   transition: all 0.2s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   border-left: 3px solid #646cff;
+  font-size: 0.9rem;
 }
 
 .task-item.completed {
@@ -296,6 +303,10 @@
 .task-title {
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .task-item.completed .task-title {

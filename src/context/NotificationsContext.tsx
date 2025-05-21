@@ -1,21 +1,14 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  ReactNode,
-} from "react";
-import type { Task } from "../api/Task"; // Import as type
-import type { CalendarEvent } from "../api/Calendar"; // Import as type
-import DetailPopup from "../components/Common/DetailPopup"; // Add this import
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { useData } from "./DataContext";
-import { format, differenceInDays } from "date-fns"; // For date formatting
+import { differenceInDays, format } from "date-fns";
+import type { Task } from "../api/Task";
+import type { CalendarEvent } from "../api/Calendar";
+import { showDesktopNotification } from "../services/NotificationService";
 
 // Define the notification type structure
 export interface Notification {
   id: string;
-  sourceId: number; // The original task or event ID
+  sourceId: number;
   title: string;
   message: string;
   type: "task" | "event";
@@ -38,15 +31,17 @@ interface NotificationsContextType {
   closePopup: () => void;
 }
 
+// Create the context
 const NotificationsContext = createContext<NotificationsContextType | null>(
   null
 );
 
+// Provider component - separate from the hook export
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   // Access tasks and events from DataContext
-  const { taskCache, eventCache, toggleTask } = useData();
+  const { taskCache, eventCache, toggleTask, currentWeekId } = useData();
 
   // States
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -63,9 +58,9 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   // Load read status and dismissed notifications from localStorage
   useEffect(() => {
     try {
-      const savedRead = localStorage.getItem("readNotifications");
-      if (savedRead) {
-        setReadMap(JSON.parse(savedRead));
+      const savedReadMap = localStorage.getItem("readNotifications");
+      if (savedReadMap) {
+        setReadMap(JSON.parse(savedReadMap));
       }
 
       const savedDismissed = localStorage.getItem("dismissedNotifications");
@@ -73,7 +68,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
         setDismissedIds(JSON.parse(savedDismissed));
       }
     } catch (err) {
-      console.error("Error loading notification data", err);
+      console.error("Error loading notification state:", err);
     }
   }, []);
 
@@ -84,77 +79,91 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Save dismissed notifications to localStorage
   useEffect(() => {
-    localStorage.setItem(
-      "dismissedNotifications",
-      JSON.stringify(dismissedIds)
-    );
+    localStorage.setItem("dismissedNotifications", JSON.stringify(dismissedIds));
   }, [dismissedIds]);
 
   // Generate notifications from taskCache and eventCache
   useEffect(() => {
-    // Convert tasks to notifications (exclude completed tasks and dismissed ones)
-    const allTasks = Object.values(taskCache).flat();
-    const taskNotifications = allTasks
-      .filter((task) => {
-        if (dismissedIds.includes(`task-${task.id}`)) return false;
-        const taskDate = new Date(task.date);
-        const isPast = taskDate < new Date();
-        return (
-          !task.completed ||
-          (task.completed && isPast && daysSince(task.date) < 3)
-        );
-      })
-      .map((task) => ({
-        id: `task-${task.id}`,
-        sourceId: task.id,
-        title: "Task Due",
-        message: task.text,
-        type: "task" as const,
-        date: task.date,
-        time: task.time || "",
-        read: readMap[`task-${task.id}`] || false,
-        actionable: true,
-        completed: task.completed,
-      }));
+    if (!currentWeekId || !taskCache[currentWeekId] || !eventCache[currentWeekId])
+      return;
 
-    // Convert current/future events to notifications
-    const allEvents = Object.values(eventCache).flat();
-    const eventNotifications = allEvents
-      .filter((event) => {
-        if (dismissedIds.includes(`event-${event.id}`)) return false;
-        return true;
-      })
-      .map((event) => ({
-        id: `event-${event.id}`,
-        sourceId: event.id,
-        title: event.title,
-        message: `${event.type} event at ${event.time}`,
-        type: "event" as const,
-        date: event.date,
-        time: event.time,
-        read: readMap[`event-${event.id}`] || false,
-        actionable: true,
-      }));
+    try {
+      // Get the current date for comparisons
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0];
 
-    // Combine and sort notifications
-    const combined = [...taskNotifications, ...eventNotifications];
-    combined.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+      // Convert tasks to notifications (exclude completed tasks and dismissed ones)
+      const allTasks = Object.values(taskCache[currentWeekId]).flat();
+      const taskNotifications = allTasks
+        .filter((task) => {
+          // Only include current/future tasks that haven't been dismissed
+          const notDismissed = !dismissedIds.includes(`task-${task.id}`);
+          const currentOrFuture = task.date >= todayStr;
+          const notCompleted = !task.completed;
 
-    setNotifications(combined);
-  }, [taskCache, eventCache, readMap, dismissedIds]);
+          return notDismissed && currentOrFuture && notCompleted;
+        })
+        .map((task) => ({
+          id: `task-${task.id}`,
+          sourceId: task.id,
+          title: "Task Due",
+          message: task.text,
+          type: "task" as const,
+          date: task.date,
+          time: task.time || "",
+          read: readMap[`task-${task.id}`] || false,
+          actionable: true,
+          completed: task.completed,
+        }));
+
+      // Convert current/future events to notifications
+      const allEvents = Object.values(eventCache[currentWeekId]).flat();
+      const eventNotifications = allEvents
+        .filter((event) => {
+          // Only include current/future events that haven't been dismissed
+          const notDismissed = !dismissedIds.includes(`event-${event.id}`);
+          const currentOrFuture = event.date >= todayStr;
+
+          return notDismissed && currentOrFuture;
+        })
+        .map((event) => ({
+          id: `event-${event.id}`,
+          sourceId: event.id,
+          title: event.title,
+          message: `${event.type} event at ${event.time}`,
+          type: "event" as const,
+          date: event.date,
+          time: event.time || "",
+          read: readMap[`event-${event.id}`] || false,
+          actionable: true,
+        }));
+
+      // Combine and sort notifications by date and time
+      const combined = [...taskNotifications, ...eventNotifications].sort((a, b) => {
+        // First sort by date
+        if (a.date !== b.date) {
+          return a.date.localeCompare(b.date);
+        }
+        // Then by time if dates are equal
+        return (a.time || "").localeCompare(b.time || "");
+      });
+
+      setNotifications(combined);
+    } catch (error) {
+      console.error("Error generating notifications:", error);
+    }
+  }, [taskCache, eventCache, dismissedIds, readMap, currentWeekId]);
 
   // Mark a notification as read
-  const markAsRead = (id: string) => {
+  const markAsRead = useCallback((id: string) => {
     setReadMap((prev) => ({
       ...prev,
       [id]: true,
     }));
-  };
+  }, []);
 
   // Mark all notifications as read
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(() => {
     const allIds = notifications.reduce((acc, notification) => {
       acc[notification.id] = true;
       return acc;
@@ -164,34 +173,75 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       ...prev,
       ...allIds,
     }));
-  };
+  }, [notifications]);
 
   // Dismiss a notification
-  const dismissNotification = (id: string) => {
-    if (!dismissedIds.includes(id)) {
-      setDismissedIds((prev) => [...prev, id]);
-    }
+  const dismissNotification = useCallback(
+    (id: string) => {
+      if (!dismissedIds.includes(id)) {
+        setDismissedIds((prev) => [...prev, id]);
+      }
 
-    // Also mark as read
-    markAsRead(id);
-  };
+      // Also mark as read
+      markAsRead(id);
+    },
+    [dismissedIds, markAsRead]
+  );
+
+  // Define the function for calculating days since a date
+  const daysSince = useCallback((dateStr: string): number => {
+    return differenceInDays(new Date(), new Date(dateStr));
+  }, []);
 
   // Complete a task and update the notification
-  const completeTask = async (taskId: number) => {
-    try {
-      // Find the task in the tasks array
-      const taskToUpdate = tasks.find((t) => t.id === taskId);
-      if (!taskToUpdate) return;
+  const completeTask = useCallback(
+    async (taskId: number) => {
+      try {
+        // Find task across all dates in taskCache
+        let taskToComplete: Task | undefined;
+        let foundTask = false;
 
-      // Toggle it to completed
-      await toggleTask(taskToUpdate);
+        if (taskCache[currentWeekId]) {
+          Object.values(taskCache[currentWeekId]).forEach((tasks) => {
+            if (foundTask) return;
 
-      // Dismiss the notification
-      dismissNotification(`task-${taskId}`);
-    } catch (error) {
-      console.error("Error completing task:", error);
-    }
-  };
+            const task = tasks.find((t) => t.id === taskId);
+            if (task) {
+              taskToComplete = task;
+              foundTask = true;
+            }
+          });
+        }
+
+        if (taskToComplete) {
+          // Toggle the task using DataContext
+          const updatedTask = await toggleTask(taskToComplete);
+
+          // Update notifications state to reflect the change
+          setNotifications((prev) =>
+            prev.map((notification) => {
+              if (notification.type === "task" && notification.sourceId === taskId) {
+                return {
+                  ...notification,
+                  completed: updatedTask.completed,
+                  read: true, // Mark as read when completed
+                };
+              }
+              return notification;
+            })
+          );
+
+          return updatedTask;
+        }
+
+        return undefined;
+      } catch (error) {
+        console.error("Error completing task:", error);
+        throw error;
+      }
+    },
+    [taskCache, currentWeekId, toggleTask]
+  );
 
   // When the component mounts, find the dashboard container
   useEffect(() => {
@@ -202,47 +252,90 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // Show popup for task or event
-  const showPopupFor = (item: Task | CalendarEvent) => {
+  const showPopupFor = useCallback((item: Task | CalendarEvent) => {
     setCurrentPopupItem(item);
-    // Mark the notification as read
-    const itemType = "title" in item ? "event" : "task";
-    markAsRead(`${itemType}-${item.id}`);
-  };
+  }, []);
 
   // Close popup
-  const closePopup = () => {
+  const closePopup = useCallback(() => {
     setCurrentPopupItem(null);
+  }, []);
+
+  // Check for upcoming events and tasks to show notifications
+  const checkUpcomingEvents = useCallback(
+    (eventCache: any, taskCache: any) => {
+      if (!currentWeekId) return;
+
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0];
+      const currentTime = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+
+      // Check events for today
+      if (eventCache[currentWeekId] && eventCache[currentWeekId][todayStr]) {
+        eventCache[currentWeekId][todayStr].forEach((event: any) => {
+          if (event.time === currentTime) {
+            showDesktopNotification(
+              `Event: ${event.title}`,
+              `Your event "${event.title}" is starting now.`
+            );
+          }
+        });
+      }
+
+      // Check tasks for today
+      if (taskCache[currentWeekId] && taskCache[currentWeekId][todayStr]) {
+        taskCache[currentWeekId][todayStr].forEach((task: any) => {
+          if (task.time === currentTime && !task.completed) {
+            showDesktopNotification(
+              `Task Reminder: ${task.text}`,
+              `It's time for your task: ${task.text}`
+            );
+          }
+        });
+      }
+    },
+    [currentWeekId]
+  );
+
+  // Check for notifications every minute
+  useEffect(() => {
+    // Check for notifications that should display on desktop every minute
+    const checkInterval = setInterval(() => {
+      checkUpcomingEvents(eventCache, taskCache);
+    }, 60000); // Check every minute
+
+    // Initial check
+    checkUpcomingEvents(eventCache, taskCache);
+
+    return () => clearInterval(checkInterval);
+  }, [eventCache, taskCache, checkUpcomingEvents]);
+
+  // Context value
+  const value = {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    dismissNotification,
+    completeTask,
+    showPopupFor,
+    currentPopupItem,
+    closePopup,
   };
 
   return (
-    <NotificationsContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        markAsRead,
-        markAllAsRead,
-        dismissNotification,
-        completeTask,
-        showPopupFor,
-        currentPopupItem,
-        closePopup,
-      }}
-    >
+    <NotificationsContext.Provider value={value}>
       {children}
-      {currentPopupItem && (
-        <DetailPopup
-          item={currentPopupItem}
-          onClose={closePopup}
-          onComplete={completeTask}
-          container={dashboardRef.current || undefined}
-        />
-      )}
     </NotificationsContext.Provider>
   );
 };
 
-// Custom hook to use the notifications context
-export const useNotifications = () => {
+// Custom hook to use the notifications context - exported separately
+export function useNotifications() {
   const context = useContext(NotificationsContext);
   if (!context) {
     throw new Error(
@@ -250,9 +343,4 @@ export const useNotifications = () => {
     );
   }
   return context;
-};
-
-// Define helper function
-const daysSince = (dateStr: string): number => {
-  return differenceInDays(new Date(), new Date(dateStr));
-};
+}

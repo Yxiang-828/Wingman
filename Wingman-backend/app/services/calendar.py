@@ -3,6 +3,24 @@ from app.core.supabase import supabase
 from app.services.user import verify_user_exists
 import traceback
 
+# Add proper date formatting
+
+def safe_format_date(date_value):
+    """Safely format date values for frontend"""
+    if date_value is None:
+        return None
+        
+    # If it's already a string, return it
+    if isinstance(date_value, str):
+        return date_value
+        
+    # If it's a date object, convert to ISO format
+    if isinstance(date_value, date):
+        return date_value.isoformat()
+        
+    # Otherwise, convert to string
+    return str(date_value)
+
 def get_events_by_date(date_value, user_id):
     try:
         # Accepts string or date
@@ -17,7 +35,7 @@ def get_events_by_date(date_value, user_id):
         for event in response.data:
             event_copy = dict(event)
             # Add date and time fields for frontend
-            event_copy["date"] = event_copy["event_date"]
+            event_copy["date"] = safe_format_date(event_copy["event_date"])
             event_copy["time"] = event_copy.get("event_time", "")
             result.append(event_copy)
         
@@ -58,7 +76,7 @@ def create_event(event):
         if response.data and len(response.data) > 0:
             event_data = response.data[0]
             # Add date and time for frontend consistency
-            event_data["date"] = event_data["event_date"]
+            event_data["date"] = safe_format_date(event_data["event_date"])
             event_data["time"] = event_data.get("event_time", "")
             return event_data
             
@@ -107,7 +125,7 @@ def update_event(event_id: int, event):
             if get_response.data and len(get_response.data) > 0:
                 event_data = get_response.data[0]
                 # Add date and time for frontend consistency
-                event_data["date"] = event_data["event_date"]
+                event_data["date"] = safe_format_date(event_data["event_date"])
                 event_data["time"] = event_data.get("event_time", "")
                 return event_data
             
@@ -122,7 +140,7 @@ def update_event(event_id: int, event):
         # Process normal response
         event_data = response.data[0]
         # Add date and time for frontend consistency
-        event_data["date"] = event_data["event_date"]
+        event_data["date"] = safe_format_date(event_data["event_date"])
         event_data["time"] = event_data.get("event_time", "")
         return event_data
     except Exception as e:

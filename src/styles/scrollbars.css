@@ -116,3 +116,34 @@
 .week-day-content::-webkit-scrollbar-thumb {
   background: rgba(100, 108, 255, 0.3);
 }
+
+/* Prevent scrollbar jumps */
+html {
+  overflow-y: scroll; /* Always show scrollbar to prevent layout shifts */
+  scrollbar-gutter: stable; /* Reserve space for scrollbar */
+}
+
+/* Add smooth transitions to reduce visual flickering */
+.week-day, .month-day, .day-view-container, .calendar-container {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+/* Optimize rendering using hardware acceleration on critical elements */
+.week-days-grid, .month-days-grid, .day-view-content {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* Dashboard cards and items */
+.dashboard-card, .task-item, .event-item {
+  contain: content;
+  will-change: transform;
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+/* Animation content containment for performance */
+.loading-spinner {
+  will-change: transform;
+  contain: strict;
+}

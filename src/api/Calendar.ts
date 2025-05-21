@@ -10,7 +10,7 @@ export interface CalendarEvent {
   description: string;
 }
 
-// Rest of your API functions
+// Rest of your Calendar API functions...
 export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
   try {
     // Get current user from localStorage

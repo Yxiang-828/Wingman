@@ -1,9 +1,8 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import Portal from "../Common/Portal"; // Add this import
+import Portal from "./Portal";
 import "./DetailPopup.css";
 
 interface DetailPopupProps {
@@ -37,22 +36,19 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
   const navigate = useNavigate();
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // THIS PART IS COMMENTED OUT TO DISABLE AUTOMATIC DISMISS
-  /*
-  // Close popup when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        onClose();
+  // Handle complete task function call
+  const handleCompleteTask = async (e: React.MouseEvent) => {
+    // Stop event propagation to prevent the overlay click from firing
+    e.stopPropagation();
+
+    if (isTask(item) && onComplete) {
+      try {
+        await onComplete(item.id);
+      } catch (error) {
+        console.error("Error completing task:", error);
       }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClose]);
-  */
+    }
+  };
 
   // Navigate to day view with this item highlighted
   const navigateToItem = (e: React.MouseEvent) => {
@@ -64,21 +60,6 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
     onClose();
   };
 
-  // Complete task if applicable
-  const handleCompleteTask = async (e: React.MouseEvent) => {
-    // Stop event propagation to prevent the overlay click from firing
-    e.stopPropagation();
-
-    if (isTask(item) && onComplete) {
-      try {
-        await onComplete(item.id);
-        onClose();
-      } catch (error) {
-        console.error("Error completing task:", error);
-      }
-    }
-  };
-
   const popupContent = (
     <div className="detail-popup-overlay" onClick={onClose}>
       <div
@@ -88,10 +69,8 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
       >
         <button
           className="detail-popup-close"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
+          onClick={onClose}
+          aria-label="Close"
         >
           ×
         </button>
@@ -107,7 +86,7 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
                     item.completed ? "completed" : ""
                   }`}
                 >
-                  {item.completed ? "✓ Completed" : "○ Pending"}
+                  {item.completed ? "Completed" : "Pending"}
                 </div>
                 <div className="detail-date">
                   {formatDateDisplay(item.date)}
@@ -117,18 +96,16 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
               <div className="detail-text">{item.text}</div>
 
               {item.time && (
-                <div className="detail-time">Time: {item.time}</div>
+                <div className="detail-time">{item.time}</div>
               )}
 
               <div className="detail-popup-actions">
-                {/* Ensure buttons inside modal retain full functionality */}
-                {/* Don't break React onClick handlers or context */}
                 {!item.completed && onComplete && (
                   <button
                     className="detail-action-btn complete"
                     onClick={handleCompleteTask}
                   >
-                    Mark as Completed
+                    Mark Complete
                   </button>
                 )}
                 <button
@@ -181,8 +158,8 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
     </div>
   );
 
-  // Render using Portal
-  return <Portal container={container}>{popupContent}</Portal>;
+  // Render using Portal with container properly passed
+  return <Portal container={container || document.body}>{popupContent}</Portal>;
 };
 
 export default DetailPopup;

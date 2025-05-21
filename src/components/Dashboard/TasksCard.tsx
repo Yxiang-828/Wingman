@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
 import { useNotifications } from "../../context/NotificationsContext";
@@ -7,24 +7,15 @@ import DetailPopup from "../Common/DetailPopup";
 import "./Dashboard.css";
 
 interface TasksCardProps {
-  tasks: Task[];
+  tasks: Task[];  // Should be pending tasks only
   onToggleTask: (task: Task) => void;
 }
 
 const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const navigate = useNavigate();
-  const dashboardRef = useRef<HTMLDivElement | null>(null);
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
   const { toggleTask } = useData();
   
-  // Get reference to dashboard container for modal positioning
-  useEffect(() => {
-    dashboardRef.current =
-      document.querySelector(".dashboard") ||
-      document.querySelector(".dashboard-container") ||
-      document.getElementById("dashboard");
-  }, []);
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString(undefined, {
@@ -33,7 +24,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     });
   };
 
-  // Handles clicking on the entire task item - show popup
+  // Handle clicking on a task item - show popup
   const handleTaskClick = (task: Task) => {
     showPopupFor(task);
   };
@@ -87,12 +78,13 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           View All
         </button>
       </div>
+      
       {tasks.length > 0 ? (
         <ul className="tasks-list">
           {tasks.map((task) => (
             <li
               key={`task-${task.id}`}
-              className={`task-item ${task.completed ? "completed" : ""}`}
+              className="task-item"
               onClick={() => handleTaskClick(task)}
             >
               <div 
@@ -105,7 +97,6 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
                 <div className="task-title">{task.text}</div>
                 <div className="task-meta">
                   {task.time && <span className="task-time">{task.time}</span>}
-                  <span className="task-date">{formatDate(task.date)}</span>
                 </div>
               </div>
             </li>
@@ -122,6 +113,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           </button>
         </div>
       )}
+      
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}

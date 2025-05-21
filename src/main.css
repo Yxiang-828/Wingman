@@ -542,6 +542,78 @@ input:focus, textarea:focus, select:focus {
   animation: fadeIn 0.5s ease-in-out;
 }
 
+/* Entry component sizing improvements */
+.entry-item {
+  min-height: 6rem; /* Minimum height for entries */
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(30, 30, 50, 0.5);
+}
+
+/* Task list item improvements */
+.task-item {
+  padding: 1rem 1.2rem; /* Increased padding */
+  min-height: 4.5rem; /* Ensure consistent height */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  border-left: 3px solid var(--accent-primary);
+}
+
+/* Calendar event styling */
+.event-item {
+  padding: 1rem 1.2rem;
+  min-height: 5rem;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+
+/* Button hover effects with glow */
+.action-btn,
+.calendar-btn,
+.day-form-btn {
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  background: rgba(30, 30, 50, 0.5);
+  color: var(--text-light);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.action-btn:hover,
+.calendar-btn:hover,
+.day-form-btn:hover {
+  border-color: rgba(100, 108, 255, 0.6);
+  box-shadow: 0 0 15px var(--glow-primary);
+  transform: translateY(-2px);
+}
+
+/* Quick action forms in calendar */
+.quick-action-form {
+  background: rgba(25, 25, 45, 0.95);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  min-width: 300px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .dashboard {

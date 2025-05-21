@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { format, isToday, parseISO } from "date-fns";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
-import { updateTask } from "../../api/Task";
-import { updateEvent } from "../../api/Calendar";
+import TimeInput from "../Common/TimeInput";
+import DetailPopup from "../Common/DetailPopup";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import TimeInput from "../Common/TimeInput"; // Import the TimeInput component
-import DetailPopup from "../Common/DetailPopup";
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -562,6 +561,20 @@ const DayView: React.FC = () => {
     }
   };
 
+  // Updated navigation functions
+  const navigateToCompletedTasks = () => {
+    const dateStr = date ? date.toISOString().split("T")[0] : "";
+    navigate(`/completed-tasks?date=${dateStr}`);
+  };
+
+  const navigateToPendingTasks = () => {
+    navigate("/notifications?tab=task");
+  };
+
+  const navigateToEvents = () => {
+    navigate("/notifications?tab=event");
+  };
+
   // Return the UI
   return (
     <div className="day-view-container">
@@ -587,7 +600,12 @@ const DayView: React.FC = () => {
       </div>
 
       <div className="day-view-stats">
-        <div className="day-stat-card">
+        <div
+          className="day-stat-card events"
+          onClick={navigateToEvents}
+          role="button"
+          tabIndex={0}
+        >
           <div className="day-stat-icon">📅</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.events}</div>
@@ -595,19 +613,29 @@ const DayView: React.FC = () => {
           </div>
         </div>
 
-        <div className="day-stat-card">
-          <div className="day-stat-icon">✓</div>
+        <div
+          className="day-stat-card pending"
+          onClick={navigateToPendingTasks}
+          role="button"
+          tabIndex={0}
+        >
+          <div className="day-stat-icon">⏱️</div>
           <div className="day-stat-content">
-            <div className="day-stat-value">{stats.completedTasks}</div>
-            <div className="day-stat-label">Completed</div>
+            <div className="day-stat-value">{stats.pendingTasks}</div>
+            <div className="day-stat-label">Pending Tasks</div>
           </div>
         </div>
 
-        <div className="day-stat-card">
-          <div className="day-stat-icon">⏳</div>
+        <div
+          className="day-stat-card completed"
+          onClick={navigateToCompletedTasks}
+          role="button"
+          tabIndex={0}
+        >
+          <div className="day-stat-icon">✓</div>
           <div className="day-stat-content">
-            <div className="day-stat-value">{stats.pendingTasks}</div>
-            <div className="day-stat-label">Pending</div>
+            <div className="day-stat-value">{stats.completedTasks}</div>
+            <div className="day-stat-label">Completed Tasks</div>
           </div>
         </div>
       </div>
@@ -842,6 +870,12 @@ const DayView: React.FC = () => {
           <div className="day-view-section">
             <div className="day-section-header">
               <h2 className="day-section-title">{getSectionLabel("Tasks")}</h2>
+              <button
+                className="view-completed-btn"
+                onClick={navigateToCompletedTasks}
+              >
+                View Completed
+              </button>
             </div>
 
             <form
@@ -1003,14 +1037,6 @@ const DayView: React.FC = () => {
           onComplete={completeTask}
         />
       )}
-
-      {/* Add a button to navigate to completed tasks */}
-      <button
-        className="view-completed-btn"
-        onClick={() => navigate('/completed-tasks')}
-      >
-        View Completed Tasks
-      </button>
     </div>
   );
 };

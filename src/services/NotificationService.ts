@@ -1,4 +1,5 @@
-import type { Task, CalendarEvent } from '../types/database';
+import type { Task } from '../api/Task'; 
+import type { CalendarEvent } from '../api/Calendar';
 
 // Check if we can use browser notifications
 const checkNotificationPermission = async (): Promise<boolean> => {
@@ -124,4 +125,60 @@ export const startNotificationService = (tasks: Task[], events: CalendarEvent[])
   
   // Return function to stop the service
   return () => clearInterval(intervalId);
+};
+
+// Add this new service file for desktop notifications
+export const showDesktopNotification = (title: string, body: string) => {
+  try {
+    // Request permission if needed
+    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+      Notification.requestPermission();
+    }
+    
+    // Show notification if permission granted
+    if (Notification.permission === "granted") {
+      const notification = new Notification(title, {
+        body: body,
+        icon: '/favicon.ico'
+      });
+      
+      // Auto close after 10 seconds
+      setTimeout(() => notification.close(), 10000);
+      
+      // Optional: handle click event
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  } catch (error) {
+    console.error("Error showing desktop notification:", error);
+  }
+};
+
+// Add to NotificationsContext
+export const checkUpcomingEvents = (eventCache: any, taskCache: any) => {
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  
+  // Check events
+  Object.values(eventCache || {}).flat().forEach((event: any) => {
+    if (event.date === todayStr && event.time === currentTime) {
+      showDesktopNotification(
+        `Event: ${event.title}`,
+        `Your event "${event.title}" is starting now.`
+      );
+    }
+  });
+  
+  // Check tasks
+  Object.values(taskCache || {}).flat().forEach((task: any) => {
+    if (task.date === todayStr && task.time === currentTime && !task.completed) {
+      showDesktopNotification(
+        `Task Reminder: ${task.text}`,
+        `It's time for your task: ${task.text}`
+      );
+    }
+  });
 };

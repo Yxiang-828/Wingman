@@ -3,8 +3,11 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
+  useCallback,
   type ReactNode,
 } from "react";
+import { throttle } from "lodash";
 import {
   fetchDiaryEntries,
   fetchDiaryEntry,
@@ -31,22 +34,37 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const lastFetchedRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
     refreshEntries();
   }, []);
 
-  const refreshEntries = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchDiaryEntries();
-      setEntries(data);
-    } catch (error) {
-      console.error("Error fetching diary entries:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const refreshEntries = useCallback(
+    throttle(async () => {
+      setLoading(true);
+      try {
+        // Check if we've fetched recently (within last 5 seconds)
+        const now = Date.now();
+        const lastFetched = lastFetchedRef.current["entries"] || 0;
+        if (now - lastFetched < 5000) {
+          console.log("Skipping diary fetch - recently fetched");
+          return; // Skip if fetched within last 5 seconds
+        }
+
+        // Update last fetched timestamp
+        lastFetchedRef.current["entries"] = now;
+
+        const data = await fetchDiaryEntries();
+        setEntries(data);
+      } catch (error) {
+        console.error("Error fetching diary entries:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 1000),
+    []
+  );
 
   const getEntryById = async (id: number) => {
     try {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import type { CalendarEvent } from "../../api/Calendar";
 import { useNotifications } from "../../context/NotificationsContext";
@@ -6,18 +6,12 @@ import DetailPopup from "../Common/DetailPopup";
 import "./Dashboard.css";
 
 interface EventsCardProps {
-  events: CalendarEvent[];
+  events: CalendarEvent[]; // Today's events only
 }
 
 const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
   const navigate = useNavigate();
-  const dashboardRef = useRef<HTMLDivElement | null>(null);
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
-  
-  // Get reference to dashboard container for modal positioning
-  useEffect(() => {
-    dashboardRef.current = document.querySelector(".dashboard-container");
-  }, []);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -34,14 +28,15 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
   return (
     <div className="dashboard-card events-card">
       <div className="dashboard-card-header">
-        <h2>Today's Events</h2> {/* Changed from "Upcoming Events" */}
+        <h2>Today's Events</h2>
         <button
           className="card-action-btn"
-          onClick={() => navigate("/calendar")}
+          onClick={() => navigate("/calendar/day")}
         >
           View All
         </button>
       </div>
+
       {events.length > 0 ? (
         <ul className="events-list">
           {events.map((event) => (
@@ -56,8 +51,9 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
               <div className="event-details">
                 <div className="event-title">{event.title}</div>
                 <div className="event-meta">
-                  {event.time && <span className="event-time">{event.time}</span>}
-                  <span className="event-date">{formatDate(event.date)}</span>
+                  {event.time && (
+                    <span className="event-time">{event.time}</span>
+                  )}
                 </div>
               </div>
             </li>
@@ -65,16 +61,16 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
         </ul>
       ) : (
         <div className="empty-list-message">
-          <p>No upcoming events</p>
+          <p>No events for today</p>
           <button
             className="action-btn small"
-            onClick={() => navigate("/calendar")}
+            onClick={() => navigate("/calendar/day")}
           >
             Add Event
           </button>
         </div>
       )}
-      
+
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}
