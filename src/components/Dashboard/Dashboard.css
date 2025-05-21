@@ -159,6 +159,32 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Add these styles for clickable summary stats */
+.stat-item.clickable {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stat-item.clickable:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(100, 108, 255, 0.2);
+  background: rgba(35, 35, 55, 0.7);
+}
+
+.stat-item.clickable:focus {
+  outline: 2px solid rgba(100, 108, 255, 0.6);
+  outline-offset: 3px;
+}
+
+.stat-item.clickable .stat-number {
+  transition: all 0.3s ease;
+}
+
+.stat-item.clickable:hover .stat-number {
+  transform: scale(1.1);
+  color: #8890ff;
+}
+
 /* Events Card */
 .events-card {
   background: linear-gradient(135deg, rgba(30, 30, 40, 0.6) 0%, rgba(35, 35, 55, 0.5) 100%);

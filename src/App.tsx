@@ -30,6 +30,7 @@ import { startNotificationCleanupService } from "./services/NotificationCleanupS
 import "./main.css";
 import "./styles/scrollbars.css";
 import ErrorBoundary from "./components/ErrorBoundary"; // Import the ErrorBoundary component
+import CompletedTasks from "./components/Tasks/CompletedTasks";
 
 // Create an AppContent component that will be inside the Router
 const AppContent = () => {
@@ -133,6 +134,14 @@ const AppContent = () => {
                 element={
                   <ErrorBoundary>
                     <Home />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/completed-tasks"
+                element={
+                  <ErrorBoundary>
+                    <CompletedTasks />
                   </ErrorBoundary>
                 }
               />

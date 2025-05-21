@@ -66,40 +66,42 @@ const DayView: React.FC = () => {
   useEffect(() => {
     try {
       const query = new URLSearchParams(location.search);
-      const dateStr = query.get("date");
+      const dateParam = query.get("date");
+      const focusParam = query.get("focus"); // Get focus parameter
+      
+      // Parse highlight parameter (for highlighting items)
       const highlight = query.get("highlight");
-
       if (highlight) {
         setHighlightId(highlight);
-        // Set the active tab based on what's being highlighted
-        if (highlight.startsWith("task-")) {
-          setActiveTab("tasks");
-        } else if (highlight.startsWith("event-")) {
-          setActiveTab("events");
-        }
       }
-
-      if (dateStr) {
-        const [year, month, day] = dateStr.split("-").map(Number);
-        // Create date with noon UTC time to avoid timezone issues
-        const newDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
-        setDate(newDate);
-        // Fetch data for this date
-        fetchData(dateStr);
+      
+      // Set active tab based on focus parameter
+      if (focusParam === "events") {
+        setActiveTab("events");
+      } else if (focusParam === "tasks") {
+        setActiveTab("tasks");
+      }
+      
+      // Parse date
+      if (dateParam) {
+        const newDate = new Date(dateParam);
+        if (!isNaN(newDate.getTime())) {
+          setDate(newDate);
+          const dateStr = newDate.toISOString().split('T')[0];
+          fetchData(dateStr);
+        } else {
+          setDateError("Invalid date format");
+        }
       } else {
-        // Default to today if no date provided
+        // Default to today if no date specified
         const today = new Date();
-        const todayStr = today.toISOString().split("T")[0];
         setDate(today);
-        fetchData(todayStr);
+        const dateStr = today.toISOString().split('T')[0];
+        fetchData(dateStr);
       }
     } catch (err) {
-      console.error("Error parsing date:", err);
-      setDateError("Invalid date format in URL");
-      // Default to today
-      const today = new Date();
-      setDate(today);
-      fetchData(today.toISOString().split("T")[0]);
+      console.error("Error parsing URL parameters:", err);
+      setDateError("Error parsing parameters");
     }
   }, [location.search]);
 
