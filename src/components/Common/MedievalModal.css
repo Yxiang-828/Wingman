@@ -1,0 +1,143 @@
+.medieval-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.medieval-scroll {
+  background: #e8dfc1;
+  background-image: linear-gradient(to right, 
+    rgba(160, 120, 80, 0.3) 0px, 
+    rgba(240, 230, 210, 0.5) 30px, 
+    rgba(240, 230, 210, 0.5) calc(100% - 30px),
+    rgba(160, 120, 80, 0.3) 100%
+  );
+  border-radius: 8px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    inset 0 0 15px rgba(100, 70, 30, 0.2);
+  padding: 2.5rem 3rem;
+  min-width: 300px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 2px solid #8a6d3b;
+  color: #402e16;
+  position: relative;
+  text-align: center;
+  animation: unfurl 0.5s ease;
+}
+
+/* Create scroll edges without images */
+.medieval-scroll::before,
+.medieval-scroll::after {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 20px;
+  top: 0;
+  background: linear-gradient(
+    to right,
+    #8a6d3b,
+    #d9c49f 50%,
+    #8a6d3b
+  );
+  border-radius: 10px;
+}
+
+.medieval-scroll::before {
+  left: -8px;
+}
+
+.medieval-scroll::after {
+  right: -8px;
+}
+
+.medieval-title {
+  margin-top: 0;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #8a6d3b;
+  color: #5e3a11;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  position: relative;
+}
+
+.medieval-title::after {
+  content: '❧';
+  display: block;
+  font-size: 1.2rem;
+  color: #8a6d3b;
+  margin-top: 0.5rem;
+}
+
+.medieval-content {
+  margin: 1.5rem 0;
+  color: #402e16;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.medieval-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #8a6d3b;
+}
+
+.medieval-actions button {
+  background: #5e3a11;
+  color: #e8dfc1;
+  border: 2px solid #8a6d3b;
+  padding: 0.5rem 1.2rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.medieval-actions button:hover {
+  background: #8a6d3b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.medieval-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #5e3a11;
+  cursor: pointer;
+  z-index: 5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes unfurl {
+  from { 
+    transform: scale(0.9) rotateX(10deg); 
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1) rotateX(0); 
+    opacity: 1;
+  }
+}
