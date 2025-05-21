@@ -5,7 +5,7 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './', // Important for Electron builds
+  base: '/Wingman/', // Change from './' to '/Wingman/' for GitHub Pages
   build: {
     outDir: 'dist',
     emptyOutDir: true,
