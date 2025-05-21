@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useNotifications } from "../context/NotificationsContext";
 import DetailPopup from "../components/Common/DetailPopup";
 import { useData } from "../context/DataContext";
@@ -8,6 +8,7 @@ import "./Notifications.css";
 
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Try/catch to handle potential missing context error
   try {
@@ -24,7 +25,13 @@ const Notifications: React.FC = () => {
       closePopup
     } = useNotifications();
 
-    const [activeTab, setActiveTab] = useState<string>("all");
+    // Get tab from URL if provided
+    const query = new URLSearchParams(location.search);
+    const tabFromUrl = query.get('tab');
+    
+    const [activeTab, setActiveTab] = useState<string>(
+      tabFromUrl === 'task' || tabFromUrl === 'event' ? tabFromUrl : 'all'
+    );
 
     // Filter notifications based on active tab
     const filteredNotifications = notifications.filter((notification) => {

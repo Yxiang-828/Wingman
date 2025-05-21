@@ -567,6 +567,19 @@ const DayView: React.FC = () => {
     }
   };
 
+  // Add these navigation handlers
+  const navigateToCompleted = () => {
+    navigate('/completed-tasks');
+  };
+
+  const navigateToPendingTasks = () => {
+    navigate('/notifications?tab=task');
+  };
+
+  const navigateToEvents = () => {
+    navigate('/notifications?tab=event');
+  };
+
   // Return the UI
   return (
     <div className="day-view-container">
@@ -592,27 +605,27 @@ const DayView: React.FC = () => {
       </div>
 
       <div className="day-view-stats">
-        <div className="day-stat-card">
+        <div className="day-stat-card" onClick={navigateToEvents}>
           <div className="day-stat-icon">📅</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.events}</div>
             <div className="day-stat-label">Events</div>
           </div>
         </div>
-
-        <div className="day-stat-card">
+        
+        <div className="day-stat-card" onClick={navigateToCompleted}>
           <div className="day-stat-icon">✓</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.completedTasks}</div>
-            <div className="day-stat-label">Completed</div>
+            <div className="day-stat-label">Completed Tasks</div>
           </div>
         </div>
-
-        <div className="day-stat-card">
+        
+        <div className="day-stat-card" onClick={navigateToPendingTasks}>
           <div className="day-stat-icon">⏳</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.pendingTasks}</div>
-            <div className="day-stat-label">Pending</div>
+            <div className="day-stat-label">Pending Tasks</div>
           </div>
         </div>
       </div>
