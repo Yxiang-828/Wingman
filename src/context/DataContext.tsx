@@ -40,6 +40,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Enhanced caching mechanism
+  const [taskCache, setTaskCache] = useState<Record<string, Task[]>>({});
+  const [eventCache, setEventCache] = useState<Record<string, CalendarEvent[]>>({});
+
   // Fetch data for today on initial load
   const refreshData = async () => {
     setLoading(true);
@@ -61,19 +65,31 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // Fetch tasks for a specific date
+  // Enhanced fetch tasks function with caching
   const fetchTasksByDate = async (date: string): Promise<Task[]> => {
     try {
-      const tasksData = await fetchTasks(date);
-      // Update the global tasks state with the new data
-      // We don't replace the entire array to preserve tasks from other dates
-      const existingTaskIds = tasks.map((t) => t.id);
-      const newTasks = tasksData.filter((t) => !existingTaskIds.includes(t.id));
-
-      if (newTasks.length > 0) {
-        setTasks((prev) => [...prev, ...newTasks]);
+      // Use cache if available and not expired
+      if (taskCache[date]) {
+        console.log(`Using cached tasks for ${date}`);
+        return taskCache[date];
       }
-
+      
+      console.log(`Fetching tasks for ${date} from API`);
+      const tasksData = await fetchTasks(date);
+      
+      // Update cache
+      setTaskCache(prev => ({
+        ...prev,
+        [date]: tasksData
+      }));
+      
+      // Also update the global tasks array
+      const existingTaskIds = tasks.map(t => t.id);
+      const newTasks = tasksData.filter(t => !existingTaskIds.includes(t.id));
+      if (newTasks.length > 0) {
+        setTasks(prev => [...prev, ...newTasks]);
+      }
+      
       return tasksData;
     } catch (error) {
       console.error(`Error fetching tasks for ${date}:`, error);
@@ -81,20 +97,31 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // Fetch events for a specific date
+  // Enhanced fetch events function with caching
   const fetchEventsByDate = async (date: string): Promise<CalendarEvent[]> => {
     try {
-      const eventsData = await fetchEvents(date);
-      // Update the global events state with the new data
-      const existingEventIds = events.map((e) => e.id);
-      const newEvents = eventsData.filter(
-        (e) => !existingEventIds.includes(e.id)
-      );
-
-      if (newEvents.length > 0) {
-        setEvents((prev) => [...prev, ...newEvents]);
+      // Use cache if available and not expired
+      if (eventCache[date]) {
+        console.log(`Using cached events for ${date}`);
+        return eventCache[date];
       }
-
+      
+      console.log(`Fetching events for ${date} from API`);
+      const eventsData = await fetchEvents(date);
+      
+      // Update cache
+      setEventCache(prev => ({
+        ...prev,
+        [date]: eventsData
+      }));
+      
+      // Also update the global events array
+      const existingEventIds = events.map(e => e.id);
+      const newEvents = eventsData.filter(e => !existingEventIds.includes(e.id));
+      if (newEvents.length > 0) {
+        setEvents(prev => [...prev, ...newEvents]);
+      }
+      
       return eventsData;
     } catch (error) {
       console.error(`Error fetching events for ${date}:`, error);
@@ -123,6 +150,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const newTask = await addTask(task);
       setTasks((prev) => [...prev, newTask]);
+      
+      // Invalidate cache for this date
+      if (task.date) {
+        invalidateCache(task.date);
+      }
+      
       return newTask;
     } catch (error) {
       console.error("Error adding task:", error);
@@ -137,6 +170,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const newEvent = await addEvent(event);
       setEvents((prev) => [...prev, newEvent]);
+      
+      // Invalidate cache for this date
+      if (event.date) {
+        invalidateCache(event.date);
+      }
+      
       return newEvent;
     } catch (error) {
       console.error("Error adding event:", error);
@@ -164,6 +203,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       console.error("Error deleting event:", error);
       throw error;
     }
+  };
+
+  // Function to invalidate cache for a specific date when data changes
+  const invalidateCache = (date: string) => {
+    setTaskCache(prev => {
+      const newCache = {...prev};
+      delete newCache[date];
+      return newCache;
+    });
+    
+    setEventCache(prev => {
+      const newCache = {...prev};
+      delete newCache[date];
+      return newCache;
+    });
   };
 
   // Initial data load

@@ -251,22 +251,21 @@
   position: absolute;
   top: 100%;
   left: 0;
-  width: 280px;
-  background: rgba(25, 25, 45, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* High z-index to ensure visibility */
+  background-color: var(--bg-dark, #121220);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 1rem;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(100, 108, 255, 0.15);
-  margin-top: 0.5rem;
+  width: 280px;
+  max-width: 90vw;
+  margin-top: 8px;
 }
 
 .time-picker-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.8rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 0.5rem;
 }
@@ -280,19 +279,9 @@
 .time-picker-close {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+  font-size: 1.5rem;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.time-picker-close:hover {
-  color: white;
-  transform: scale(1.1);
 }
 
 /* Hour buttons with fixed size and consistent styling */
@@ -341,18 +330,15 @@
 
 .hour-btn-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-  justify-items: center;
-  margin: 0 auto 0.5rem auto;
-  padding: 0.5rem 0;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .ampm-row {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 /* Lists of events and tasks */

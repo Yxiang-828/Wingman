@@ -24,6 +24,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     onToggleTask(task);
   };
 
+  // Make sure each task has a unique key by using its ID
   return (
     <div className="dashboard-card tasks-card">
       <div className="dashboard-card-header">
@@ -39,7 +40,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         <ul className="tasks-list">
           {tasks.map((task) => (
             <li
-              key={task.id}
+              key={`task-${task.id}`} // Use a proper prefix + id format
               className={`task-item ${task.completed ? "completed" : ""}`}
               onClick={() => handleTaskClick(task)}
             >

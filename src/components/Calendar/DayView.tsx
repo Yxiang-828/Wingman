@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
+import TimeInput from "../Common/TimeInput"; // Import the TimeInput component
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -34,12 +35,6 @@ const DayView: React.FC = () => {
     type: "",
     description: "",
   });
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [timePickerFor, setTimePickerFor] = useState<"event" | "task">("event");
-  const [timeStep, setTimeStep] = useState<"hour" | "minute" | "ampm">("hour");
-  const [tempHour, setTempHour] = useState<string | null>(null);
-  const [tempMinute, setTempMinute] = useState<string | null>(null);
-  const [tempAmPm, setTempAmPm] = useState<"am" | "pm">("am");
   const [activeTab, setActiveTab] = useState<"events" | "tasks">("events");
   const [highlightId, setHighlightId] = useState<string | null>(null);
 
@@ -68,7 +63,8 @@ const DayView: React.FC = () => {
 
       if (dateStr) {
         const [year, month, day] = dateStr.split("-").map(Number);
-        const newDate = new Date(year, month - 1, day);
+        // Create date with noon UTC time to avoid timezone issues
+        const newDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
         setDate(newDate);
         // Fetch data for this date
         fetchData(dateStr);
@@ -147,7 +143,6 @@ const DayView: React.FC = () => {
 
       // Reset form
       setNewTask({ text: "", time: "" });
-      setShowTimePicker(false);
     } catch (error) {
       console.error("Failed to add task:", error);
     }
@@ -210,7 +205,6 @@ const DayView: React.FC = () => {
 
       // Reset form
       setNewEvent({ title: "", time: "", type: "", description: "" });
-      setShowTimePicker(false);
 
       console.log("Event added successfully:", event);
     } catch (error) {
@@ -233,57 +227,54 @@ const DayView: React.FC = () => {
   const formatTime = (time: string) => {
     if (!time) return "";
 
-    // Handle "HH:MM am/pm" or "HH:MM AM/PM"
-    const match = time.match(/^(\d{1,2}):(\d{2})\s*(am|pm|AM|PM)?$/i);
+    // Handle "HH:MM" or "HH:MM am/pm" or "HH:MM AM/PM"
+    const match = time.match(/^(\d{1,2}):(\d{2})(\s*(am|pm|AM|PM))?$/);
     if (match) {
       const hour = parseInt(match[1], 10);
       const minute = match[2];
-      const ampm = match[3] ? match[3].toLowerCase() : "am";
+      const ampm = match[3] ? match[3].toLowerCase() : "";
 
-      return `${hour}:${minute} ${ampm}`;
+      return ampm ? `${hour}:${minute} ${ampm}` : `${hour}:${minute}`;
     }
 
     return time;
   };
 
-  // Handle time selection
-  const handleTimeSelect = (value: string) => {
-    if (timeStep === "hour") {
-      setTempHour(value);
-      setTimeStep("minute");
-    } else if (timeStep === "minute") {
-      setTempMinute(value);
-      setTimeStep("ampm");
-    } else if (timeStep === "ampm") {
-      setTempAmPm(value as "am" | "pm");
-
-      // Construct the full time
-      const fullTime = `${tempHour}:${tempMinute} ${value}`;
-
-      if (timePickerFor === "event") {
-        setNewEvent((prev) => ({ ...prev, time: fullTime }));
-      } else {
-        setNewTask((prev) => ({ ...prev, time: fullTime }));
-      }
-
-      setShowTimePicker(false);
-      setTimeStep("hour");
-    }
-  };
-
   // Navigation between days
   const handlePrevDay = () => {
     if (!date) return;
-    const prevDay = new Date(date);
-    prevDay.setDate(prevDay.getDate() - 1);
-    navigate(`/calendar/day?date=${prevDay.toISOString().split("T")[0]}`);
+
+    // Create new date object with UTC noon time to avoid timezone issues
+    const prevDay = new Date(Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate() - 1,
+      12, 0, 0
+    ));
+
+    // Format consistently using library functions
+    const prevDayStr = prevDay.toISOString().split('T')[0];
+
+    // Navigate with the formatted date
+    navigate(`/calendar/day?date=${prevDayStr}`);
   };
 
   const handleNextDay = () => {
     if (!date) return;
-    const nextDay = new Date(date);
-    nextDay.setDate(nextDay.getDate() + 1);
-    navigate(`/calendar/day?date=${nextDay.toISOString().split("T")[0]}`);
+
+    // Create new date object with UTC noon time to avoid timezone issues
+    const nextDay = new Date(Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate() + 1,
+      12, 0, 0
+    ));
+
+    // Format consistently using library functions
+    const nextDayStr = nextDay.toISOString().split('T')[0];
+
+    // Navigate with the formatted date
+    navigate(`/calendar/day?date=${nextDayStr}`);
   };
 
   // Helper functions
@@ -318,15 +309,6 @@ const DayView: React.FC = () => {
           })
         : "Today"
     }`;
-  };
-
-  // Open time picker
-  const openTimePicker = (type: "event" | "task") => {
-    setTimePickerFor(type);
-    setShowTimePicker(true);
-    setTimeStep("hour");
-    setTempHour(null);
-    setTempMinute(null);
   };
 
   const stats = getStats();
@@ -438,14 +420,10 @@ const DayView: React.FC = () => {
                 </div>
                 <div className="day-form-group">
                   <label htmlFor="event-time">Time</label>
-                  <input
-                    type="text"
-                    id="event-time"
+                  <TimeInput
                     value={newEvent.time}
-                    onClick={() => openTimePicker("event")}
-                    readOnly
-                    className="day-form-input"
-                    placeholder="Select time"
+                    onChange={(time) => setNewEvent({ ...newEvent, time })}
+                    placeholder="Event time (HH:MM)"
                   />
                 </div>
                 <div className="day-form-group full-width">
@@ -538,90 +516,12 @@ const DayView: React.FC = () => {
                 />
 
                 <div className="day-form-group">
-                  <input
-                    type="text"
+                  {/* Use the TimeInput component for task time too */}
+                  <TimeInput
                     value={newTask.time}
-                    placeholder="Select time (optional)"
-                    className="day-form-input"
-                    onClick={() => openTimePicker("task")}
-                    readOnly
+                    onChange={(time) => setNewTask(prev => ({ ...prev, time }))}
+                    placeholder="Task time (optional)"
                   />
-
-                  {showTimePicker && timePickerFor === "task" && (
-                    <div className="time-picker-popup">
-                      <div className="time-picker-header">
-                        <h3 className="time-picker-title">Select Time</h3>
-                        <button
-                          className="time-picker-close"
-                          onClick={() => setShowTimePicker(false)}
-                        >
-                          ×
-                        </button>
-                      </div>
-
-                      {timeStep === "hour" && (
-                        <div className="hour-btn-grid">
-                          {Array.from({ length: 12 }, (_, i) => (
-                            <button
-                              key={i + 1}
-                              className="hour-btn"
-                              onClick={() =>
-                                handleTimeSelect(
-                                  (i + 1).toString().padStart(2, "0")
-                                )
-                              }
-                            >
-                              {(i + 1).toString().padStart(2, "0")}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {timeStep === "minute" && (
-                        <div className="hour-btn-grid">
-                          {[
-                            "00",
-                            "05",
-                            "10",
-                            "15",
-                            "20",
-                            "25",
-                            "30",
-                            "35",
-                            "40",
-                            "45",
-                            "50",
-                            "55",
-                          ].map((minute) => (
-                            <button
-                              key={minute}
-                              className="hour-btn"
-                              onClick={() => handleTimeSelect(minute)}
-                            >
-                              {minute}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {timeStep === "ampm" && (
-                        <div className="ampm-row">
-                          <button
-                            className="hour-btn ampm"
-                            onClick={() => handleTimeSelect("am")}
-                          >
-                            AM
-                          </button>
-                          <button
-                            className="hour-btn ampm"
-                            onClick={() => handleTimeSelect("pm")}
-                          >
-                            PM
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
 

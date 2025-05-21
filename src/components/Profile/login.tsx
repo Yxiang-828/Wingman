@@ -15,6 +15,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mood, setMood] = useState<"productive" | "moody">("productive");
@@ -30,43 +31,43 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // setLoading(true);
-    // setError(null);
-    // try {
-    //   const user = await loginUser(password);
-    //   onLogin(user);
-    //   navigate("/", { state: { showGreeting: true } });
-    // } catch (err: any) {
-    //   setError(err.message);
-    // } finally {
-    //   setLoading(false);
-    // }
-    // BYPASS AUTH: Let any user in
-    onLogin({ name: "Test User", email: "test@example.com" });
-    navigate("/", { state: { showGreeting: true } });
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/user/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!res.ok) throw new Error("Invalid username or password");
+      const user = await res.json();
+      onLogin(user);
+      navigate("/", { state: { showGreeting: true } });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // setLoading(true);
-    // setError(null);
-    // if (!email.includes("@")) {
-    //   setError("Please enter a valid email address.");
-    //   setLoading(false);
-    //   return;
-    // }
-    // try {
-    //   const user = await registerUser(name, password, email);
-    //   onLogin(user);
-    //   navigate("/profile", { state: { showSetup: true } });
-    // } catch (err: any) {
-    //   setError(err.message);
-    // } finally {
-    //   setLoading(false);
-    // }
-    // BYPASS AUTH: Let any user in
-    onLogin({ name, email });
-    navigate("/profile", { state: { showSetup: true } });
+    setLoading(true);
+    setError(null);
+    if (!email.includes("@")) {
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+    try {
+      const user = await registerUser(name, password, email);
+      onLogin(user);
+      navigate("/profile", { state: { showSetup: true } });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -86,6 +87,14 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         </div>
         {step === "login" ? (
           <form onSubmit={handleLogin} className="w-72 flex flex-col gap-4">
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+            />
             <input
               type="password"
               pattern="\d{6}"

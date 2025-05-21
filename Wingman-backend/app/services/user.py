@@ -2,11 +2,16 @@ from app.core.supabase import supabase
 from app.api.v1.schemas.user import UserCreate
 
 def create_user(user: UserCreate):
-    response = supabase.table("users").insert(user.dict()).execute()
+    # Set default username from email if not provided
+    user_data = user.dict()
+    if 'username' not in user_data or not user_data['username']:
+        user_data['username'] = user_data['email'].split('@')[0]
+    
+    response = supabase.table("users").insert(user_data).execute()
     return response.data[0] if response.data else None
 
-def get_user_by_password(password: str):
-    response = supabase.table("users").select("*").eq("password", password).execute()
+def get_user_by_username_and_password(username: str, password: str):
+    response = supabase.table("users").select("*").eq("username", username).eq("password", password).execute()
     if response.data and len(response.data) > 0:
         return response.data[0]
     return None

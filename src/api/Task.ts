@@ -1,19 +1,32 @@
 export interface Task {
   id: number;
-  date: string;
+  date: string;      // Frontend field
+  task_date?: string; // DB field
   text: string;
-  time: string;
+  time: string;      // Frontend field
+  task_time?: string; // DB field
   completed: boolean;
 }
 
 export const fetchTasks = async (date: string): Promise<Task[]> => {
   try {
+    // Get current user from localStorage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.id) {
+      console.error('No user ID found for task fetch');
+      return [];
+    }
+    
     console.log("Fetching tasks for date:", date);
-    const response = await fetch(`/api/v1/tasks?date=${date}`);
+    const response = await fetch(`/api/v1/tasks?date=${date}&user_id=${user.id}`);
+    
     if (!response.ok) {
       console.error(`Error fetching tasks: ${response.status} ${response.statusText}`);
       return [];
     }
+    
+    // The backend should transform the data to include both date and task_date fields
     return await response.json();
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -23,11 +36,19 @@ export const fetchTasks = async (date: string): Promise<Task[]> => {
 
 export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
   try {
+    // Get current user from localStorage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.id) {
+      throw new Error('No user ID found for task creation');
+    }
+    
     console.log("Adding task:", task);
     
-    // Ensure date is properly formatted
+    // Ensure date is properly formatted and user_id is included
     const formattedTask = {
       ...task,
+      user_id: user.id,
       date: typeof task.date === 'object' ? task.date.toISOString().split('T')[0] : task.date
     };
     

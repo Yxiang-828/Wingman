@@ -3,7 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import { isSameDay } from "date-fns";
+import { format, isSameDay, addDays } from "date-fns"; // Using date-fns consistently
+import {
+  getWeekStart,
+  formatToDateString,
+  parseFromDateString,
+} from "../../utils/dateUtils";
 import "./Calendar.css";
 
 function getSemester(month: number) {
@@ -22,38 +27,35 @@ function getNthWeekOfSemester(weekStart: Date, semesterStart: Date) {
   return Math.floor(diffDays / 7) + 1;
 }
 
+// Helper function to format date consistently
+function formatDateForAPI(date: Date): string {
+  // Returns YYYY-MM-DD format for API calls
+  return format(date, 'yyyy-MM-dd');
+}
+
 const WeekView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchTasksByDate, fetchEventsByDate, toggleTask } = useData();
 
-  // Parse date from query string
+  // Parse date from query string with safer fallback
   const query = new URLSearchParams(location.search);
-  const dateStr = query.get("date") || new Date().toISOString().slice(0, 10);
-  const [year, month, day] = dateStr.split("-").map(Number);
-  const baseDate = new Date(year, month - 1, day);
-  const semester = getSemester(month);
+  const dateStr = query.get("date") || format(new Date(), 'yyyy-MM-dd');
+
+  // Parse date safely using our utility functions
+  const baseDate = parseFromDateString(dateStr);
+  const semester = getSemester(baseDate.getMonth() + 1);
 
   // Calculate week start (Sunday)
-  const dayOfWeek = baseDate.getDay();
-  const weekStart = new Date(
-    baseDate.getFullYear(),
-    baseDate.getMonth(),
-    baseDate.getDate() - dayOfWeek
+  const weekStart = getWeekStart(baseDate);
+
+  // Generate array of dates for the week using date-fns
+  const days = Array.from({ length: 7 }, (_, i) => 
+    addDays(weekStart, i)
   );
 
-  // Generate array of dates for the week
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(
-      weekStart.getFullYear(),
-      weekStart.getMonth(),
-      weekStart.getDate() + i
-    );
-    return d;
-  });
-
   // Calculate semester info
-  const semesterStart = getSemesterStart(year, month);
+  const semesterStart = getSemesterStart(baseDate.getFullYear(), baseDate.getMonth() + 1);
   const nthWeek = getNthWeekOfSemester(weekStart, semesterStart);
 
   // State for tasks and events
@@ -65,10 +67,7 @@ const WeekView: React.FC = () => {
   }>({});
 
   // Monthly title
-  const monthTitle = weekStart.toLocaleString(undefined, {
-    month: "long",
-    year: "numeric",
-  });
+  const monthTitle = format(weekStart, 'MMMM yyyy');
 
   // Load data for all days in the week
   useEffect(() => {
@@ -76,7 +75,8 @@ const WeekView: React.FC = () => {
       const dataByDay: any = {};
 
       for (const day of days) {
-        const dateStr = day.toISOString().split("T")[0];
+        // Use our helper for consistent date formatting
+        const dateStr = formatDateForAPI(day);
         try {
           // Fetch tasks and events for this day
           const tasksData = await fetchTasksByDate(dateStr);
@@ -99,31 +99,17 @@ const WeekView: React.FC = () => {
     loadWeekData();
   }, [days, fetchEventsByDate, fetchTasksByDate]);
 
-  // Navigation handlers
+  // Navigation handlers using date-fns for consistency
   const handlePrevWeek = () => {
-    const prevWeek = new Date(
-      weekStart.getFullYear(),
-      weekStart.getMonth(),
-      weekStart.getDate() - 7
-    );
-    navigate(
-      `/calendar/week?date=${prevWeek.getFullYear()}-${(prevWeek.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${prevWeek.getDate().toString().padStart(2, "0")}`
-    );
+    const prevWeek = addDays(weekStart, -7);
+    // Format with date-fns
+    navigate(`/calendar/week?date=${formatDateForAPI(prevWeek)}`);
   };
 
   const handleNextWeek = () => {
-    const nextWeek = new Date(
-      weekStart.getFullYear(),
-      weekStart.getMonth(),
-      weekStart.getDate() + 7
-    );
-    navigate(
-      `/calendar/week?date=${nextWeek.getFullYear()}-${(nextWeek.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${nextWeek.getDate().toString().padStart(2, "0")}`
-    );
+    const nextWeek = addDays(weekStart, 7);
+    // Format with date-fns
+    navigate(`/calendar/week?date=${formatDateForAPI(nextWeek)}`);
   };
 
   // Task toggle handler
@@ -153,13 +139,9 @@ const WeekView: React.FC = () => {
     }
   };
 
-  // Format date for display
+  // Format date for display using date-fns
   const formatDateHeader = (date: Date) => {
-    return date.toLocaleDateString(undefined, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
+    return format(date, 'EEE, MMM d');
   };
 
   return (
@@ -178,7 +160,7 @@ const WeekView: React.FC = () => {
 
       <div className="week-days">
         {days.map((day, index) => {
-          const dateStr = day.toISOString().split("T")[0];
+          const dateStr = formatDateForAPI(day);
           const dayData = weeklyData[dateStr] || { tasks: [], events: [] };
           const isToday = isSameDay(day, new Date());
 
@@ -187,12 +169,7 @@ const WeekView: React.FC = () => {
               key={index}
               className={`week-day ${isToday ? "today" : ""}`}
               onClick={() => {
-                const dateStr = [
-                  day.getFullYear(),
-                  (day.getMonth() + 1).toString().padStart(2, "0"),
-                  day.getDate().toString().padStart(2, "0"),
-                ].join("-");
-                navigate(`/calendar/day?date=${dateStr}`);
+                navigate(`/calendar/day?date=${formatDateForAPI(day)}`);
               }}
             >
               <div className="week-day-header">

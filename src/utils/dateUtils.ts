@@ -88,3 +88,48 @@ export function getTodayDateString(): string {
   const today = getCurrentDate();
   return today.toISOString().split('T')[0];
 }
+
+/**
+ * Formats a Date object to YYYY-MM-DD string
+ */
+export const formatToDateString = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
+
+/**
+ * Parses a YYYY-MM-DD string to a Date object
+ */
+export const parseFromDateString = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+/**
+ * Gets the start of the week (Sunday) for a given date
+ */
+export const getWeekStart = (date: Date): Date => {
+  const dayOfWeek = date.getDay();
+  const result = new Date(date);
+  result.setDate(date.getDate() - dayOfWeek);
+  return result;
+};
+
+/**
+ * Add days to a date and return a new Date
+ */
+export const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(date.getDate() + days);
+  return result;
+};
+
+/**
+ * Checks if two dates represent the same day
+ */
+export const isSameDay = (date1: Date, date2: Date): boolean => {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+};

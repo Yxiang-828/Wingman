@@ -11,7 +11,7 @@ interface TimeInputProps {
 const TimeInput: React.FC<TimeInputProps> = ({
   value,
   onChange,
-  placeholder = "24hr format (HHMM)",
+  placeholder = "24hr format (HH:MM)",
   className = "",
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
