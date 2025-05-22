@@ -1,39 +1,82 @@
-from app.core.supabase import supabase
-from app.api.v1.schemas.user import UserCreate
+from app.core.supabase import get_supabase_client
+import logging
+import uuid
+from datetime import datetime
 
-def create_user(user: UserCreate):
+logger = logging.getLogger(__name__)
+supabase = get_supabase_client()
+
+def get_user_by_username_and_password(username: str, password: str):
+    """
+    Get a user by username and password.
+    """
     try:
-        # Set default username from email if not provided
-        user_data = user.dict()
+        logger.info(f"Attempting to find user with username: {username}")
+        
+        # Support both older and newer Supabase client versions
+        try:
+            # Try newer style first (table method)
+            response = supabase.table("users").select("*").eq("username", username).eq("password", password).execute()
+        except Exception:
+            # Fall back to older style (from_ method)
+            response = supabase.from_("users").select("*").eq("username", username).eq("password", password).execute()
+        
+        # Log information about the response
+        if hasattr(response, 'data'):
+            logger.info(f"Found {len(response.data)} matching users")
+            
+            if response.data and len(response.data) > 0:
+                return response.data[0]
+        else:
+            logger.warning("Supabase response doesn't have data attribute")
+        
+        return None
+    except Exception as e:
+        logger.error(f"Error in get_user_by_username_and_password: {str(e)}")
+        return None
+
+def create_user(user_data):
+    """
+    Create a new user.
+    """
+    try:
+        # Ensure we have required fields
+        if not all(k in user_data for k in ['name', 'email', 'password']):
+            logger.error("Missing required user fields")
+            return None
+        
+        # Add uuid if not provided
+        if 'id' not in user_data:
+            user_data['id'] = str(uuid.uuid4())
+        
+        # Add username if not provided
         if 'username' not in user_data or not user_data['username']:
             user_data['username'] = user_data['email'].split('@')[0]
         
-        # Explicitly generate UUID if not present
-        if 'id' not in user_data:
-            import uuid
-            user_data['id'] = str(uuid.uuid4())
+        # Add timestamps
+        now = datetime.now().isoformat()
+        user_data['created_at'] = now
+        user_data['updated_at'] = now
         
-        print(f"Creating user with data: {user_data}")
+        logger.info(f"Creating user with username: {user_data['username']}")
         
-        # Insert user into the database
-        response = supabase.table("users").insert(user_data).execute()
+        # Support both older and newer Supabase client versions
+        try:
+            # Try newer style first
+            response = supabase.table("users").insert(user_data).execute()
+        except Exception:
+            # Fall back to older style
+            response = supabase.from_("users").insert(user_data).execute()
         
-        if response.data and len(response.data) > 0:
+        if hasattr(response, 'data') and response.data:
+            logger.info(f"User created: {response.data[0]['id']}")
             return response.data[0]
-        
-        # Handle error case
-        print("Error: No data returned from user creation")
-        print(f"Response: {response}")
-        return None
+        else:
+            logger.warning("User creation response doesn't have data")
+            return None
     except Exception as e:
-        print(f"Error creating user: {e}")
-        raise
-
-def get_user_by_username_and_password(username: str, password: str):
-    response = supabase.table("users").select("*").eq("username", username).eq("password", password).execute()
-    if response.data and len(response.data) > 0:
-        return response.data[0]
-    return None
+        logger.error(f"Error in create_user: {str(e)}")
+        return None
 
 def update_user(user_id: str, name: str = None):
     update_data = {}
