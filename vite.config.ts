@@ -5,7 +5,7 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/Wingman/', // Change from './' to '/Wingman/' for GitHub Pages
+  base: './', // Important for Electron builds
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -19,7 +19,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:8080', // Change from 8000 to 8080
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path

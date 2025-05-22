@@ -37,8 +37,11 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       // === DEV BYPASS === (remove in production)
       // If the username is "demo" and password is "123456", log in without API call
       if (username === "demo" && password === "123456") {
+        // Generate a unique ID for the demo user
+        const uniqueId = `demo-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        
         const demoUser = {
-          id: "ae2e87ae-ecf5-4c21-a739-bea18996af15", // Demo user ID
+          id: uniqueId, // Unique demo user ID
           username: "demo",
           name: "Demo User",
           email: "demo@example.com",

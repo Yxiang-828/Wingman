@@ -13,10 +13,15 @@ export function getCurrentUser(): { id: UUID; name: string; email: string } | nu
   }
 }
 
-// Get current user ID, with fallback for development
+// Get current user ID, with NO fallback
 export function getCurrentUserId(): UUID {
   const user = getCurrentUser();
-  return user?.id || "00000000-0000-0000-0000-000000000000";
+  if (!user?.id) {
+    // Redirect to login if no user ID
+    window.location.href = '/login';
+    throw new Error('User not authenticated');
+  }
+  return user.id;
 }
 
 // Check if data belongs to current user

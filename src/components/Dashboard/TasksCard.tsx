@@ -45,7 +45,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   };
 
   // Function to handle task completion from popup
-  const completeTask = async (taskId: number) => {
+  const completeTask = async (taskId: number): Promise<void> => {
     try {
       // Find the task to complete
       const task = tasks.find(t => t.id === taskId);
@@ -60,7 +60,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       // Update local state through the parent component
       onToggleTask(updatedTask);
       
-      return updatedTask;
+      // Do not return anything to match the expected signature
     } catch (error) {
       console.error("Error completing task:", error);
       throw error;
