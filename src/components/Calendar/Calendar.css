@@ -962,3 +962,32 @@
 .week-item-delete:hover {
   background: rgba(255, 77, 77, 0.4);
 }
+
+/* Month View specific styles */
+.month-cell {
+  transition: all 0.3s ease;
+  transform-origin: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+}
+
+.month-cell:hover {
+  transform: translateY(-3px) rotate(1deg);
+  background: rgba(100, 108, 255, 0.15) !important;
+  border-color: rgba(100, 108, 255, 0.4);
+  box-shadow: 0 8px 20px rgba(100, 108, 255, 0.25);
+}
+
+/* Alternate rotation for visual interest - odd months rotate right, even months rotate left */
+.month-cell:nth-child(odd):hover {
+  transform: translateY(-3px) rotate(1deg);
+}
+
+.month-cell:nth-child(even):hover {
+  transform: translateY(-3px) rotate(-1deg);
+}
+
+/* Add subtle glow effect */
+.month-cell:hover {
+  filter: drop-shadow(0 0 8px rgba(100, 108, 255, 0.3));
+}
