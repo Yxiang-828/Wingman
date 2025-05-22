@@ -25,7 +25,7 @@ pip install fastapi==0.95.2 uvicorn==0.22.0 pydantic==1.10.8 python-dotenv==1.0.
 pip install requests==2.31.0 python-dateutil==2.8.2
 pip install supabase==0.7.1
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Failed to install dependencies.
+    echo WARNING: Some dependencies may have failed to install.
     echo But continuing to try to bundle the app...
 )
 
@@ -35,6 +35,11 @@ echo {> .venv\config.json
 echo   "APP_VERSION": "1.0.0",>> .venv\config.json
 echo   "ELECTRON_BUNDLED": true>> .venv\config.json
 echo }>> .venv\config.json
+
+echo.
+echo [Step 5/5] Copying files to make them available in production...
+REM Create a copy of main.py in the root directory
+copy main.py ..\main.py
 
 echo.
 echo ========================================

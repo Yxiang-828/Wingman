@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../config/api';
+
 // Diary API functions for interacting with the backend
 
 // Define the Diary Entry interface for type safety
@@ -23,12 +25,7 @@ export const fetchDiaryEntries = async (): Promise<DiaryEntry[]> => {
       throw new Error('User not authenticated');
     }
     
-    const response = await fetch(`/api/v1/diary/entries?user_id=${user.id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(`${API_BASE_URL}/diary/entries?user_id=${user.id}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch diary entries: ${response.status}`);
@@ -53,7 +50,7 @@ export const fetchDiaryEntry = async (id: number): Promise<DiaryEntry> => {
     }
     
     // Add user_id as query parameter - this is the important change
-    const response = await fetch(`/api/v1/diary/entries/${id}?user_id=${user.id}`, {
+    const response = await fetch(`${API_BASE_URL}/diary/entries/${id}?user_id=${user.id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -88,7 +85,7 @@ export const addDiaryEntry = async (entry: Omit<DiaryEntry, 'id'>): Promise<Diar
       user_id: user.id,
     };
     
-    const response = await fetch('/api/v1/diary/entries', {
+    const response = await fetch(`${API_BASE_URL}/diary/entries`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -125,7 +122,7 @@ export const updateDiaryEntry = async (id: number, entry: Partial<DiaryEntry>): 
       user_id: user.id,
     };
     
-    const response = await fetch(`/api/v1/diary/entries/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/diary/entries/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -155,7 +152,7 @@ export const deleteDiaryEntry = async (id: number): Promise<void> => {
       throw new Error('User not authenticated');
     }
     
-    const response = await fetch(`/api/v1/diary/entries/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/diary/entries/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

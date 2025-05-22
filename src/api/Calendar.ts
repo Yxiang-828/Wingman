@@ -1,16 +1,19 @@
+import { API_BASE_URL } from '../config/api';
+
 // Make sure CalendarEvent interface is properly exported
 export interface CalendarEvent {
   id: number;
   title: string;
-  date: string;       // Frontend field
-  event_date?: string; // DB field
-  time: string;       // Frontend field
-  event_time?: string; // DB field
-  type: string;
-  description: string;
+  description?: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  location?: string;
+  color?: string;
+  user_id: string;
 }
 
-// Rest of your Calendar API functions...
+// Update to use API_BASE_URL
 export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
   try {
     // Get current user from localStorage
@@ -22,7 +25,8 @@ export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
     }
     
     console.log("Fetching events for date:", date);
-    const response = await fetch(`/api/v1/calendar?date=${date}&user_id=${user.id}`);
+    const response = await fetch(`${API_BASE_URL}/calendar?date=${date}&user_id=${user.id}`);
+    
     if (!response.ok) {
       console.error(`Error fetching events: ${response.status} ${response.statusText}`);
       return [];
@@ -53,7 +57,7 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
       date: typeof event.date === 'object' ? event.date.toISOString().split('T')[0] : event.date
     };
     
-    const response = await fetch('/api/v1/calendar', {
+    const response = await fetch(`${API_BASE_URL}/calendar`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +100,7 @@ export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> 
       eventData.user_id = user.id;
     }
     
-    const response = await fetch(`/api/v1/calendar/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/calendar/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -128,7 +132,7 @@ export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> 
 export const deleteEvent = async (id: number): Promise<void> => {
   try {
     console.log("API: Deleting event:", id);
-    const response = await fetch(`/api/v1/calendar/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/calendar/${id}`, {
       method: 'DELETE',
     });
     

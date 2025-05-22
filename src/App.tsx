@@ -22,7 +22,7 @@ import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
 import Profile from "./Pages/Profile";
 import Notifications from "./Pages/Notifications";
-import Login from "./components/Profile/Login";
+import Login from "./components/Profile/login"; 
 import ScrollToTop from "./components/ScrollToTop";
 import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";

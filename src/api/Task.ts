@@ -1,3 +1,6 @@
+import { API_BASE_URL } from '../config/api';
+
+// Keep your interface definitions
 export interface Task {
   id: number;
   date: string;      // Frontend field
@@ -19,7 +22,7 @@ export const fetchTasks = async (date: string): Promise<Task[]> => {
     }
     
     console.log("Fetching tasks for date:", date);
-    const response = await fetch(`/api/v1/tasks?date=${date}&user_id=${user.id}`);
+    const response = await fetch(`${API_BASE_URL}/tasks?date=${date}&user_id=${user.id}`);
     
     if (!response.ok) {
       console.error(`Error fetching tasks: ${response.status} ${response.statusText}`);
@@ -52,7 +55,7 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
       date: typeof task.date === 'object' ? task.date.toISOString().split('T')[0] : task.date
     };
     
-    const response = await fetch('/api/v1/tasks', {
+    const response = await fetch(`${API_BASE_URL}/tasks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -112,7 +115,7 @@ export const updateTask = async (task: Task): Promise<Task> => {
     
     console.log("API: Sending to backend:", taskData);
     
-    const response = await fetch(`/api/v1/tasks/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -159,7 +162,7 @@ export const updateTask = async (task: Task): Promise<Task> => {
 
 export const deleteTask = async (id: number): Promise<void> => {
   try {
-    const response = await fetch(`/api/v1/tasks/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
       method: 'DELETE',
     });
     

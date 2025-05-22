@@ -2,7 +2,6 @@
   "name": "wingman",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
   "main": "electron/main.js",
   "author": "Yao_Xiang & Chua_Yong_Liang",
   "description": "Life-long Personal Assistant",
@@ -71,9 +70,10 @@
         "from": "Wingman-backend",
         "to": "backend",
         "filter": [
-          "**/*",
-          "!__pycache__/**",
-          "!.env"
+          "**/*.py",
+          "**/*.txt",
+          "app/**/*",
+          "!**/__pycache__/**"
         ]
       }
     ],

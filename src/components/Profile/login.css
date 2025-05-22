@@ -37,6 +37,7 @@
   align-items: center;
   background-blend-mode: multiply;
   position: relative;
+  color: white; /* Added color property */
 }
 
 .login-card:hover {
@@ -90,7 +91,7 @@
 
 .login-action-btn {
   background-color: #1e1e38; /* Dark button */
-  color: #fff;
+  color: white; /* Changed to white */
   border: 1px solid rgba(100, 108, 255, 0.3); /* Subtle border */
   font-weight: 600;
   border-radius: 0.7rem;
@@ -120,7 +121,7 @@
 }
 
 .text-accent-primary {
-  color: #8186ff; /* Slightly lighter to be visible against dark bg */
+  color: var(--accent-primary); /* Changed to use CSS variable */
 }
 
 .text-accent-primary:hover {
@@ -131,4 +132,16 @@
   width: 48px;
   height: 48px;
   margin-bottom: 0.5rem;
+}
+
+.login-card input {
+  color: white; /* Added color property for input */
+}
+
+.login-card button {
+  color: white; /* Added color property for button */
+}
+
+.error {
+  color: #f87171;
 }

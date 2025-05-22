@@ -1,13 +1,17 @@
-import type { UserLogin, UserRegister } from '../types/user';
+import { API_BASE_URL } from '../config/api';
 
 export interface User {
   id: string;
   name: string;
+  email: string;
+  username: string;
 }
 
 export const loginUser = async (username: string, password: string) => {
   try {
-    const response = await fetch('/api/v1/user/login', {
+    console.log(`Attempting login with API URL: ${API_BASE_URL}/user/login`);
+    
+    const response = await fetch(`${API_BASE_URL}/user/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -16,10 +20,13 @@ export const loginUser = async (username: string, password: string) => {
     });
 
     if (!response.ok) {
-      throw new Error('Login failed');
+      const errorText = await response.text();
+      console.error(`Login failed with status: ${response.status}`, errorText);
+      throw new Error('Login failed: ' + (errorText || 'Unknown error'));
     }
 
     const user = await response.json();
+    console.log('Login successful, user data received');
     
     // Update localStorage with current user info
     localStorage.setItem('user', JSON.stringify(user));
@@ -33,7 +40,9 @@ export const loginUser = async (username: string, password: string) => {
 
 export const registerUser = async (name: string, password: string, email: string) => {
   try {
-    const response = await fetch('/api/v1/user/register', {
+    console.log(`Attempting registration with API URL: ${API_BASE_URL}/user/register`);
+    
+    const response = await fetch(`${API_BASE_URL}/user/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,10 +51,13 @@ export const registerUser = async (name: string, password: string, email: string
     });
 
     if (!response.ok) {
-      throw new Error('Registration failed');
+      const errorText = await response.text();
+      console.error(`Registration failed with status: ${response.status}`, errorText);
+      throw new Error('Registration failed: ' + (errorText || 'Unknown error'));
     }
 
     const user = await response.json();
+    console.log('Registration successful, user data received');
     
     // Update localStorage with current user info
     localStorage.setItem('user', JSON.stringify(user));
@@ -60,4 +72,5 @@ export const registerUser = async (name: string, password: string, email: string
 export const logoutUser = () => {
   // Clear user data from localStorage
   localStorage.removeItem('user');
+  console.log('User logged out, local storage cleared');
 };

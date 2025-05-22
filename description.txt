@@ -9,7 +9,12 @@ cd Wingman-backend
 .venv\Scripts\activate 
 uvicorn main:app --reload
 npm run dev:full
-
+------------------
+build process
+go to Wingman\Wingman-backend
+.\build.bat
+cd ..
+npm run electron:build:win
 
 -----------------------------------------------------------------------------------------------
 
