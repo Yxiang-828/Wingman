@@ -76,18 +76,11 @@ const Dashboard: React.FC = () => {
   }, [entries]);
 
   // Update the handleToggleTask function
-  const handleToggleTask = async (task: Task) => {
-    try {
-      const updatedTask = await toggleTask(task);
-      // Update our local state
-      setTodaysTasks(prev => 
-        prev.map(t => t.id === updatedTask.id ? updatedTask : t)
-      );
-      return updatedTask;
-    } catch (error) {
-      console.error("Error toggling task:", error);
-      throw error;
-    }
+  const handleToggleTask = (updatedTask: Task) => {
+    // Only update local state, don't call toggleTask again
+    setTodaysTasks(prev => 
+      prev.map(task => task.id === updatedTask.id ? updatedTask : task)
+    );
   };
 
   // Show loading state

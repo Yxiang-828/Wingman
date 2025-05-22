@@ -40,6 +40,7 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
   const handleCompleteTask = async (e: React.MouseEvent) => {
     // Stop event propagation to prevent the overlay click from firing
     e.stopPropagation();
+    e.preventDefault();
 
     if (isTask(item) && onComplete) {
       try {

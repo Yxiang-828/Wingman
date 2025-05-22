@@ -32,8 +32,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Centralized cache state - store by week identifier
-  const [taskCache, setTaskCache] = useState<Record<string, Record<string, Task[]>>>({});
-  const [eventCache, setEventCache] = useState<Record<string, Record<string, CalendarEvent[]>>>({});
+  const [taskCache, setTaskCache] = useState<
+    Record<string, Record<string, Task[]>>
+  >({});
+  const [eventCache, setEventCache] = useState<
+    Record<string, Record<string, CalendarEvent[]>>
+  >({});
   // Add the missing weekCache state
   const [weekCache, setWeekCache] = useState<string[]>([]);
   const [currentWeekId, setCurrentWeekId] = useState<string>("");
@@ -62,20 +66,20 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.removeItem(`${STORAGE_KEY_PREFIX}eventCache`);
     localStorage.removeItem(`${STORAGE_KEY_PREFIX}lastFetched`);
     localStorage.removeItem(`${STORAGE_KEY_PREFIX}weekCache`);
-    
+
     console.log("All caches cleared");
   }, []);
 
   // Add function to invalidate specific date cache
   const invalidateCache = useCallback((date: string) => {
     const weekId = getWeekId(date);
-    
-    setLastFetched(prev => {
+
+    setLastFetched((prev) => {
       const newLastFetched = { ...prev };
       delete newLastFetched[weekId];
       return newLastFetched;
     });
-    
+
     console.log(`Cache invalidated for week of ${weekId}`);
   }, []);
 
@@ -89,9 +93,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   // Initialize current week on mount
   useEffect(() => {
     const today = new Date();
-    const thisWeekId = format(startOfWeek(today, { weekStartsOn: 0 }), "yyyy-MM-dd");
+    const thisWeekId = format(
+      startOfWeek(today, { weekStartsOn: 0 }),
+      "yyyy-MM-dd"
+    );
     setCurrentWeekId(thisWeekId);
-    
+
     // Immediately fetch current week data
     fetchWeekData(thisWeekId);
   }, []);
@@ -100,12 +107,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const getDatesInWeek = useCallback((weekId: string): string[] => {
     const weekStart = new Date(weekId);
     const dates = [];
-    
+
     for (let i = 0; i < 7; i++) {
       const date = addDays(weekStart, i);
       dates.push(format(date, "yyyy-MM-dd"));
     }
-    
+
     return dates;
   }, []);
 
@@ -128,97 +135,103 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // Add this function to check if we need to fetch
-  const isInCachedRange = useCallback((date: string): boolean => {
-    // Check if this date exists in our cache
-    const weekId = getWeekId(date);
-    return !!taskCache[weekId] && !!eventCache[weekId];
-  }, [taskCache, eventCache, getWeekId]);
+  const isInCachedRange = useCallback(
+    (date: string): boolean => {
+      // Check if this date exists in our cache
+      const weekId = getWeekId(date);
+      return !!taskCache[weekId] && !!eventCache[weekId];
+    },
+    [taskCache, eventCache, getWeekId]
+  );
 
   // Fetch entire week of data
-  const fetchWeekData = useCallback(async (weekStartDate: string) => {
-    const weekId = getWeekId(weekStartDate);
-    
-    // Already fetched/fetching this week?
-    if (
-      weekCache.includes(weekId) && 
-      !needsWeekRefresh(weekId) &&
-      taskCache[weekId] && 
-      eventCache[weekId]
-    ) {
-      console.log(`Using cached data for week ${weekId}`);
-      return;
-    }
-    
-    // Set loading state
-    setLoading(true);
-    
-    try {
-      // Set a timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Data fetch timeout")), 10000);
-      });
-      
-      // Get all dates in the week
-      const datesInWeek = getDatesInWeek(weekId);
+  const fetchWeekData = useCallback(
+    async (weekStartDate: string) => {
+      const weekId = getWeekId(weekStartDate);
 
-      // Use Promise.race to implement timeout
-      await Promise.race([
-        // Actual data fetching
-        Promise.all(
-          datesInWeek.map(async (dateStr) => {
-            try {
-              // Fetch tasks and events for this date
-              const [tasks, events] = await Promise.all([
-                fetchTasks(dateStr),
-                fetchEvents(dateStr),
-              ]);
-
-              // Update caches
-              setTaskCache((prev) => {
-                const updated = { ...prev };
-                if (!updated[weekId]) updated[weekId] = {};
-                updated[weekId][dateStr] = tasks;
-                return updated;
-              });
-
-              setEventCache((prev) => {
-                const updated = { ...prev };
-                if (!updated[weekId]) updated[weekId] = {};
-                updated[weekId][dateStr] = events;
-                return updated;
-              });
-            } catch (error) {
-              console.error(`Error fetching data for ${dateStr}:`, error);
-              // Don't rethrow - keep trying other dates
-            }
-          })
-        ),
-        timeoutPromise
-      ]);
-
-      // Add the week to weekCache if not already there
-      if (!weekCache.includes(weekId)) {
-        setWeekCache(prev => [...prev, weekId]);
+      // Already fetched/fetching this week?
+      if (
+        weekCache.includes(weekId) &&
+        !needsWeekRefresh(weekId) &&
+        taskCache[weekId] &&
+        eventCache[weekId]
+      ) {
+        console.log(`Using cached data for week ${weekId}`);
+        return;
       }
-      
-      // Mark week as fetched
-      markWeekFetched(weekId);
-    } catch (error) {
-      console.error(`Error fetching week ${weekId} data:`, error);
-      setError(`Failed to load data: ${error.message}`);
-    } finally {
-      setLoading(false);
-      setRequestedWeekId(null);
-    }
-  }, [
-    weekCache, // Add to dependencies
-    currentWeekId,
-    taskCache,
-    eventCache, 
-    needsWeekRefresh,
-    getDatesInWeek,
-    markWeekFetched
-  ]);
+
+      // Set loading state
+      setLoading(true);
+
+      try {
+        // Set a timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Data fetch timeout")), 10000);
+        });
+
+        // Get all dates in the week
+        const datesInWeek = getDatesInWeek(weekId);
+
+        // Use Promise.race to implement timeout
+        await Promise.race([
+          // Actual data fetching
+          Promise.all(
+            datesInWeek.map(async (dateStr) => {
+              try {
+                // Fetch tasks and events for this date
+                const [tasks, events] = await Promise.all([
+                  fetchTasks(dateStr),
+                  fetchEvents(dateStr),
+                ]);
+
+                // Update caches
+                setTaskCache((prev) => {
+                  const updated = { ...prev };
+                  if (!updated[weekId]) updated[weekId] = {};
+                  updated[weekId][dateStr] = tasks;
+                  return updated;
+                });
+
+                setEventCache((prev) => {
+                  const updated = { ...prev };
+                  if (!updated[weekId]) updated[weekId] = {};
+                  updated[weekId][dateStr] = events;
+                  return updated;
+                });
+              } catch (error) {
+                console.error(`Error fetching data for ${dateStr}:`, error);
+                // Don't rethrow - keep trying other dates
+              }
+            })
+          ),
+          timeoutPromise,
+        ]);
+
+        // Add the week to weekCache if not already there
+        if (!weekCache.includes(weekId)) {
+          setWeekCache((prev) => [...prev, weekId]);
+        }
+
+        // Mark week as fetched
+        markWeekFetched(weekId);
+      } catch (error) {
+        console.error(`Error fetching week ${weekId} data:`, error);
+        setError(`Failed to load data: ${error.message}`);
+      } finally {
+        setLoading(false);
+        setRequestedWeekId(null);
+      }
+    },
+    [
+      weekCache, // Add to dependencies
+      currentWeekId,
+      taskCache,
+      eventCache,
+      needsWeekRefresh,
+      getDatesInWeek,
+      markWeekFetched,
+    ]
+  );
 
   // Save cache to localStorage when it changes
   useEffect(() => {
@@ -253,16 +266,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   // Add weekCache to localStorage effect
   useEffect(() => {
     try {
-      localStorage.setItem(`${STORAGE_KEY_PREFIX}weekCache`, JSON.stringify(weekCache));
+      localStorage.setItem(
+        `${STORAGE_KEY_PREFIX}weekCache`,
+        JSON.stringify(weekCache)
+      );
     } catch (error) {
       console.error("Error saving week cache to localStorage:", error);
     }
   }, [weekCache]);
-  
+
   // Load weekCache from localStorage on mount
   useEffect(() => {
     try {
-      const cachedWeeks = localStorage.getItem(`${STORAGE_KEY_PREFIX}weekCache`);
+      const cachedWeeks = localStorage.getItem(
+        `${STORAGE_KEY_PREFIX}weekCache`
+      );
       if (cachedWeeks) {
         setWeekCache(JSON.parse(cachedWeeks));
       }
@@ -270,17 +288,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       console.error("Error loading week cache from localStorage:", error);
     }
   }, []);
-  
+
   // Fetch tasks for specific date (using weekly cache)
   const fetchTasksByDate = useCallback(
     async (date: string): Promise<Task[]> => {
       const weekId = getWeekId(date);
-      
+
       // If no cache exists for this week, fetch the entire week
       if (!taskCache[weekId] || needsWeekRefresh(weekId)) {
         await fetchWeekData(weekId);
       }
-      
+
       // Return tasks from cache
       return taskCache[weekId]?.[date] || [];
     },
@@ -291,12 +309,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const fetchEventsByDate = useCallback(
     async (date: string): Promise<CalendarEvent[]> => {
       const weekId = getWeekId(date);
-      
+
       // If no cache exists for this week, fetch the entire week
       if (!eventCache[weekId] || needsWeekRefresh(weekId)) {
         await fetchWeekData(weekId);
       }
-      
+
       // Return events from cache
       return eventCache[weekId]?.[date] || [];
     },
@@ -304,81 +322,98 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   // Toggle task completed status
-  const toggleTask = useCallback(async (task: Task): Promise<Task> => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Create updated task object
-      const updatedTask = { ...task, completed: !task.completed };
-      
-      // Update the task in backend
-      const result = await updateTask(updatedTask);
-      
-      // Update task in cache
-      const weekId = getWeekId(task.date);
-      
-      setTaskCache((prevCache) => {
-        // If this week doesn't exist in cache yet, don't attempt to update
-        if (!prevCache[weekId] || !prevCache[weekId][task.date]) {
-          return prevCache;
-        }
-        
-        const newCache = { ...prevCache };
-        
-        // Update the task in the week's cache
-        newCache[weekId] = {
-          ...newCache[weekId],
-          [task.date]: newCache[weekId][task.date].map(t => 
-            t.id === task.id ? result : t
-          )
-        };
-        
-        return newCache;
-      });
-      
-      return result;
-    } catch (err) {
-      setError(`Failed to update task: ${err}`);
-      console.error("Error toggling task:", err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [getWeekId]);
+  const toggleTask = useCallback(
+    async (task: Task): Promise<Task> => {
+      try {
+        console.log("DataContext: toggling task:", task);
+        setLoading(true);
+        setError(null);
+
+        // Create updated task object
+        const updatedTask = { ...task, completed: !task.completed };
+        console.log("DataContext: Created updated task:", updatedTask);
+
+        // Update the task in backend
+        console.log("DataContext: Calling updateTask API...");
+        const result = await updateTask(updatedTask);
+        console.log("DataContext: Received result from API:", result);
+
+        // Update task in cache
+        const weekId = getWeekId(task.date);
+        console.log(
+          `DataContext: Updating cache for week ${weekId}, date ${task.date}`
+        );
+
+        setTaskCache((prevCache) => {
+          // If this week doesn't exist in cache yet, don't attempt to update
+          if (!prevCache[weekId] || !prevCache[weekId][task.date]) {
+            console.log(
+              "DataContext: Week or date not found in cache, skipping update"
+            );
+            return prevCache;
+          }
+
+          const newCache = { ...prevCache };
+
+          // Update the task in the week's cache
+          newCache[weekId] = {
+            ...newCache[weekId],
+            [task.date]: newCache[weekId][task.date].map((t) =>
+              t.id === task.id ? result : t
+            ),
+          };
+
+          console.log("DataContext: Updated cache successfully");
+          return newCache;
+        });
+
+        return result;
+      } catch (err) {
+        console.error("DataContext: Error toggling task:", err);
+        setError(`Failed to update task: ${err}`);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [getWeekId, updateTask]
+  );
 
   // Add new task (with cache update)
-  const addNewTask = useCallback(async (task: Partial<Task>): Promise<Task> => {
-    try {
-      const savedTask = await addTask(task);
-      const weekId = getWeekId(savedTask.date);
-      
-      // Update cache
-      setTaskCache((prev) => {
-        // Initialize week and date in cache if they don't exist
-        if (!prev[weekId]) {
-          prev[weekId] = {};
-        }
-        
-        if (!prev[weekId][savedTask.date]) {
-          prev[weekId][savedTask.date] = [];
-        }
-        
-        return {
-          ...prev,
-          [weekId]: {
-            ...prev[weekId],
-            [savedTask.date]: [...prev[weekId][savedTask.date], savedTask],
-          }
-        };
-      });
+  const addNewTask = useCallback(
+    async (task: Partial<Task>): Promise<Task> => {
+      try {
+        const savedTask = await addTask(task);
+        const weekId = getWeekId(savedTask.date);
 
-      return savedTask;
-    } catch (error) {
-      console.error("Error adding task:", error);
-      throw error;
-    }
-  }, [getWeekId]);
+        // Update cache
+        setTaskCache((prev) => {
+          // Initialize week and date in cache if they don't exist
+          if (!prev[weekId]) {
+            prev[weekId] = {};
+          }
+
+          if (!prev[weekId][savedTask.date]) {
+            prev[weekId][savedTask.date] = [];
+          }
+
+          return {
+            ...prev,
+            [weekId]: {
+              ...prev[weekId],
+              [savedTask.date]: [...prev[weekId][savedTask.date], savedTask],
+            },
+          };
+        });
+
+        return savedTask;
+      } catch (error) {
+        console.error("Error adding task:", error);
+        throw error;
+      }
+    },
+    [getWeekId]
+  );
 
   // Delete task (with cache update)
   const deleteExistingTask = useCallback(
@@ -426,17 +461,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
           if (!prev[weekId]) {
             prev[weekId] = {};
           }
-          
+
           if (!prev[weekId][savedEvent.date]) {
             prev[weekId][savedEvent.date] = [];
           }
-          
+
           return {
             ...prev,
             [weekId]: {
               ...prev[weekId],
               [savedEvent.date]: [...prev[weekId][savedEvent.date], savedEvent],
-            }
+            },
           };
         });
 
@@ -490,7 +525,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     try {
       // Clear caches and refetch when needed
       clearAllCache();
-      
+
       // Refetch current week data
       await fetchWeekData(currentWeekId);
     } catch (error) {
@@ -514,19 +549,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     addNewEvent,
     deleteExistingEvent,
     refreshData,
-    invalidateCache, 
+    invalidateCache,
     clearAllCache,
     taskCache,
     eventCache,
     currentWeekId,
-    requestedWeekId
+    requestedWeekId,
   };
 
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
 // Hook for using the data context

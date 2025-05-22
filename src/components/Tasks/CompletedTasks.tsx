@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { format, endOfWeek } from "date-fns";
 import { useData } from "../../context/DataContext";
+import { useNotifications } from "../../context/NotificationsContext";
 import type { Task } from "../../api/Task";
+import DetailPopup from "../Common/DetailPopup";
 import "./CompletedTasks.css";
 
 const CompletedTasks: React.FC = () => {
@@ -15,14 +17,118 @@ const CompletedTasks: React.FC = () => {
     taskCache, 
     currentWeekId, 
     fetchWeekData, 
-    loading: dataLoading 
+    loading: dataLoading,
+    toggleTask
   } = useData();
+  
+  const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
   
   const [loading, setLoading] = useState(true);
   const [filterDate, setFilterDate] = useState<string>(dateFromUrl);
   const [groupedTasks, setGroupedTasks] = useState<Record<string, Task[]>>({});
   const [totalCompleted, setTotalCompleted] = useState(0);
   
+  // Handle clicking on a task item - show popup
+  const handleTaskClick = (task: Task) => {
+    showPopupFor(task);
+  };
+
+  // Handle clicking on the task status circle specifically - toggle completion
+  const handleStatusClick = async (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation(); // Prevent triggering the task item click
+    e.preventDefault(); // Prevent default behavior
+
+    console.log("CompletedTasks: Click on status circle for task ID:", task.id);
+
+    // Prevent multiple simultaneous toggle operations on the same task
+    if (task.isProcessing) {
+      console.log("Task already being processed, ignoring click");
+      return;
+    }
+
+    try {
+      // Use the DataProvider to toggle task back to incomplete
+      const updatedTask = await toggleTask(task);
+      console.log("CompletedTasks: Task toggled successfully:", updatedTask);
+
+      // Update UI - remove this task from the list since it's no longer completed
+      setGroupedTasks(prev => {
+        const newGroups = { ...prev };
+        
+        // Find which date group this task belongs to
+        for (const dateKey in newGroups) {
+          newGroups[dateKey] = newGroups[dateKey].filter(t => t.id !== task.id);
+          
+          // If this date group is now empty, remove it
+          if (newGroups[dateKey].length === 0) {
+            delete newGroups[dateKey];
+          }
+        }
+        
+        return newGroups;
+      });
+      
+      // Update total count
+      setTotalCompleted(prev => prev - 1);
+
+      // Close popup if it's open for this task
+      if (currentPopupItem && currentPopupItem.id === task.id) {
+        closePopup();
+      }
+    } catch (error) {
+      console.error("Error toggling task status:", error);
+    }
+  };
+
+  // Function to handle task completion from popup
+  const completeTask = async (taskId: number): Promise<void> => {
+    console.log("CompletedTasks: completeTask called for ID:", taskId);
+
+    try {
+      // Find the task in any of the date groups
+      let foundTask: Task | undefined;
+      
+      for (const dateKey in groupedTasks) {
+        foundTask = groupedTasks[dateKey].find(t => t.id === taskId);
+        if (foundTask) break;
+      }
+      
+      if (!foundTask) {
+        console.error(`Task with ID ${taskId} not found`);
+        return;
+      }
+
+      // Call the API through DataContext to update the task
+      const updatedTask = await toggleTask(foundTask);
+      console.log("CompletedTasks: Task un-completed from popup:", updatedTask);
+
+      // Update UI - remove this task since it's no longer completed
+      setGroupedTasks(prev => {
+        const newGroups = { ...prev };
+        
+        // Find which date group this task belongs to
+        for (const dateKey in newGroups) {
+          newGroups[dateKey] = newGroups[dateKey].filter(t => t.id !== taskId);
+          
+          // If this date group is now empty, remove it
+          if (newGroups[dateKey].length === 0) {
+            delete newGroups[dateKey];
+          }
+        }
+        
+        return newGroups;
+      });
+      
+      // Update total count
+      setTotalCompleted(prev => prev - 1);
+
+      // Close the popup when done
+      closePopup();
+    } catch (error) {
+      console.error("Error updating task completion:", error);
+    }
+  };
+
   // Ensure we have the current week's data loaded
   useEffect(() => {
     const loadWeekData = async () => {
@@ -177,8 +283,15 @@ const CompletedTasks: React.FC = () => {
               <h3 className="date-header">{formatDateHeader(date)}</h3>
               <ul className="task-group">
                 {tasks.map(task => (
-                  <li key={task.id} className="completed-task-item">
-                    <div className="task-status completed">
+                  <li 
+                    key={task.id} 
+                    className="completed-task-item"
+                    onClick={() => handleTaskClick(task)}
+                  >
+                    <div 
+                      className="task-status completed"
+                      onClick={(e) => handleStatusClick(e, task)}
+                    >
                       ✓
                     </div>
                     <div className="task-content">
@@ -195,6 +308,16 @@ const CompletedTasks: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+      
+      {/* Add the DetailPopup component */}
+      {currentPopupItem && (
+        <DetailPopup
+          item={currentPopupItem}
+          onClose={closePopup}
+          onComplete={completeTask}
+          container={document.body}
+        />
       )}
     </div>
   );

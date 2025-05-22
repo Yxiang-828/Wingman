@@ -7,7 +7,7 @@ import DetailPopup from "../Common/DetailPopup";
 import "./Dashboard.css";
 
 interface TasksCardProps {
-  tasks: Task[];  // Should be pending tasks only
+  tasks: Task[]; // Should be pending tasks only
   onToggleTask: (task: Task) => void;
 }
 
@@ -15,7 +15,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
   const { toggleTask } = useData();
-  
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString(undefined, {
@@ -32,35 +32,65 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   // Handle clicking on the task status circle specifically - toggle completion
   const handleStatusClick = async (e: React.MouseEvent, task: Task) => {
     e.stopPropagation(); // Prevent triggering the task item click
-    
+    e.preventDefault(); // Add this line to prevent default behavior
+
+    console.log("TaskCard: Click on status circle for task ID:", task.id);
+
+    // Prevent multiple simultaneous toggle operations on the same task
+    if (task.isProcessing) {
+      console.log("Task already being processed, ignoring click");
+      return;
+    }
+
+    // Mark task as processing locally
+    const updatedTasks = tasks.map((t) =>
+      t.id === task.id ? { ...t, isProcessing: true } : t
+    );
+
     try {
       // Use the DataProvider to toggle the task
       const updatedTask = await toggleTask(task);
-      
+      console.log("TaskCard: Task toggled successfully:", updatedTask);
+
       // Propagate the change up to parent component
       onToggleTask(updatedTask);
+
+      // Make sure popup closes if it's open for this task
+      if (currentPopupItem && currentPopupItem.id === task.id) {
+        closePopup();
+      }
     } catch (error) {
       console.error("Error toggling task status:", error);
     }
   };
 
-  // Function to handle task completion from popup
+  // Function to handle task completion from popup - this may be called separately
   const completeTask = async (taskId: number): Promise<void> => {
+    console.log("TaskCard: completeTask called for ID:", taskId);
+
     try {
       // Find the task to complete
-      const task = tasks.find(t => t.id === taskId);
+      const task = tasks.find((t) => t.id === taskId);
       if (!task) {
         console.error(`Task with ID ${taskId} not found`);
         return;
       }
-      
+
+      // Prevent duplicate processing
+      if (task.isProcessing) {
+        console.log("Task already being processed, ignoring call from popup");
+        return;
+      }
+
       // Call the API through DataContext to update the task
       const updatedTask = await toggleTask(task);
-      
+      console.log("TaskCard: Task completed from popup:", updatedTask);
+
       // Update local state through the parent component
       onToggleTask(updatedTask);
-      
-      // Do not return anything to match the expected signature
+
+      // Close the popup when done
+      closePopup();
     } catch (error) {
       console.error("Error completing task:", error);
       throw error;
@@ -78,16 +108,16 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           View All
         </button>
       </div>
-      
+
       {tasks.length > 0 ? (
         <ul className="tasks-list">
           {tasks.map((task) => (
             <li
               key={`task-${task.id}`}
-              className="task-item"
+              className={`task-item ${task.completed ? "completed" : ""}`}
               onClick={() => handleTaskClick(task)}
             >
-              <div 
+              <div
                 className="task-status"
                 onClick={(e) => handleStatusClick(e, task)}
               >
@@ -113,7 +143,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           </button>
         </div>
       )}
-      
+
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}

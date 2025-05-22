@@ -90,28 +90,26 @@ export const updateTask = async (task: Task): Promise<Task> => {
     const { id, ...taskData } = task;
     
     // Ensure proper field mapping for backend
-    // Handle field name mapping between frontend and backend
     if (task.date) {
-      taskData.task_date = task.date;  // Ensure backend field is set
+      taskData.task_date = task.date;
       console.log("API: Mapped date to task_date:", task.date);
     }
     
     if (task.time) {
-      taskData.task_time = task.time;  // Ensure backend field is set
+      taskData.task_time = task.time; 
       console.log("API: Mapped time to task_time:", task.time);
     }
     
-    // Make sure we're including the user ID
+    // Ensure user_id is always included
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.id) {
       taskData.user_id = user.id;
       console.log("API: Added user_id:", user.id);
-    } else {
-      console.warn("API: No user.id found in localStorage");
     }
     
     console.log("API: Sending to backend:", taskData);
     
+    // Check if API endpoint is correct - this was likely the issue
     const response = await fetch(`/api/v1/tasks/${id}`, {
       method: 'PUT',
       headers: {
@@ -131,26 +129,18 @@ export const updateTask = async (task: Task): Promise<Task> => {
     const result = await response.json();
     console.log("API: Backend response data:", result);
     
-    // Handle the special case where we got a success message but not the full task
-    if (result.message && !result.text) {
-      console.log("API: Got success message but not full task, returning merged object");
-      // Return the original task with updated completion status
-      return { ...task, completed: !task.completed, ...result };
-    }
+    // Ensure all necessary fields are present
+    const finalResult = {
+      ...task,
+      ...result,
+      // Ensure frontend field names
+      date: result.task_date || result.date || task.date,
+      time: result.task_time || result.time || task.time,
+      completed: result.completed !== undefined ? result.completed : !task.completed
+    };
     
-    // Make sure the result has frontend field names
-    if (result.task_date) {
-      result.date = result.task_date;
-      console.log("API: Added date field from task_date");
-    }
-    
-    if (result.task_time) {
-      result.time = result.task_time;
-      console.log("API: Added time field from task_time");
-    }
-    
-    console.log("API: Returning final result:", result);
-    return result;
+    console.log("API: Final result being returned:", finalResult);
+    return finalResult;
   } catch (error) {
     console.error('API: Error updating task:', error);
     throw error;
