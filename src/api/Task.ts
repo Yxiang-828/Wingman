@@ -1,3 +1,6 @@
+import { api } from './apiClient';
+import { getCurrentUserId } from '../utils/auth';
+
 export interface Task {
   id: number;
   date: string;      // Frontend field
@@ -6,28 +9,50 @@ export interface Task {
   time: string;      // Frontend field
   task_time?: string; // DB field
   completed: boolean;
+  user_id?: string;
+  isProcessing?: boolean; // Local state only
 }
+
+// Map server response to frontend model
+const mapServerTask = (task: any): Task => {
+  return {
+    id: task.id,
+    date: task.task_date || task.date,
+    text: task.text,
+    time: task.task_time || task.time || '',
+    completed: !!task.completed,
+    user_id: task.user_id
+  };
+};
+
+// Map frontend model to server request
+const mapClientTask = (task: Partial<Task>): any => {
+  // Get current user ID from auth utils
+  const userId = task.user_id || getCurrentUserId();
+  
+  return {
+    ...(task.id ? { id: task.id } : {}),
+    text: task.text,
+    task_date: task.date,
+    task_time: task.time || '',
+    completed: task.completed || false,
+    user_id: userId
+  };
+};
 
 export const fetchTasks = async (date: string): Promise<Task[]> => {
   try {
-    // Get current user from localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (!user.id) {
-      console.error('No user ID found for task fetch');
-      return [];
-    }
+    const userId = getCurrentUserId();
     
     console.log("Fetching tasks for date:", date);
-    const response = await fetch(`/api/v1/tasks?date=${date}&user_id=${user.id}`);
+    const data = await api.get(`/v1/tasks?date=${date}&user_id=${userId}`);
     
-    if (!response.ok) {
-      console.error(`Error fetching tasks: ${response.status} ${response.statusText}`);
+    if (!data || !Array.isArray(data)) {
+      console.error("Invalid response format for tasks:", data);
       return [];
     }
     
-    // The backend should transform the data to include both date and task_date fields
-    return await response.json();
+    return data.map(mapServerTask);
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return [];
@@ -36,46 +61,11 @@ export const fetchTasks = async (date: string): Promise<Task[]> => {
 
 export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
   try {
-    // Get current user from localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const formattedTask = mapClientTask(task);
+    console.log("Adding task:", formattedTask);
     
-    if (!user.id) {
-      throw new Error('No user ID found for task creation');
-    }
-    
-    console.log("Adding task:", task);
-    
-    // Ensure date is properly formatted and user_id is included
-    const formattedTask = {
-      ...task,
-      user_id: user.id,
-      date: typeof task.date === 'object' ? task.date.toISOString().split('T')[0] : task.date
-    };
-    
-    const response = await fetch('/api/v1/tasks', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formattedTask),
-    });
-    
-    if (response.status === 404 && response.statusText.includes("User")) {
-      // Special handling for user not found - suggest logging in again
-      alert("Your user session is invalid. Please log out and log in again.");
-      
-      // Auto-redirect to login
-      window.location.href = '/login';
-      throw new Error('User session expired. Please log in again.');
-    }
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error response:", errorText);
-      throw new Error(`Failed to add task: ${response.status} ${response.statusText}`);
-    }
-    
-    return await response.json();
+    const { data: result } = await api.post('/v1/tasks', formattedTask);
+    return mapServerTask(result);
   } catch (error) {
     console.error('Error adding task:', error);
     throw error;
@@ -87,60 +77,15 @@ export const updateTask = async (task: Task): Promise<Task> => {
     console.log("API: updateTask called with task:", task);
     
     // Create a copy and remove the id field to prevent Supabase identity column error
-    const { id, ...taskData } = task;
+    const { id, isProcessing, ...taskData } = task;
     
-    // Ensure proper field mapping for backend
-    if (task.date) {
-      taskData.task_date = task.date;
-      console.log("API: Mapped date to task_date:", task.date);
-    }
+    const formattedTask = mapClientTask(taskData);
+    console.log("API: Sending to backend:", formattedTask);
     
-    if (task.time) {
-      taskData.task_time = task.time; 
-      console.log("API: Mapped time to task_time:", task.time);
-    }
+    const { data: result } = await api.put(`/v1/tasks/${id}`, formattedTask);
+    console.log("API: Backend response:", result);
     
-    // Ensure user_id is always included
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.id) {
-      taskData.user_id = user.id;
-      console.log("API: Added user_id:", user.id);
-    }
-    
-    console.log("API: Sending to backend:", taskData);
-    
-    // Check if API endpoint is correct - this was likely the issue
-    const response = await fetch(`/api/v1/tasks/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(taskData),
-    });
-    
-    console.log("API: Backend response status:", response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("API: Server error response:", errorText);
-      throw new Error(`Failed to update task: ${response.status} ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    console.log("API: Backend response data:", result);
-    
-    // Ensure all necessary fields are present
-    const finalResult = {
-      ...task,
-      ...result,
-      // Ensure frontend field names
-      date: result.task_date || result.date || task.date,
-      time: result.task_time || result.time || task.time,
-      completed: result.completed !== undefined ? result.completed : !task.completed
-    };
-    
-    console.log("API: Final result being returned:", finalResult);
-    return finalResult;
+    return mapServerTask({...result, id});
   } catch (error) {
     console.error('API: Error updating task:', error);
     throw error;
@@ -149,13 +94,7 @@ export const updateTask = async (task: Task): Promise<Task> => {
 
 export const deleteTask = async (id: number): Promise<void> => {
   try {
-    const response = await fetch(`/api/v1/tasks/${id}`, {
-      method: 'DELETE',
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to delete task');
-    }
+    await api.delete(`/v1/tasks/${id}`);
   } catch (error) {
     console.error('Error deleting task:', error);
     throw error;

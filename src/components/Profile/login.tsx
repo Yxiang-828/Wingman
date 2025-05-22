@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { loginUser, registerUser } from "../../api/user";
 import { useNavigate } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
+import { api } from "../../api/apiClient";
 import "./Login.css";
 
 const moodIcons: Record<string, string> = {
@@ -33,47 +33,31 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
     try {
-      // === DEV BYPASS === (remove in production)
-      // If the username is "demo" and password is "123456", log in without API call
-      if (username === "demo" && password === "123456") {
-        // Generate a unique ID for the demo user
-        const uniqueId = `demo-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-        
-        const demoUser = {
-          id: uniqueId, // Unique demo user ID
-          username: "demo",
-          name: "Demo User",
-          email: "demo@example.com",
-        };
+      // Real Supabase login
+      const userData = {
+        username: username,
+        password: password,
+      };
 
-        // Store the user in localStorage
-        localStorage.setItem("user", JSON.stringify(demoUser));
+      const result = await api.post("/v1/user/login", userData);
 
-        // Call the onLogin callback with the user object
-        onLogin(demoUser);
-
-        // Navigate to the dashboard
-        navigate("/", { state: { showGreeting: true } });
-        return;
+      if (!result || !result.id) {
+        throw new Error("Invalid login response");
       }
 
-      // Normal API login flow for non-demo users
-      const res = await fetch("/api/v1/user/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-      if (!res.ok) throw new Error("Invalid username or password");
-      const user = await res.json();
+      // Store the user in localStorage
+      localStorage.setItem("user", JSON.stringify(result));
 
-      // Store the full user object in localStorage
-      localStorage.setItem("user", JSON.stringify(user));
+      // Call the onLogin callback
+      onLogin(result);
 
-      onLogin(user);
+      // Navigate to the dashboard
       navigate("/", { state: { showGreeting: true } });
     } catch (err: any) {
-      setError(err.message);
+      console.error("Login error:", err);
+      setError("Invalid username or password");
     } finally {
       setLoading(false);
     }
@@ -83,21 +67,38 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
     if (!email.includes("@")) {
       setError("Please enter a valid email address.");
       setLoading(false);
       return;
     }
+
     try {
-      const user = await registerUser(name, password, email);
+      const userData = {
+        name,
+        email,
+        password,
+        username: username || email.split("@")[0],
+      };
 
-      // Store the full user object in localStorage
-      localStorage.setItem("user", JSON.stringify(user));
+      const result = await api.post("/v1/user/register", userData);
 
-      onLogin(user);
+      if (!result || !result.id) {
+        throw new Error("Invalid registration response");
+      }
+
+      // Store user data
+      localStorage.setItem("user", JSON.stringify(result));
+
+      // Call the onLogin callback
+      onLogin(result);
+
+      // Navigate to profile setup
       navigate("/profile", { state: { showSetup: true } });
     } catch (err: any) {
-      setError(err.message);
+      console.error("Registration error:", err);
+      setError("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -108,11 +109,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       <div className="blob"></div>
       <div className="login-card animate-fade-in">
         <div className="mb-6 flex flex-col items-center">
-          <img
-            src={moodIcons[mood]}
-            alt="Logo"
-            className="logo-img"
-          />
+          <img src={moodIcons[mood]} alt="Logo" className="logo-img" />
           <h1 className="text-3xl font-bold mb-1">Wingman</h1>
           <p className="text-accent-primary font-medium mb-2">
             {step === "login" ? "Welcome back, Leader!" : "Join the Crew!"}
@@ -130,10 +127,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             />
             <input
               type="password"
-              pattern="\d{6}"
-              maxLength={6}
-              minLength={6}
-              placeholder="6-digit password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -153,7 +147,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             >
               New user? Register
             </button>
-            {error && <div className="error text-red-400 text-center">{error}</div>}
+            {error && (
+              <div className="error text-red-400 text-center">{error}</div>
+            )}
           </form>
         ) : (
           <form onSubmit={handleRegister} className="w-72 flex flex-col gap-4">
@@ -174,11 +170,15 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
             />
             <input
+              type="text"
+              placeholder="Username (optional)"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+            />
+            <input
               type="password"
-              pattern="\d{6}"
-              maxLength={6}
-              minLength={6}
-              placeholder="6-digit password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -198,7 +198,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             >
               Back to Login
             </button>
-            {error && <div className="error text-red-400 text-center">{error}</div>}
+            {error && (
+              <div className="error text-red-400 text-center">{error}</div>
+            )}
           </form>
         )}
       </div>

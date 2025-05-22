@@ -216,7 +216,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         markWeekFetched(weekId);
       } catch (error) {
         console.error(`Error fetching week ${weekId} data:`, error);
-        setError(`Failed to load data: ${error.message}`);
+        setError(
+          `Failed to load data: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
       } finally {
         setLoading(false);
         setRequestedWeekId(null);
@@ -383,7 +387,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const addNewTask = useCallback(
     async (task: Partial<Task>): Promise<Task> => {
       try {
-        const savedTask = await addTask(task);
+        if (!task.date) {
+          throw new Error("Task date is required");
+        }
+        // Type assertion is safe here because we checked task.date
+        const savedTask = await addTask(task as Omit<Task, "id">);
         const weekId = getWeekId(savedTask.date);
 
         // Update cache
@@ -452,7 +460,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const addNewEvent = useCallback(
     async (event: Partial<CalendarEvent>): Promise<CalendarEvent> => {
       try {
-        const savedEvent = await addEvent(event);
+        if (!event.date) {
+          throw new Error("Event date is required");
+        }
+        // Type assertion is safe here because we checked event.date
+        const savedEvent = await addEvent(event as Omit<CalendarEvent, "id">);
 
         // Update cache
         setEventCache((prev) => {

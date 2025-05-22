@@ -1,16 +1,22 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from datetime import datetime
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     name: str
-    password: str  # 6-digit code
     email: str
+    username: Optional[str] = None
 
 class UserLogin(BaseModel):
     username: str
     password: str
 
-class UserInDB(BaseModel):
+class UserCreate(UserBase):
+    password: str
+
+class UserResponse(UserBase):
     id: str
-    username: str
-    name: str
-    email: str
+    created_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True

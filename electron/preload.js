@@ -1,9 +1,11 @@
-// preload.js
-// This file is executed in the renderer process before web content begins loading
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
 
+// Expose protected methods that allow the renderer process to use
+// the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
-  onMoodChange: (callback) => ipcRenderer.on('mood-changed', (_, mood) => callback(mood)),
+  onMoodChange: (callback) => {
+    ipcRenderer.on('mood-changed', (_, mood) => callback(mood));
+  }
 });
 
 window.addEventListener('DOMContentLoaded', () => {

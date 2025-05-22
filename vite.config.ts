@@ -19,11 +19,25 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // Change from 8000 to 8080
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
       }
     },
   },
+  // Disable CSS code splitting for better Electron compatibility
+  css: {
+    devSourcemap: true,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
+      'date-fns',
+      '@supabase/supabase-js'
+    ]
+  }
 });

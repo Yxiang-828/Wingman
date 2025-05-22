@@ -4,18 +4,22 @@
   "version": "1.0.0",
   "type": "module",
   "main": "electron/main.js",
-  "author": "Yao_Xiang & Chua_Yong_Liang",
+  "author": "Mom is calling",
   "description": "Life-long Personal Assistant",
   "homepage": "https://Yxiang-828.github.io/Wingman/",
   "scripts": {
     "dev": "vite",
-    "dev:full": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "dev:electron": "electron .",
+    "dev:backend": "cd Wingman-backend && .venv\\Scripts\\activate && uvicorn main:app --reload --port 8080",
+    "dev:full": "concurrently -k \"npm run dev:backend\" \"vite\" \"wait-on http://localhost:5173 && npm run dev:electron\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "start": "electron .",
     "electron": "electron electron/main.js",
     "electron:serve": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && electron-builder",
+    "electron:build:win": "npm run build && electron-builder --win",
+    "package:all": "npm run build && electron-builder --win --mac --linux",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "predeploy": "npm run build",
@@ -57,6 +61,7 @@
   },
   "build": {
     "appId": "com.wingman.assistant",
+    "productName": "Wingman",
     "files": [
       "dist/**/*",
       "electron/**/*"
@@ -64,6 +69,22 @@
     "directories": {
       "buildResources": "src/assets"
     },
+    "extraResources": [
+      {
+        "from": "src/assets/",
+        "to": "resources"
+      },
+      {
+        "from": "Wingman-backend",
+        "to": "Wingman-backend"
+      }
+    ],
+    "extraFiles": [
+      {
+        "from": "Wingman-backend/.venv",
+        "to": "Wingman-backend/.venv"
+      }
+    ],
     "win": {
       "icon": "src/assets/productive.ico",
       "target": "nsis"
@@ -79,11 +100,9 @@
         "AppImage"
       ]
     },
-    "extraResources": [
-      {
-        "from": "src/assets/",
-        "to": "resources"
-      }
-    ]
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
