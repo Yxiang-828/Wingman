@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
 import { api } from "../../api/apiClient";
+import { Auth } from "../../utils/AuthStateManager";
 import "./Login.css";
 
 const moodIcons: Record<string, string> = {
@@ -45,13 +46,25 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     setError(null);
 
     try {
-      // Real Supabase login
       const userData = {
         username: username,
         password: password,
       };
 
-      const result = await api.post("/v1/user/login", userData);
+      // Bypass the API client for login requests
+      const response = await fetch('/api/v1/user/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const result = await response.json();
 
       if (!result || !result.id) {
         throw new Error("Invalid login response");
@@ -59,6 +72,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
       // Store the user in localStorage
       localStorage.setItem("user", JSON.stringify(result));
+      
+      // Update Auth state manager explicitly
+      Auth.setAuthenticated(true, result.id);
 
       // Call the onLogin callback
       onLogin(result);

@@ -25,6 +25,13 @@ const DiarySearch: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Pagination states
+  const ENTRIES_PER_PAGE = 15; // Show 15 entries initially
+  const [page, setPage] = useState(1);
+  const [displayedEntries, setDisplayedEntries] = useState<any[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   // Available moods for filtering
   const moods = ["happy", "sad", "neutral", "excited", "tired"];
 
@@ -115,15 +122,28 @@ const DiarySearch: React.FC = () => {
     }
   };
 
-  // Get a cleaner preview of the content
-  const getPreviewText = (content: string, maxLength: number = 100) => {
+  // Get a preview of the content (7 words max)
+  const getCompactPreview = (content: string) => {
     if (!content) return "";
+    const words = content.split(" ").slice(0, 7).join(" ");
+    return words + (content.split(" ").length > 7 ? "..." : "");
+  };
 
-    // Remove extra whitespace and new lines for cleaner preview
-    const cleaned = content.replace(/\s+/g, " ").trim();
+  // Use this useEffect to handle pagination
+  useEffect(() => {
+    const start = 0;
+    const end = page * ENTRIES_PER_PAGE;
+    setDisplayedEntries(results.slice(start, end));
+    setHasMore(results.length > end);
+  }, [results, page]);
 
-    if (cleaned.length <= maxLength) return cleaned;
-    return cleaned.substring(0, maxLength) + "...";
+  // Function to load more entries
+  const loadMoreEntries = () => {
+    setLoadingMore(true);
+    setTimeout(() => {
+      setPage((prev) => prev + 1);
+      setLoadingMore(false);
+    }, 500); // Small delay for better UX
   };
 
   return (
@@ -208,29 +228,41 @@ const DiarySearch: React.FC = () => {
         </div>
 
         {results.length > 0 ? (
-          <div className="past-records-list">
-            {results.map((entry) => (
-              <div
-                key={`entry-${entry.id}`}
-                className="past-record-item"
-                onClick={() => handleEntryClick(entry.id)}
-              >
-                <div className="record-header">
-                  <span className="record-date">
+          <>
+            <div className="compact-records-list">
+              {displayedEntries.map((entry) => (
+                <div
+                  key={`entry-${entry.id}`}
+                  className="compact-record-item"
+                  onClick={() => handleEntryClick(entry.id)}
+                >
+                  <span className="compact-record-title">{entry.title}</span>
+                  <span className="compact-record-divider">-</span>
+                  <span className="compact-record-preview">
+                    {getCompactPreview(entry.content)}
+                  </span>
+                  <span className="compact-record-date">
                     {formatDateDisplay(entry.date)}
                   </span>
-                  <span className="record-title-divider">-</span>
-                  <span className="record-title">{entry.title}</span>
-                  <span className="record-mood">
+                  <span className="compact-record-mood">
                     {getMoodEmoji(entry.mood)}
                   </span>
                 </div>
-                <p className="record-preview">
-                  {getPreviewText(entry.content, 160)}
-                </p>
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="load-more-container">
+                <button
+                  className="load-more-btn"
+                  onClick={loadMoreEntries}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? "Loading..." : "View More Entries"}
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         ) : (
           <div className="no-records">
             <div className="no-records-icon">📝</div>

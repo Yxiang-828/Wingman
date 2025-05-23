@@ -4,12 +4,17 @@ import { format, subDays } from "date-fns";
 import { useData } from "../context/DataContext";
 import { useNotifications } from "../context/NotificationsContext";
 import DetailPopup from "../components/Common/DetailPopup";
+import { useInView } from 'react-intersection-observer';
 import "./Notifications.css";
 
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const listRef = useRef<HTMLDivElement>(null);
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: false
+  });
 
   const { 
     notifications, 
@@ -20,6 +25,10 @@ const Notifications: React.FC = () => {
     showPopupFor, 
     currentPopupItem, 
     closePopup,
+    loadMoreNotifications,
+    isLoadingMore,
+    hasMoreTasks,
+    hasMoreEvents
   } = useNotifications();
   
   const { batchFetchData, taskCache, eventCache } = useData();
@@ -143,6 +152,20 @@ const Notifications: React.FC = () => {
       });
   }, [notifications, activeTab]);
 
+  // Trigger loading more items when scrolling
+  useEffect(() => {
+    if (inView && !isLoadingMore) {
+      if (activeTab === 'task' && hasMoreTasks) {
+        loadMoreNotifications('task');
+      } else if (activeTab === 'event' && hasMoreEvents) {
+        loadMoreNotifications('event');
+      } else if (activeTab === 'all') {
+        if (hasMoreTasks) loadMoreNotifications('task');
+        if (hasMoreEvents) loadMoreNotifications('event');
+      }
+    }
+  }, [inView, isLoadingMore, activeTab, hasMoreTasks, hasMoreEvents, loadMoreNotifications]);
+
   return (
     <div className="notifications-container">
       <div className="notifications-header">
@@ -232,6 +255,28 @@ const Notifications: React.FC = () => {
             </p>
           </div>
         )}
+        
+        <div className="notifications-pagination">
+          {filteredNotifications.length > 0 && (
+            <>
+              <div ref={loadMoreRef} className="load-more-trigger">
+                {isLoadingMore && <div className="loading-spinner small"></div>}
+                {!isLoadingMore && hasMoreTasks && (
+                  <div className="scroll-indicator">
+                    <div className="scroll-indicator-text">Scroll for more</div>
+                    <div className="scroll-indicator-arrow">↓</div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Simplify pagination status */}
+              <div className="pagination-status">
+                Showing {filteredNotifications.length} notifications
+                {hasMoreTasks || hasMoreEvents ? ' (scroll for more)' : ''}
+              </div>
+            </>
+          )}
+        </div>
       </div>
       
       {currentPopupItem && (

@@ -1,7 +1,39 @@
 import { getApiUrl } from '../config';
+import { Auth } from '../utils/AuthStateManager';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
+
+// Add this at the start of your file
+let apiQueue: Array<() => Promise<any>> = [];
+let isProcessingQueue = false;
+
+// Process queued API requests when authentication is confirmed
+Auth.addListener((isAuthenticated) => {
+  if (isAuthenticated && apiQueue.length > 0) {
+    processApiQueue();
+  }
+});
+
+async function processApiQueue() {
+  if (isProcessingQueue) return;
+  
+  isProcessingQueue = true;
+  console.log(`Processing ${apiQueue.length} queued API requests`);
+  
+  while (apiQueue.length > 0) {
+    const apiCall = apiQueue.shift();
+    if (apiCall) {
+      try {
+        await apiCall();
+      } catch (err) {
+        console.error('Error processing queued API call:', err);
+      }
+    }
+  }
+  
+  isProcessingQueue = false;
+}
 
 /**
  * Generic API client with retry capability for making fetch requests
@@ -25,6 +57,36 @@ export async function apiRequest<T = any>(
     },
   };
 
+  // Skip auth check for login/register endpoints
+  const isAuthEndpoint = endpoint.includes('/auth/login') || 
+                         endpoint.includes('/auth/register');
+                         
+  if (!isAuthEndpoint && !Auth.isAuthenticated) {
+    // Queue this request for later execution
+    return new Promise((resolve, reject) => {
+      console.log(`Queuing API request to ${endpoint} - not authenticated yet`);
+      apiQueue.push(async () => {
+        try {
+          const result = await apiRequest(endpoint, options, 0);
+          resolve(result);
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+  } 
+  
+  // Add authentication token if available
+  if (!isAuthEndpoint) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+      };
+    }
+  }
+  
   try {
     console.log(`Sending API request to: ${url}`);
     const response = await fetch(url, config);

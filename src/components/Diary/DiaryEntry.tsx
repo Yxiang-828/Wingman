@@ -231,14 +231,15 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
     }
   };
 
-  // Get mood emoji
+  // Update the getMoodEmoji function with the correct values
   const getMoodEmoji = (moodValue: string) => {
     const moods: Record<string, string> = {
       happy: "😊",
       neutral: "😐",
       sad: "😔",
       excited: "🤩",
-      relaxed: "😌",
+      // Remove "relaxed" and keep only values the database accepts
+      // relaxed: "😌",  // This value is causing the error
       anxious: "😰",
     };
     return moods[moodValue] || "😐";
@@ -345,10 +346,8 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
                 <option value="excited">
                   Excited {getMoodEmoji("excited")}
                 </option>
-                <option value="relaxed">
-                  Relaxed {getMoodEmoji("relaxed")}
-                </option>
-                {/* Remove or replace the "tired" option that's causing the error */}
+                {/* Remove the "relaxed" option that's causing the error */}
+                {/* <option value="relaxed">Relaxed {getMoodEmoji("relaxed")}</option> */}
                 <option value="anxious">
                   Anxious {getMoodEmoji("anxious")}
                 </option>

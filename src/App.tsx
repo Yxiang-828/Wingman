@@ -23,6 +23,7 @@ import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { startNotificationCleanupService } from "./services/NotificationService";
+import { Auth } from "./utils/AuthStateManager";
 import "./main.css";
 import "./styles/scrollbars.css";
 
@@ -38,16 +39,19 @@ const AppContent = ({
 
   // Modified useEffect to properly update auth state
   useEffect(() => {
-    // REMOVE all localStorage user restoration
-    // Just set initialized to true immediately
     setAuthInitialized(true);
 
-    // Optional: Clear any existing user data to force login
-    localStorage.removeItem("user");
-
-    // Notify parent that user is not authenticated
-    onAuthChange(false);
-  }, [onAuthChange]);
+    // Check if user is already stored in localStorage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+      } catch (e) {
+        console.error("Error parsing stored user data:", e);
+      }
+    }
+  }, []);
 
   // Update login handler to notify when user logs in
   const handleLogin = (user: any) => {
@@ -77,11 +81,6 @@ const AppContent = ({
   // Ensure we only render content that needs authentication after auth is initialized
   if (!authInitialized) {
     return <div className="loading">Initializing...</div>;
-  }
-
-  // CRITICAL PART: If not logged in, always show login
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
   }
 
   // Return the app content with FIXED routing structure
@@ -121,37 +120,69 @@ const AppContent = ({
 
 // Main App component with providers
 const App = () => {
-  // Only start services after user authentication
-  const [userAuthenticated, setUserAuthenticated] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(Auth.isAuthenticated);
 
-  // Fix memory leak warning by increasing max listeners
+  // Initialize and listen for auth changes
   useEffect(() => {
-    if (window.electronAPI?.setMaxMoodListeners) {
-      window.electronAPI.setMaxMoodListeners(20);
+    const removeListener = Auth.addListener((isAuth) => {
+      setIsAuthenticated(isAuth);
+    });
+
+    // Check for stored credentials on mount
+    const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (storedUser && token) {
+      try {
+        const userData = JSON.parse(storedUser);
+        // Verify token if needed here
+        Auth.setAuthenticated(true, userData.id);
+      } catch (e) {
+        console.error("Error parsing stored user data:", e);
+        Auth.handleLogout();
+      }
     }
+
+    setIsInitializing(false);
+
+    return removeListener;
   }, []);
 
-  useEffect(() => {
-    // Only start notification cleanup service if user is authenticated
-    if (userAuthenticated) {
-      const stopCleanupService = startNotificationCleanupService();
-      return () => {
-        stopCleanupService();
-      };
-    }
-  }, [userAuthenticated]);
+  // Show loading screen during initialization
+  if (isInitializing) {
+    return <div className="loading">Starting up...</div>;
+  }
+
+  // Replace the non-implemented function with a working one
+  function setUser(user: any) {
+    console.log("User authenticated:", user);
+    // Store the user if needed
+    localStorage.setItem("user", JSON.stringify(user));
+    // Update Auth state manager
+    Auth.setAuthenticated(true, user.id);
+  }
 
   return (
     <Router>
-      <ErrorBoundary>
-        <DiaryProvider>
-          <DataProvider>
-            <NotificationsProvider>
-              <AppContent onAuthChange={setUserAuthenticated} />
-            </NotificationsProvider>
-          </DataProvider>
-        </DiaryProvider>
-      </ErrorBoundary>
+      {isAuthenticated ? (
+        <ErrorBoundary>
+          <DiaryProvider>
+            <DataProvider>
+              <NotificationsProvider>
+                <AppContent onAuthChange={setIsAuthenticated} />
+              </NotificationsProvider>
+            </DataProvider>
+          </DiaryProvider>
+        </ErrorBoundary>
+      ) : (
+        <Login
+          onLogin={(user) => {
+            setUser(user);
+            setIsAuthenticated(true);
+          }}
+        />
+      )}
     </Router>
   );
 };

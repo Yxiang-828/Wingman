@@ -45,6 +45,132 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Enhanced search bar styling */
+.search-form {
+  background: rgba(30, 30, 50, 0.5);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.search-form:focus-within {
+  box-shadow: 0 6px 16px rgba(100, 108, 255, 0.25);
+  border-color: rgba(100, 108, 255, 0.4);
+}
+
+.search-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.8rem 1.2rem;
+  background: rgba(20, 20, 40, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: rgba(100, 108, 255, 0.7);
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-button {
+  padding: 0.7rem 1.4rem;
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.8), rgba(80, 88, 236, 0.9));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.search-button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(100, 108, 255, 1), rgba(80, 88, 236, 1));
+  box-shadow: 0 4px 8px rgba(100, 108, 255, 0.3);
+}
+
+.search-button:active {
+  transform: translateY(0);
+}
+
+.search-icon {
+  font-size: 1.1rem;
+}
+
+.date-range {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.date-input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  background: rgba(20, 20, 40, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.date-input:focus {
+  border-color: rgba(100, 108, 255, 0.7);
+  outline: none;
+}
+
+.mood-select {
+  padding: 0.7rem 1rem;
+  background: rgba(20, 20, 40, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  min-width: 150px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mood-select:focus {
+  border-color: rgba(100, 108, 255, 0.7);
+  outline: none;
+}
+
+.clear-filters-btn {
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  margin-left: auto;
+}
+
+.clear-filters-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
 /* Search bar */
 .diary-search-bar {
   position: relative;
@@ -329,6 +455,134 @@
 
 .past-records-list::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 108, 255, 0.6);
+}
+
+/* Add these styles for the compact diary entry list */
+
+.compact-records-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: rgba(25, 25, 45, 0.3);
+  padding: 0.5rem;
+}
+
+.compact-record-item {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-record-item:last-child {
+  border-bottom: none;
+}
+
+.compact-record-item:hover {
+  background: rgba(30, 30, 50, 0.5);
+  transform: translateX(3px);
+}
+
+.compact-record-title {
+  font-weight: 600;
+  color: white;
+  max-width: 30%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-record-divider {
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0.5rem;
+}
+
+.compact-record-preview {
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.compact-record-date {
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(30, 30, 50, 0.4);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+.compact-record-mood {
+  font-size: 1.1rem;
+  margin-left: 0.5rem;
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.load-more-btn {
+  background: rgba(100, 108, 255, 0.2);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Add these styles for the notifications pagination */
+.notifications-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(100, 108, 255, 0.1);
+}
+
+.pagination-status {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.scroll-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.6);
+  animation: bounce 2s infinite;
+}
+
+.scroll-indicator-arrow {
+  font-size: 1.5rem;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-10px);}
+  60% {transform: translateY(-5px);}
 }
 
 /* Responsive styles */

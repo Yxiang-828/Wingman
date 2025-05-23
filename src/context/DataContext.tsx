@@ -22,6 +22,7 @@ import type { Task } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
 import { getCurrentUserId, getCurrentUser } from '../utils/auth';
 import { format, startOfWeek } from 'date-fns';
+import { Auth } from '../utils/AuthStateManager';
 
 // Constants for cache
 const CACHE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes cache expiry
@@ -62,6 +63,15 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(Auth.isAuthenticated);
+  
+  // Listen for auth changes
+  useEffect(() => {
+    return Auth.addListener((isAuth) => {
+      setIsAuthenticated(isAuth);
+    });
+  }, []);
+  
   // All state declarations
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -795,6 +805,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       fetchWeekData(currentWeekId);
     }
   }, [authChecked, currentWeekId, fetchWeekData]);
+
+  // Update your data fetching logic
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log("DataContext: Not fetching data - not authenticated");
+      return;
+    }
+    
+    // Your existing data loading logic here
+    fetchWeekData(currentWeekId);
+  }, [currentWeekId, isAuthenticated]);
 
   return (
     <DataContext.Provider

@@ -1,6 +1,7 @@
 import type { Task } from '../api/Task'; 
 import type { CalendarEvent } from '../api/Calendar';
 import { getCurrentUserId } from "../utils/auth";
+import { Auth } from '../utils/AuthStateManager';
 
 // Check if we can use browser notifications
 const checkNotificationPermission = async (): Promise<boolean> => {
@@ -120,6 +121,12 @@ export const checkUpcomingNotifications = (tasks: Task[], events: CalendarEvent[
 
 // Start the notification service when the app loads
 export const startNotificationService = (tasks: Task[], events: CalendarEvent[]) => {
+  // Only start if authenticated
+  if (!Auth.isAuthenticated) {
+    console.log("Not starting notification service - not authenticated");
+    return () => {}; // No-op cleanup
+  }
+  
   // Check immediately
   checkUpcomingNotifications(tasks, events);
   
