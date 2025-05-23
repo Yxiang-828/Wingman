@@ -109,10 +109,11 @@
 .week-days-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-  padding: 12px;
+  gap: 15px;
+  padding: 16px;
   overflow-y: auto;
   height: calc(100vh - 200px);
+  animation: fade-in 0.5s ease;
 }
 
 /* Individual day cards */
@@ -338,7 +339,7 @@
 }
 
 /* Delete button styling */
-.week-item-delete {
+/* .week-item-delete {
   position: absolute;
   right: 6px;
   top: 6px;
@@ -353,13 +354,15 @@
   border: none;
   font-size: 0.8rem;
   cursor: pointer;
+} */
+
+/* Hide delete buttons in week view as requested */
+.week-item-delete {
+  display: none !important; /* Force hide with !important */
 }
 
+/* Hide even on hover */
 .week-event-item:hover .week-item-delete,
 .week-task-item:hover .week-item-delete {
-  display: flex;
-}
-
-.week-item-delete:hover {
-  background: rgba(255, 77, 77, 0.4);
+  display: none !important;
 }

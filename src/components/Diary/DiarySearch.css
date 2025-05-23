@@ -610,3 +610,144 @@
     max-height: 50vh;
   }
 }
+
+/* Add these styles to your existing DiarySearch.css file */
+
+.search-results-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  background: rgba(30, 30, 50, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(100, 108, 255, 0.3);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  z-index: 1000; /* Ensure it's above other elements */
+  display: flex;
+  flex-direction: column;
+  animation: popup-fade-in 0.3s ease;
+  overflow: hidden; /* Important to contain the inner scrolling area */
+}
+
+.search-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
+  background: rgba(35, 35, 55, 0.5);
+}
+
+.search-popup-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: white;
+  font-weight: 600;
+}
+
+.close-popup-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-popup-btn:hover {
+  background: rgba(100, 108, 255, 0.2);
+  color: white;
+}
+
+.search-results-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.5) rgba(30, 30, 50, 0.3);
+}
+
+.search-result-item {
+  background: rgba(40, 40, 60, 0.5);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  border: 1px solid rgba(100, 108, 255, 0.15);
+  transition: all 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: rgba(50, 50, 70, 0.6);
+  border-color: rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.search-result-item h4 {
+  margin: 0 0 0.5rem;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.result-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  margin: 0 0 0.5rem;
+}
+
+.result-preview {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+@keyframes popup-fade-in {
+  from { opacity: 0; transform: translate(-50%, -48%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* Custom scrollbar for search results */
+.search-results-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results-list::-webkit-scrollbar-track {
+  background: rgba(30, 30, 50, 0.1);
+}
+
+.search-results-list::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.3);
+  border-radius: 3px;
+}
+
+.search-results-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 108, 255, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .search-results-popup {
+    width: 95%;
+    max-height: 75vh;
+  }
+}

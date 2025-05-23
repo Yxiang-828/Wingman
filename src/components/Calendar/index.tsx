@@ -1,6 +1,6 @@
-import React, { Component, useEffect } from "react";
+import React, { Component } from "react";
 import type { ErrorInfo } from "react";
-import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate, useNavigate } from "react-router-dom";
 import DayView from "./DayView";
 import WeekView from "./WeekView";
 import MonthView from "./MonthView";
@@ -40,30 +40,9 @@ class ErrorBoundary extends Component<
   }
 }
 
-// Create a wrapper that handles the WeekView transition
-const WeekViewWrapper = () => {
-  // useEffect to adjust main container transitions
-  useEffect(() => {
-    // Add transition class to main content for smooth animations
-    const mainContent = document.querySelector('.main-content-wrapper');
-    if (mainContent) {
-      mainContent.classList.add('week-view-transition');
-    }
-    
-    return () => {
-      // Clean up when exiting
-      if (mainContent) {
-        mainContent.classList.remove('week-view-transition');
-      }
-    };
-  }, []);
-  
-  return <WeekView />;
-};
-
 const Calendar: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate(); // Add this line to define navigate
 
   // Determine current view from URL
   const getView = () => {
@@ -73,52 +52,48 @@ const Calendar: React.FC = () => {
   };
   const currentView = getView();
 
-  // Optional: preserve date param when switching views
-  const query = new URLSearchParams(location.search);
-  const dateParam = query.get("date") || "";
-  const dateSuffix = dateParam ? `?date=${dateParam}` : "";
-
   return (
     <ErrorBoundary>
       <div className={`calendar-container view-${currentView}`}>
-        <div className="calendar-header">
-          <h1>Calendar</h1>
-          <div className="calendar-view-toggle">
-            <button
-              className={`calendar-toggle-btn${
-                currentView === "day" ? " active" : ""
-              }`}
-              onClick={() => navigate(`/calendar/day${dateSuffix}`)}
-            >
-              Day
-            </button>
-            <button
-              className={`calendar-toggle-btn${
-                currentView === "week" ? " active" : ""
-              }`}
-              onClick={() => navigate(`/calendar/week${dateSuffix}`)}
-            >
-              Week
-            </button>
-            <button
-              className={`calendar-toggle-btn${
-                currentView === "month" ? " active" : ""
-              }`}
-              onClick={() => navigate(`/calendar/month${dateSuffix}`)}
-            >
-              Month
-            </button>
-          </div>
-        </div>
         <div className="calendar-main">
+          {/* Routes for different views */}
           <Routes>
-            <Route path="day" element={<DayView />} />
-            <Route path="week" element={<WeekViewWrapper />} />
-            <Route path="month" element={<MonthView />} />
-            <Route path="*" element={<DayView />} />
+            <Route path="/day" element={<DayView />} />
+            <Route path="/week" element={<WeekView />} />
+            <Route path="/month" element={<MonthView />} />
+            {/* Default route */}
+            <Route path="*" element={<Navigate to="week" replace />} />
           </Routes>
         </div>
         <EventModal />
+
+        {/* Add the persistent floating view selector here */}
+        <div className="floating-view-selector">
+          <button
+            className={`view-btn day ${
+              location.pathname.includes("day") ? "active" : ""
+            }`}
+            onClick={() => navigate("/calendar/day")}
+          >
+            <span className="view-btn-text">Day</span>
+          </button>
+          <button
+            className={`view-btn week ${
+              location.pathname.includes("week") ? "active" : ""
+            }`}
+            onClick={() => navigate("/calendar/week")}
+          >
+            <span className="view-btn-text">Week</span>
+          </button>
+          <button
+            className={`view-btn month ${
+              location.pathname.includes("month") ? "active" : ""
+            }`}
+            onClick={() => navigate("/calendar/month")}
+          >
+            <span className="view-btn-text">Month</span>
+          </button>
+        </div>
       </div>
     </ErrorBoundary>
   );

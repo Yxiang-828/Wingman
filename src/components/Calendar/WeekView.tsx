@@ -8,6 +8,7 @@ import type { CalendarEvent } from "../../api/Calendar";
 import DetailPopup from "../Common/DetailPopup";
 import { VirtualizedEventList, VirtualizedTaskList } from "./VirtualizedList";
 import "./WeekView.css";
+import "./Calendar.css";
 
 const WeekView: React.FC = () => {
   const location = useLocation();
@@ -116,7 +117,7 @@ const WeekView: React.FC = () => {
     loadData();
 
     return () => clearTimeout(loadTimeout);
-  }, [activeWeekId, fetchWeekData, taskCache, eventCache]);
+  }, [activeWeekId, fetchWeekData]); // REMOVED taskCache and eventCache
 
   // Generate array of dates for the week
   const getDaysOfWeek = () => {
@@ -271,16 +272,18 @@ const WeekView: React.FC = () => {
             {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
           </div>
         </div>
-        <div className="calendar-buttons">
-          <button className="calendar-btn" onClick={handlePrevWeek}>
-            ←
-          </button>
-          <button className="calendar-btn today-btn" onClick={handleToday}>
-            Today
-          </button>
-          <button className="calendar-btn" onClick={handleNextWeek}>
-            →
-          </button>
+        <div className="header-right">
+          <div className="calendar-buttons">
+            <button className="calendar-btn" onClick={handlePrevWeek}>
+              ←
+            </button>
+            <button className="calendar-btn today-btn" onClick={handleToday}>
+              Today
+            </button>
+            <button className="calendar-btn" onClick={handleNextWeek}>
+              →
+            </button>
+          </div>
         </div>
       </div>
 

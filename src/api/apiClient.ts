@@ -59,7 +59,9 @@ export async function apiRequest<T = any>(
 
   // Skip auth check for login/register endpoints
   const isAuthEndpoint = endpoint.includes('/auth/login') || 
-                         endpoint.includes('/auth/register');
+                         endpoint.includes('/auth/register') ||
+                         endpoint.includes('/v1/user/login') ||
+                         endpoint.includes('/v1/user/register');
                          
   if (!isAuthEndpoint && !Auth.isAuthenticated) {
     // Queue this request for later execution

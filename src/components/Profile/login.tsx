@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
-import { api } from "../../api/apiClient";
 import { Auth } from "../../utils/AuthStateManager";
 import "./Login.css";
 
@@ -114,7 +113,20 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         username: username || email.split("@")[0],
       };
 
-      const result = await api.post("/v1/user/register", userData);
+      // Use direct fetch instead of api client
+      const response = await fetch('/api/v1/user/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+
+      const result = await response.json();
 
       if (!result || !result.id) {
         throw new Error("Invalid registration response");

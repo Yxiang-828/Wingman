@@ -133,3 +133,83 @@ export const isSameDay = (date1: Date, date2: Date): boolean => {
     date1.getDate() === date2.getDate()
   );
 };
+
+/**
+ * Safely formats a date string or Date object with fallback handling
+ */
+export function formatSafeDate(
+  dateInput: string | Date | undefined,
+  format: 'full' | 'date' | 'time' | 'datetime' = 'full'
+): string {
+  try {
+    if (!dateInput) return "No date";
+    
+    // Try to parse the date
+    let date: Date;
+    if (typeof dateInput === 'string') {
+      date = new Date(dateInput);
+    } else {
+      date = dateInput;
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid date: ${dateInput}`);
+      return "Invalid date";
+    }
+    
+    const options: Intl.DateTimeFormatOptions = {};
+    
+    switch (format) {
+      case 'date':
+        options.year = 'numeric';
+        options.month = 'long';
+        options.day = 'numeric';
+        break;
+      case 'time':
+        options.hour = '2-digit';
+        options.minute = '2-digit';
+        break;
+      case 'datetime':
+        options.year = 'numeric';
+        options.month = 'long';
+        options.day = 'numeric';
+        options.hour = '2-digit';
+        options.minute = '2-digit';
+        break;
+      case 'full':
+      default:
+        options.weekday = 'long';
+        options.year = 'numeric';
+        options.month = 'long';
+        options.day = 'numeric';
+        options.hour = '2-digit';
+        options.minute = '2-digit';
+        break;
+    }
+    
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Date error";
+  }
+}
+
+/**
+ * Converts a string date to a consistent ISO format for storage
+ */
+export function normalizeDate(dateInput: string | Date): string {
+  try {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid date: ${dateInput}`);
+    }
+    
+    return date.toISOString();
+  } catch (error) {
+    console.error("Error normalizing date:", error);
+    return new Date().toISOString(); // Return current date as fallback
+  }
+}

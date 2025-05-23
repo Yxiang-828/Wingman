@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import { format } from 'date-fns';
 import type { DiaryEntry } from '../../api/Diary';
 import Portal from '../Common/Portal';
+import { formatSafeDate } from '../../utils/dateUtils';
 import './DiaryDetailPopup.css';
 
 interface DiaryDetailPopupProps {
@@ -47,16 +47,6 @@ const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({
     return moods[mood] || "😐";
   };
   
-  // Format date for display
-  const formatDateDisplay = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return format(date, 'EEEE, MMMM d, yyyy');
-    } catch (e) {
-      return dateStr;
-    }
-  };
-  
   const handleEdit = () => {
     if (onEdit && entry.id) {
       onEdit(entry.id);
@@ -77,7 +67,9 @@ const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({
         <button className="diary-popup-close" onClick={onClose}>×</button>
         
         <div className="diary-popup-header">
-          <span className="diary-popup-date">{formatDateDisplay(entry.date)}</span>
+          <span className="diary-popup-date">
+            {formatSafeDate(entry.date, 'full')}
+          </span>
           {entry.mood && (
             <span className="diary-popup-mood">{getMoodEmoji(entry.mood)}</span>
           )}

@@ -1,89 +1,98 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { useDiary } from "../../context/DiaryContext";
-import { debounce } from "../../utils/helpers";
-import { format } from "date-fns";
+import type { DiaryEntry } from "../../api/Diary";
 import "./DiarySearch.css";
+import DiaryDetailPopup from "./DiaryDetailPopup";
+import { useNavigate } from "react-router-dom";
+import { formatSafeDate } from "../../utils/dateUtils"; // Adjust the import based on your project structure
 
-interface SearchParams {
-  query: string;
-  startDate: string;
-  endDate: string;
-  mood: string;
-}
-
-const DiarySearch: React.FC = () => {
+// Component type definition
+const DiarySearch = () => {
+  // We'll use the entries from context for searching
+  const { entries: diaryEntries } = useDiary();
   const navigate = useNavigate();
-  const { entries } = useDiary();
-  const [searchParams, setSearchParams] = useState<SearchParams>({
+
+  // Search parameters with proper typing
+  const [searchParams, setSearchParams] = useState({
     query: "",
     startDate: "",
     endDate: "",
     mood: "",
   });
-  const [results, setResults] = useState(entries);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
 
-  // Pagination states
-  const ENTRIES_PER_PAGE = 15; // Show 15 entries initially
-  const [page, setPage] = useState(1);
-  const [displayedEntries, setDisplayedEntries] = useState<any[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  // Popup and results states with proper typing
+  const [showSearchPopup, setShowSearchPopup] = useState(false);
+  const [searchResults, setSearchResults] = useState<DiaryEntry[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
+
+  // Recent entries state
+  const [recentEntries, setRecentEntries] = useState<DiaryEntry[]>([]);
+  const recentEntriesLimit = 5; // Show 5 most recent entries
 
   // Available moods for filtering
-  const moods = ["happy", "sad", "neutral", "excited", "tired"];
+  const moods = ["happy", "sad", "neutral", "excited", "anxious"];
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((params: SearchParams) => {
-      setIsSearching(true);
+  // Search handler with proper typing
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Prevent form submission/navigation
 
-      try {
-        // Filter entries based on search parameters
-        const filtered = entries.filter((entry) => {
-          // Text search in title and content
-          const textMatch =
-            !params.query ||
-            entry.title.toLowerCase().includes(params.query.toLowerCase()) ||
-            entry.content.toLowerCase().includes(params.query.toLowerCase());
+    setIsSearching(true);
 
-          // Date range filtering
-          const dateMatch =
-            (!params.startDate || entry.date >= params.startDate) &&
-            (!params.endDate || entry.date <= params.endDate);
+    try {
+      // Local search implementation using the entries from context
+      // This replaces the non-existent searchDiaryEntries function
+      const filteredEntries = diaryEntries.filter((entry) => {
+        // Match query text
+        const matchesQuery = searchParams.query
+          ? entry.title
+              ?.toLowerCase()
+              .includes(searchParams.query.toLowerCase()) ||
+            entry.content
+              ?.toLowerCase()
+              .includes(searchParams.query.toLowerCase())
+          : true;
 
-          // Mood filtering
-          const moodMatch = !params.mood || entry.mood === params.mood;
+        // Match date range
+        const entryDate = new Date(entry.date);
+        const matchesStartDate = searchParams.startDate
+          ? entryDate >= new Date(searchParams.startDate)
+          : true;
+        const matchesEndDate = searchParams.endDate
+          ? entryDate <= new Date(searchParams.endDate)
+          : true;
 
-          return textMatch && dateMatch && moodMatch;
-        });
+        // Match mood
+        const matchesMood = searchParams.mood
+          ? entry.mood === searchParams.mood
+          : true;
 
-        setResults(filtered);
-      } catch (error) {
-        console.error("Error searching entries:", error);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 300),
-    [entries]
-  );
+        return (
+          matchesQuery && matchesStartDate && matchesEndDate && matchesMood
+        );
+      });
 
-  // Call search whenever parameters change
-  useEffect(() => {
-    debouncedSearch(searchParams);
-  }, [searchParams, debouncedSearch]);
+      setSearchResults(filteredEntries);
+      setShowSearchPopup(true); // Show popup with results
+    } catch (error) {
+      console.error("Error searching diary entries:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
-  // Handle input changes
+  // Input change handler with proper typing
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setSearchParams((prev) => ({ ...prev, [name]: value }));
+    setSearchParams({
+      ...searchParams,
+      [name]: value,
+    });
   };
 
-  // Clear all filters
+  // Clear filters function
   const clearFilters = () => {
     setSearchParams({
       query: "",
@@ -93,189 +102,228 @@ const DiarySearch: React.FC = () => {
     });
   };
 
-  // Get mood emoji
-  const getMoodEmoji = (mood: string = "neutral") => {
-    const moods: Record<string, string> = {
-      happy: "😊",
-      neutral: "😐",
-      sad: "😔",
-      excited: "🤩",
-      tired: "😴",
-    };
-    return moods[mood] || "😐";
-  };
-
-  // Format date for display
-  const formatDateDisplay = (dateStr: string) => {
-    try {
-      const date = new Date(dateStr);
-      return format(date, "MMM d, yyyy");
-    } catch (e) {
-      return dateStr;
-    }
-  };
-
-  // View entry details
-  const handleEntryClick = (id: number | undefined) => {
-    if (typeof id === "number") {
-      navigate(`/diary/view?id=${id}`);
-    }
-  };
-
-  // Get a preview of the content (7 words max)
-  const getCompactPreview = (content: string) => {
-    if (!content) return "";
-    const words = content.split(" ").slice(0, 7).join(" ");
-    return words + (content.split(" ").length > 7 ? "..." : "");
-  };
-
-  // Use this useEffect to handle pagination
+  // Load recent entries on component mount or diaryEntries change
   useEffect(() => {
-    const start = 0;
-    const end = page * ENTRIES_PER_PAGE;
-    setDisplayedEntries(results.slice(start, end));
-    setHasMore(results.length > end);
-  }, [results, page]);
+    if (diaryEntries && diaryEntries.length > 0) {
+      // Sort by date, newest first
+      const sortedEntries = [...diaryEntries].sort((a, b) => {
+        const dateA = new Date(a.entry_date || a.created_at || Date.now());
+        const dateB = new Date(b.entry_date || b.created_at || Date.now());
+        return dateB.getTime() - dateA.getTime();
+      });
 
-  // Function to load more entries
-  const loadMoreEntries = () => {
-    setLoadingMore(true);
-    setTimeout(() => {
-      setPage((prev) => prev + 1);
-      setLoadingMore(false);
-    }, 500); // Small delay for better UX
+      // Set the most recent entries
+      setRecentEntries(sortedEntries.slice(0, recentEntriesLimit));
+    }
+  }, [diaryEntries]);
+
+  // Prevent scrolling when popup is open
+  useEffect(() => {
+    if (showSearchPopup || selectedEntry) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showSearchPopup, selectedEntry]);
+
+  // Helper function to get mood emoji
+  const getMoodEmoji = (mood: string = "neutral") => {
+    const moodMap: Record<string, string> = {
+      happy: "😊",
+      sad: "😔",
+      neutral: "😐",
+      excited: "🤩",
+      anxious: "😰",
+    };
+    return moodMap[mood] || moodMap.neutral;
   };
 
   return (
     <div className="diary-search-container">
       <div className="diary-search-header">
-        <h1>Diary Entries</h1>
-        <button
-          className="filters-toggle-btn"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          {showFilters ? "Hide Filters" : "Show Filters"}
-        </button>
+        <h1>Search Your Diary</h1>
       </div>
 
-      <div className="diary-search-bar">
-        <input
-          type="text"
-          name="query"
-          value={searchParams.query}
-          onChange={handleInputChange}
-          placeholder="Search through your past entries..."
-          className="diary-search-input"
-          autoFocus
-        />
-        <span className="search-icon">🔍</span>
-      </div>
-
-      <div className={`search-filters ${showFilters ? "expanded" : ""}`}>
-        <div className="filter-group">
-          <label>Start Date</label>
+      {/* Search form - prevent navigation */}
+      <form className="search-form" onSubmit={handleSearch}>
+        <div className="search-row">
           <input
-            type="date"
-            name="startDate"
-            value={searchParams.startDate}
+            type="text"
+            name="query"
+            className="search-input"
+            placeholder="Search for words or phrases..."
+            value={searchParams.query}
             onChange={handleInputChange}
-            className="date-input"
           />
-        </div>
-
-        <div className="filter-group">
-          <label>End Date</label>
-          <input
-            type="date"
-            name="endDate"
-            value={searchParams.endDate}
-            onChange={handleInputChange}
-            className="date-input"
-          />
-        </div>
-
-        <div className="filter-group">
-          <label>Mood</label>
-          <select
-            name="mood"
-            value={searchParams.mood}
-            onChange={handleInputChange}
-            className="mood-select"
+          <button
+            type="submit"
+            className="search-button"
+            disabled={isSearching}
           >
-            <option value="">Any mood</option>
-            {moods.map((mood) => (
-              <option key={mood} value={mood}>
-                {mood} {getMoodEmoji(mood)}
-              </option>
-            ))}
-          </select>
+            {isSearching ? "Searching..." : "Search"}
+          </button>
         </div>
 
-        <button className="clear-filters-btn" onClick={clearFilters}>
-          Clear Filters
-        </button>
-      </div>
+        <div className="search-row">
+          <div className="filter-group">
+            <label>From Date</label>
+            <input
+              type="date"
+              name="startDate"
+              className="date-input"
+              value={searchParams.startDate}
+              onChange={handleInputChange}
+            />
+          </div>
 
-      <div className="past-records-container">
-        <div className="past-records-header">
-          <h2>
-            Past Records{" "}
-            <span className="record-count">({results.length})</span>
-          </h2>
-          {isSearching && (
-            <div className="searching-indicator">Searching...</div>
-          )}
-        </div>
+          <div className="filter-group">
+            <label>To Date</label>
+            <input
+              type="date"
+              name="endDate"
+              className="date-input"
+              value={searchParams.endDate}
+              onChange={handleInputChange}
+            />
+          </div>
 
-        {results.length > 0 ? (
-          <>
-            <div className="compact-records-list">
-              {displayedEntries.map((entry) => (
-                <div
-                  key={`entry-${entry.id}`}
-                  className="compact-record-item"
-                  onClick={() => handleEntryClick(entry.id)}
-                >
-                  <span className="compact-record-title">{entry.title}</span>
-                  <span className="compact-record-divider">-</span>
-                  <span className="compact-record-preview">
-                    {getCompactPreview(entry.content)}
-                  </span>
-                  <span className="compact-record-date">
-                    {formatDateDisplay(entry.date)}
-                  </span>
-                  <span className="compact-record-mood">
-                    {getMoodEmoji(entry.mood)}
-                  </span>
-                </div>
+          <div className="filter-group">
+            <label>Mood</label>
+            <select
+              name="mood"
+              className="mood-select"
+              value={searchParams.mood}
+              onChange={handleInputChange}
+            >
+              <option value="">All Moods</option>
+              {moods.map((mood) => (
+                <option key={mood} value={mood}>
+                  {mood.charAt(0).toUpperCase() + mood.slice(1)}
+                </option>
               ))}
-            </div>
+            </select>
+          </div>
 
-            {hasMore && (
-              <div className="load-more-container">
-                <button
-                  className="load-more-btn"
-                  onClick={loadMoreEntries}
-                  disabled={loadingMore}
-                >
-                  {loadingMore ? "Loading..." : "View More Entries"}
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
+          <button
+            type="button"
+            className="clear-filters-btn"
+            onClick={clearFilters}
+          >
+            Clear Filters
+          </button>
+        </div>
+      </form>
+
+      {/* Recent Entries Section */}
+      <div className="recent-records-container">
+        <div className="recent-records-header">
+          <h2>Recent Entries</h2>
+          <span className="record-count">{recentEntries.length}</span>
+        </div>
+
+        {recentEntries.length === 0 ? (
           <div className="no-records">
-            <div className="no-records-icon">📝</div>
-            <p>No matching entries found.</p>
+            <div className="no-records-icon">📓</div>
+            <p>You haven't written any entries yet.</p>
             <button
               className="write-entry-btn"
               onClick={() => navigate("/diary/write")}
             >
-              Write a New Entry
+              Write Your First Entry
             </button>
+          </div>
+        ) : (
+          <div className="compact-records-list">
+            {recentEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="compact-record-item"
+                onClick={() => setSelectedEntry(entry)}
+              >
+                <span className="compact-record-title">
+                  {entry.title || "Untitled Entry"}
+                </span>
+                <span className="compact-record-divider">—</span>
+                <span className="compact-record-preview">
+                  {entry.content?.substring(0, 50)}
+                  {(entry.content?.length || 0) > 50 ? "..." : ""}
+                </span>
+                <span className="compact-record-date">
+                  {formatSafeDate(entry.entry_date || entry.created_at, "date")}
+                </span>
+                <span className="compact-record-mood">
+                  {getMoodEmoji(entry.mood)}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Overlay and Search Results Popup */}
+      {showSearchPopup && (
+        <>
+          <div
+            className="search-popup-overlay"
+            onClick={() => setShowSearchPopup(false)}
+          />
+          <div className="search-results-popup">
+            <div className="search-popup-header">
+              <h3>
+                {searchResults.length}{" "}
+                {searchResults.length === 1 ? "Result" : "Results"}
+                {searchParams.query && ` for "${searchParams.query}"`}
+              </h3>
+              <button
+                className="close-popup-btn"
+                onClick={() => setShowSearchPopup(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="search-results-list">
+              {searchResults.length === 0 ? (
+                <p className="no-results">
+                  No entries found matching your search.
+                </p>
+              ) : (
+                searchResults.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="search-result-item"
+                    onClick={() => setSelectedEntry(entry)}
+                  >
+                    <h4>{entry.title || "Untitled Entry"}</h4>
+                    <p className="result-date">
+                      {formatSafeDate(entry.entry_date || entry.created_at, "date")}
+                    </p>
+                    <p className="result-preview">
+                      {entry.content.substring(0, 100)}
+                      {entry.content.length > 100 ? "..." : ""}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Entry details popup when clicking on a result */}
+      {selectedEntry && (
+        <DiaryDetailPopup
+          entry={selectedEntry}
+          onClose={() => setSelectedEntry(null)}
+        />
+      )}
+
+      {/* Rest of your component to display entries */}
+      {/* ... */}
     </div>
   );
 };

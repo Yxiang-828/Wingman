@@ -22,7 +22,6 @@ import Notifications from "./Pages/Notifications";
 import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { startNotificationCleanupService } from "./services/NotificationService";
 import { Auth } from "./utils/AuthStateManager";
 import "./main.css";
 import "./styles/scrollbars.css";
@@ -33,11 +32,10 @@ const AppContent = ({
 }: {
   onAuthChange: (authenticated: boolean) => void;
 }) => {
-  const [user, setUser] = useState<any>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Modified useEffect to properly update auth state
+  // Modified useEffect to properly update auth state and call onAuthChange
   useEffect(() => {
     setAuthInitialized(true);
 
@@ -45,19 +43,16 @@ const AppContent = ({
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
+        JSON.parse(storedUser); // Just verify JSON is valid
+        onAuthChange(true);
       } catch (e) {
         console.error("Error parsing stored user data:", e);
+        onAuthChange(false);
       }
+    } else {
+      onAuthChange(false); // Call with false if no stored user
     }
-  }, []);
-
-  // Update login handler to notify when user logs in
-  const handleLogin = (user: any) => {
-    setUser(user);
-    onAuthChange(true); // Notify parent that user is now authenticated
-  };
+  }, [onAuthChange]); // Add to dependency array
 
   // Same sidebar visibility effect
   useEffect(() => {
@@ -81,6 +76,10 @@ const AppContent = ({
   // Ensure we only render content that needs authentication after auth is initialized
   if (!authInitialized) {
     return <div className="loading">Initializing...</div>;
+  }
+
+  function setUser(_user: any): void {
+    throw new Error("Function not implemented.");
   }
 
   // Return the app content with FIXED routing structure

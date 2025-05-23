@@ -4,6 +4,7 @@ import { useDiary } from "../../context/DiaryContext";
 import { format } from "date-fns";
 import "./DiaryEntry.css";
 
+
 // Writing prompts to inspire journaling
 const WRITING_PROMPTS = [
   "What made you smile today?",
@@ -55,6 +56,9 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
   const [randomPrompts, setRandomPrompts] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [showTools, setShowTools] = useState(false);
+
+  // Add this state to track selection
+  const [hasSelection, setHasSelection] = useState(!!initialMood && initialMood !== "neutral");
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
@@ -231,15 +235,13 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
     }
   };
 
-  // Update the getMoodEmoji function with the correct values
+  // Update the getMoodEmoji function first
   const getMoodEmoji = (moodValue: string) => {
     const moods: Record<string, string> = {
       happy: "😊",
       neutral: "😐",
       sad: "😔",
       excited: "🤩",
-      // Remove "relaxed" and keep only values the database accepts
-      // relaxed: "😌",  // This value is causing the error
       anxious: "😰",
     };
     return moods[moodValue] || "😐";
@@ -305,8 +307,39 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
     }
   };
 
+  // Mood options for the selector
+  const moodOptions = [
+    { value: "happy", label: "Happy" },
+    { value: "sad", label: "Sad" },
+    { value: "neutral", label: "Neutral" },
+    { value: "excited", label: "Excited" },
+    { value: "anxious", label: "Anxious" },
+  ];
+
   return (
     <div className="diary-entry-container candle-theme">
+      {/* Vertical mood selector on the left */}
+      <div className={`mood-selector ${hasSelection ? 'has-selection' : ''}`}>
+        <div className="mood-selector-label">pick carefully</div>
+        {moodOptions.map((moodOption) => (
+          <div
+            key={moodOption.value}
+            className={`mood-option ${mood === moodOption.value ? "selected" : ""}`}
+            onClick={() => {
+              setMood(moodOption.value);
+              setHasSelection(true);
+              if (typeof updateMoodStyles === 'function') {
+                updateMoodStyles(moodOption.value);
+              }
+            }}
+            data-mood={moodOption.value}
+          >
+            <span className="mood-emoji">{getMoodEmoji(moodOption.value)}</span>
+            <span className="mood-label">{moodOption.label}</span>
+          </div>
+        ))}
+      </div>
+
       <div className="diary-main">
         <div className="diary-header">
           <div className="diary-date">{currentDateTime}</div>
@@ -330,31 +363,6 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
         </div>
 
         <div className="diary-footer">
-          <div className="diary-mood">
-            <label>
-              Mood:
-              <select
-                value={mood}
-                onChange={(e) => setMood(e.target.value)}
-                className="diary-mood-select"
-              >
-                <option value="happy">Happy {getMoodEmoji("happy")}</option>
-                <option value="sad">Sad {getMoodEmoji("sad")}</option>
-                <option value="neutral">
-                  Neutral {getMoodEmoji("neutral")}
-                </option>
-                <option value="excited">
-                  Excited {getMoodEmoji("excited")}
-                </option>
-                {/* Remove the "relaxed" option that's causing the error */}
-                {/* <option value="relaxed">Relaxed {getMoodEmoji("relaxed")}</option> */}
-                <option value="anxious">
-                  Anxious {getMoodEmoji("anxious")}
-                </option>
-              </select>
-            </label>
-          </div>
-
           <div className="diary-actions">
             <button
               className="diary-save-btn"
