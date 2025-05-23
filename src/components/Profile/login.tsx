@@ -22,12 +22,25 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Maintain a reference to the callback function
+    const handleMoodChange = (mood: string) => {
+      if (mood === "productive" || mood === "moody") setMood(mood);
+    };
+
+    // Register listener
     if (window.electronAPI?.onMoodChange) {
-      window.electronAPI.onMoodChange((mood: string) => {
-        if (mood === "productive" || mood === "moody") setMood(mood);
-      });
+      window.electronAPI.onMoodChange(handleMoodChange);
     }
-  }, []);
+
+    // Clean up properly - without this, listeners accumulate
+    return () => {
+      // Try to deregister if possible
+      if (window.electronAPI && "removeListener" in window.electronAPI) {
+        // If your API supports removing listeners
+        window.electronAPI.removeListener?.("mood-changed", handleMoodChange);
+      }
+    };
+  }, []); // Empty dependency array is fine here
 
   // Password change handler with length validation
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,48 +57,66 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     setLoading(true);
     setError(null);
 
-    try {
-      const userData = {
-        username: username,
-        password: password,
-      };
+    // Try up to 3 times with increasing delays
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const userData = {
+          username: username,
+          password: password,
+        };
 
-      // Bypass the API client for login requests
-      const response = await fetch('/api/v1/user/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+        // Use absolute URL for all fetch calls
+        const apiUrl = "http://localhost:8080/api/v1/user/login";
+        console.log(`Login attempt ${attempt + 1} to: ${apiUrl}`);
 
-      if (!response.ok) {
-        throw new Error('Login failed');
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+          // Add timeout
+          signal: AbortSignal.timeout(10000),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (!result || !result.id) {
+          throw new Error("Invalid login response");
+        }
+
+        // Store the user in localStorage
+        localStorage.setItem("user", JSON.stringify(result));
+
+        // Update Auth state manager explicitly
+        Auth.setAuthenticated(true, result.id);
+
+        // Call the onLogin callback
+        onLogin(result);
+
+        // Navigate to the dashboard
+        navigate("/", { state: { showGreeting: true } });
+        return; // Exit the function on success
+      } catch (err: any) {
+        console.error(`Login attempt ${attempt + 1} failed:`, err);
+
+        // Only set error and stop trying on final attempt
+        if (attempt === 2) {
+          setError(
+            "Connection to server failed. Please restart the application."
+          );
+        } else {
+          // Wait before retrying (1s, 3s)
+          await new Promise((r) => setTimeout(r, attempt * 2000 + 1000));
+        }
       }
-
-      const result = await response.json();
-
-      if (!result || !result.id) {
-        throw new Error("Invalid login response");
-      }
-
-      // Store the user in localStorage
-      localStorage.setItem("user", JSON.stringify(result));
-      
-      // Update Auth state manager explicitly
-      Auth.setAuthenticated(true, result.id);
-
-      // Call the onLogin callback
-      onLogin(result);
-
-      // Navigate to the dashboard
-      navigate("/", { state: { showGreeting: true } });
-    } catch (err: any) {
-      console.error("Login error:", err);
-      setError("Invalid username or password");
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -113,17 +144,19 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         username: username || email.split("@")[0],
       };
 
-      // Use direct fetch instead of api client
-      const response = await fetch('/api/v1/user/register', {
-        method: 'POST',
+      // Use absolute URL for all fetch calls
+      const apiUrl = 'http://localhost:8080/api/v1/user/register';
+      
+      const response = await fetch(apiUrl, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(userData),
       });
 
       if (!response.ok) {
-        throw new Error('Registration failed');
+        throw new Error("Registration failed");
       }
 
       const result = await response.json();

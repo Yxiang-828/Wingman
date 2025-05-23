@@ -445,9 +445,6 @@ const DayView: React.FC = () => {
           completed: false,
         });
 
-        // Add to current tasks
-        setCurrentDateTasks((prev) => [...prev, task]);
-
         // Reset form
         setNewTask({ text: "", time: "" });
       }
@@ -843,7 +840,9 @@ const DayView: React.FC = () => {
                   return (
                     <li
                       key={taskKey}
-                      className={`task-item ${task.completed ? "completed" : ""}`}
+                      className={`task-item ${
+                        task.completed ? "completed" : ""
+                      }`}
                       id={`task-${task.id}`}
                     >
                       {editingTask && editingTask.id === task.id ? (

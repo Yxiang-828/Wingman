@@ -121,6 +121,8 @@ const AppContent = ({
 const App = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(Auth.isAuthenticated);
+  const [backendChecked, setBackendChecked] = useState(false);
+  const [backendReady, setBackendReady] = useState(false);
 
   // Initialize and listen for auth changes
   useEffect(() => {
@@ -148,9 +150,45 @@ const App = () => {
     return removeListener;
   }, []);
 
+  // Check backend status
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/");
+        if (response.ok) {
+          setBackendReady(true);
+        }
+      } catch (error) {
+        console.error("Backend not ready:", error);
+        setBackendReady(false);
+      } finally {
+        setBackendChecked(true);
+      }
+    };
+
+    checkBackend();
+    const interval = setInterval(checkBackend, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Show loading screen during initialization
   if (isInitializing) {
     return <div className="loading">Starting up...</div>;
+  }
+
+  // Show loading spinner while checking backend
+  if (!backendChecked) {
+    return <div>Checking system status...</div>;
+  }
+
+  // Show error if backend is not ready
+  if (!backendReady) {
+    return (
+      <div className="startup-error">
+        <h2>Unable to connect to backend server</h2>
+        <p>Please restart the application</p>
+      </div>
+    );
   }
 
   // Replace the non-implemented function with a working one

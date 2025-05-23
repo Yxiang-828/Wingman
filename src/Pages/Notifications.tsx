@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { format, subDays } from "date-fns";
+import { format } from "date-fns";
 import { useData } from "../context/DataContext";
 import { useNotifications } from "../context/NotificationsContext";
 import DetailPopup from "../components/Common/DetailPopup";
@@ -61,25 +61,43 @@ const Notifications: React.FC = () => {
         // Get today's date for reference
         const today = new Date();
         
-        // Load 14 days BACK and 7 days FORWARD - THIS IS CRITICAL
-        const startDate = format(subDays(today, 14), "yyyy-MM-dd");
+        // Only load today and FUTURE data, not past
+        const startDate = format(today, "yyyy-MM-dd");
         
-        console.log(`Notifications: Loading data from ${startDate} with 21 days range`);
-        await batchFetchData(startDate, 21); // 14 days past + 7 days future
+        console.log(`Notifications: Loading data from ${startDate} with 14 days range`);
+        await batchFetchData(startDate, 14); // Today + 14 days future
         
         console.log("Notifications: Data fetch complete");
-        console.log("Task cache keys:", Object.keys(taskCache));
-        console.log("Event cache keys:", Object.keys(eventCache));
       } catch (error) {
         console.error("Error loading notifications data:", error);
       } finally {
-        // IMPORTANT: Always set loading to false to avoid infinite loading state
         setIsLoading(false);
       }
     };
     
     loadNotifications();
   }, [batchFetchData]);
+
+const formatDateHeader = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  if (date.toDateString() === today.toDateString()) {
+    return "Today";
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    return "Tomorrow";
+  } else {
+    return date.toLocaleDateString(undefined, {
+      weekday: 'long', 
+      month: 'long', 
+      day: 'numeric'
+    });
+  }
+};
 
   // Update the handleNotificationClick function
   const handleNotificationClick = (notification: any) => {
@@ -130,25 +148,25 @@ const Notifications: React.FC = () => {
 
   // Filter notifications based on active tab
   const filteredNotifications = useMemo(() => {
-    console.log("Raw notifications count:", notifications.length);
+    // Get today's date at 00:00:00 for proper comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
-    // DEBUG: Check notifications content
-    if (notifications.length > 0) {
-      console.log("Sample notification:", notifications[0]);
-    } else {
-      console.log("No notifications available");
-    }
-
-    // IMPORTANT: Do NOT filter by date - we want to see past notifications too!
+    console.log("Filtering notifications for today and future only");
     return notifications
       .filter((notification) => {
-        // Only filter by type based on active tab
-        if (activeTab === "all") return true;
-        return notification.type === activeTab;
+        // First filter by type if needed
+        if (activeTab !== "all" && notification.type !== activeTab) return false;
+        
+        // Then filter by date - ONLY show today and future
+        const notificationDate = new Date(notification.date);
+        notificationDate.setHours(0, 0, 0, 0); // Compare dates only, not times
+        
+        return notificationDate >= today; // Only include today and future dates
       })
       .sort((a, b) => {
-        // Sort newest first
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
+        // Sort by date (oldest first for upcoming items)
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
       });
   }, [notifications, activeTab]);
 
@@ -211,47 +229,62 @@ const Notifications: React.FC = () => {
           </div>
         ) : filteredNotifications.length > 0 ? (
           <div className="notifications-items">
-            {filteredNotifications.map((notification) => (
-              <div 
-                key={notification.id} 
-                className={`notification-item ${notification.type} ${notification.read ? "" : "unread"}`}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <div className={`notification-icon ${notification.type}`}>
-                  {notification.type === "task" ? "✓" : "📅"}
+            {/* Group by date */}
+            {Object.entries(
+              filteredNotifications.reduce((groups, notification) => {
+                const date = notification.date;
+                if (!groups[date]) groups[date] = [];
+                groups[date].push(notification);
+                return groups;
+              }, {} as Record<string, any[]>)
+            ).map(([date, dateNotifications]) => (
+              <div key={date} className="notification-date-group">
+                <div className="notification-date-header">
+                  {formatDateHeader(date)}
                 </div>
-                <div className="notification-content">
-                  <div className="notification-title">
-                    {notification.title}
+                {dateNotifications.map((notification) => (
+                  <div 
+                    key={notification.id} 
+                    className={`notification-item ${notification.type} ${notification.read ? "" : "unread"}`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className={`notification-icon ${notification.type}`}>
+                      {notification.type === "task" ? "✓" : "📅"}
+                    </div>
+                    <div className="notification-content">
+                      <div className="notification-title">
+                        {notification.title}
+                      </div>
+                      <div className="notification-message">{notification.message}</div>
+                      <div className="notification-meta">
+                        {notification.date}
+                        {notification.time && ` at ${notification.time}`}
+                      </div>
+                    </div>
+                    {notification.type === "task" && notification.actionable && (
+                      <div className="notification-actions">
+                        <button
+                          className="notification-action-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            completeTask(notification.sourceId);
+                          }}
+                        >
+                          Complete
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="notification-message">{notification.message}</div>
-                  <div className="notification-meta">
-                    {notification.date}
-                    {notification.time && ` at ${notification.time}`}
-                  </div>
-                </div>
-                {notification.type === "task" && notification.actionable && (
-                  <div className="notification-actions">
-                    <button
-                      className="notification-action-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        completeTask(notification.sourceId);
-                      }}
-                    >
-                      Complete
-                    </button>
-                  </div>
-                )}
+                ))}
               </div>
             ))}
           </div>
         ) : (
           <div className="notification-empty">
-            <div className="notification-empty-icon">🎉</div>
-            <h2 className="notification-empty-text">All caught up!</h2>
+            <div className="notification-empty-icon">📅</div>
+            <h2 className="notification-empty-text">No upcoming notifications</h2>
             <p className="notification-empty-subtext">
-              You don't have any notifications right now.
+              You don't have any tasks or events scheduled for today or upcoming days.
             </p>
           </div>
         )}

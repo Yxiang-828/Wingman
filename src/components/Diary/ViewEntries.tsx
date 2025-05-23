@@ -16,7 +16,6 @@ const ViewEntries: React.FC = () => {
   >({});
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
-  const [displayEntries, setDisplayEntries] = useState<DiaryEntry[]>([]);
   const [page, setPage] = useState(1);
   const entriesPerPage = 5; // Reduced from 8 to show fewer entries initially
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -98,24 +97,6 @@ const ViewEntries: React.FC = () => {
     }
   }, [entries, loading, expandedMonth]);
 
-  // Load initial batch of entries
-  useEffect(() => {
-    if (entries && entries.length > 0) {
-      // Sort entries by date, newest first
-      const sortedEntries = [...entries].sort(
-        (a: DiaryEntry, b: DiaryEntry) => {
-          // Fix TypeError: Add a fallback value for date creation
-          const dateA = new Date(a.entry_date || a.created_at || Date.now());
-          const dateB = new Date(b.entry_date || b.created_at || Date.now());
-          return dateB.getTime() - dateA.getTime();
-        }
-      );
-
-      // Set initial entries (first page)
-      setDisplayEntries(sortedEntries.slice(0, entriesPerPage));
-    }
-  }, [entries, entriesPerPage]);
-
   // Toggle month expand/collapse
   const toggleMonth = (monthKey: string) => {
     setExpandedMonth(expandedMonth === monthKey ? null : monthKey);
@@ -133,15 +114,6 @@ const ViewEntries: React.FC = () => {
     setLoadingMore(true);
     const nextPage = page + 1;
 
-    // Sort entries by date, newest first
-    const sortedEntries = [...entries].sort((a: DiaryEntry, b: DiaryEntry) => {
-      const dateA = new Date(a.entry_date || a.created_at || Date.now());
-      const dateB = new Date(b.entry_date || b.created_at || Date.now());
-      return dateB.getTime() - dateA.getTime();
-    });
-
-    // Set next batch of entries
-    setDisplayEntries(sortedEntries.slice(0, nextPage * entriesPerPage));
     setPage(nextPage);
     setLoadingMore(false);
   };
