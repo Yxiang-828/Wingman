@@ -72,32 +72,51 @@ const Notifications: React.FC = () => {
     loadNotifications();
   }, [batchFetchData]);
 
-  // Handle notification item click
+  // Update the handleNotificationClick function
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id);
     
-    // Use the goToNotificationSource function for direct navigation
-    if (notification.actionable) {
-      goToNotificationSource(notification.type, notification.sourceId);
-      return;
-    }
-    
+    // IMPORTANT: Always use popup for completed tasks instead of navigating
     // Find the actual item to show in the popup
     if (notification.type === "task") {
-      const task = Object.values(taskCache || {})
-        .flatMap(week => Object.values(week || {})
-        .flatMap(day => day))
-        .find(t => t.id === notification.sourceId);
-      
-      if (task) showPopupFor(task);
+      // Look up the task in cache
+      const task = findTaskInCache(notification.sourceId);
+      if (task) {
+        showPopupFor(task);
+        return;
+      }
     } else if (notification.type === "event") {
-      const event = Object.values(eventCache || {})
-        .flatMap(week => Object.values(week || {})
-        .flatMap(day => day))
-        .find(e => e.id === notification.sourceId);
-      
-      if (event) showPopupFor(event);
+      // Look up the event in cache
+      const event = findEventInCache(notification.sourceId);
+      if (event) {
+        showPopupFor(event);
+        return;
+      }
     }
+    
+    // Only navigate if we couldn't find the item for the popup
+    goToNotificationSource(notification.type, notification.sourceId);
+  };
+
+  // Helper functions to find items in cache
+  const findTaskInCache = (taskId: number): any | undefined => {
+    for (const weekId in taskCache) {
+      for (const dateKey in taskCache[weekId]) {
+        const task = taskCache[weekId][dateKey].find((t: any) => t.id === taskId);
+        if (task) return task;
+      }
+    }
+    return undefined;
+  };
+
+  const findEventInCache = (eventId: number): any | undefined => {
+    for (const weekId in eventCache) {
+      for (const dateKey in eventCache[weekId]) {
+        const event = eventCache[weekId][dateKey].find((e: any) => e.id === eventId);
+        if (event) return event;
+      }
+    }
+    return undefined;
   };
 
   // Filter notifications based on active tab

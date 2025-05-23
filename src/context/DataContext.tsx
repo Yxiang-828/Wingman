@@ -94,9 +94,28 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
   // Get week ID from a date
   const getWeekId = useCallback((dateStr: string): string => {
-    const date = new Date(dateStr);
-    const weekStart = startOfWeek(date, { weekStartsOn: 0 }); // Sunday as first day
-    return format(weekStart, "yyyy-MM-dd");
+    try {
+      // Validate the date string first
+      if (!dateStr) {
+        console.warn("Empty date string provided to getWeekId");
+        return format(startOfWeek(new Date()), "yyyy-MM-dd");
+      }
+      
+      // Parse the date with validation
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        console.warn(`Invalid date provided to getWeekId: ${dateStr}`);
+        return format(startOfWeek(new Date()), "yyyy-MM-dd");
+      }
+      
+      // Now calculate the week start safely
+      const weekStart = startOfWeek(date, { weekStartsOn: 0 });
+      return format(weekStart, "yyyy-MM-dd");
+    } catch (error) {
+      console.error("Error in getWeekId:", error);
+      // Return today's week as fallback
+      return format(startOfWeek(new Date()), "yyyy-MM-dd");
+    }
   }, []);
 
   // Initialize current week on mount

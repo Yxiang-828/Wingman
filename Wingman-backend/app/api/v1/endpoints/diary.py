@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from app.services.diary import get_diary_entries, create_diary_entry, update_diary_entry, delete_diary_entry
+from app.services.diary import get_diary_entries, get_diary_entry, create_diary_entry, update_diary_entry, delete_diary_entry
 from app.api.v1.schemas.diary import DiaryEntryCreate, DiaryEntryUpdate, DiaryEntryResponse
 from typing import List
 

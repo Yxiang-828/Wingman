@@ -23,34 +23,24 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
 
   // Handle clicking on the task status circle specifically - toggle completion
   const handleStatusClick = async (e: React.MouseEvent, task: Task) => {
-    e.stopPropagation(); // Prevent triggering the task item click
-    e.preventDefault(); // Prevent default behavior
+    e.stopPropagation();
+    e.preventDefault();
 
-    // Prevent multiple simultaneous toggle operations on the same task
-    if (task.isProcessing) {
-      console.log("Task already being processed, ignoring click");
-      return;
-    }
-
-    // Store the current scroll position
-    const container = e.currentTarget.closest(".tasks-list");
-    const scrollPosition = container ? container.scrollTop : 0;
+    // Prevent multiple simultaneous toggle operations
+    if (task.isProcessing) return;
 
     // Create a local copy with processing state
     const processingTask = { ...task, isProcessing: true };
-
-    // Update UI immediately to show processing state
     onToggleTask(processingTask);
 
     try {
-      // Use the DataProvider to toggle the task
+      // Pass the entire task object instead of just id and completed status
       const updatedTask = await toggleTask(task);
-      console.log("TaskCard: Task toggled successfully:", updatedTask);
 
-      // Propagate the change up to parent component
+      // Update UI with the result
       onToggleTask(updatedTask);
 
-      // Make sure popup closes if it's open for this task
+      // Close popup if open for this task
       if (
         currentPopupItem &&
         "id" in currentPopupItem &&
@@ -58,17 +48,9 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       ) {
         closePopup();
       }
-
-      // Restore scroll position after state update
-      if (container) {
-        setTimeout(() => {
-          container.scrollTop = scrollPosition;
-        }, 0);
-      }
     } catch (error) {
       console.error("Error toggling task status:", error);
-      // Revert to original state on error
-      onToggleTask(task);
+      onToggleTask(task); // Revert on error
     }
   };
 
@@ -76,10 +58,28 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const completeTask = async (taskId: number): Promise<void> => {
     console.log("TaskCard: completeTask called for ID:", taskId);
 
-    // Find the task to complete
+    // Find the task with better error handling
     const task = tasks.find((t) => t.id === taskId);
     if (!task) {
-      console.error(`Task with ID ${taskId} not found`);
+      console.error(`Task with ID ${taskId} not found in current tasks list`);
+
+      // Try to find the task in the global cache as fallback
+      try {
+        // Example implementation: search in tasks array (or replace with actual cache lookup)
+        const taskFromCache = tasks.find((t) => t.id === taskId);
+        if (taskFromCache) {
+          console.log("Found task in cache instead:", taskFromCache);
+          // Continue with the found task
+          await toggleTask(taskFromCache);
+          onToggleTask(taskFromCache);
+          closePopup();
+          return;
+        }
+      } catch (err) {
+        console.error("Error looking up task in cache:", err);
+      }
+
+      closePopup(); // Close the popup even if we couldn't find the task
       return;
     }
 

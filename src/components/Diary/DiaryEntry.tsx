@@ -185,28 +185,47 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
 
   // Handle saving the entry
   const handleSave = async () => {
-    if (!content.trim()) return;
+    if (!title.trim()) {
+      // Show validation error
+      alert("Please enter a title for your diary entry");
+      return;
+    }
 
     setIsSaving(true);
 
     try {
-      if (onSave) {
-        await onSave({
-          title: title.trim() || "Untitled Entry",
-          content,
-          mood,
-        });
+      const entryData = {
+        title,
+        content,
+        mood,
+        date: format(new Date(), "yyyy-MM-dd"),
+      };
+
+      console.log("Saving diary entry:", entryData);
+
+      if (isEditing) {
+        // For editing existing entries
+        await onSave?.(entryData);
       } else {
-        await addEntry({
-          title: title.trim() || "Untitled Entry",
-          content,
-          mood,
-          date: new Date().toISOString().split("T")[0],
+        // For new entries
+        const result = await addEntry(entryData);
+        console.log("Diary entry saved:", result);
+
+        // Clear form or navigate back
+        navigate("/diary/view", {
+          state: { message: "Entry saved successfully" },
         });
-        navigate("/diary/view", { state: { saved: true } });
       }
     } catch (error) {
       console.error("Error saving diary entry:", error);
+      // Show a more user-friendly error
+      if (String(error).includes("enum mood_scale")) {
+        alert(
+          "Invalid mood selection. Please try again with a different mood."
+        );
+      } else {
+        alert("Failed to save diary entry. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -219,8 +238,8 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
       neutral: "😐",
       sad: "😔",
       excited: "🤩",
-      tired: "😴",
       relaxed: "😌",
+      anxious: "😰",
     };
     return moods[moodValue] || "😐";
   };
@@ -326,9 +345,12 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
                 <option value="excited">
                   Excited {getMoodEmoji("excited")}
                 </option>
-                <option value="tired">Tired {getMoodEmoji("tired")}</option>
                 <option value="relaxed">
                   Relaxed {getMoodEmoji("relaxed")}
+                </option>
+                {/* Remove or replace the "tired" option that's causing the error */}
+                <option value="anxious">
+                  Anxious {getMoodEmoji("anxious")}
                 </option>
               </select>
             </label>

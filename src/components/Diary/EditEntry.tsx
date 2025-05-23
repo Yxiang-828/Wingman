@@ -47,10 +47,12 @@ const EditEntry: React.FC = () => {
         throw new Error("Entry ID missing");
       }
 
+      // Make sure to include the original date when updating
       await updateEntry(entry.id, {
         title: updatedData.title,
         content: updatedData.content,
         mood: updatedData.mood,
+        date: entry.date, // Include the original date!
       });
 
       navigate("/diary/view", {
@@ -58,7 +60,11 @@ const EditEntry: React.FC = () => {
       });
     } catch (error) {
       console.error("Error updating diary entry:", error);
-      throw error;
+      // Display a better error message to the user
+      alert(
+        "Could not update diary entry. Please check your input and try again."
+      );
+      // Don't throw the error - handle it here
     }
   };
 
@@ -66,8 +72,20 @@ const EditEntry: React.FC = () => {
     return <div className="diary-loading">Loading entry...</div>;
   }
 
+  // Improve the error display
   if (error) {
-    return <div className="diary-error">{error}</div>;
+    return (
+      <div className="diary-error">
+        <h2>Error Loading Entry</h2>
+        <p>{error}</p>
+        <button
+          className="diary-action-btn"
+          onClick={() => navigate("/diary/view")}
+        >
+          Return to Entries
+        </button>
+      </div>
+    );
   }
 
   if (!entry) {

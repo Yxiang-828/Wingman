@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from app.core.supabase import supabase
 import traceback
 
@@ -37,21 +37,28 @@ def get_entries_by_date(user_id, entry_id=None, date_value=None):
         print(f"Error in get_entries_by_date: {e}")
         raise
 
-def create_entry(entry):
+# Add mood validation before inserting to database
+def create_entry(entry_data: dict):
+    """Create a new diary entry"""
     try:
-        data = dict(entry)
+        # Clone the data to avoid modifying the original
+        data = dict(entry_data)
         
-        # Verify user_id is provided
-        if "user_id" not in data:
-            raise ValueError("user_id is required")
+        # Validate mood to ensure it matches the database enum
+        valid_moods = ["happy", "sad", "neutral", "excited", "relaxed", "anxious"]
+        if "mood" in data and data["mood"] not in valid_moods:
+            # Set to default if invalid
+            print(f"Warning: Invalid mood value '{data['mood']}', using default 'neutral'")
+            data["mood"] = "neutral"
         
-        # Frontend sends 'date' but DB needs 'entry_date'
-        if "date" in data:
-            data["entry_date"] = data["date"]
-            del data["date"]
-            
-        if isinstance(data.get("entry_date"), date):
-            data["entry_date"] = data["entry_date"].isoformat()
+        # Set timestamps
+        now = datetime.now().isoformat()
+        data["created_at"] = now
+        data["updated_at"] = now
+        
+        # Map field names if needed
+        if "date" in data and "entry_date" not in data:
+            data["entry_date"] = data.pop("date")
             
         print(f"Creating diary entry with data: {data}")
         response = supabase.table("diary_entries").insert(data).execute()
