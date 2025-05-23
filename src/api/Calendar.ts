@@ -1,3 +1,5 @@
+import { api } from './apiClient';
+
 // Update the export to ensure TypeScript properly recognizes it
 export interface CalendarEvent {
   id: number;
@@ -18,18 +20,18 @@ export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     if (!user.id) {
-      console.error('No user ID found for event fetch');
-      return [];
+      throw new Error('User not authenticated');
     }
     
-    console.log("Fetching events for date:", date);
-    const response = await fetch(`/api/v1/calendar?date=${date}&user_id=${user.id}`);
-    if (!response.ok) {
-      console.error(`Error fetching events: ${response.status} ${response.statusText}`);
-      return [];
-    }
+    // Use api client instead of raw fetch
+    const events = await api.get(`/v1/calendar?date=${date}&user_id=${user.id}`);
     
-    return await response.json();
+    // Map backend fields to frontend
+    return events.map((event: any) => ({
+      ...event,
+      date: event.event_date, // Map event_date to date
+      time: event.event_time  // Map event_time to time
+    }));
   } catch (error) {
     console.error('Error fetching events:', error);
     return [];
@@ -43,55 +45,28 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     if (!user.id) {
-      throw new Error('You must be logged in to create events');
+      throw new Error('User not authenticated');
     }
-    
-    console.log("Adding event with user ID:", user.id);
     
     // Transform frontend fields to backend fields
     const backendEvent = {
       user_id: user.id,
       title: event.title,
-      event_date: event.date,         // Map date to event_date
-      event_time: event.time || '',   // Map time to event_time 
+      event_date: event.date,
+      event_time: event.time || '',
       type: event.type,
       description: event.description
     };
     
-    const response = await fetch('/api/v1/calendar', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(backendEvent),
-    });
-    
-    if (response.status === 404 && response.statusText.includes("User")) {
-      // Special handling for user not found - suggest logging in again
-      alert("Your user session is invalid. Please log out and log in again.");
-      
-      // Auto-redirect to login
-      window.location.href = '/login';
-      throw new Error('User session expired. Please log in again.');
-    }
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error response:", errorText);
-      throw new Error(`Failed to add event: ${response.status} ${response.statusText}`);
-    }
-    
-    // Handle response...
-    const data = await response.json();
+    // Use api client instead of raw fetch
+    const data = await api.post('/v1/calendar', backendEvent);
     
     // Transform backend response to frontend format
     return {
+      ...data,
       id: data.id,
-      title: data.title,
-      date: data.event_date,        // Map event_date to date
-      time: data.event_time || '',  // Map event_time to time 
-      type: data.type,
-      description: data.description
+      date: data.event_date,
+      time: data.event_time || ''
     };
   } catch (error) {
     console.error('Error adding event:', error);
@@ -105,38 +80,27 @@ export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> 
     
     // Create a copy and remove the id field to prevent Supabase identity column error
     const { id, ...rest } = event;
-    // Update the type to match our modified interface
-    const eventData: Omit<CalendarEvent, 'id'> & { user_id?: string | number } = { ...rest };
     
-    // Make sure we're including the user ID
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.id) {
-      eventData.user_id = user.id;
-    }
+    // Map frontend fields to backend fields
+    const backendEvent: Record<string, any> = {
+      user_id: event.user_id || JSON.parse(localStorage.getItem('user') || '{}').id,
+      title: rest.title,
+      event_date: rest.date,
+      event_time: rest.time || '',
+      type: rest.type,
+      description: rest.description
+    };
     
-    const response = await fetch(`/api/v1/calendar/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(eventData),
-    });
+    // Use api client instead of raw fetch
+    const result = await api.put(`/v1/calendar/${id}`, backendEvent);
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error response:", errorText);
-      throw new Error(`Failed to update event: ${response.status} ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    
-    // Handle the special case where we got a success message but not the full event
-    if (result.message && !result.title) {
-      // Return the original event with any updates applied
-      return { ...event, ...result };
-    }
-    
-    return result;
+    // Map backend fields to frontend
+    return {
+      ...result,
+      id: result.id || id,
+      date: result.event_date,
+      time: result.event_time || ''
+    };
   } catch (error) {
     console.error('Error updating event:', error);
     throw error;
@@ -146,15 +110,8 @@ export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> 
 export const deleteEvent = async (id: number): Promise<void> => {
   try {
     console.log("API: Deleting event:", id);
-    const response = await fetch(`/api/v1/calendar/${id}`, {
-      method: 'DELETE',
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server error response:", errorText);
-      throw new Error(`Failed to delete event: ${response.status} ${response.statusText}`);
-    }
+    // Use api client instead of raw fetch
+    await api.delete(`/v1/calendar/${id}`);
   } catch (error) {
     console.error('Error deleting event:', error);
     throw error;

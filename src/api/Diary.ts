@@ -1,4 +1,4 @@
-// Diary API functions for interacting with the backend
+import { api } from './apiClient';
 import { getCurrentUserId } from '../utils/auth';
 
 // Define the Diary Entry interface for type safety
@@ -7,7 +7,8 @@ export interface DiaryEntry {
   user_id?: string;
   title: string;
   content: string;
-  date: string;
+  date: string;       // Frontend field
+  entry_date?: string; // Backend field
   mood?: string;
   created_at?: string;
   updated_at?: string;
@@ -20,16 +21,17 @@ export const fetchDiaryEntries = async (): Promise<DiaryEntry[]> => {
   try {
     const userId = getCurrentUserId();
     if (!userId) {
-      console.error("User not authenticated");
-      throw new Error("User not authenticated");
+      throw new Error('User not authenticated');
     }
     
-    const response = await fetch(`/api/v1/diary?user_id=${userId}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch diary entries: ${response.status}`);
-    }
+    // Use api client instead of raw fetch
+    const entries = await api.get(`/v1/diary?user_id=${userId}`);
     
-    return await response.json();
+    // Map backend fields to frontend
+    return entries.map((entry: any) => ({
+      ...entry,
+      date: entry.entry_date // Map entry_date to date for frontend
+    }));
   } catch (error) {
     console.error("Error fetching diary entries:", error);
     throw error;
@@ -41,28 +43,20 @@ export const fetchDiaryEntries = async (): Promise<DiaryEntry[]> => {
  */
 export const fetchDiaryEntry = async (id: number): Promise<DiaryEntry> => {
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = getCurrentUserId();
     
-    if (!user.id) {
-      console.error("User not authenticated");
-      throw new Error("User not authenticated");
+    if (!userId) {
+      throw new Error('User not authenticated');
     }
     
-    // Add user_id as query parameter
-    const response = await fetch(`/api/v1/diary/entries/${id}?user_id=${user.id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Use api client instead of raw fetch
+    const entry = await api.get(`/v1/diary/entries/${id}?user_id=${userId}`);
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Error fetching diary entry: ${response.status} - ${errorText}`);
-      throw new Error(`Failed to fetch diary entry: ${response.status}`);
-    }
-    
-    return await response.json();
+    // Map backend fields to frontend
+    return {
+      ...entry,
+      date: entry.entry_date
+    };
   } catch (error) {
     console.error(`Error fetching diary entry ${id}:`, error);
     throw error;
@@ -77,41 +71,30 @@ export const addDiaryEntry = async (entry: Omit<DiaryEntry, 'id'>): Promise<Diar
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     if (!user.id) {
-      console.error("User not authenticated");
-      throw new Error("User not authenticated");
+      throw new Error('User not authenticated');
     }
     
-    // Fix field mapping between frontend and backend
-    const entryWithUser = {
-      ...entry,
+    // Map frontend fields to backend fields
+    const backendEntry = {
+      title: entry.title,
+      content: entry.content,
+      entry_date: entry.date, // For the database field
+      date: entry.date,       // Add this! Needed for Pydantic validation
+      mood: entry.mood || 'neutral',
       user_id: user.id,
-      // Map date to entry_date for the backend
-      entry_date: entry.date,
     };
     
-    console.log("Sending diary entry to backend:", entryWithUser);
+    // Use api client instead of raw fetch
+    const newEntry = await api.post('/v1/diary/entries', backendEntry);
     
-    const response = await fetch('/api/v1/diary/entries', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(entryWithUser),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to add diary entry: ${response.status} - ${errorText}`);
-    }
-    
-    return await response.json();
+    // Map backend fields to frontend
+    return {
+      ...newEntry,
+      date: newEntry.entry_date
+    };
   } catch (error) {
     console.error('Error adding diary entry:', error);
-    let errorMessage = 'Unknown error';
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    throw new Error(`Failed to add diary entry: ${errorMessage}`);
+    throw new Error(`Failed to add diary entry: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
 
@@ -127,39 +110,36 @@ export const updateDiaryEntry = async (id: number, entry: Partial<DiaryEntry>): 
     }
     
     // Create a properly formatted entry for the backend
-    const backendEntry: Partial<DiaryEntry> & { user_id: string; entry_date?: string } = {
-      ...entry,
+    const backendEntry: Record<string, any> = {
       user_id: user.id,
     };
     
-    // Add the crucial entry_date field that the backend requires
-    if (!backendEntry.entry_date) {
-      // If updating an existing entry, we need to include entry_date
-      if (entry.date) {
-        backendEntry.entry_date = entry.date;
-      } else {
-        // If no date provided, use today
-        backendEntry.entry_date = new Date().toISOString().split('T')[0];
-      }
+    // Map fields correctly
+    if (entry.title) backendEntry.title = entry.title;
+    if (entry.content) backendEntry.content = entry.content;
+    if (entry.mood) backendEntry.mood = entry.mood;
+    
+    // CRITICAL FIX: Always include date field required by Pydantic validation
+    if (entry.date) {
+      backendEntry.entry_date = entry.date; // For database
+      backendEntry.date = entry.date;       // For Pydantic validation
+    } else {
+      // If no date provided, use today's date as fallback
+      const today = new Date().toISOString().split('T')[0];
+      backendEntry.entry_date = today;
+      backendEntry.date = today;  // IMPORTANT: This is the missing field
     }
     
     console.log("Sending diary entry update to backend:", backendEntry);
     
-    const response = await fetch(`/api/v1/diary/entries/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(backendEntry),
-    });
+    // Use api client instead of raw fetch
+    const updatedEntry = await api.put(`/v1/diary/entries/${id}`, backendEntry);
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Update failed with status ${response.status}: ${errorText}`);
-      throw new Error(`Failed to update diary entry: ${response.status}`);
-    }
-    
-    return await response.json();
+    // Map backend fields to frontend
+    return {
+      ...updatedEntry,
+      date: updatedEntry.entry_date
+    };
   } catch (error) {
     console.error(`Error updating diary entry ${id}:`, error);
     throw error;
@@ -171,22 +151,8 @@ export const updateDiaryEntry = async (id: number, entry: Partial<DiaryEntry>): 
  */
 export const deleteDiaryEntry = async (id: number): Promise<void> => {
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (!user.id) {
-      throw new Error('User not authenticated');
-    }
-    
-    const response = await fetch(`/api/v1/diary/entries/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to delete diary entry: ${response.status}`);
-    }
+    // Use api client instead of raw fetch
+    await api.delete(`/v1/diary/entries/${id}`);
   } catch (error) {
     console.error(`Error deleting diary entry ${id}:`, error);
     throw error;
