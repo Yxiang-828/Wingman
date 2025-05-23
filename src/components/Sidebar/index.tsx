@@ -9,15 +9,6 @@ import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
 import "./Sidebar.css";
 
-// Update the declaration to match the one in vite-env.d.ts
-declare global {
-  interface Window {
-    electronAPI?: {
-      onMoodChange: (callback: (mood: string) => void) => void;
-    };
-  }
-}
-
 const DashboardIcon = () => <span className="icon-rotate">📊</span>;
 const CalendarIcon = () => <span className="icon-rotate">📅</span>;
 const DiaryIcon = () => <span className="icon-rotate">📝</span>;

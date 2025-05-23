@@ -626,147 +626,152 @@ const DayView: React.FC = () => {
 
             {currentDateEvents.length > 0 ? (
               <ul className="day-list">
-                {currentDateEvents.map((event) => (
-                  <li
-                    key={event.id}
-                    className={`event-item event-${event.type}`}
-                    id={`event-${event.id}`}
-                  >
-                    {editingEvent && editingEvent.id === event.id ? (
-                      // Edit mode
-                      <div
-                        className="event-edit-form"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="edit-form-grid">
-                          <input
-                            type="text"
-                            value={editEventForm.title}
-                            onChange={(e) => {
-                              e.stopPropagation(); // Prevent event bubbling
-                              setEditEventForm({
-                                ...editEventForm,
-                                title: e.target.value,
-                              });
-                            }}
-                            className="day-form-input"
-                            placeholder="Event title"
-                            autoFocus // Add autofocus to improve UX
-                          />
+                {currentDateEvents.map((event, index) => {
+                  // Create a truly unique key by including index and timestamp
+                  const uniqueKey = `event-${event.id}-${index}-${Date.now()}`;
 
-                          <select
-                            value={editEventForm.type}
-                            onChange={(e) => {
-                              e.stopPropagation(); // Prevent event bubbling
-                              setEditEventForm({
-                                ...editEventForm,
-                                type: e.target.value,
-                              });
-                            }}
-                            className="day-form-select"
-                            onClick={(e) => e.stopPropagation()} // Prevent select from closing the form
-                          >
-                            <option value="">Select type</option>
-                            <option value="meeting">Meeting</option>
-                            <option value="personal">Personal</option>
-                            <option value="reminder">Reminder</option>
-                          </select>
-
-                          <div
-                            className="time-input-wrapper"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <TimeInput
-                              value={editEventForm.time}
-                              onChange={(time) => {
+                  return (
+                    <li
+                      key={uniqueKey}
+                      className={`event-item event-${event.type}`}
+                      id={`event-${event.id}`}
+                    >
+                      {editingEvent && editingEvent.id === event.id ? (
+                        // Edit mode
+                        <div
+                          className="event-edit-form"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="edit-form-grid">
+                            <input
+                              type="text"
+                              value={editEventForm.title}
+                              onChange={(e) => {
+                                e.stopPropagation(); // Prevent event bubbling
                                 setEditEventForm({
                                   ...editEventForm,
-                                  time,
+                                  title: e.target.value,
                                 });
                               }}
-                              placeholder="Event time (HH:MM)"
+                              className="day-form-input"
+                              placeholder="Event title"
+                              autoFocus // Add autofocus to improve UX
                             />
-                          </div>
 
-                          <textarea
-                            value={editEventForm.description}
-                            onChange={(e) => {
-                              e.stopPropagation(); // Prevent event bubbling
-                              setEditEventForm({
-                                ...editEventForm,
-                                description: e.target.value,
-                              });
-                            }}
-                            className="day-form-input"
-                            placeholder="Description"
-                            rows={3}
-                            onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
-                          ></textarea>
-                        </div>
+                            <select
+                              value={editEventForm.type}
+                              onChange={(e) => {
+                                e.stopPropagation(); // Prevent event bubbling
+                                setEditEventForm({
+                                  ...editEventForm,
+                                  type: e.target.value,
+                                });
+                              }}
+                              className="day-form-select"
+                              onClick={(e) => e.stopPropagation()} // Prevent select from closing the form
+                            >
+                              <option value="">Select type</option>
+                              <option value="meeting">Meeting</option>
+                              <option value="personal">Personal</option>
+                              <option value="reminder">Reminder</option>
+                            </select>
 
-                        <div className="edit-form-actions">
-                          <button
-                            type="button"
-                            className="edit-save-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEventSubmit(e, true);
-                            }}
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            className="edit-cancel-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              cancelEdit();
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display mode
-                      <>
-                        <div className="event-time">
-                          <div className="event-time-value">
-                            {formatTime(event.time)}
-                          </div>
-                        </div>
-                        <div
-                          className="event-info"
-                          onClick={() => handleEventDetails(event)}
-                        >
-                          <div className="event-title">{event.title}</div>
-                          <div className="event-meta">
-                            <div className="event-date">
-                              {formatDateDisplay(event.date)}
+                            <div
+                              className="time-input-wrapper"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <TimeInput
+                                value={editEventForm.time}
+                                onChange={(time) => {
+                                  setEditEventForm({
+                                    ...editEventForm,
+                                    time,
+                                  });
+                                }}
+                                placeholder="Event time (HH:MM)"
+                              />
                             </div>
-                            <div className="event-type">{event.type}</div>
+
+                            <textarea
+                              value={editEventForm.description}
+                              onChange={(e) => {
+                                e.stopPropagation(); // Prevent event bubbling
+                                setEditEventForm({
+                                  ...editEventForm,
+                                  description: e.target.value,
+                                });
+                              }}
+                              className="day-form-input"
+                              placeholder="Description"
+                              rows={3}
+                              onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
+                            ></textarea>
+                          </div>
+
+                          <div className="edit-form-actions">
+                            <button
+                              type="button"
+                              className="edit-save-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEventSubmit(e, true);
+                              }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              className="edit-cancel-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                cancelEdit();
+                              }}
+                            >
+                              Cancel
+                            </button>
                           </div>
                         </div>
-                        <div className="event-actions">
-                          <button
-                            className="event-btn edit"
-                            onClick={() => handleEditEvent(event)}
-                            title="Edit event"
+                      ) : (
+                        // Display mode
+                        <>
+                          <div className="event-time">
+                            <div className="event-time-value">
+                              {formatTime(event.time)}
+                            </div>
+                          </div>
+                          <div
+                            className="event-info"
+                            onClick={() => handleEventDetails(event)}
                           >
-                            ✎
-                          </button>
-                          <button
-                            className="event-btn delete"
-                            onClick={() => handleDeleteEvent(event.id)}
-                            title="Delete event"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </li>
-                ))}
+                            <div className="event-title">{event.title}</div>
+                            <div className="event-meta">
+                              <div className="event-date">
+                                {formatDateDisplay(event.date)}
+                              </div>
+                              <div className="event-type">{event.type}</div>
+                            </div>
+                          </div>
+                          <div className="event-actions">
+                            <button
+                              className="event-btn edit"
+                              onClick={() => handleEditEvent(event)}
+                              title="Edit event"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              className="event-btn delete"
+                              onClick={() => handleDeleteEvent(event.id)}
+                              title="Delete event"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <div className="day-empty-state">
@@ -831,103 +836,108 @@ const DayView: React.FC = () => {
 
             {currentDateTasks.length > 0 ? (
               <ul className="day-list">
-                {currentDateTasks.map((task) => (
-                  <li
-                    key={task.id}
-                    className={`task-item ${task.completed ? "completed" : ""}`}
-                    id={`task-${task.id}`}
-                  >
-                    {editingTask && editingTask.id === task.id ? (
-                      // Edit mode
-                      <div className="task-edit-form">
-                        <div className="edit-form-grid">
-                          <input
-                            type="text"
-                            value={editTaskForm.text}
-                            onChange={(e) =>
-                              setEditTaskForm({
-                                ...editTaskForm,
-                                text: e.target.value,
-                              })
-                            }
-                            className="day-form-input"
-                            placeholder="Task description"
-                          />
+                {currentDateTasks.map((task) => {
+                  // Create a truly unique key for each task item
+                  const taskKey = `task-list-${task.id}-${activeTab}`;
 
-                          <TimeInput
-                            value={editTaskForm.time}
-                            onChange={(time) =>
-                              setEditTaskForm({
-                                ...editTaskForm,
-                                time,
-                              })
-                            }
-                            placeholder="Task time (optional)"
-                          />
-                        </div>
+                  return (
+                    <li
+                      key={taskKey}
+                      className={`task-item ${task.completed ? "completed" : ""}`}
+                      id={`task-${task.id}`}
+                    >
+                      {editingTask && editingTask.id === task.id ? (
+                        // Edit mode
+                        <div className="task-edit-form">
+                          <div className="edit-form-grid">
+                            <input
+                              type="text"
+                              value={editTaskForm.text}
+                              onChange={(e) =>
+                                setEditTaskForm({
+                                  ...editTaskForm,
+                                  text: e.target.value,
+                                })
+                              }
+                              className="day-form-input"
+                              placeholder="Task description"
+                            />
 
-                        <div className="edit-form-actions">
-                          <button
-                            type="button"
-                            className="edit-save-btn"
-                            onClick={(e) => handleTaskSubmit(e, true)}
-                          >
-                            Save
-                          </button>
-                          <button
-                            type="button"
-                            className="edit-cancel-btn"
-                            onClick={cancelEdit}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display mode
-                      <>
-                        <div
-                          className="task-status"
-                          onClick={() => handleToggleTask(task)}
-                        >
-                          {task.completed ? "✓" : "○"}
-                        </div>
-                        <div
-                          className="task-info"
-                          onClick={() => handleTaskDetails(task)}
-                        >
-                          <div className="task-title">{task.text}</div>
-                          <div className="task-meta">
-                            {task.time && (
-                              <div className="task-time">
-                                {formatTime(task.time)}
-                              </div>
-                            )}
-                            <div className="task-date">
-                              {formatDateDisplay(task.date)}
-                            </div>
+                            <TimeInput
+                              value={editTaskForm.time}
+                              onChange={(time) =>
+                                setEditTaskForm({
+                                  ...editTaskForm,
+                                  time,
+                                })
+                              }
+                              placeholder="Task time (optional)"
+                            />
+                          </div>
+
+                          <div className="edit-form-actions">
+                            <button
+                              type="button"
+                              className="edit-save-btn"
+                              onClick={(e) => handleTaskSubmit(e, true)}
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              className="edit-cancel-btn"
+                              onClick={cancelEdit}
+                            >
+                              Cancel
+                            </button>
                           </div>
                         </div>
-                        <div className="task-actions">
-                          <button
-                            className="task-btn edit"
-                            onClick={() => handleEditTask(task)}
-                            title="Edit task"
+                      ) : (
+                        // Display mode
+                        <>
+                          <div
+                            className="task-status"
+                            onClick={() => handleToggleTask(task)}
                           >
-                            ✎
-                          </button>
-                          <button
-                            className="task-btn delete"
-                            onClick={() => handleDeleteTask(task.id)}
-                            title="Delete task"
+                            {task.completed ? "✓" : "○"}
+                          </div>
+                          <div
+                            className="task-info"
+                            onClick={() => handleTaskDetails(task)}
                           >
-                            🗑️
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </li>
-                ))}
+                            <div className="task-title">{task.text}</div>
+                            <div className="task-meta">
+                              {task.time && (
+                                <div className="task-time">
+                                  {formatTime(task.time)}
+                                </div>
+                              )}
+                              <div className="task-date">
+                                {formatDateDisplay(task.date)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="task-actions">
+                            <button
+                              className="task-btn edit"
+                              onClick={() => handleEditTask(task)}
+                              title="Edit task"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              className="task-btn delete"
+                              onClick={() => handleDeleteTask(task.id)}
+                              title="Delete task"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <div className="day-empty-state">

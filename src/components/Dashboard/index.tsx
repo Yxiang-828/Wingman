@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useData } from "../../context/DataContext";
 import { useDiary } from "../../context/DiaryContext";
+import { getCurrentUserId } from "../../utils/auth"; // Add this import
 import DiaryCard from "./DiaryCard";
 import TasksCard from "./TasksCard";
 import EventsCard from "./EventsCard";
 import SummaryCard from "./SummaryCard";
 import CompletedTasksCard from "./CompletedTasksCard";
 import type { Task } from "../../api/Task";
-import type { CalendarEvent } from "../../api/Calendar"; 
+import type { CalendarEvent } from "../../api/Calendar";
 import "./Dashboard.css";
 
 const Dashboard: React.FC = () => {
@@ -30,6 +31,13 @@ const Dashboard: React.FC = () => {
   // Fetch data when component mounts - focused only on today's data
   useEffect(() => {
     const loadDashboard = async () => {
+      // Get current user ID first
+      const userId = getCurrentUserId();
+      if (!userId) {
+        console.log("Dashboard: User not authenticated, skipping data fetch");
+        return;
+      }
+      
       setIsLoading(true);
       // Set a timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {

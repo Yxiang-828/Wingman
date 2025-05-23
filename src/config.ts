@@ -26,10 +26,17 @@ export const CONFIG = {
 
 // Enhanced getApiUrl with retry logic for when backend might be starting up
 export function getApiUrl(endpoint: string): string {
-  // If endpoint already starts with /api, don't add it again
-  const path = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
+  // Ensure endpoint starts with a slash if it doesn't already
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   
-  // In production Electron, we use the baseUrl since we're running our own server
-  // In development, we use relative URLs that get handled by the Vite dev server proxy
-  return isProd && isElectron ? `${CONFIG.API_BASE_URL}${path}` : path;
+  // Ensure API prefix is present but not duplicated
+  const path = normalizedEndpoint.startsWith('/api') ? normalizedEndpoint : `/api${normalizedEndpoint}`;
+  
+  // For Electron in production, use the full URL with base
+  if (isProd && isElectron) {
+    return `${CONFIG.API_BASE_URL}${path}`;
+  }
+  
+  // For development or browser environments, use relative path
+  return path.replace(/^\/+/, '/'); // Ensure only one leading slash
 }

@@ -1,4 +1,5 @@
 import { getApiUrl } from '../config';
+import { getCurrentUserId } from '../utils/auth';  // Add this import
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
@@ -13,6 +14,18 @@ export async function apiRequest<T = any>(
 ): Promise<T> {
   const url = getApiUrl(endpoint);
   
+  // Check for authentication for protected endpoints
+  if (endpoint.includes("/diary/") || 
+      endpoint.includes("/tasks") || 
+      endpoint.includes("/calendar")) {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.error(`API request to ${endpoint} failed: User not authenticated`);
+      // Instead of throwing an error, return a proper response object
+      return { error: "Authentication required" } as T;
+    }
+  }
+
   const defaultHeaders = {
     'Content-Type': 'application/json',
   };

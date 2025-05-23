@@ -5,6 +5,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   onMoodChange: (callback) => {
     ipcRenderer.on('mood-changed', (_, mood) => callback(mood));
+  },
+  setMaxMoodListeners: (count) => {
+    ipcRenderer.setMaxListeners(count);
   }
 });
 

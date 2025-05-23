@@ -155,52 +155,66 @@ const CompletedTasks: React.FC = () => {
 
   // Process and group completed tasks from this week
   useEffect(() => {
-    if (!currentWeekId || !taskCache[currentWeekId]) return;
-
+    // Get tasks directly from cache if currentWeekId fails
     const processCompletedTasks = () => {
+      setLoading(true);
+
+      // Get today's date in YYYY-MM-DD format for comparison
+      const today = new Date().toISOString().split("T")[0];
+      console.log("Today's date for comparison:", today);
+
       try {
-        // Get all completed tasks for the current week
-        const weekData = taskCache[currentWeekId];
-        const allCompletedTasks: Task[] = [];
+        // Create a map to store tasks grouped by date
+        const tasksByDate: Record<string, Task[]> = {};
+        let completedCount = 0;
 
-        // Collect all completed tasks
-        Object.values(weekData).forEach((tasksForDate) => {
-          const completedForDate = tasksForDate.filter(
-            (task) =>
-              task.completed && (filterDate ? task.date === filterDate : true)
-          );
+        // Process ALL weeks in cache, not just currentWeekId
+        Object.keys(taskCache).forEach((weekId) => {
+          Object.keys(taskCache[weekId] || {}).forEach((dateStr) => {
+            // Get tasks for this date
+            const tasksForDay = taskCache[weekId][dateStr] || [];
 
-          if (completedForDate.length > 0) {
-            allCompletedTasks.push(...completedForDate);
-          }
-        });
+            // Filter for completed tasks only
+            const completedTasks = tasksForDay.filter((task) => task.completed);
 
-        // Group by date
-        const byDate: Record<string, Task[]> = {};
-        allCompletedTasks.forEach((task) => {
-          if (!byDate[task.date]) {
-            byDate[task.date] = [];
-          }
-          byDate[task.date].push(task);
-        });
-
-        // Sort dates in descending order
-        const sortedGrouped: Record<string, Task[]> = {};
-        Object.keys(byDate)
-          .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-          .forEach((date) => {
-            sortedGrouped[date] = byDate[date];
+            if (completedTasks.length > 0) {
+              // If we have a filter date, only include tasks from that date
+              if (!filterDate || dateStr === filterDate) {
+                tasksByDate[dateStr] = completedTasks;
+                completedCount += completedTasks.length;
+                console.log(
+                  `Found ${completedTasks.length} completed tasks for ${dateStr}`
+                );
+              }
+            }
           });
+        });
 
-        setGroupedTasks(sortedGrouped);
-        setTotalCompleted(allCompletedTasks.length);
+        // Set state with grouped tasks and total count
+        setGroupedTasks(tasksByDate);
+        setTotalCompleted(completedCount);
+
+        console.log("Processed completed tasks:", tasksByDate);
+        console.log(`Total completed tasks: ${completedCount}`);
       } catch (error) {
         console.error("Error processing completed tasks:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     processCompletedTasks();
-  }, [taskCache, currentWeekId, filterDate]);
+  }, [taskCache, filterDate]); // Remove currentWeekId dependency to avoid errors
+
+  // Ensure filter date defaults to today if coming from dashboard
+  useEffect(() => {
+    // If no date specified but coming from dashboard, default to today
+    if (!dateFromUrl && location.state?.fromDashboard) {
+      const today = new Date().toISOString().split('T')[0];
+      setFilterDate(today);
+      console.log("Setting filter to today:", today);
+    }
+  }, [dateFromUrl, location]);
 
   // Get week range display for UI
   const getWeekRangeDisplay = useCallback(() => {

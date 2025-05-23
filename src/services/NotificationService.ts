@@ -244,9 +244,15 @@ export const startNotificationCleanupService = () => {
  * - Event notifications are removed after the event date + 1 day
  * - Read notifications older than 14 days are archived
  */
+// Modify the cleanupNotifications function to safely handle unauthenticated state
 const cleanupNotifications = async () => {
   const userId = getCurrentUserId();
-  if (!userId) return;
+  
+  // Exit early if no user instead of continuing with null checks
+  if (!userId) {
+    console.log("Skipping notification cleanup - user not authenticated");
+    return;
+  }
   
   try {
     console.log("Running notification cleanup");

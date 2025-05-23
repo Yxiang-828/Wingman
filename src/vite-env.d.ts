@@ -13,5 +13,6 @@ interface ImportMeta {
 interface Window {
   electronAPI?: {
     onMoodChange: (callback: (mood: string) => void) => void;
+    setMaxMoodListeners: (count: number) => void; // This property is included
   }
 }

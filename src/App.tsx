@@ -4,7 +4,6 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
 import { DataProvider } from "./context/DataContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
@@ -28,45 +27,64 @@ import "./main.css";
 import "./styles/scrollbars.css";
 
 // Create an AppContent component that will be inside the Router
-const AppContent = () => {
+const AppContent = ({
+  onAuthChange,
+}: {
+  onAuthChange: (authenticated: boolean) => void;
+}) => {
   const [user, setUser] = useState<any>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
-  const location = useLocation();
+  const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Check if user exists in localStorage on mount
+  // Modified useEffect to properly update auth state
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (error) {
-      console.error("Error reading user from localStorage:", error);
-    }
-  }, []);
+    // REMOVE all localStorage user restoration
+    // Just set initialized to true immediately
+    setAuthInitialized(true);
 
-  // Listen for sidebar visibility changes
+    // Optional: Clear any existing user data to force login
+    localStorage.removeItem("user");
+
+    // Notify parent that user is not authenticated
+    onAuthChange(false);
+  }, [onAuthChange]);
+
+  // Update login handler to notify when user logs in
+  const handleLogin = (user: any) => {
+    setUser(user);
+    onAuthChange(true); // Notify parent that user is now authenticated
+  };
+
+  // Same sidebar visibility effect
   useEffect(() => {
-    const handleSidebarChange = (e: any) =>
-      setSidebarVisible(e.detail.isVisible);
+    const handleSidebarVisibility = (event: CustomEvent) => {
+      setSidebarVisible(event.detail.isVisible);
+    };
 
-    window.addEventListener("sidebar-visibility-change", handleSidebarChange);
+    window.addEventListener(
+      "sidebar-visibility-change",
+      handleSidebarVisibility as EventListener
+    );
+
     return () => {
       window.removeEventListener(
         "sidebar-visibility-change",
-        handleSidebarChange
+        handleSidebarVisibility as EventListener
       );
     };
   }, []);
 
-  // Add /login route to the excluded paths
-  const isLoginPage = location.pathname === "/login";
-
-  // Always show login unless user is authenticated
-  if (!user && !isLoginPage) {
-    return <Login onLogin={setUser} />;
+  // Ensure we only render content that needs authentication after auth is initialized
+  if (!authInitialized) {
+    return <div className="loading">Initializing...</div>;
   }
 
+  // CRITICAL PART: If not logged in, always show login
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  // Return the app content with FIXED routing structure
   return (
     <div className="app flex h-screen bg-dark text-light">
       <Sidebar />
@@ -79,76 +97,20 @@ const AppContent = () => {
           <Header />
           <main className="flex-1 p-6 overflow-auto">
             <Routes>
-              <Route path="/login" element={<Login onLogin={setUser} />} />
-              <Route
-                path="/notifications"
-                element={
-                  <ErrorBoundary>
-                    <Notifications />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/"
-                element={
-                  <ErrorBoundary>
-                    <Dashboard />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/calendar/*"
-                element={
-                  <ErrorBoundary>
-                    <Calendar />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/diary/*"
-                element={
-                  <ErrorBoundary>
-                    <Diary />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/chatbot"
-                element={
-                  <ErrorBoundary>
-                    <ChatBot />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/profile/*"
-                element={
-                  <ErrorBoundary>
-                    <Profile />
-                  </ErrorBoundary>
-                }
-              >
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/calendar/*" element={<Calendar />} />
+              <Route path="/diary/*" element={<Diary />} />
+              <Route path="/chatbot" element={<ChatBot />} />
+              <Route path="/profile/*" element={<Profile />}>
+                <Route index element={<ProfileSettings />} />
                 <Route path="settings" element={<ProfileSettings />} />
                 <Route path="avatar" element={<ProfileAvatar />} />
               </Route>
-              <Route
-                path="/home"
-                element={
-                  <ErrorBoundary>
-                    <Home />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/completed-tasks"
-                element={
-                  <ErrorBoundary>
-                    <CompletedTasks />
-                  </ErrorBoundary>
-                }
-              />
-              {/* Redirect all unknown routes to login or dashboard */}
-              <Route path="*" element={<Navigate to="/" />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/completed-tasks" element={<CompletedTasks />} />
+              <Route path="/login" element={<Login onLogin={setUser} />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
         </div>
@@ -157,29 +119,39 @@ const AppContent = () => {
   );
 };
 
-// Main App component now only sets up providers and router
+// Main App component with providers
 const App = () => {
-  useEffect(() => {
-    // Start the notification cleanup service
-    const stopCleanupService = startNotificationCleanupService();
+  // Only start services after user authentication
+  const [userAuthenticated, setUserAuthenticated] = useState(false);
 
-    // Clean up when component unmounts
-    return () => {
-      stopCleanupService();
-    };
+  // Fix memory leak warning by increasing max listeners
+  useEffect(() => {
+    if (window.electronAPI?.setMaxMoodListeners) {
+      window.electronAPI.setMaxMoodListeners(20);
+    }
   }, []);
+
+  useEffect(() => {
+    // Only start notification cleanup service if user is authenticated
+    if (userAuthenticated) {
+      const stopCleanupService = startNotificationCleanupService();
+      return () => {
+        stopCleanupService();
+      };
+    }
+  }, [userAuthenticated]);
 
   return (
     <Router>
-      <DiaryProvider>
-        <DataProvider>
-          <NotificationsProvider>
-            <ErrorBoundary>
-              <AppContent />
-            </ErrorBoundary>
-          </NotificationsProvider>
-        </DataProvider>
-      </DiaryProvider>
+      <ErrorBoundary>
+        <DiaryProvider>
+          <DataProvider>
+            <NotificationsProvider>
+              <AppContent onAuthChange={setUserAuthenticated} />
+            </NotificationsProvider>
+          </DataProvider>
+        </DiaryProvider>
+      </ErrorBoundary>
     </Router>
   );
 };

@@ -16,6 +16,7 @@ import {
   deleteDiaryEntry,
   type DiaryEntry,
 } from "../api/Diary";
+import { getCurrentUser } from "../utils/auth";
 
 interface DiaryContextProps {
   entries: DiaryEntry[];
@@ -40,21 +41,29 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
     refreshEntries();
   }, []);
 
+  // Fix the refreshEntries function to check auth before fetching
   const refreshEntries = useCallback(
     throttle(async () => {
       setLoading(true);
       try {
-        // Check if we've fetched recently (within last 5 seconds)
+        // Get user synchronously first
+        const user = getCurrentUser();
+        if (!user || !user.id) {
+          console.log("DiaryContext: User not authenticated, skipping fetch");
+          setLoading(false);
+          return;
+        }
+
+        // Only proceed with fetch if we have a user
         const now = Date.now();
         const lastFetched = lastFetchedRef.current["entries"] || 0;
         if (now - lastFetched < 5000) {
           console.log("Skipping diary fetch - recently fetched");
-          return; // Skip if fetched within last 5 seconds
+          setLoading(false);
+          return;
         }
 
-        // Update last fetched timestamp
         lastFetchedRef.current["entries"] = now;
-
         const data = await fetchDiaryEntries();
         setEntries(data);
       } catch (error) {

@@ -54,16 +54,37 @@ const mapClientTask = (task: Partial<Task>): any => {
 export const fetchTasks = async (date: string): Promise<Task[]> => {
   try {
     const userId = getCurrentUserId();
-    
-    console.log("Fetching tasks for date:", date);
-    const data = await api.get(`/v1/tasks?date=${date}&user_id=${userId}`);
-    
-    if (!data || !Array.isArray(data)) {
-      console.error("Invalid response format for tasks:", data);
+    if (!userId) {
+      console.warn("No user ID available for task fetch");
       return [];
     }
     
-    return data.map(mapServerTask);
+    console.log("Fetching tasks for date:", date);
+    const response = await api.get(`/v1/tasks?date=${date}&user_id=${userId}`);
+    
+    // Handle different response formats
+    if (!response) {
+      return [];
+    }
+    
+    // Check if response is an array directly
+    if (Array.isArray(response)) {
+      return response.map(mapServerTask);
+    }
+    
+    // Check if response has a data property that's an array
+    if (response.data && Array.isArray(response.data)) {
+      return response.data.map(mapServerTask);
+    }
+    
+    // Response is an object with an error
+    if (response.error) {
+      console.error("Error fetching tasks:", response.error);
+      return [];
+    }
+    
+    console.error("Invalid response format for tasks:", response);
+    return [];
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return [];
@@ -201,6 +222,26 @@ export const deleteTask = async (id: number): Promise<void> => {
     await api.delete(`/v1/tasks/${id}`);
   } catch (error) {
     console.error('Error deleting task:', error);
+    throw error;
+  }
+};
+
+// Add this function export to Task.ts
+
+export const toggleTaskCompletion = async (task: Task): Promise<Task> => {
+  try {
+    console.log("API: toggleTaskCompletion called for task ID:", task.id);
+    
+    // Create a new task object with toggled completion status
+    const updatedTask = {
+      ...task,
+      completed: !task.completed
+    };
+    
+    // Use the existing updateTask function to save the change
+    return await updateTask(updatedTask);
+  } catch (error) {
+    console.error('Error toggling task completion:', error);
     throw error;
   }
 };

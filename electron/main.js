@@ -1,6 +1,7 @@
 const { app, BrowserWindow, nativeImage, shell } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const fs = require('fs');
 
 const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
@@ -53,6 +54,24 @@ function updateMoodIcons(win) {
     
   } catch (error) {
     console.error('Failed to update icons:', error);
+  }
+}
+
+// Load environment variables for backend
+function setupEnvVars() {
+  try {
+    const prodEnvPath = path.join(process.resourcesPath, 'Wingman-backend', '.env');
+    const devEnvPath = path.join(__dirname, '..', 'Wingman-backend', '.env');
+    
+    const envPath = isDevelopment ? devEnvPath : prodEnvPath;
+    
+    if (fs.existsSync(envPath)) {
+      console.log(`Found .env file at: ${envPath}`);
+    } else {
+      console.error(`ERROR: .env file not found at: ${envPath}`);
+    }
+  } catch (error) {
+    console.error('Error checking .env file:', error);
   }
 }
 
@@ -131,6 +150,7 @@ async function createWindow() {
   // Start backend first in production mode
   if (!isDevelopment) {
     try {
+      setupEnvVars();
       await startBackendServer();
       console.log('Backend started successfully');
     } catch (error) {

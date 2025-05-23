@@ -33,7 +33,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     }
 
     // Store the current scroll position
-    const container = e.currentTarget.closest('.tasks-list');
+    const container = e.currentTarget.closest(".tasks-list");
     const scrollPosition = container ? container.scrollTop : 0;
 
     // Create a local copy with processing state
@@ -51,10 +51,14 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       onToggleTask(updatedTask);
 
       // Make sure popup closes if it's open for this task
-      if (currentPopupItem && 'id' in currentPopupItem && currentPopupItem.id === task.id) {
+      if (
+        currentPopupItem &&
+        "id" in currentPopupItem &&
+        currentPopupItem.id === task.id
+      ) {
         closePopup();
       }
-      
+
       // Restore scroll position after state update
       if (container) {
         setTimeout(() => {
@@ -111,22 +115,21 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           {tasks.map((task) => (
             <li
               key={`task-${task.id}`}
-              className={`task-item ${task.completed ? "completed" : ""} ${task.isProcessing ? "processing" : ""}`}
+              className={`task-item ${task.completed ? "completed" : ""}`}
               onClick={() => handleTaskClick(task)}
             >
               <div
-                className={`task-status ${task.completed ? "completed" : ""} ${task.isProcessing ? "processing" : ""}`}
+                className="task-status"
                 onClick={(e) => handleStatusClick(e, task)}
               >
-                {/* No text - style will show icon */}
+                {task.completed ? "✓" : "○"}
               </div>
-              <div className="task-details">
-                <div className="task-title">{task.text}</div>
+              <div className="task-title">{task.text}</div>
+              {task.time && (
                 <div className="task-meta">
-                  {task.time && <span className="task-time">{task.time}</span>}
-                  {/* <span className="task-date">{formatDate(task.date)}</span> */}
+                  <span className="task-time">{task.time}</span>
                 </div>
-              </div>
+              )}
             </li>
           ))}
         </ul>

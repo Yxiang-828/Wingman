@@ -270,3 +270,52 @@
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Avatar styling */
+.avatar-preview {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.current-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(138, 43, 226, 0.3);
+  box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
+  transition: all 0.3s ease;
+}
+
+.avatar-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.avatar-option {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.avatar-option:hover {
+  transform: scale(1.1);
+}
+
+.avatar-option.selected {
+  border-color: rgba(138, 43, 226, 0.8);
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+}
+
+.avatar-option img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

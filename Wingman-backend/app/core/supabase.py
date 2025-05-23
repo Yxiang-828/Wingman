@@ -12,7 +12,11 @@ logger = logging.getLogger(__name__)
 try:
     logger.info(f"Initializing Supabase client with URL: {settings.SUPABASE_URL[:20]}...")
     
-    # Basic version with minimal parameters (for older supabase versions)
+    # Check if credentials are available
+    if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
+        raise ValueError("Supabase URL or key missing in environment variables")
+    
+    # Basic version with minimal parameters
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
     
     # Test connection with a simple query
@@ -21,6 +25,7 @@ try:
         logger.info(f"Supabase connection test successful")
     except Exception as test_error:
         logger.warning(f"Supabase connection test query failed: {str(test_error)}")
+        raise ValueError(f"Could not connect to Supabase: {str(test_error)}")
     
     logger.info("Supabase client initialized successfully")
 except Exception as e:

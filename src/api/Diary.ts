@@ -1,4 +1,5 @@
 // Diary API functions for interacting with the backend
+import { getCurrentUserId } from '../utils/auth';
 
 // Define the Diary Entry interface for type safety
 export interface DiaryEntry {
@@ -17,27 +18,21 @@ export interface DiaryEntry {
  */
 export const fetchDiaryEntries = async (): Promise<DiaryEntry[]> => {
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (!user.id) {
-      throw new Error('User not authenticated');
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.error("User not authenticated");
+      throw new Error("User not authenticated");
     }
     
-    const response = await fetch(`/api/v1/diary/entries?user_id=${user.id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
+    const response = await fetch(`/api/v1/diary?user_id=${userId}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch diary entries: ${response.status}`);
     }
     
     return await response.json();
   } catch (error) {
-    console.error('Error fetching diary entries:', error);
-    return [];
+    console.error("Error fetching diary entries:", error);
+    throw error;
   }
 };
 

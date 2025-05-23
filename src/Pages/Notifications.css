@@ -308,6 +308,101 @@
   transform: translateY(-2px);
 }
 
+/* Add these new styles to your existing Notifications.css file */
+
+/* Container for the notifications items */
+.notifications-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Load more button styling */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(100, 108, 255, 0.15);
+  color: #c4c6ff;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+}
+
+.load-more-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Small loading spinner for the Load More button */
+.loading-spinner-small {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(100, 108, 255, 0.2);
+  border-top-color: #c4c6ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Pagination information display */
+.pagination-info {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 1rem;
+}
+
+/* Improve scrolling performance */
+.notifications-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Loading states */
+.notifications-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Ensure the existing loading spinner has these styles */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(100, 108, 255, 0.3);
+  border-top-color: rgba(100, 108, 255, 0.8);
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  animation: spin 1s linear infinite;
+}
+
 @media (max-width: 768px) {
   .notifications-header {
     flex-direction: column;
