@@ -1,20 +1,21 @@
 import React from "react";
-import { Routes, Route, Outlet } from "react-router-dom";
-import WriteEntry from "./WriteEntry";
+import { Routes, Route } from "react-router-dom";
+import DiaryEntry from "./DiaryEntry";
 import ViewEntries from "./ViewEntries";
-import SearchDiary from "./SearchDiary";
-import EditEntry from "./EditEntry"; // Import the new component
-import "./Diary.css";
+import SearchDiary from "./DiarySearch";
+import EditEntry from "./EditEntry";
+import "./DiaryEntry.css";
 
 const Diary: React.FC = () => {
   return (
     <div className="diary-container">
       <Routes>
-        <Route path="/" element={<Outlet />} />
-        <Route path="/write" element={<WriteEntry />} />
+        <Route path="/" element={<ViewEntries />} />
+        {/* Use DiaryEntry for WriteEntry functionality with isNewEntry prop */}
+        <Route path="/write" element={<DiaryEntry isNewEntry={true} />} />
         <Route path="/view" element={<ViewEntries />} />
         <Route path="/search" element={<SearchDiary />} />
-        <Route path="/edit" element={<EditEntry />} /> {/* Add this route */}
+        <Route path="/edit" element={<EditEntry />} />
       </Routes>
     </div>
   );

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { format, isToday, parseISO } from "date-fns";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
@@ -22,6 +21,8 @@ const DayView: React.FC = () => {
     addNewEvent,
     deleteExistingTask,
     deleteExistingEvent,
+    updateTask,
+    updateEvent,
   } = useData();
 
   const { showPopupFor, currentPopupItem, closePopup, completeTask } =
@@ -29,7 +30,6 @@ const DayView: React.FC = () => {
 
   // Local states for UI management
   const [date, setDate] = useState<Date | null>(null);
-  const [dateError, setDateError] = useState<string | null>(null);
   const [newTask, setNewTask] = useState({ text: "", time: "" });
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -88,7 +88,6 @@ const DayView: React.FC = () => {
       }
     } catch (err) {
       console.error("Error parsing date:", err);
-      setDateError("Invalid date format in URL");
       // Default to today
       const today = new Date();
       setDate(today);
@@ -126,55 +125,34 @@ const DayView: React.FC = () => {
       }, 100);
     } catch (error) {
       console.error("Error fetching data:", error);
-      setDateError("Failed to load data for this date");
-    }
-  };
-
-  // Add task handler
-  const handleAddTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!date || !newTask.text.trim()) return;
-
-    const dateStr = date.toISOString().split("T")[0];
-
-    try {
-      console.log("Adding task to Supabase:", {
-        date: dateStr,
-        text: newTask.text,
-        time: newTask.time || "",
-        completed: false,
-      });
-
-      const task = await addNewTask({
-        date: dateStr,
-        text: newTask.text,
-        time: newTask.time || "",
-        completed: false,
-      });
-
-      // Update current date tasks
-      setCurrentDateTasks((prev) => [...prev, task]);
-
-      // Reset form
-      setNewTask({ text: "", time: "" });
-    } catch (error) {
-      console.error("Failed to add task:", error);
     }
   };
 
   // Toggle task handler with Supabase update
   const handleToggleTask = async (task: Task) => {
     try {
+      // Create a local copy with processing state for UI
+      const processingTask = { ...task, isProcessing: true };
+
+      // Update local state immediately to show processing
+      setCurrentDateTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? processingTask : t))
+      );
+
+      // Perform the actual toggle
       const updatedTask = await toggleTask(task);
 
-      // Update local state for current view
+      // Update local state with the returned task
       setCurrentDateTasks((prev) =>
-        prev.map((t) =>
-          t.id === task.id ? { ...t, completed: !t.completed } : t
-        )
+        prev.map((t) => (t.id === task.id ? updatedTask : t))
       );
     } catch (error) {
       console.error("Failed to toggle task:", error);
+
+      // Revert to original state on error
+      setCurrentDateTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? task : t))
+      );
     }
   };
 
@@ -407,37 +385,6 @@ const DayView: React.FC = () => {
     });
   };
 
-  // Handle saving task edits
-  const handleSaveTaskEdit = async () => {
-    if (!editingTask) return;
-
-    try {
-      const updatedTask = {
-        ...editingTask,
-        text: editTaskForm.text.trim(),
-        time: editTaskForm.time,
-      };
-
-      console.log("Saving updated task:", updatedTask);
-
-      // Use the updateTask function
-      const result = await updateTask(updatedTask);
-
-      // Update local state
-      setCurrentDateTasks((prev) =>
-        prev.map((task) =>
-          task.id === result.id ? { ...task, ...result } : task
-        )
-      );
-
-      // Clear editing state
-      setEditingTask(null);
-    } catch (error) {
-      console.error("Failed to update task:", error);
-      alert("Could not update task. Please try again.");
-    }
-  };
-
   // Handle starting to edit an event
   const handleEditEvent = (event: CalendarEvent) => {
     setEditingEvent(event);
@@ -447,41 +394,6 @@ const DayView: React.FC = () => {
       type: event.type || "",
       description: event.description || "",
     });
-  };
-
-  // Handle saving event edits
-  const handleSaveEventEdit = async () => {
-    if (!editingEvent) return;
-
-    try {
-      // Start with a copy of the original event
-      const updatedEvent = {
-        ...editingEvent,
-        title: editEventForm.title.trim(),
-        time: editEventForm.time,
-        type: editEventForm.type,
-        description: editEventForm.description || "",
-      };
-
-      console.log("Saving updated event:", updatedEvent);
-
-      // Use the updateEvent function
-      const result = await updateEvent(updatedEvent);
-
-      // Update local state
-      setCurrentDateEvents((prev) =>
-        prev.map((event) =>
-          event.id === result.id ? { ...event, ...result } : event
-        )
-      );
-
-      // Clear editing state
-      setEditingEvent(null);
-    } catch (error) {
-      console.error("Failed to update event:", error);
-      // Show user-friendly error
-      alert("Could not update event. Please try again.");
-    }
   };
 
   // Handle canceling edits
@@ -501,63 +413,46 @@ const DayView: React.FC = () => {
 
     // Validation
     if (!taskData.text.trim()) {
-      alert("Please enter a task description");
+      // Handle validation error
       return;
     }
 
     try {
       if (isEditing && editingTask) {
-        console.log("Updating existing task:", {
-          ...editingTask,
-          text: taskData.text.trim(),
-          time: taskData.time || "",
-        });
-
         // Update existing task
-        const updatedTask = await updateExistingTask({
+        const updatedTask: Task = {
           ...editingTask,
-          text: taskData.text.trim(),
+          text: taskData.text,
           time: taskData.time || "",
-        });
+        };
+
+        const result = await updateTask(updatedTask);
 
         // Update local state
         setCurrentDateTasks((prev) =>
-          prev.map((t) => (t.id === updatedTask.id ? updatedTask : t))
+          prev.map((task) => (task.id === editingTask.id ? result : task))
         );
 
-        // Clear editing state
+        // Reset edit state
         setEditingTask(null);
-
-        console.log("Task updated successfully:", updatedTask);
+        setEditTaskForm({ text: "", time: "" });
       } else {
-        console.log("Adding task to Supabase:", {
-          date: dateStr,
-          text: taskData.text.trim(),
-          time: taskData.time || "",
-          completed: false,
-        });
-
         // Create new task
-        const newTaskItem = await addNewTask({
+        const task = await addNewTask({
           date: dateStr,
-          text: taskData.text.trim(),
+          text: taskData.text,
           time: taskData.time || "",
           completed: false,
         });
 
-        // Update local state
-        setCurrentDateTasks((prev) => [...prev, newTaskItem]);
+        // Add to current tasks
+        setCurrentDateTasks((prev) => [...prev, task]);
 
         // Reset form
         setNewTask({ text: "", time: "" });
-
-        console.log("Task added successfully:", newTaskItem);
       }
     } catch (error) {
       console.error("Task operation failed:", error);
-      alert(
-        `Failed to ${isEditing ? "update" : "create"} task. Please try again.`
-      );
     }
   };
 
@@ -739,30 +634,37 @@ const DayView: React.FC = () => {
                   >
                     {editingEvent && editingEvent.id === event.id ? (
                       // Edit mode
-                      <div className="event-edit-form">
+                      <div
+                        className="event-edit-form"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="edit-form-grid">
                           <input
                             type="text"
                             value={editEventForm.title}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              e.stopPropagation(); // Prevent event bubbling
                               setEditEventForm({
                                 ...editEventForm,
                                 title: e.target.value,
-                              })
-                            }
+                              });
+                            }}
                             className="day-form-input"
                             placeholder="Event title"
+                            autoFocus // Add autofocus to improve UX
                           />
 
                           <select
                             value={editEventForm.type}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              e.stopPropagation(); // Prevent event bubbling
                               setEditEventForm({
                                 ...editEventForm,
                                 type: e.target.value,
-                              })
-                            }
+                              });
+                            }}
                             className="day-form-select"
+                            onClick={(e) => e.stopPropagation()} // Prevent select from closing the form
                           >
                             <option value="">Select type</option>
                             <option value="meeting">Meeting</option>
@@ -770,28 +672,35 @@ const DayView: React.FC = () => {
                             <option value="reminder">Reminder</option>
                           </select>
 
-                          <TimeInput
-                            value={editEventForm.time}
-                            onChange={(time) =>
-                              setEditEventForm({
-                                ...editEventForm,
-                                time,
-                              })
-                            }
-                            placeholder="Event time (HH:MM)"
-                          />
+                          <div
+                            className="time-input-wrapper"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <TimeInput
+                              value={editEventForm.time}
+                              onChange={(time) => {
+                                setEditEventForm({
+                                  ...editEventForm,
+                                  time,
+                                });
+                              }}
+                              placeholder="Event time (HH:MM)"
+                            />
+                          </div>
 
                           <textarea
                             value={editEventForm.description}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              e.stopPropagation(); // Prevent event bubbling
                               setEditEventForm({
                                 ...editEventForm,
                                 description: e.target.value,
-                              })
-                            }
+                              });
+                            }}
                             className="day-form-input"
                             placeholder="Description"
                             rows={3}
+                            onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
                           ></textarea>
                         </div>
 
@@ -799,14 +708,20 @@ const DayView: React.FC = () => {
                           <button
                             type="button"
                             className="edit-save-btn"
-                            onClick={(e) => handleEventSubmit(e, true)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEventSubmit(e, true);
+                            }}
                           >
                             Save
                           </button>
                           <button
                             type="button"
                             className="edit-cancel-btn"
-                            onClick={cancelEdit}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              cancelEdit();
+                            }}
                           >
                             Cancel
                           </button>

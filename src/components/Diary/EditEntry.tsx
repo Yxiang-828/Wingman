@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DiaryEntry from "./DiaryEntry";
 import { useDiary } from "../../context/DiaryContext";
-import "./Diary.css";
+import "./DiaryEntry.css"; // Changed from "./Diary.css" to "./DiaryEntry.css"
 
 const EditEntry: React.FC = () => {
   const navigate = useNavigate();
@@ -17,13 +17,13 @@ const EditEntry: React.FC = () => {
       try {
         const query = new URLSearchParams(location.search);
         const id = query.get("id");
-        
+
         if (!id) {
           setError("No entry ID provided");
           setLoading(false);
           return;
         }
-        
+
         const entryData = await getEntryById(Number(id));
         setEntry(entryData);
       } catch (err) {
@@ -33,9 +33,9 @@ const EditEntry: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     loadEntry();
-  }, [location.search]);
+  }, [location.search, getEntryById]);
 
   const handleSave = async (updatedData: {
     title: string;
@@ -46,13 +46,13 @@ const EditEntry: React.FC = () => {
       if (!entry?.id) {
         throw new Error("Entry ID missing");
       }
-      
+
       await updateEntry(entry.id, {
         title: updatedData.title,
         content: updatedData.content,
         mood: updatedData.mood,
       });
-      
+
       navigate("/diary/view", {
         state: { message: "Entry updated successfully" },
       });

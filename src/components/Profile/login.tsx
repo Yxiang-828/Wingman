@@ -29,6 +29,16 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     }
   }, []);
 
+  // Password change handler with length validation
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+
+    // Limit password to max 6 characters
+    if (newPassword.length <= 6) {
+      setPassword(newPassword);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,6 +80,12 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
     if (!email.includes("@")) {
       setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 4) {
+      setError("Password must be 4-6 characters.");
       setLoading(false);
       return;
     }
@@ -125,14 +141,18 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               required
               className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
-            />
+            <div className="password-field">
+              <input
+                type="password"
+                placeholder="Password (6 chars max)"
+                value={password}
+                onChange={handlePasswordChange}
+                required
+                maxLength={6}
+                className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition w-full"
+              />
+              <div className="password-count">{password.length}/6</div>
+            </div>
             <button
               type="submit"
               className="login-action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-2 rounded transition-all"
@@ -176,14 +196,18 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               onChange={(e) => setUsername(e.target.value)}
               className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
             />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
-            />
+            <div className="password-field">
+              <input
+                type="password"
+                placeholder="Password (6 chars max)"
+                value={password}
+                onChange={handlePasswordChange}
+                required
+                maxLength={6}
+                className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition w-full"
+              />
+              <div className="password-count">{password.length}/6</div>
+            </div>
             <button
               type="submit"
               className="login-action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-2 rounded transition-all"

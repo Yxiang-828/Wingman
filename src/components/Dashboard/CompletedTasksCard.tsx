@@ -34,6 +34,10 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
     e.stopPropagation(); // Prevent triggering the task item click
     e.preventDefault(); // Prevent default behavior
 
+    // Store the current scroll position
+    const container = e.currentTarget.closest('.tasks-list');
+    const scrollPosition = container ? container.scrollTop : 0;
+
     console.log("CompletedTasksCard: Click on status circle for task ID:", task.id);
 
     // Prevent multiple simultaneous toggle operations on the same task
@@ -50,6 +54,13 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
       // Close popup if it's open for this task
       if (currentPopupItem && currentPopupItem.id === task.id) {
         closePopup();
+      }
+      
+      // Restore scroll position
+      if (container) {
+        setTimeout(() => {
+          container.scrollTop = scrollPosition;
+        }, 0);
       }
     } catch (error) {
       console.error("Error toggling task status:", error);

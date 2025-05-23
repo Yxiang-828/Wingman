@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-// Define the MenuItem type locally
+import { Link, useLocation, useNavigate } from "react-router-dom";
+// Update MenuItem interface to include badge property
 export interface MenuItem {
   title: string;
   path?: string;
   icon?: React.ReactNode;
+  badge?: number;
   submenu?: Array<{
     title: string;
     path: string;
@@ -18,6 +19,7 @@ export interface NavSectionProps {
 
 const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {}
   );
@@ -27,6 +29,13 @@ const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => 
       ...prev,
       [title]: !prev[title],
     }));
+  };
+
+  // Handle potential undefined path
+  const handleSubmenuItemClick = (item: MenuItem) => {
+    if (item.path) {
+      navigate(item.path);
+    }
   };
 
   return (
@@ -63,6 +72,10 @@ const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => 
               <div className="sidebar-link-content">
                 <span className="sidebar-icon">{item.icon}</span>
                 {!collapsed && <span className="sidebar-text">{item.title}</span>}
+                {/* Render the badge if it exists */}
+                {item.badge !== undefined && (
+                  <span className="badge">{item.badge}</span>
+                )}
               </div>
             </Link>
           )}
@@ -75,15 +88,13 @@ const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => 
             >
               {expandedItems[item.title] &&
                 item.submenu.map((subItem, subIndex) => (
-                  <Link
+                  <div
+                    className="sidebar-submenu-item"
+                    onClick={() => handleSubmenuItemClick(subItem)}
                     key={subIndex}
-                    to={subItem.path}
-                    className={`sidebar-submenu-item${
-                      location.pathname === subItem.path ? " active" : ""
-                    }`}
                   >
                     {subItem.title}
-                  </Link>
+                  </div>
                 ))}
             </div>
           )}

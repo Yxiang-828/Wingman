@@ -1,37 +1,35 @@
-import type { UUID } from '../types/database';
-
-// Get the current authenticated user
-export function getCurrentUser(): { id: UUID; name: string; email: string } | null {
-  const userData = localStorage.getItem('user');
-  if (!userData) return null;
-  
+// Get current user from localStorage
+export const getCurrentUser = () => {
   try {
-    return JSON.parse(userData);
-  } catch (e) {
-    console.error('Failed to parse user data from localStorage');
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return null;
+    
+    return JSON.parse(userStr);
+  } catch (error) {
+    console.error('Error getting current user:', error);
     return null;
   }
-}
+};
 
-// Get current user ID, with NO fallback
-export function getCurrentUserId(): UUID {
+// Get current user ID
+export const getCurrentUserId = (): string => {
   const user = getCurrentUser();
-  if (!user?.id) {
-    // Redirect to login if no user ID
-    window.location.href = '/login';
-    throw new Error('User not authenticated');
-  }
-  return user.id;
-}
+  return user?.id || '';
+};
 
-// Check if data belongs to current user
-export function isCurrentUserData(data: { user_id: UUID }): boolean {
-  const currentUserId = getCurrentUserId();
-  return data.user_id === currentUserId;
-}
+// Check if user is logged in
+export const isLoggedIn = (): boolean => {
+  return !!getCurrentUser();
+};
 
-// Filter array to only include current user's data
-export function filterToCurrentUser<T extends { user_id: UUID }>(items: T[]): T[] {
-  const currentUserId = getCurrentUserId();
-  return items.filter(item => item.user_id === currentUserId);
-}
+// Log out user
+export const logoutUser = () => {
+  localStorage.removeItem('user');
+  // Redirect to login page if needed
+  window.location.href = '/login';
+};
+
+// Set user data
+export const setCurrentUser = (userData: any) => {
+  localStorage.setItem('user', JSON.stringify(userData));
+};

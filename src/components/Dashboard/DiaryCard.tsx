@@ -2,8 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiary } from "../../context/DiaryContext";
 import DiaryDetailPopup from "../Diary/DiaryDetailPopup";
-import { formatDate } from "../../utils/dateUtils";
-import { truncateText } from "../../utils/helpers";
+import { format } from "date-fns";
 import "./Dashboard.css";
 
 interface DiaryCardProps {
@@ -19,9 +18,10 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
 
   // Find dashboard container for modal positioning
   useEffect(() => {
-    dashboardRef.current = document.querySelector('.dashboard') || 
-                           document.querySelector('.dashboard-container') || 
-                           document.getElementById('dashboard');
+    dashboardRef.current =
+      document.querySelector(".dashboard") ||
+      document.querySelector(".dashboard-container") ||
+      document.getElementById("dashboard");
   }, []);
 
   // If entries are passed as props, use those; otherwise, use entries from context
@@ -29,13 +29,13 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
     // Display recent diary entries summary in dashboard
     // Fetch diary entries and map them here with title + date + snippet
     if (propEntries && propEntries.length > 0) {
-      setDisplayEntries(propEntries.slice(0, 3));  // Show at most 3 entries
+      setDisplayEntries(propEntries.slice(0, 3)); // Show at most 3 entries
     } else if (entries && entries.length > 0) {
       // Sort entries by date (newest first) and take the most recent ones
-      const sortedEntries = [...entries].sort((a, b) => 
-        new Date(b.date).getTime() - new Date(a.date).getTime()
+      const sortedEntries = [...entries].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
-      setDisplayEntries(sortedEntries.slice(0, 3));  // Show at most 3 entries
+      setDisplayEntries(sortedEntries.slice(0, 3)); // Show at most 3 entries
     } else {
       setDisplayEntries([]);
     }
@@ -57,6 +57,41 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
 
   const handleEdit = (id: number) => {
     navigate(`/diary/edit?id=${id}`); // Make sure we use the correct path
+  };
+
+  // Format date for display
+  const formatDateDisplay = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return format(date, "MMM d, yyyy");
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  // Truncate text to a shorter length
+  const truncateTextDisplay = (text: string, maxLength: number = 40) => {
+    if (!text) return "";
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + "...";
+  };
+
+  // Get mood emoji
+  const getMoodEmoji = (mood: string) => {
+    switch (mood) {
+      case "happy":
+        return "😊";
+      case "sad":
+        return "😢";
+      case "excited":
+        return "😃";
+      case "angry":
+        return "😡";
+      case "relaxed":
+        return "😌";
+      default:
+        return "😐"; // neutral
+    }
   };
 
   return (
@@ -82,15 +117,13 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
             >
               <div className="entry-header">
                 <h3>{entry.title}</h3>
-                <span className="entry-date">
-                  {formatDate(entry.date)}
-                </span>
+                <div className="entry-date">
+                  <span className="entry-mood">{getMoodEmoji(entry.mood)}</span>
+                  {formatDateDisplay(entry.entry_date || entry.date)}
+                </div>
               </div>
-              <p className="entry-preview">
-                {truncateText(entry.content, 100)}
-              </p>
-              <div className="entry-actions">
-                <span className="entry-read-more">Read more</span>
+              <div className="entry-preview">
+                {truncateTextDisplay(entry.content)}
               </div>
             </li>
           ))}

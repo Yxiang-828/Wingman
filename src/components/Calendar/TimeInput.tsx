@@ -218,7 +218,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
   };
 
   return (
-    <div className="time-input-container" onClick={(e) => e.stopPropagation()}>
+    <div className="time-input-container">
       <input
         ref={inputRef}
         type="text"
@@ -229,17 +229,13 @@ const TimeInput: React.FC<TimeInputProps> = ({
         placeholder={placeholder}
         autoComplete="off"
         maxLength={5}
-        onClick={(e) => e.stopPropagation()} // Prevent event bubbling
-        onFocus={(e) => e.stopPropagation()} // Prevent event bubbling on focus
+        // Removed onClick handler that was opening the numpad
       />
       <button
         ref={iconButtonRef}
         type="button"
         className="time-input-toggle"
-        onClick={(e) => {
-          e.stopPropagation(); // Prevent event bubbling
-          toggleNumpad(e);
-        }}
+        onClick={toggleNumpad}
         aria-label="Toggle time picker"
       >
         <span className="time-icon">🕒</span>

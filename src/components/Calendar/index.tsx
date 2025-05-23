@@ -1,4 +1,5 @@
-import React from "react";
+import React, { Component, useEffect } from "react";
+import type { ErrorInfo } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import DayView from "./DayView";
 import WeekView from "./WeekView";
@@ -7,8 +8,57 @@ import EventModal from "./EventModal";
 import "./Calendar.css";
 
 // Error boundary component to catch errors in the calendar views
-const ErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <>{children}</>;
+class ErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Calendar component error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-container">
+          <h2>Something went wrong in the Calendar</h2>
+          <p>{this.state.error?.message}</p>
+          <button onClick={() => window.location.reload()}>Reload App</button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Create a wrapper that handles the WeekView transition
+const WeekViewWrapper = () => {
+  // useEffect to adjust main container transitions
+  useEffect(() => {
+    // Add transition class to main content for smooth animations
+    const mainContent = document.querySelector('.main-content-wrapper');
+    if (mainContent) {
+      mainContent.classList.add('week-view-transition');
+    }
+    
+    return () => {
+      // Clean up when exiting
+      if (mainContent) {
+        mainContent.classList.remove('week-view-transition');
+      }
+    };
+  }, []);
+  
+  return <WeekView />;
 };
 
 const Calendar: React.FC = () => {
@@ -25,15 +75,15 @@ const Calendar: React.FC = () => {
 
   // Optional: preserve date param when switching views
   const query = new URLSearchParams(location.search);
-  const dateParam = query.get("date");
+  const dateParam = query.get("date") || "";
   const dateSuffix = dateParam ? `?date=${dateParam}` : "";
 
   return (
     <ErrorBoundary>
-      <div className="calendar-container">
-        <div className="calendar-header flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Calendar</h1>
-          <div className="calendar-view-toggle flex gap-2">
+      <div className={`calendar-container view-${currentView}`}>
+        <div className="calendar-header">
+          <h1>Calendar</h1>
+          <div className="calendar-view-toggle">
             <button
               className={`calendar-toggle-btn${
                 currentView === "day" ? " active" : ""
@@ -63,7 +113,7 @@ const Calendar: React.FC = () => {
         <div className="calendar-main">
           <Routes>
             <Route path="day" element={<DayView />} />
-            <Route path="week" element={<WeekView />} />
+            <Route path="week" element={<WeekViewWrapper />} />
             <Route path="month" element={<MonthView />} />
             <Route path="*" element={<DayView />} />
           </Routes>

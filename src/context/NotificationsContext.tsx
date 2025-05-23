@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { useData } from "./DataContext";
-import { differenceInDays, format } from "date-fns";
 import type { Task } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
 import { showDesktopNotification } from "../services/NotificationService";
@@ -188,60 +187,27 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     [dismissedIds, markAsRead]
   );
 
-  // Define the function for calculating days since a date
-  const daysSince = useCallback((dateStr: string): number => {
-    return differenceInDays(new Date(), new Date(dateStr));
-  }, []);
-
   // Complete a task and update the notification
-  const completeTask = useCallback(
-    async (taskId: number) => {
-      try {
-        // Find task across all dates in taskCache
-        let taskToComplete: Task | undefined;
-        let foundTask = false;
+  const completeTask = async (taskId: number): Promise<void> => {
+    try {
+      // Find the task in any of the date groups
+      let foundTask: Task | undefined;
+      
+      // Search through all tasks in cache
+      Object.values(taskCache || {}).forEach(week => {
+        Object.values(week || {}).forEach(dayTasks => {
+          const task = dayTasks.find(t => t.id === taskId);
+          if (task) foundTask = task;
+        });
+      });
 
-        if (taskCache[currentWeekId]) {
-          Object.values(taskCache[currentWeekId]).forEach((tasks) => {
-            if (foundTask) return;
-
-            const task = tasks.find((t) => t.id === taskId);
-            if (task) {
-              taskToComplete = task;
-              foundTask = true;
-            }
-          });
-        }
-
-        if (taskToComplete) {
-          // Toggle the task using DataContext
-          const updatedTask = await toggleTask(taskToComplete);
-
-          // Update notifications state to reflect the change
-          setNotifications((prev) =>
-            prev.map((notification) => {
-              if (notification.type === "task" && notification.sourceId === taskId) {
-                return {
-                  ...notification,
-                  completed: updatedTask.completed,
-                  read: true, // Mark as read when completed
-                };
-              }
-              return notification;
-            })
-          );
-
-          return updatedTask;
-        }
-
-        return undefined;
-      } catch (error) {
-        console.error("Error completing task:", error);
-        throw error;
+      if (foundTask) {
+        await toggleTask(foundTask);
       }
-    },
-    [taskCache, currentWeekId, toggleTask]
-  );
+    } catch (error) {
+      console.error("Error completing task:", error);
+    }
+  };
 
   // When the component mounts, find the dashboard container
   useEffect(() => {

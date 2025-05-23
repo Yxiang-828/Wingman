@@ -1,78 +1,13 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { format, startOfWeek, addDays, parseISO } from "date-fns";
+import { format, startOfWeek, addDays, isToday } from "date-fns";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
-import { debounce } from "../../utils/helpers";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import Portal from "../Common/Portal";
 import DetailPopup from "../Common/DetailPopup";
 import { VirtualizedEventList, VirtualizedTaskList } from "./VirtualizedList";
-import "./Calendar.css";
-
-// Helper function for date formatting
-function formatDateForAPI(date: Date): string {
-  return format(date, "yyyy-MM-dd");
-}
-
-// Safe format function that handles invalid dates
-const safeFormat = (date: any, formatString: string): string => {
-  try {
-    if (!date) return '';
-    
-    // Convert string to Date if needed
-    let dateObj: Date;
-    if (typeof date === 'string') {
-      // Handle ISO format dates
-      if (date.includes('T')) {
-        dateObj = new Date(date);
-      } 
-      // Handle YYYY-MM-DD format
-      else if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = date.split('-').map(Number);
-        dateObj = new Date(year, month - 1, day);
-      } 
-      // Try standard parsing
-      else {
-        dateObj = new Date(date);
-      }
-    } else if (date instanceof Date) {
-      dateObj = date;
-    } else {
-      console.warn('Invalid date type:', typeof date);
-      return '';
-    }
-    
-    // Check if date is valid
-    if (isNaN(dateObj.getTime())) {
-      console.warn('Invalid date value:', date);
-      return '';
-    }
-    
-    return format(dateObj, formatString);
-  } catch (error) {
-    console.error('Error formatting date:', error);
-    return '';
-  }
-};
-
-// Add this function to check validity before any processing
-const isValidDateValue = (value: any): boolean => {
-  if (!value) return false;
-  
-  try {
-    if (typeof value === 'string') {
-      const testDate = new Date(value);
-      return !isNaN(testDate.getTime());
-    } else if (value instanceof Date) {
-      return !isNaN(value.getTime());
-    }
-    return false;
-  } catch (e) {
-    return false;
-  }
-};
+import "./WeekView.css";
 
 const WeekView: React.FC = () => {
   const location = useLocation();
@@ -83,115 +18,91 @@ const WeekView: React.FC = () => {
     fetchWeekData,
     taskCache,
     eventCache,
-    currentWeekId,
     toggleTask,
     addNewTask,
     addNewEvent,
     deleteExistingTask,
     deleteExistingEvent,
-    loading: isLoading
+    loading: isLoading,
   } = useData();
 
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
 
-  // Local state for UI management
-  const [quickAction, setQuickAction] = useState({
-    visible: false,
-    type: null,
-    position: { x: 0, y: 0 },
-    date: ""
-  });
-
-  const [quickForm, setQuickForm] = useState({
-    task: { text: "", time: "" },
-    event: { title: "", time: "", type: "personal", description: "" }
-  });
-  
-  const [activeWeekId, setActiveWeekId] = useState<string>("");
+  // State
+  const [activeWeekId, setActiveWeekId] = useState("");
   const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const [weeklyData, setWeeklyData] = useState<Record<string, {
-    tasks: Task[], events: CalendarEvent[]
-  }>>({});
+  const [weeklyData, setWeeklyData] = useState<
+    Record<
+      string,
+      {
+        tasks: Task[];
+        events: CalendarEvent[];
+      }
+    >
+  >({});
 
-  // Parse date from URL and compute active week
+  // Parse date from URL and set active week
   useEffect(() => {
     try {
       const query = new URLSearchParams(location.search);
       const dateParam = query.get("date") || format(new Date(), "yyyy-MM-dd");
-      
-      // Validate the dateParam before using it
-      if (!isValidDateValue(dateParam)) {
-        console.warn('Invalid date parameter:', dateParam);
-        // Use today's date as fallback
-        const today = new Date();
-        const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+
+      const date = new Date(dateParam);
+      if (!isNaN(date.getTime())) {
+        const weekStart = startOfWeek(date);
         const weekId = format(weekStart, "yyyy-MM-dd");
         setActiveWeekId(weekId);
-        return;
+      } else {
+        // Fallback to current week
+        const today = new Date();
+        const weekStart = startOfWeek(today);
+        setActiveWeekId(format(weekStart, "yyyy-MM-dd"));
       }
-      
-      const date = new Date(dateParam);
-      const weekStart = startOfWeek(date, { weekStartsOn: 0 });
-      const weekId = format(weekStart, "yyyy-MM-dd");
-      
-      setActiveWeekId(weekId);
     } catch (err) {
-      console.error('Error setting active week:', err);
-      // Use today as fallback
+      console.error("Error setting active week:", err);
+      // Fallback to current week
       const today = new Date();
-      const weekStart = startOfWeek(today, { weekStartsOn: 0 });
-      const weekId = format(weekStart, "yyyy-MM-dd");
-      setActiveWeekId(weekId);
+      const weekStart = startOfWeek(today);
+      setActiveWeekId(format(weekStart, "yyyy-MM-dd"));
     }
   }, [location.search]);
 
-  // Check activeWeekId validity
+  // Load data when active week changes
   useEffect(() => {
-    if (activeWeekId && !isValidDateValue(activeWeekId)) {
-      console.warn('Invalid activeWeekId:', activeWeekId);
-      // Use today as fallback
-      const today = new Date();
-      const weekStart = startOfWeek(today, { weekStartsOn: 0 });
-      const weekId = format(weekStart, "yyyy-MM-dd");
-      setActiveWeekId(weekId);
-    }
-  }, [activeWeekId]);
+    if (!activeWeekId) return;
 
-  // Update the data loading effect
-  useEffect(() => {
-    if (!activeWeekId || !isValidDateValue(activeWeekId)) {
-      return;
-    }
-    
-    // Set a timeout to show loading timeout message
+    // Set loading timeout
     const loadTimeout = setTimeout(() => setLoadingTimeout(true), 5000);
-    
+
     const loadData = async () => {
       try {
         await fetchWeekData(activeWeekId);
-        
-        // Process weeklyData from cache once data is fetched
+
+        // Process data after fetching
         if (taskCache && eventCache) {
-          const processedData: Record<string, { tasks: Task[], events: CalendarEvent[] }> = {};
-          
+          const processedData: Record<
+            string,
+            { tasks: Task[]; events: CalendarEvent[] }
+          > = {};
+
           // Get the dates for the week
           const weekStart = new Date(activeWeekId);
-          
+
           for (let i = 0; i < 7; i++) {
             const currentDate = addDays(weekStart, i);
             const dateStr = format(currentDate, "yyyy-MM-dd");
-            
-            // Extract data for this day from cache
-            const weekId = format(startOfWeek(currentDate, { weekStartsOn: 0 }), "yyyy-MM-dd");
+
+            // Get data for this day from cache
+            const weekId = format(startOfWeek(currentDate), "yyyy-MM-dd");
             const tasksForDate = taskCache[weekId]?.[dateStr] || [];
             const eventsForDate = eventCache[weekId]?.[dateStr] || [];
-            
+
             processedData[dateStr] = {
               tasks: tasksForDate,
-              events: eventsForDate
+              events: eventsForDate,
             };
           }
-          
+
           setWeeklyData(processedData);
         }
       } catch (error) {
@@ -201,40 +112,35 @@ const WeekView: React.FC = () => {
         setLoadingTimeout(false);
       }
     };
-    
+
     loadData();
-    
-    return () => {
-      clearTimeout(loadTimeout);
-    };
+
+    return () => clearTimeout(loadTimeout);
   }, [activeWeekId, fetchWeekData, taskCache, eventCache]);
 
-  // Update the days calculation function to use safeFormat
-  const days = useCallback(() => {
-    if (!activeWeekId || !isValidDateValue(activeWeekId)) {
-      return [];
-    }
-    
+  // Generate array of dates for the week
+  const getDaysOfWeek = () => {
+    if (!activeWeekId) return [];
+
     try {
       const weekDays = [];
       const weekStart = new Date(activeWeekId);
-      
+
       for (let i = 0; i < 7; i++) {
-        const day = addDays(weekStart, i);
-        weekDays.push(day);
+        weekDays.push(addDays(weekStart, i));
       }
-      
+
       return weekDays;
     } catch (error) {
       console.error("Error calculating days:", error);
       return [];
     }
-  }, [activeWeekId]);
+  };
 
   // Navigation handlers
-  const handlePrevWeek = useCallback(() => {
-    if (!activeWeekId || !isValidDateValue(activeWeekId)) return;
-    
+  const handlePrevWeek = () => {
+    if (!activeWeekId) return;
+
     try {
       const weekStart = new Date(activeWeekId);
       const prevWeekStart = addDays(weekStart, -7);
@@ -243,11 +149,11 @@ const WeekView: React.FC = () => {
     } catch (error) {
       console.error("Error navigating to previous week:", error);
     }
-  }, [activeWeekId, navigate]);
+  };
 
-  const handleNextWeek = useCallback(() => {
-    if (!activeWeekId || !isValidDateValue(activeWeekId)) return;
-    
+  const handleNextWeek = () => {
+    if (!activeWeekId) return;
+
     try {
       const weekStart = new Date(activeWeekId);
       const nextWeekStart = addDays(weekStart, 7);
@@ -256,130 +162,16 @@ const WeekView: React.FC = () => {
     } catch (error) {
       console.error("Error navigating to next week:", error);
     }
-  }, [activeWeekId, navigate]);
+  };
 
-  const handleToday = useCallback(() => {
+  const handleToday = () => {
     const today = new Date();
-    const weekStart = startOfWeek(today, { weekStartsOn: 0 });
+    const weekStart = startOfWeek(today);
     const weekId = format(weekStart, "yyyy-MM-dd");
     navigate(`/calendar/week?date=${weekId}`);
-  }, [navigate]);
-
-  // Rendering functions for events and tasks - SAFELY
-  const renderEvents = (events: CalendarEvent[], date: string) => {
-    if (!Array.isArray(events) || events.length === 0) {
-      return <div className="week-day-empty">No events</div>;
-    }
-
-    return (
-      <VirtualizedEventList
-        events={events}
-        onEventClick={handleEventClick}
-        onDeleteEvent={handleDeleteEvent}
-        height={Math.min(150, events.length * 40 + 10)}
-      />
-    );
   };
 
-  const renderTasks = (tasks: Task[], date: string) => {
-    if (!Array.isArray(tasks) || tasks.length === 0) {
-      return <div className="week-day-empty">No tasks</div>;
-    }
-
-    return (
-      <VirtualizedTaskList
-        tasks={tasks}
-        onTaskClick={handleTaskClick}
-        onCompleteTask={handleCompleteTask}
-        onDeleteTask={handleDeleteTask}
-        height={Math.min(150, tasks.length * 40 + 10)}
-      />
-    );
-  };
-
-  // Function to handle quick action for adding tasks/events
-  const handleShowQuickAction = useCallback(
-    (e: React.MouseEvent, day: Date, type: string) => {
-      if (!isValidDateValue(day)) return;
-      
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const dateStr = safeFormat(day, "yyyy-MM-dd");
-      
-      setQuickAction({
-        visible: true,
-        type: type,
-        position: {
-          x: rect.right,
-          y: rect.top
-        },
-        date: dateStr
-      });
-      
-      // Reset form
-      setQuickForm({
-        task: { text: "", time: "" },
-        event: { title: "", time: "", type: "personal", description: "" }
-      });
-    },
-    [setQuickAction, setQuickForm]
-  );
-
-  const handleHideQuickAction = useCallback(() => {
-    setQuickAction(prev => ({ ...prev, visible: false }));
-  }, []);
-
-  // Safe quick action form save
-  const handleQuickSave = async () => {
-    try {
-      const { date } = quickAction;
-      
-      // Validate date before proceeding
-      if (!date || !isValidDateValue(date)) {
-        console.error("Invalid date for quick action:", date);
-        handleHideQuickAction();
-        return;
-      }
-      
-      if (quickAction.type === "task") {
-        const { text, time } = quickForm.task;
-        if (!text.trim()) {
-          handleHideQuickAction();
-          return;
-        }
-        
-        await addNewTask({
-          text: text.trim(),
-          date,
-          time: time || "",
-          completed: false
-        });
-      } else if (quickAction.type === "event") {
-        const { title, time, type, description } = quickForm.event;
-        if (!title.trim()) {
-          handleHideQuickAction();
-          return;
-        }
-        
-        await addNewEvent({
-          title: title.trim(),
-          date,
-          time: time || "",
-          type: type || "personal",
-          description: description || ""
-        });
-      }
-      
-      handleHideQuickAction();
-    } catch (error) {
-      console.error("Error saving quick action:", error);
-      handleHideQuickAction();
-    }
-  };
-
-  // Task actions
+  // Event and task handlers
   const handleTaskClick = (task: Task) => {
     if (task) {
       showPopupFor(task);
@@ -404,7 +196,6 @@ const WeekView: React.FC = () => {
     }
   };
 
-  // Event actions
   const handleEventClick = (event: CalendarEvent) => {
     if (event) {
       showPopupFor(event);
@@ -424,14 +215,13 @@ const WeekView: React.FC = () => {
   // Popup action for completing a task
   const completeTask = async (taskId: number) => {
     try {
-      // Find the task in weeklyData
       let taskToComplete: Task | null = null;
-      
+
       Object.values(weeklyData).forEach(({ tasks }) => {
-        const found = tasks.find(t => t.id === taskId);
+        const found = tasks.find((t) => t.id === taskId);
         if (found) taskToComplete = found;
       });
-      
+
       if (taskToComplete) {
         await handleCompleteTask(taskToComplete);
       }
@@ -440,252 +230,132 @@ const WeekView: React.FC = () => {
     }
   };
 
-  // Import debounce utility
-  const debouncedSetQuickForm = useCallback(
-    debounce((newState) => {
-      setQuickForm(newState);
-    }, 100),
-    []
-  );
+  // Add task/event handlers
+  const handleAddTask = (date: string) => {
+    try {
+      addNewTask({
+        text: "New task",
+        date: date,
+        time: "",
+        completed: false,
+      });
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
 
-  // A safe rendering implementation
+  const handleAddEvent = (date: string) => {
+    try {
+      addNewEvent({
+        title: "New event",
+        date: date,
+        time: "",
+        type: "personal",
+        description: "",
+      });
+    } catch (error) {
+      console.error("Error adding event:", error);
+    }
+  };
+
+  const days = getDaysOfWeek();
+  const weekStart = days[0] || new Date();
+  const weekEnd = days[6] || new Date();
+
   return (
     <div className="calendar-week-view" ref={containerRef}>
       <div className="week-header">
         <div className="week-title-container">
           <h2 className="week-title">Week View</h2>
-          {activeWeekId && isValidDateValue(activeWeekId) && (
-            <div className="week-subtitle">
-              {safeFormat(new Date(activeWeekId), "MMMM d")} - 
-              {safeFormat(addDays(new Date(activeWeekId), 6), "MMMM d, yyyy")}
-            </div>
-          )}
+          <div className="week-subtitle">
+            {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
+          </div>
         </div>
         <div className="calendar-buttons">
+          <button className="calendar-btn" onClick={handlePrevWeek}>
+            ←
+          </button>
           <button className="calendar-btn today-btn" onClick={handleToday}>
             Today
           </button>
-          <button className="calendar-btn prev-btn" onClick={handlePrevWeek}>
-            <span className="btn-icon">←</span>
-          </button>
-          <button className="calendar-btn next-btn" onClick={handleNextWeek}>
-            <span className="btn-icon">→</span>
+          <button className="calendar-btn" onClick={handleNextWeek}>
+            →
           </button>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="week-loading">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading your schedule...</p>
-            {loadingTimeout && (
-              <p>This is taking longer than usual. Please wait or try refreshing.</p>
-            )}
-          </div>
+        <div className="week-view-loading">
+          <div className="loading-spinner"></div>
+          <p>Loading your calendar...</p>
+          {loadingTimeout && (
+            <p className="loading-hint">This might take a moment...</p>
+          )}
         </div>
       ) : (
-        <>
-          <div className="week-days-container">
-            <div className="week-days-header">
-              {days().map((day) => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const dayDate = new Date(day);
-                dayDate.setHours(0, 0, 0, 0);
-                const isToday = dayDate.getTime() === today.getTime();
-                
-                return (
-                  <div 
-                    key={safeFormat(day, "yyyy-MM-dd")} 
-                    className={`week-day-header ${isToday ? "today" : ""}`}
+        <div className="week-days-grid">
+          {days.map((day) => (
+            <div
+              key={format(day, "yyyy-MM-dd")}
+              className={`week-day ${isToday(day) ? "today" : ""}`}
+            >
+              <div className="week-day-header">
+                <div className="day-name">{format(day, "EEE")}</div>
+                <div className="day-number">{format(day, "d")}</div>
+              </div>
+
+              <div className="week-day-content">
+                <div className="week-section">
+                  <div className="week-section-title">Events</div>
+                  <div className="week-events-list">
+                    {weeklyData[format(day, "yyyy-MM-dd")]?.events &&
+                    weeklyData[format(day, "yyyy-MM-dd")].events.length > 0 ? (
+                      <VirtualizedEventList
+                        events={weeklyData[format(day, "yyyy-MM-dd")].events}
+                        onEventClick={handleEventClick}
+                        onDeleteEvent={handleDeleteEvent}
+                      />
+                    ) : (
+                      <div className="week-day-empty">No events</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="week-section">
+                  <div className="week-section-title">Tasks</div>
+                  <div className="week-tasks-list">
+                    {weeklyData[format(day, "yyyy-MM-dd")]?.tasks &&
+                    weeklyData[format(day, "yyyy-MM-dd")].tasks.length > 0 ? (
+                      <VirtualizedTaskList
+                        tasks={weeklyData[format(day, "yyyy-MM-dd")].tasks}
+                        onTaskClick={handleTaskClick}
+                        onCompleteTask={handleCompleteTask}
+                        onDeleteTask={handleDeleteTask}
+                      />
+                    ) : (
+                      <div className="week-day-empty">No tasks</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="week-day-actions">
+                  <button
+                    className="add-task-btn"
+                    onClick={() => handleAddTask(format(day, "yyyy-MM-dd"))}
                   >
-                    <div className="day-name">{safeFormat(day, "EEE")}</div>
-                    <div className="day-number">{safeFormat(day, "d")}</div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="week-days-grid">
-              {days().map((day) => {
-                const dayStr = safeFormat(day, "yyyy-MM-dd");
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const dayDate = new Date(day);
-                dayDate.setHours(0, 0, 0, 0);
-                const isToday = dayDate.getTime() === today.getTime();
-                const dayData = weeklyData[dayStr] || { tasks: [], events: [] };
-                
-                return (
-                  <div 
-                    key={dayStr} 
-                    className={`week-day ${isToday ? "today" : ""}`}
+                    + Task
+                  </button>
+                  <button
+                    className="add-event-btn"
+                    onClick={() => handleAddEvent(format(day, "yyyy-MM-dd"))}
                   >
-                    <div className="week-day-content">
-                      <div className="week-day-quick-actions">
-                        <button
-                          className="quick-add-task"
-                          onClick={(e) => handleShowQuickAction(e, day, "task")}
-                        >
-                          + Task
-                        </button>
-                        <button
-                          className="quick-add-event"
-                          onClick={(e) => handleShowQuickAction(e, day, "event")}
-                        >
-                          + Event
-                        </button>
-                      </div>
-                      
-                      <div className="section">
-                        <div className="section-title">Events</div>
-                        <div className="week-event-list">
-                          {renderEvents(dayData.events, dayStr)}
-                        </div>
-                      </div>
-                      
-                      <div className="section">
-                        <div className="section-title">Tasks</div>
-                        <div className="week-task-list">
-                          {renderTasks(dayData.tasks, dayStr)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          
-          {quickAction.visible && (
-            <Portal>
-              <div 
-                className="quick-action-popup"
-                style={{
-                  position: 'fixed',
-                  top: `${quickAction.position.y}px`,
-                  left: `${quickAction.position.x}px`,
-                  zIndex: 1000
-                }}
-              >
-                <div className="quick-action-form">
-                  <div className="quick-form-header">
-                    <h3>
-                      {quickAction.type === "task" ? "Add Task" : "Add Event"}
-                    </h3>
-                    <span className="quick-form-date">
-                      {safeFormat(new Date(quickAction.date), "EEE, MMM d")}
-                    </span>
-                    <button 
-                      className="quick-form-close"
-                      onClick={handleHideQuickAction}
-                    >
-                      ×
-                    </button>
-                  </div>
-                  
-                  {quickAction.type === "task" ? (
-                    <div className="quick-form-content">
-                      <input
-                        type="text"
-                        placeholder="Task description"
-                        value={quickForm.task.text}
-                        onChange={(e) => 
-                          debouncedSetQuickForm({
-                            ...quickForm,
-                            task: { ...quickForm.task, text: e.target.value }
-                          })
-                        }
-                        className="quick-form-input"
-                        autoFocus
-                      />
-                      <input
-                        type="text"
-                        placeholder="Time (optional)"
-                        value={quickForm.task.time}
-                        onChange={(e) => 
-                          debouncedSetQuickForm({
-                            ...quickForm,
-                            task: { ...quickForm.task, time: e.target.value }
-                          })
-                        }
-                        className="quick-form-input"
-                      />
-                      <button 
-                        className="quick-form-save"
-                        onClick={handleQuickSave}
-                        disabled={!quickForm.task.text.trim()}
-                      >
-                        Save Task
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="quick-form-content">
-                      <input
-                        type="text"
-                        placeholder="Event title"
-                        value={quickForm.event.title}
-                        onChange={(e) => 
-                          debouncedSetQuickForm({
-                            ...quickForm,
-                            event: { ...quickForm.event, title: e.target.value }
-                          })
-                        }
-                        className="quick-form-input"
-                        autoFocus
-                      />
-                      <input
-                        type="text"
-                        placeholder="Time (optional)"
-                        value={quickForm.event.time}
-                        onChange={(e) => 
-                          debouncedSetQuickForm({
-                            ...quickForm,
-                            event: { ...quickForm.event, time: e.target.value }
-                          })
-                        }
-                        className="quick-form-input"
-                      />
-                      <select
-                        value={quickForm.event.type}
-                        onChange={(e) => 
-                          debouncedSetQuickForm({
-                            ...quickForm,
-                            event: { ...quickForm.event, type: e.target.value }
-                          })
-                        }
-                        className="quick-form-select"
-                      >
-                        <option value="personal">Personal</option>
-                        <option value="meeting">Meeting</option>
-                        <option value="reminder">Reminder</option>
-                      </select>
-                      <textarea
-                        placeholder="Description (optional)"
-                        value={quickForm.event.description}
-                        onChange={(e) => 
-                          debouncedSetQuickForm({
-                            ...quickForm,
-                            event: { ...quickForm.event, description: e.target.value }
-                          })
-                        }
-                        className="quick-form-textarea"
-                      />
-                      <button 
-                        className="quick-form-save"
-                        onClick={handleQuickSave}
-                        disabled={!quickForm.event.title.trim()}
-                      >
-                        Save Event
-                      </button>
-                    </div>
-                  )}
+                    + Event
+                  </button>
                 </div>
               </div>
-            </Portal>
-          )}
-        </>
+            </div>
+          ))}
+        </div>
       )}
 
       {currentPopupItem && (

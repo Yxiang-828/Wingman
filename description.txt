@@ -210,3 +210,25 @@ All major user-owned tables enforce **Row Level Security**:
 ---
 
 Let me know if you'd like this exported to a file (Markdown, PDF, etc.) or diagrammed visually.
+
+
+File Structure After Cleanup
+src/
+├── components/
+│   ├── Calendar/
+│   │   ├── DayView.tsx (fixed)
+│   │   ├── TimePicker.tsx (implemented)
+│   │   └── ... (other Calendar components)
+│   ├── Dashboard/
+│   │   ├── index.tsx (fixed to show both cards)
+│   │   ├── DiaryCard.tsx 
+│   │   └── ... (other Dashboard components)
+│   ├── Diary/
+│   │   ├── DiaryEntry.tsx (consolidated)
+│   │   ├── DiarySearch.tsx (merged)
+│   │   └── ... (other Diary components)
+│   └── ... (other component categories)
+├── context/
+│   ├── DataContext.tsx (fixed)
+│   └── ... (other contexts)
+└── ... (other directories)

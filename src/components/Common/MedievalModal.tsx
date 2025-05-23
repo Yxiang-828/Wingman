@@ -1,4 +1,5 @@
-import React, { ReactNode, useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+import type { ReactNode } from 'react'; // Change to type-only import
 import './MedievalModal.css';
 
 interface MedievalModalProps {

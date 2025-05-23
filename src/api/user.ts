@@ -1,18 +1,14 @@
-import type { UserLogin, UserRegister } from '../types/user';
+import type { UserLogin } from '../types/user';
 
-export interface User {
-  id: string;
-  name: string;
-}
-
-export const loginUser = async (username: string, password: string) => {
+// Use the imported types in function signatures
+export const loginUser = async (credentials: UserLogin) => {
   try {
     const response = await fetch('/api/v1/user/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify(credentials),
     });
 
     if (!response.ok) {

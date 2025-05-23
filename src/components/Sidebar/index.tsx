@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 import MiniCalendar from "./MiniCalendar";
 import NavSection from "./NavSection";
 import type { MenuItem } from "./NavSection";
-import QuickAdd from "./QuickAdd";
 import "../../main.css";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
 import "./Sidebar.css";
 
-// Extend the Window interface to include electronAPI
+// Update the declaration to match the one in vite-env.d.ts
 declare global {
   interface Window {
     electronAPI?: {
-      onMoodChange?: (callback: (mood: string) => void) => void;
+      onMoodChange: (callback: (mood: string) => void) => void;
     };
   }
 }
@@ -33,7 +33,6 @@ const Sidebar: React.FC = () => {
     useState<keyof typeof moodIcons>("productive");
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     if (window.electronAPI?.onMoodChange) {
@@ -45,16 +44,28 @@ const Sidebar: React.FC = () => {
     }
   }, []);
 
+  // Listen for toggle-sidebar events (from DiaryEntry immersive mode)
+  useEffect(() => {
+    const handleToggle = (event: CustomEvent) => {
+      setIsVisible(event.detail.visible);
+    };
+
+    window.addEventListener("toggle-sidebar", handleToggle as EventListener);
+
+    return () => {
+      window.removeEventListener("toggle-sidebar", handleToggle as EventListener);
+    };
+  }, []);
+
   const toggleSidebar = () => {
     const newVisibility = !isVisible;
     setIsVisible(newVisibility);
 
-    // Dispatch event to inform App about visibility change
-    window.dispatchEvent(
-      new CustomEvent("sidebar-visibility-change", {
-        detail: { isVisible: newVisibility },
-      })
-    );
+    // Dispatch sidebar visibility change event for other components
+    const event = new CustomEvent("sidebar-visibility-change", {
+      detail: { isVisible: newVisibility },
+    });
+    window.dispatchEvent(event);
   };
 
   const menuItems: MenuItem[] = [
@@ -140,22 +151,13 @@ const Sidebar: React.FC = () => {
 
         {/* Mini Calendar */}
         <MiniCalendar
-          events={[
-            { date: new Date(), count: 3 },
-            { date: new Date(2025, 4, 20), count: 2 },
-          ]}
           onDateSelect={(date) => {
-            const formatted = `${date.getFullYear()}-${(date.getMonth() + 1)
-              .toString()
-              .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-            navigate(`/calendar/day?date=${formatted}`);
+            navigate(`/calendar/day?date=${format(date, "yyyy-MM-dd")}`);
           }}
         />
 
         {/* Navigation Section */}
         <NavSection items={menuItems} />
-
-        <QuickAdd />
       </aside>
     </>
   );

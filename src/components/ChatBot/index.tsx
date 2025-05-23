@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
@@ -18,17 +18,18 @@ const moodLabels = {
   moody: "moody spirit",
 };
 
-type Message = {
+// Keep the Message interface that's actually used:
+interface Message {
   id: number;
-  sender: "user" | "wingman";
+  sender: "user" | "wingman"; // Strict union type
   text: string;
-  timestamp?: string;
-};
+  timestamp: string;
+}
 
 const initialMessages: Message[] = [
   {
     id: 1,
-    sender: "wingman",
+    sender: "wingman" as "user" | "wingman",
     text: "Hey! I'm your Wingman. How can I help you today?",
     timestamp: new Date().toISOString(),
   },
@@ -65,7 +66,7 @@ const ChatBot = () => {
 
       if (history && history.length > 0) {
         // Format the messages for display
-        const formattedMessages = history.map((msg) => ({
+        const formattedMessages: Message[] = history.map((msg) => ({
           id: msg.id,
           sender: msg.user_id === "wingman" ? "wingman" : "user",
           text: msg.message,
@@ -108,21 +109,6 @@ const ChatBot = () => {
     // eslint-disable-next-line
   }, [location.state?.initialMessage]);
 
-  // Get AI response to message
-  const getLLMResponse = async (userMsg: string) => {
-    try {
-      if (!user) return "Please log in first";
-
-      const timestamp = new Date().toISOString();
-      const response = await sendChatMessage(user.id, userMsg, timestamp);
-
-      return response.response || "Sorry, I didn't understand that.";
-    } catch (error) {
-      console.error("Failed to get response:", error);
-      return "Sorry, I encountered an error. Please try again.";
-    }
-  };
-
   // Send message and get response
   const handleSend = async (msg: string) => {
     if (!msg.trim()) return;
@@ -156,7 +142,12 @@ const ChatBot = () => {
       const botMessage: Message = {
         id: Date.now() + 1,
         sender: "wingman",
-        text: response.response || "Sorry, I didn't understand that.",
+        text:
+          typeof response === "string"
+            ? response
+            : response.message && typeof response.message === "string"
+            ? response.message
+            : "Sorry, I didn't understand that.",
         timestamp: new Date().toISOString(),
       };
 
@@ -176,6 +167,14 @@ const ChatBot = () => {
       setMessages((prev) => [...prev, errorMessage]);
     }
   };
+
+  useEffect(() => {
+    // Example usage
+    const storedUser = localStorage.getItem("wingmanUser");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   return (
     <section className="chatbot p-6 bg-dark rounded-lg shadow-md hover-glow-tile">

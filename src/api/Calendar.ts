@@ -1,4 +1,4 @@
-// Make sure CalendarEvent interface is properly exported
+// Update the export to ensure TypeScript properly recognizes it
 export interface CalendarEvent {
   id: number;
   title: string;
@@ -8,9 +8,10 @@ export interface CalendarEvent {
   event_time?: string; // DB field
   type: string;
   description: string;
+  user_id?: string | number;
 }
 
-// Rest of your Calendar API functions...
+// Keep your existing API functions below
 export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
   try {
     // Get current user from localStorage
@@ -35,6 +36,7 @@ export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
   }
 };
 
+// Ensure we're transforming fields correctly both ways
 export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> => {
   try {
     // Get current user from localStorage
@@ -46,11 +48,14 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
     
     console.log("Adding event with user ID:", user.id);
     
-    // Ensure date is properly formatted and user_id is included
-    const formattedEvent = {
-      ...event,
+    // Transform frontend fields to backend fields
+    const backendEvent = {
       user_id: user.id,
-      date: typeof event.date === 'object' ? event.date.toISOString().split('T')[0] : event.date
+      title: event.title,
+      event_date: event.date,         // Map date to event_date
+      event_time: event.time || '',   // Map time to event_time 
+      type: event.type,
+      description: event.description
     };
     
     const response = await fetch('/api/v1/calendar', {
@@ -58,7 +63,7 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(formattedEvent),
+      body: JSON.stringify(backendEvent),
     });
     
     if (response.status === 404 && response.statusText.includes("User")) {
@@ -76,7 +81,18 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
       throw new Error(`Failed to add event: ${response.status} ${response.statusText}`);
     }
     
-    return await response.json();
+    // Handle response...
+    const data = await response.json();
+    
+    // Transform backend response to frontend format
+    return {
+      id: data.id,
+      title: data.title,
+      date: data.event_date,        // Map event_date to date
+      time: data.event_time || '',  // Map event_time to time 
+      type: data.type,
+      description: data.description
+    };
   } catch (error) {
     console.error('Error adding event:', error);
     throw error;
@@ -88,7 +104,9 @@ export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> 
     console.log("API: Updating event:", event);
     
     // Create a copy and remove the id field to prevent Supabase identity column error
-    const { id, ...eventData } = event;
+    const { id, ...rest } = event;
+    // Update the type to match our modified interface
+    const eventData: Omit<CalendarEvent, 'id'> & { user_id?: string | number } = { ...rest };
     
     // Make sure we're including the user ID
     const user = JSON.parse(localStorage.getItem('user') || '{}');

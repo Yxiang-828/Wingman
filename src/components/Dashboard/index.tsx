@@ -13,8 +13,7 @@ import "./Dashboard.css";
 const Dashboard: React.FC = () => {
   const {
     fetchTasksByDate,
-    fetchEventsByDate,
-    toggleTask
+    fetchEventsByDate
   } = useData();
   
   const { entries, refreshEntries } = useDiary();
@@ -44,14 +43,13 @@ const Dashboard: React.FC = () => {
           fetchEventsByDate(today)
         ]);
         
-        setTodaysTasks(tasksData || []); // Added null check with fallback
-        setTodaysEvents(eventsData || []); // Added null check with fallback
+        setTodaysTasks(tasksData || []); 
+        setTodaysEvents(eventsData || []);
         
         // Also refresh diary entries
         await refreshEntries();
       } catch (error) {
         console.error("Dashboard load error:", error);
-        // Show error state
         setTodaysTasks([]);
         setTodaysEvents([]);
       } finally {
@@ -105,18 +103,16 @@ const Dashboard: React.FC = () => {
 
   // Filter completed tasks for today only
   const todaysCompletedTasks = todaysTasks.filter(task => task.completed);
+  const pendingTasks = todaysTasks.filter(t => !t.completed);
 
   return (
     <div className="dashboard-container">
       <SummaryCard tasks={todaysTasks} events={todaysEvents} />
       <div className="dashboard">
-        <TasksCard tasks={todaysTasks.filter(t => !t.completed)} onToggleTask={handleToggleTask} />
+        <TasksCard tasks={pendingTasks} onToggleTask={handleToggleTask} />
         <EventsCard events={todaysEvents} />
-        {todaysCompletedTasks.length > 0 ? (
-          <CompletedTasksCard tasks={todaysCompletedTasks} />
-        ) : (
-          <DiaryCard entries={recentDiaryEntries} />
-        )}
+        <CompletedTasksCard tasks={todaysCompletedTasks} />
+        <DiaryCard entries={recentDiaryEntries} />
       </div>
     </div>
   );

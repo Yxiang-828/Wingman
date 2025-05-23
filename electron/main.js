@@ -1,10 +1,7 @@
-import { app, BrowserWindow, nativeImage, shell } from 'electron';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+const { app, BrowserWindow, nativeImage, shell } = require('electron');
+const path = require('path');
+const { spawn } = require('child_process');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 
 // Fix paths when bundled

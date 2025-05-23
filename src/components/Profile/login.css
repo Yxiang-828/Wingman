@@ -132,3 +132,17 @@
   height: 48px;
   margin-bottom: 0.5rem;
 }
+
+/* Add to Login.css */
+.password-field {
+  position: relative;
+}
+
+.password-count {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}

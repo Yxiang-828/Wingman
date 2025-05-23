@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
-import { isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import "./MiniCalendar.css";
@@ -13,7 +13,6 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
   const navigate = useNavigate();
   const { eventCache, taskCache } = useData();
   const [currentDate] = useState(new Date());
-  const [calendarDays, setCalendarDays] = useState<Date[]>([]);
   const [eventsMap, setEventsMap] = useState<Record<string, number>>({});
 
   // Generate calendar days for current month
@@ -37,29 +36,44 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
       days.push(new Date(year, month, i));
     }
 
-    setCalendarDays(days);
+    // Create a proper Record<string, number> from the days array
+    const eventsRecord: Record<string, number> = {};
+    days.forEach((day) => {
+      const dateKey = formatDateKey(day);
+      eventsRecord[dateKey] = 0; // Default value, update as needed
+    });
+    setEventsMap(eventsRecord);
   }, [currentDate]);
 
   // Count events for each day
   useEffect(() => {
+    // Fix date handling in the useEffect
     const newEventsMap: Record<string, number> = {};
 
-    // Add null checks and default empty arrays
-    const allEvents = eventCache ? Object.values(eventCache).flat() : [];
-    const allTasks = taskCache ? Object.values(taskCache).flat() : [];
-
     // Process events
-    allEvents.forEach((event) => {
-      if (event.date) {
-        newEventsMap[event.date] = (newEventsMap[event.date] || 0) + 1;
-      }
+    Object.values(eventCache || {}).forEach((weekData) => {
+      Object.values(weekData || {}).forEach((dayEvents) => {
+        dayEvents.forEach((event) => {
+          if (event.date) {
+            // Convert to string safely
+            const dateStr = format(new Date(String(event.date)), "yyyy-MM-dd");
+            newEventsMap[dateStr] = (newEventsMap[dateStr] || 0) + 1;
+          }
+        });
+      });
     });
 
     // Process tasks
-    allTasks.forEach((task) => {
-      if (task.date) {
-        newEventsMap[task.date] = (newEventsMap[task.date] || 0) + 1;
-      }
+    Object.values(taskCache || {}).forEach((weekData) => {
+      Object.values(weekData || {}).forEach((dayTasks) => {
+        dayTasks.forEach((task) => {
+          if (task.date) {
+            // Convert to string safely
+            const dateStr = format(new Date(String(task.date)), "yyyy-MM-dd");
+            newEventsMap[dateStr] = (newEventsMap[dateStr] || 0) + 1;
+          }
+        });
+      });
     });
 
     setEventsMap(newEventsMap);
@@ -80,16 +94,6 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
     if (onDateSelect) {
       onDateSelect(date);
     }
-  };
-
-  // Check if a date is today
-  const isToday = (date: Date) => {
-    const today = new Date();
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
   };
 
   return (

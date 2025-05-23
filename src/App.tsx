@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   HashRouter as Router,
   Routes,
@@ -14,29 +14,36 @@ import Header from "./components/Header/index";
 import Dashboard from "./components/Dashboard/index";
 import Calendar from "./components/Calendar/index";
 import Diary from "./components/Diary/index";
-import WriteEntry from "./components/Diary/WriteEntry";
-import ViewEntries from "./components/Diary/ViewEntries";
-import SearchDiary from "./components/Diary/SearchDiary";
-import EditEntry from "./components/Diary/EditEntry";
-import ChatBot from "./components/ChatBot/index";
-import Home from "./Pages/Home";
-import Profile from "./Pages/Profile";
-import Notifications from "./Pages/Notifications";
-import Login from "./components/Profile/Login";
-import ScrollToTop from "./components/ScrollToTop";
+import Login from "./components/Profile/login";
+import Profile from "./components/Profile/index";
 import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";
-import { startNotificationCleanupService } from "./services/NotificationCleanupService";
+import CompletedTasks from "./components/Tasks/CompletedTasks";
+import Notifications from "./Pages/Notifications";
+import ChatBot from "./components/ChatBot/index";
+import Home from "./Pages/Home";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { startNotificationCleanupService } from "./services/NotificationService";
 import "./main.css";
 import "./styles/scrollbars.css";
-import ErrorBoundary from "./components/ErrorBoundary"; // Import the ErrorBoundary component
-import CompletedTasks from "./components/Tasks/CompletedTasks";
 
 // Create an AppContent component that will be inside the Router
 const AppContent = () => {
   const [user, setUser] = useState<any>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const location = useLocation();
+
+  // Check if user exists in localStorage on mount
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Error reading user from localStorage:", error);
+    }
+  }, []);
 
   // Listen for sidebar visibility changes
   useEffect(() => {
@@ -98,6 +105,14 @@ const AppContent = () => {
                 }
               />
               <Route
+                path="/diary/*"
+                element={
+                  <ErrorBoundary>
+                    <Diary />
+                  </ErrorBoundary>
+                }
+              />
+              <Route
                 path="/chatbot"
                 element={
                   <ErrorBoundary>
@@ -115,19 +130,6 @@ const AppContent = () => {
               >
                 <Route path="settings" element={<ProfileSettings />} />
                 <Route path="avatar" element={<ProfileAvatar />} />
-              </Route>
-              <Route
-                path="/diary/*"
-                element={
-                  <ErrorBoundary>
-                    <Diary />
-                  </ErrorBoundary>
-                }
-              >
-                <Route path="write" element={<WriteEntry />} />
-                <Route path="view" element={<ViewEntries />} />
-                <Route path="search" element={<SearchDiary />} />
-                <Route path="edit" element={<EditEntry />} />
               </Route>
               <Route
                 path="/home"

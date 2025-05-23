@@ -4,6 +4,7 @@ import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import Portal from "./Portal";
 import "./DetailPopup.css";
+import { format } from "date-fns";
 
 interface DetailPopupProps {
   item: Task | CalendarEvent;
@@ -96,9 +97,7 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
 
               <div className="detail-text">{item.text}</div>
 
-              {item.time && (
-                <div className="detail-time">{item.time}</div>
-              )}
+              {item.time && <div className="detail-time">{item.time}</div>}
 
               <div className="detail-popup-actions">
                 {!item.completed && onComplete && (
@@ -158,6 +157,22 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
       </div>
     </div>
   );
+
+  // Add this to DetailPopup.tsx to enhance the popup when in notifications mode
+  useEffect(() => {
+    const isNotificationsMode =
+      document.body.classList.contains("notifications-mode");
+
+    if (isNotificationsMode && popupRef.current) {
+      popupRef.current.classList.add("notifications-popup");
+    }
+
+    return () => {
+      if (popupRef.current) {
+        popupRef.current.classList.remove("notifications-popup");
+      }
+    };
+  }, []);
 
   // Render using Portal with container properly passed
   return <Portal container={container || document.body}>{popupContent}</Portal>;

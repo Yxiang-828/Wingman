@@ -13,14 +13,6 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const handleEventClick = (event: CalendarEvent) => {
     showPopupFor(event);
   };
