@@ -1,18 +1,25 @@
 @echo off
 echo Setting up Python environment for Wingman...
 
-:: Check if Python is installed
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Python not found! Please install Python 3.13 or later.
-    exit /b 1
+:: Check if Python is installed (try both python and py commands)
+py --version >nul 2>&1
+if %errorlevel% equ 0 (
+    set PYTHON_CMD=py
+) else (
+    python --version >nul 2>&1
+    if %errorlevel% equ 0 (
+        set PYTHON_CMD=python
+    ) else (
+        echo Python not found! Please install Python 3.13 or later.
+        exit /b 1
+    )
 )
 
 :: Create virtual environment if it doesn't exist
 if not exist Wingman-backend\.venv (
     echo Creating virtual environment...
     cd Wingman-backend
-    python -m venv .venv
+    %PYTHON_CMD% -m venv .venv
     cd ..
 ) else (
     echo Virtual environment already exists.

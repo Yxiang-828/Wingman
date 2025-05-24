@@ -1,7 +1,12 @@
 @echo off
-echo Building Wingman Application...
+setlocal enabledelayedexpansion
 
-REM Check env files first
+REM Navigate to script directory
+cd /d "%~dp0"
+echo Building Wingman Application...
+echo.
+
+REM === Check .env files ===
 echo Checking environment files...
 if not exist ".env" (
   echo ERROR: .env file not found in root directory!
@@ -15,35 +20,48 @@ if not exist "Wingman-backend\.env" (
   exit /b 1
 )
 
-REM Check dependencies
+REM === Install Node.js dependencies ===
 echo Checking dependencies...
-npm install
+call npm install
+if %errorlevel% neq 0 (
+  echo ERROR: npm install failed!
+  exit /b 1
+)
 
-REM Setup Python environment
+REM === Setup Python environment ===
 echo Setting up Python environment...
 call setup-env.bat
 if %errorlevel% neq 0 (
-  echo Python environment setup failed!
+  echo ERROR: Python environment setup failed!
   exit /b 1
 )
 
-REM Build the application
+REM === Build the frontend ===
 echo Building the frontend application...
-npm run build
+call npm run build 2>&1
 if %errorlevel% neq 0 (
-  echo Frontend build failed!
+  echo ERROR: Frontend build failed with code %errorlevel%!
+  pause
   exit /b 1
 )
+
+REM Move this BEFORE the packaging step
+echo Copying environment files...
+mkdir dist_electron\resources\Wingman-backend 2>nul
+copy Wingman-backend\.env dist_electron\resources\Wingman-backend\ /Y
 
 REM Package the application (Windows only)
 echo Packaging the application for Windows...
 npm run electron:build:win
 if %errorlevel% neq 0 (
-  echo Packaging failed!
+  echo ERROR: Packaging failed!
+  pause
   exit /b 1
 )
 
-echo Build complete! Your application is in the dist_electron directory.
+REM === Done ===
 echo.
-echo You can now distribute the installer from dist_electron folder.
+echo Build complete! Your application is in the dist_electron directory.
+echo You can now distribute the installer from the dist_electron folder.
 pause
+endlocal

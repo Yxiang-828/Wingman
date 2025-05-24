@@ -57,21 +57,26 @@ function updateMoodIcons(win) {
   }
 }
 
-// Load environment variables for backend
+// First, properly load environment variables
 function setupEnvVars() {
   try {
-    const prodEnvPath = path.join(process.resourcesPath, 'Wingman-backend', '.env');
-    const devEnvPath = path.join(__dirname, '..', 'Wingman-backend', '.env');
-    
-    const envPath = isDevelopment ? devEnvPath : prodEnvPath;
-    
+    const envPath = isDevelopment 
+      ? path.join(__dirname, '..', 'Wingman-backend', '.env')
+      : path.join(process.resourcesPath, 'Wingman-backend', '.env');
+      
     if (fs.existsSync(envPath)) {
       console.log(`Found .env file at: ${envPath}`);
-    } else {
-      console.error(`ERROR: .env file not found at: ${envPath}`);
+      // Actually load the env variables using dotenv
+      const dotenv = require('dotenv');
+      const envConfig = dotenv.parse(fs.readFileSync(envPath));
+      
+      // Apply to process.env
+      Object.keys(envConfig).forEach(key => {
+        process.env[key] = envConfig[key];
+      });
     }
   } catch (error) {
-    console.error('Error checking .env file:', error);
+    console.error('Error loading .env file:', error);
   }
 }
 
@@ -89,11 +94,15 @@ async function startBackendServer() {
       
       // Determine the Python executable path based on platform and environment
       let pythonExecutable;
-      
-      if (process.platform === 'win32') {
-        pythonExecutable = path.join(backendDir, '.venv', 'Scripts', 'python.exe');
+      // Try venv python first
+      const venvPython = process.platform === 'win32' 
+        ? path.join(backendDir, '.venv', 'Scripts', 'python.exe')
+        : path.join(backendDir, '.venv', 'bin', 'python');
+      if (!fs.existsSync(venvPython)) {
+        console.log('Virtual environment Python not found, falling back to system Python');
+        pythonExecutable = 'python';
       } else {
-        pythonExecutable = path.join(backendDir, '.venv', 'bin', 'python');
+        pythonExecutable = venvPython;
       }
       
       console.log('Starting backend server...');
@@ -103,7 +112,13 @@ async function startBackendServer() {
       // Start the FastAPI backend with uvicorn
       backendProcess = spawn(pythonExecutable, ['-m', 'uvicorn', 'main:app', '--host', '127.0.0.1', '--port', '8080'], {
         cwd: backendDir,
-        windowsHide: true
+        windowsHide: true,
+        env: {
+          ...process.env,
+          SUPABASE_URL: process.env.SUPABASE_URL,
+          SUPABASE_KEY: process.env.SUPABASE_KEY,
+          DEBUG: process.env.DEBUG
+        }
       });
 
       let startupComplete = false;
@@ -121,10 +136,9 @@ async function startBackendServer() {
 
       backendProcess.stderr.on('data', (data) => {
         console.error(`Backend error: ${data}`);
-        // Only reject if it's a startup error
-        if (!startupComplete && data.toString().includes('Error')) {
-          reject(new Error(`Backend failed to start: ${data}`));
-        }
+        // Log error details for debugging
+        fs.appendFileSync(path.join(app.getPath('userData'), 'backend-error.log'), 
+          `${new Date().toISOString()}: ${data}\n`);
       });
 
       backendProcess.on('error', (err) => {
@@ -136,7 +150,7 @@ async function startBackendServer() {
       setTimeout(() => {
         if (!startupComplete) {
           console.log('Backend start timed out, but proceeding anyway');
-          resolve(backendProcess); // Resolve anyway to allow the app to try to continue
+          resolve(backendProcess); // Resolves without confirming API is responsive
         }
       }, 10000);
     } catch (error) {
@@ -251,3 +265,12 @@ app.on('quit', () => {
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
 });
+
+const checkAPIEndpoint = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/');
+    return response.ok;
+  } catch (e) {
+    return false;
+  }
+};

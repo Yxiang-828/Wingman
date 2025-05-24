@@ -438,7 +438,7 @@ const DayView: React.FC = () => {
         setEditTaskForm({ text: "", time: "" });
       } else {
         // Create new task
-        const task = await addNewTask({
+        await addNewTask({
           date: dateStr,
           text: taskData.text,
           time: taskData.time || "",

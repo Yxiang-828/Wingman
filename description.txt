@@ -232,3 +232,62 @@ src/
 │   ├── DataContext.tsx (fixed)
 │   └── ... (other contexts)
 └── ... (other directories)
+
+
+-----
+Connections
+---
+
+**Frontend–Backend Integration Analysis: FastAPI Communication Flow**
+
+All components in the app are designed to communicate through FastAPI, which serves as the main backend and connects to Supabase.
+The "connection refused" error likely means that the FastAPI backend is not running when the frontend tries to send a request.
+
+---
+
+**Component Data Fetching Methods**
+
+Component: Login/Register
+
+* Fetch Method: Direct fetch
+* Uses FastAPI: Yes
+* Notes: Fetches from hardcoded URL `http://localhost:8080/api/v1/user/login`
+
+Component: DataContext
+
+* Fetch Method: API client
+* Uses FastAPI: Yes
+* Notes: Fetches tasks from `/api/v1/tasks/${dateStr}`
+
+Component: DiaryContext
+
+* Fetch Method: API client
+* Uses FastAPI: Yes
+* Notes: Uses the `/api/v1/diary` endpoint
+
+Component: Calendar
+
+* Fetch Method: API client
+* Uses FastAPI: Yes
+* Notes: Requests data from `/api/v1/calendar/${dateStr}`
+
+Component: ChatBot
+
+* Fetch Method: Direct fetch
+* Uses FastAPI: Yes
+* Notes: Communicates with `/api/v1/chat/${user_id}`
+
+Component: Dashboard
+
+* Fetch Method: API client
+* Uses FastAPI: Yes
+* Notes: Calls multiple FastAPI endpoints; central to the application
+
+Component: Profile
+
+* Fetch Method: API client
+* Uses FastAPI: Yes
+* Notes: Fetches user data from `/api/v1/user/me`
+
+---
+

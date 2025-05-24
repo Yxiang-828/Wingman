@@ -27,18 +27,18 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       if (mood === "productive" || mood === "moody") setMood(mood);
     };
 
-    // Register listener
+    // Register listener and store the cleanup function
+    let cleanup: (() => void) | undefined;
     if (window.electronAPI?.onMoodChange) {
-      window.electronAPI.onMoodChange(handleMoodChange);
+      const result = window.electronAPI.onMoodChange(handleMoodChange);
+      if (typeof result === 'function') {
+        cleanup = result;
+      }
     }
 
-    // Clean up properly - without this, listeners accumulate
+    // Return the cleanup function for useEffect
     return () => {
-      // Try to deregister if possible
-      if (window.electronAPI && "removeListener" in window.electronAPI) {
-        // If your API supports removing listeners
-        window.electronAPI.removeListener?.("mood-changed", handleMoodChange);
-      }
+      if (cleanup) cleanup();
     };
   }, []); // Empty dependency array is fine here
 
@@ -145,8 +145,8 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       };
 
       // Use absolute URL for all fetch calls
-      const apiUrl = 'http://localhost:8080/api/v1/user/register';
-      
+      const apiUrl = "http://localhost:8080/api/v1/user/register";
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {

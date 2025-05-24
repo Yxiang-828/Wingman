@@ -123,6 +123,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(Auth.isAuthenticated);
   const [backendChecked, setBackendChecked] = useState(false);
   const [backendReady, setBackendReady] = useState(false);
+  const [backendError, setBackendError] = useState<string | null>(null);
 
   // Initialize and listen for auth changes
   useEffect(() => {
@@ -157,9 +158,17 @@ const App = () => {
         const response = await fetch("http://localhost:8080/");
         if (response.ok) {
           setBackendReady(true);
+          setBackendError(null);
+        } else {
+          const errorText = await response.text();
+          setBackendError(`Backend error: ${response.status} - ${errorText}`);
+          setBackendReady(false);
         }
       } catch (error) {
         console.error("Backend not ready:", error);
+        setBackendError(`Cannot connect to backend server: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`);
         setBackendReady(false);
       } finally {
         setBackendChecked(true);
@@ -185,8 +194,12 @@ const App = () => {
   if (!backendReady) {
     return (
       <div className="startup-error">
-        <h2>Unable to connect to backend server</h2>
-        <p>Please restart the application</p>
+        <h2>Unable to connect to database</h2>
+        <p>
+          {backendError ||
+            "Please check your internet connection and Supabase settings."}
+        </p>
+        <button onClick={() => window.location.reload()}>Retry</button>
       </div>
     );
   }
