@@ -2,8 +2,10 @@ import React, {
   createContext,
   useContext,
   useState,
-  useCallback,
   useEffect,
+  useCallback,
+  useMemo,
+  useRef,
   type ReactNode
 } from "react";
 import {
@@ -23,6 +25,7 @@ import type { CalendarEvent } from "../api/Calendar";
 import { getCurrentUserId, getCurrentUser } from '../utils/auth';
 import { format, startOfWeek } from 'date-fns';
 import { Auth } from '../utils/AuthStateManager';
+import { debounce } from "../utils/debounce";
 
 // Constants for cache
 const CACHE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes cache expiry
@@ -267,11 +270,50 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }));
   }, []);
 
-  // Fetch entire week of data
+  // Add refs to prevent unnecessary re-renders
+  const fetchingRef = useRef<Set<string>>(new Set());
+  const cacheUpdateTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Debounced cache save to prevent thrashing
+  const debouncedSaveCache = useMemo(
+    () => debounce((key: string, data: any) => {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch (e) {
+        console.error(`Error saving ${key} to localStorage:`, e);
+      }
+    }, 1000),
+    []
+  );
+
+  // FIXED: Throttle cache saves to prevent thrashing
+  const throttledSaveCache = useMemo(() => {
+    let saveTimeout: NodeJS.Timeout;
+    
+    return (key: string, data: any) => {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        try {
+          localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+          console.error(`Error saving ${key}:`, e);
+        }
+      }, 2000); // Save only after 2 seconds of no changes
+    };
+  }, []);
+
+  // Optimized fetchWeekData with deduplication
   const fetchWeekData = useCallback(
     async (weekStartDate: string) => {
       const weekId = getWeekId(weekStartDate);
-      // Already fetched/fetching this week?
+      
+      // Prevent duplicate fetches
+      if (fetchingRef.current.has(weekId)) {
+        console.log(`Already fetching week ${weekId}, skipping`);
+        return;
+      }
+
+      // Check if we really need to refresh
       if (
         weekCache.includes(weekId) &&
         !needsWeekRefresh(weekId) &&
@@ -281,105 +323,81 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         console.log(`Using cached data for week ${weekId}`);
         return;
       }
-      // Set loading state
+
+      fetchingRef.current.add(weekId);
       setLoading(true);
-      // Fetch entire week of data
+      
       try {
-        // Get all dates in the week
         const datesInWeek = getDatesInWeek(weekId);
-        // Use Promise.race to implement timeout
-        await Promise.race([
-          // Actual data fetching
-          Promise.all(
-            datesInWeek.map(async (dateStr) => {
-              try {
-                // Check if user is authenticated
-                const userId = getCurrentUserId();
-                if (!userId) {
-                  console.log("Skipping fetch - user not authenticated");
-                  return;
-                }
-                // Fetch tasks and events for this date
-                const [tasks, events] = await Promise.all([
-                  fetchTasks(dateStr),
-                  fetchEvents(dateStr),
-                ]);
-                // Update caches
-                setTaskCache((prev) => {
-                  const updated = { ...prev };
-                  if (!updated[weekId]) updated[weekId] = {};
-                  updated[weekId][dateStr] = tasks;
-                  return updated;
-                });
-                setEventCache((prev) => {
-                  const updated = { ...prev };
-                  if (!updated[weekId]) updated[weekId] = {};
-                  updated[weekId][dateStr] = events;
-                  return updated;
-                });
-              } catch (error) {
-                console.error(`Error fetching data for ${dateStr}:`, error);
-                // Don't rethrow - keep trying other dates
-              }
-            })
-          ),
-          // Set a timeout to prevent infinite loading
-          new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("Data fetch timeout")), 10000);
-          }),
-        ]);
-        // Add the week to weekCache if not already there
+        
+        // Batch all requests in parallel
+        const fetchPromises = datesInWeek.map(async (dateStr) => {
+          const userId = getCurrentUserId();
+          if (!userId) return { dateStr, tasks: [], events: [] };
+          
+          const [tasks, events] = await Promise.all([
+            fetchTasks(dateStr),
+            fetchEvents(dateStr),
+          ]);
+          
+          return { dateStr, tasks, events };
+        });
+
+        const results = await Promise.all(fetchPromises);
+        
+        // Update caches in batch
+        const newTaskCache = { ...taskCache };
+        const newEventCache = { ...eventCache };
+        
+        if (!newTaskCache[weekId]) newTaskCache[weekId] = {};
+        if (!newEventCache[weekId]) newEventCache[weekId] = {};
+        
+        results.forEach(({ dateStr, tasks, events }) => {
+          newTaskCache[weekId][dateStr] = tasks;
+          newEventCache[weekId][dateStr] = events;
+        });
+        
+        // Single state update
+        setTaskCache(newTaskCache);
+        setEventCache(newEventCache);
+        
         if (!weekCache.includes(weekId)) {
-          setWeekCache((prev) => [...prev, weekId]);
+          setWeekCache(prev => [...prev, weekId]);
         }
-        // Mark week as fetched
+        
         markWeekFetched(weekId);
+        
       } catch (error) {
         console.error(`Error fetching week ${weekId} data:`, error);
-        setError(
-          `Failed to load data: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`
-        );
+        setError(`Failed to load data: ${error instanceof Error ? error.message : "Unknown error"}`);
       } finally {
+        fetchingRef.current.delete(weekId);
         setLoading(false);
       }
     },
     [
-      getDatesInWeek,
+      getWeekId,
+      weekCache,
       needsWeekRefresh,
+      taskCache,
+      eventCache,
+      getDatesInWeek,
+      getCurrentUserId,
       fetchTasks,
       fetchEvents,
-      setTaskCache,
-      setEventCache,
-      weekCache,
       markWeekFetched,
-      getWeekId,
     ]
   );
 
-  // Save cache to localStorage when it changes
+  // Throttled localStorage saves
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        `${STORAGE_KEY_PREFIX}taskCache`,
-        JSON.stringify(taskCache)
-      );
-    } catch (e) {
-      console.error("Error saving task cache:", e);
-    }
-  }, [taskCache]);
+    throttledSaveCache(`${STORAGE_KEY_PREFIX}taskCache`, taskCache);
+  }, [taskCache]); // Removed debouncedSaveCache dependency
 
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        `${STORAGE_KEY_PREFIX}eventCache`,
-        JSON.stringify(eventCache)
-      );
-    } catch (e) {
-      console.error("Error saving event cache:", e);
-    }
-  }, [eventCache]);
+    throttledSaveCache(`${STORAGE_KEY_PREFIX}eventCache`, eventCache);
+  }, [eventCache]); // Removed debouncedSaveCache dependency
+
   // Save cache to localStorage when it changes
   useEffect(() => {
     try {
@@ -797,66 +815,104 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [requestedWeekId, currentWeekId, fetchWeekData]);
 
-  // Add this useEffect that depends on authChecked
+  // FIXED: Remove circular dependencies
   useEffect(() => {
-    if (authChecked) {
+    if (authChecked && currentWeekId) {
       console.log("Authentication check complete, fetching initial data");
-      // Fetch initial data only after authentication is checked
-      fetchWeekData(currentWeekId);
+      // Only fetch if we don't already have data
+      const weekId = currentWeekId;
+      const hasData = taskCache[weekId] && eventCache[weekId];
+      
+      if (!hasData) {
+        fetchWeekData(currentWeekId);
+      }
     }
-  }, [authChecked, currentWeekId, fetchWeekData]);
+  }, [authChecked, currentWeekId]); // REMOVED fetchWeekData from dependencies
 
-  // Update your data fetching logic
-  useEffect(() => {
-    if (!isAuthenticated) {
-      console.log("DataContext: Not fetching data - not authenticated");
-      return;
-    }
-    
-    // Your existing data loading logic here
-    fetchWeekData(currentWeekId);
-  }, [currentWeekId, isAuthenticated]);
+  // FIXED: Debounce the week change handler
+  const debouncedSetWeek = useMemo(
+    () => debounce((weekId: string) => {
+      if (weekId && weekId !== currentWeekId) {
+        console.log(`Week changed to: ${weekId}`);
+        setCurrentWeekId(weekId);
+        fetchWeekData(weekId);
+      }
+    }, 300),
+    [currentWeekId, fetchWeekData]
+  );
+
+  // Expose the context value
+  const value = useMemo(
+    () => ({
+      loading,
+      error,
+      fetchTasksByDate,
+      fetchEventsByDate,
+      fetchWeekData,
+      toggleTask,
+      addNewTask,
+      deleteExistingTask,
+      addNewEvent,
+      deleteExistingEvent,
+      updateTask,
+      updateEvent,
+      refreshData,
+      invalidateCache,
+      clearAllCache,
+      taskCache,
+      eventCache,
+      currentWeekId,
+      requestedWeekId,
+      setRequestedWeekId,
+      getTaskById,
+      getEventById,
+      tasksById,
+      eventsById,
+      batchFetchData,
+    }),
+    [
+      loading,
+      error,
+      fetchTasksByDate,
+      fetchEventsByDate,
+      fetchWeekData,
+      toggleTask,
+      addNewTask,
+      deleteExistingTask,
+      addNewEvent,
+      deleteExistingEvent,
+      updateTask,
+      updateEvent,
+      refreshData,
+      invalidateCache,
+      clearAllCache,
+      taskCache,
+      eventCache,
+      currentWeekId,
+      requestedWeekId,
+      setRequestedWeekId,
+      getTaskById,
+      getEventById,
+      tasksById,
+      eventsById,
+      batchFetchData,
+    ]
+  );
 
   return (
-    <DataContext.Provider
-      value={{
-        loading,
-        error,
-        fetchTasksByDate,
-        fetchEventsByDate,
-        fetchWeekData,
-        toggleTask,
-        addNewTask,
-        deleteExistingTask,
-        addNewEvent,
-        deleteExistingEvent,
-        updateTask,
-        updateEvent: updateEventFunction,
-        refreshData,
-        invalidateCache,
-        clearAllCache,
-        taskCache,
-        eventCache,
-        currentWeekId,
-        requestedWeekId,
-        setRequestedWeekId, // Now this is valid
-        getTaskById,
-        getEventById,
-        tasksById,
-        eventsById,
-        batchFetchData,
-      }}
-    >
+    <DataContext.Provider value={value}>
       {children}
     </DataContext.Provider>
   );
 };
 
-// Custom hook to use the DataContext
-export const useData = () => {
+export function useDataContext() {
   const context = useContext(DataContext);
-  if (context === undefined) {
-    throw new Error("useData must be used within a DataProvider");
+  if (!context) {
+    throw new Error("useDataContext must be used within a DataProvider");
   }
   return context;
-};
+}
+
+// ADD THIS: Export useData as an alias
+export const useData = useDataContext;

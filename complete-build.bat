@@ -43,13 +43,28 @@ if %errorlevel% neq 0 (
 )
 echo [DEBUG] ✅ Node.js dependencies installed
 
-REM Setup Python environment
+REM Setup Python environment (optimized)
 echo [DEBUG] Step 5: Setting up Python environment...
 if not exist "Wingman-backend\.venv" (
   echo Creating Python virtual environment...
   cd Wingman-backend
   python -m venv .venv
   cd ..
+) else (
+  echo Virtual environment exists, checking if update needed...
+  REM Only reinstall if requirements changed
+  for %%i in ("Wingman-backend\requirements.txt") do set REQ_TIME=%%~ti
+  for %%i in ("Wingman-backend\.venv\pyvenv.cfg") do set VENV_TIME=%%~ti
+  
+  if "!REQ_TIME!" gtr "!VENV_TIME!" (
+    echo Requirements updated, reinstalling...
+    call Wingman-backend\.venv\Scripts\activate
+    cd Wingman-backend
+    pip install -r requirements.txt --upgrade
+    cd ..
+  ) else (
+    echo Requirements up to date, skipping installation
+  )
 )
 
 echo [DEBUG] Installing Python dependencies...
@@ -74,10 +89,11 @@ if not exist "Wingman-backend\patch-orjson.py" (
 )
 echo [DEBUG] ✅ Compatibility patch created
 
-REM Prepare backend for packaging
+REM Prepare backend for packaging (optimized)
 echo [DEBUG] Step 7: Preparing backend files...
 if not exist "python-dist" mkdir "python-dist"
-xcopy Wingman-backend\*.* python-dist\backend\ /E /I /Y
+REM Only copy if source is newer
+robocopy Wingman-backend python-dist\backend /E /XO /NDL /NJH /NJS
 echo [DEBUG] ✅ Backend files prepared
 
 REM Build frontend

@@ -5,7 +5,9 @@ const { spawn } = require('child_process');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// FIXED: Check if backend is already running
 let backendProcess = null;
+let isBackendStarting = false;
 
 function getResourcePath(relPath) {
   if (isDevelopment) {
@@ -47,106 +49,126 @@ function findPythonExecutable(backendDir) {
 }
 
 async function startBackendServer() {
+  // Prevent multiple backend starts
+  if (backendProcess || isBackendStarting) {
+    console.log('Backend already running or starting');
+    return backendProcess;
+  }
+  
+  isBackendStarting = true;
+  
   return new Promise((resolve, reject) => {
     try {
-      const backendDir = getResourcePath('Wingman-backend');
-      const pythonExecutable = findPythonExecutable(backendDir);
-      
-      console.log(`Starting backend with Python: ${pythonExecutable}`);
-      console.log(`Working directory: ${backendDir}`);
-      
-      // Create environment with Python paths
-      const pythonPaths = [
-        backendDir,
-        path.join(backendDir, 'app')
-      ].join(process.platform === 'win32' ? ';' : ':');
-      
-      // First run the patch script for Python 3.13 compatibility
-      console.log('Running orjson patch for Python 3.13...');
-      const patchProcess = spawn(pythonExecutable, [path.join(backendDir, 'patch-orjson.py')], {
-        cwd: backendDir,
-        windowsHide: true,
-        env: {
-          ...process.env,
-          PYTHONPATH: pythonPaths
-        }
+      // Check if port 8080 is already in use
+      const http = require('http');
+      const testReq = http.get('http://localhost:8080/health', (res) => {
+        console.log('Backend already running on port 8080');
+        isBackendStarting = false;
+        resolve(null);
       });
       
-      patchProcess.stdout.on('data', (data) => {
-        console.log(`Patch: ${data}`);
-      });
-      
-      patchProcess.stderr.on('data', (data) => {
-        console.error(`Patch error: ${data}`);
-      });
-      
-      patchProcess.on('close', (code) => {
-        console.log(`Patch process exited with code: ${code}`);
+      testReq.on('error', () => {
+        // Port not in use, start backend
+        console.log('Starting new backend process...');
         
-        // Now start the FastAPI backend
-        console.log('Starting FastAPI backend...');
-        backendProcess = spawn(pythonExecutable, ['-m', 'uvicorn', 'main:app', '--host', '127.0.0.1', '--port', '8080'], {
+        const backendDir = getResourcePath('Wingman-backend');
+        const pythonExecutable = findPythonExecutable(backendDir);
+        
+        // Create environment with Python paths
+        const pythonPaths = [
+          backendDir,
+          path.join(backendDir, 'app')
+        ].join(process.platform === 'win32' ? ';' : ':');
+        
+        // First run the patch script for Python 3.13 compatibility
+        console.log('Running orjson patch for Python 3.13...');
+        const patchProcess = spawn(pythonExecutable, [path.join(backendDir, 'patch-orjson.py')], {
           cwd: backendDir,
           windowsHide: true,
           env: {
             ...process.env,
-            PYTHONPATH: pythonPaths,
-            SUPABASE_URL: process.env.SUPABASE_URL,
-            SUPABASE_KEY: process.env.SUPABASE_KEY,
-            DEBUG: process.env.DEBUG
+            PYTHONPATH: pythonPaths
           }
         });
         
-        backendProcess.stdout.on('data', (data) => {
-          const output = data.toString();
-          console.log(`Backend: ${output}`);
+        patchProcess.stdout.on('data', (data) => {
+          console.log(`Patch: ${data}`);
+        });
+        
+        patchProcess.stderr.on('data', (data) => {
+          console.error(`Patch error: ${data}`);
+        });
+        
+        patchProcess.on('close', (code) => {
+          console.log(`Patch process exited with code: ${code}`);
           
-          // Look for startup completion
-          if (output.includes('Application startup complete') || 
-              output.includes('Uvicorn running on')) {
-            resolve(backendProcess);
-          }
-        });
-        
-        backendProcess.stderr.on('data', (data) => {
-          const errorText = data.toString();
-          console.error(`Backend error: ${errorText}`);
-        });
-        
-        backendProcess.on('error', (err) => {
-          console.error('Failed to start backend process:', err);
-          reject(err);
-        });
-        
-        // Timeout fallback with health check
-        setTimeout(() => {
-          console.log('Backend startup timeout, checking health...');
-          // Try a simple connection test
-          const http = require('http');
-          const req = http.get('http://localhost:8080/health', (res) => {
-            if (res.statusCode === 200) {
-              console.log('Backend health check passed!');
-              resolve(backendProcess);
-            } else {
-              console.log('Backend health check failed, but continuing...');
+          // Now start the FastAPI backend
+          console.log('Starting FastAPI backend...');
+          backendProcess = spawn(pythonExecutable, ['-m', 'uvicorn', 'main:app', '--host', '127.0.0.1', '--port', '8080'], {
+            cwd: backendDir,
+            windowsHide: true,
+            env: {
+              ...process.env,
+              PYTHONPATH: pythonPaths,
+              SUPABASE_URL: process.env.SUPABASE_URL,
+              SUPABASE_KEY: process.env.SUPABASE_KEY,
+              DEBUG: process.env.DEBUG
+            }
+          });
+          
+          backendProcess.stdout.on('data', (data) => {
+            const output = data.toString();
+            console.log(`Backend: ${output}`);
+            
+            // Look for startup completion
+            if (output.includes('Application startup complete') || 
+                output.includes('Uvicorn running on')) {
               resolve(backendProcess);
             }
           });
           
-          req.on('error', () => {
-            console.log('Backend health check error, but continuing...');
-            resolve(backendProcess);
+          backendProcess.stderr.on('data', (data) => {
+            const errorText = data.toString();
+            console.error(`Backend error: ${errorText}`);
           });
           
-          req.setTimeout(2000, () => {
-            req.destroy();
-            resolve(backendProcess);
+          backendProcess.on('error', (err) => {
+            console.error('Failed to start backend process:', err);
+            reject(err);
           });
-        }, 15000);
+          
+          // Timeout fallback with health check
+          setTimeout(() => {
+            console.log('Backend startup timeout, checking health...');
+            // Try a simple connection test
+            const http = require('http');
+            const req = http.get('http://localhost:8080/health', (res) => {
+              if (res.statusCode === 200) {
+                console.log('Backend health check passed!');
+                resolve(backendProcess);
+              } else {
+                console.log('Backend health check failed, but continuing...');
+                resolve(backendProcess);
+              }
+            });
+            
+            req.on('error', () => {
+              console.log('Backend health check error, but continuing...');
+              resolve(backendProcess);
+            });
+            
+            req.setTimeout(2000, () => {
+              req.destroy();
+              resolve(backendProcess);
+            });
+          }, 15000);
+        });
+        
       });
       
+      testReq.setTimeout(1000);
     } catch (error) {
-      console.error('Error in startBackendServer:', error);
+      isBackendStarting = false;
       reject(error);
     }
   });

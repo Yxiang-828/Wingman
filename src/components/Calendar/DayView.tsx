@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
@@ -179,7 +179,10 @@ const DayView: React.FC = () => {
     }
   };
 
-  // Unified handler for event submission (both add and edit)
+  // Add update tracking to prevent doubles
+  const updatingRef = useRef<Set<number>>(new Set());
+
+  // Optimized event submit handler
   const handleEventSubmit = async (e: React.FormEvent, isEditing: boolean) => {
     e.preventDefault();
 
@@ -196,12 +199,14 @@ const DayView: React.FC = () => {
 
     try {
       if (isEditing && editingEvent) {
-        console.log("Updating existing event:", {
-          ...editingEvent,
-          ...eventData,
-        });
+        // Prevent double updates
+        if (updatingRef.current.has(editingEvent.id)) {
+          console.log("Update already in progress, skipping");
+          return;
+        }
 
-        // Update existing event
+        updatingRef.current.add(editingEvent.id);
+
         const updatedEvent = await updateEvent({
           ...editingEvent,
           title: eventData.title.trim(),
@@ -210,24 +215,14 @@ const DayView: React.FC = () => {
           description: eventData.description || "",
         });
 
-        // Update local state - redundant with context but ensures UI sync
+        // Only update local state, don't trigger another fetch
         setCurrentDateEvents((prev) =>
           prev.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
         );
 
-        // Clear editing state
         setEditingEvent(null);
-
-        console.log("Event updated successfully:", updatedEvent);
+        updatingRef.current.delete(editingEvent.id);
       } else {
-        console.log("Adding new event to Supabase:", {
-          title: eventData.title,
-          date: dateStr,
-          time: eventData.time,
-          type: eventData.type,
-          description: eventData.description || "",
-        });
-
         // Create new event
         const newEventItem = await addNewEvent({
           title: eventData.title.trim(),
@@ -237,19 +232,19 @@ const DayView: React.FC = () => {
           description: eventData.description || "",
         });
 
-        // Update local state
+        // Add to local state
         setCurrentDateEvents((prev) => [...prev, newEventItem]);
-
-        // Reset form
         setNewEvent({ title: "", time: "", type: "", description: "" });
-
-        console.log("Event added successfully:", newEventItem);
       }
     } catch (error) {
       console.error("Event operation failed:", error);
       alert(
         `Failed to ${isEditing ? "update" : "create"} event. Please try again.`
       );
+
+      if (isEditing && editingEvent) {
+        updatingRef.current.delete(editingEvent.id);
+      }
     }
   };
 

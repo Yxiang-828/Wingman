@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { format, startOfWeek, addDays, isToday } from "date-fns";
 import { useData } from "../../context/DataContext";
@@ -9,6 +9,7 @@ import DetailPopup from "../Common/DetailPopup";
 import { VirtualizedEventList, VirtualizedTaskList } from "./VirtualizedList";
 import "./WeekView.css";
 import "./Calendar.css";
+import { debounce } from "lodash";
 
 const WeekView: React.FC = () => {
   const location = useLocation();
@@ -32,15 +33,6 @@ const WeekView: React.FC = () => {
   // State
   const [activeWeekId, setActiveWeekId] = useState("");
   const [loadingTimeout, setLoadingTimeout] = useState(false);
-  const [weeklyData, setWeeklyData] = useState<
-    Record<
-      string,
-      {
-        tasks: Task[];
-        events: CalendarEvent[];
-      }
-    >
-  >({});
 
   // Parse date from URL and set active week
   useEffect(() => {
@@ -68,56 +60,52 @@ const WeekView: React.FC = () => {
     }
   }, [location.search]);
 
-  // Load data when active week changes
+  // Add memoization for expensive calculations
+  const weeklyData = useMemo(() => {
+    if (!activeWeekId || !taskCache || !eventCache) return {};
+
+    const processedData: Record<string, { tasks: Task[]; events: CalendarEvent[] }> = {};
+    const weekStart = new Date(activeWeekId);
+
+    for (let i = 0; i < 7; i++) {
+      const currentDate = addDays(weekStart, i);
+      const dateStr = format(currentDate, "yyyy-MM-dd");
+      const weekId = format(startOfWeek(currentDate), "yyyy-MM-dd");
+
+      processedData[dateStr] = {
+        tasks: taskCache[weekId]?.[dateStr] || [],
+        events: eventCache[weekId]?.[dateStr] || [],
+      };
+    }
+
+    return processedData;
+  }, [activeWeekId, taskCache, eventCache]);
+
+  // Debounced data fetching
+  const debouncedFetchWeekData = useMemo(
+    () => debounce(fetchWeekData, 300),
+    [fetchWeekData]
+  );
+
+  // Simplified load effect - only fetch when needed
   useEffect(() => {
     if (!activeWeekId) return;
 
-    // Set loading timeout
     const loadTimeout = setTimeout(() => setLoadingTimeout(true), 5000);
 
-    const loadData = async () => {
-      try {
-        await fetchWeekData(activeWeekId);
+    // Check if we already have this data
+    const weekId = activeWeekId;
+    const hasData = taskCache[weekId] && eventCache[weekId];
 
-        // Process data after fetching
-        if (taskCache && eventCache) {
-          const processedData: Record<
-            string,
-            { tasks: Task[]; events: CalendarEvent[] }
-          > = {};
+    if (!hasData) {
+      debouncedFetchWeekData(activeWeekId);
+    }
 
-          // Get the dates for the week
-          const weekStart = new Date(activeWeekId);
-
-          for (let i = 0; i < 7; i++) {
-            const currentDate = addDays(weekStart, i);
-            const dateStr = format(currentDate, "yyyy-MM-dd");
-
-            // Get data for this day from cache
-            const weekId = format(startOfWeek(currentDate), "yyyy-MM-dd");
-            const tasksForDate = taskCache[weekId]?.[dateStr] || [];
-            const eventsForDate = eventCache[weekId]?.[dateStr] || [];
-
-            processedData[dateStr] = {
-              tasks: tasksForDate,
-              events: eventsForDate,
-            };
-          }
-
-          setWeeklyData(processedData);
-        }
-      } catch (error) {
-        console.error("Error loading week data:", error);
-      } finally {
-        clearTimeout(loadTimeout);
-        setLoadingTimeout(false);
-      }
+    return () => {
+      clearTimeout(loadTimeout);
+      setLoadingTimeout(false);
     };
-
-    loadData();
-
-    return () => clearTimeout(loadTimeout);
-  }, [activeWeekId, fetchWeekData]); // REMOVED taskCache and eventCache
+  }, [activeWeekId]); // Only depend on activeWeekId
 
   // Generate array of dates for the week
   const getDaysOfWeek = () => {
