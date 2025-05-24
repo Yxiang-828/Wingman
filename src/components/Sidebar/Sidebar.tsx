@@ -1,5 +1,5 @@
 // Add to your sidebar wherever the notifications link is displayed
-import { useNotifications } from '../../context/NotificationsContext';
+import { useNotifications } from "../../context/NotificationsContext";
 
 // Inside your Sidebar component:
 const { unreadCount } = useNotifications();
@@ -8,7 +8,5 @@ const { unreadCount } = useNotifications();
 <NavLink to="/notifications" className="sidebar-link">
   <span className="sidebar-icon">🔔</span>
   <span className="sidebar-text">Notifications</span>
-  {unreadCount > 0 && (
-    <span className="notification-badge">{unreadCount}</span>
-  )}
-</NavLink>
+  {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+</NavLink>;

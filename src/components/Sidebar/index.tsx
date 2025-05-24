@@ -8,6 +8,7 @@ import "../../main.css";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
 import "./Sidebar.css";
+import { logoutUser } from "../../utils/auth";
 
 // Extend the Window interface to include electronAPI
 declare global {
@@ -156,6 +157,25 @@ const Sidebar: React.FC = () => {
         <NavSection items={menuItems} />
 
         <QuickAdd />
+        {/* Logout Button */}
+        <button
+          className="logout-btn"
+          onClick={logoutUser}
+          style={{
+            margin: "2rem auto 1rem auto",
+            padding: "0.8rem 1.5rem",
+            background: "#646cff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            fontWeight: 600,
+            cursor: "pointer",
+            display: "block",
+            width: "80%",
+          }}
+        >
+          Logout
+        </button>
       </aside>
     </>
   );

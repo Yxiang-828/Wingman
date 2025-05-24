@@ -1,14 +1,18 @@
-import type { UUID } from '../types/database';
+import type { UUID } from "../types/database";
 
 // Get the current authenticated user
-export function getCurrentUser(): { id: UUID; name: string; email: string } | null {
-  const userData = localStorage.getItem('user');
+export function getCurrentUser(): {
+  id: UUID;
+  name: string;
+  email: string;
+} | null {
+  const userData = localStorage.getItem("user");
   if (!userData) return null;
-  
+
   try {
     return JSON.parse(userData);
   } catch (e) {
-    console.error('Failed to parse user data from localStorage');
+    console.error("Failed to parse user data from localStorage");
     return null;
   }
 }
@@ -26,7 +30,17 @@ export function isCurrentUserData(data: { user_id: UUID }): boolean {
 }
 
 // Filter array to only include current user's data
-export function filterToCurrentUser<T extends { user_id: UUID }>(items: T[]): T[] {
+export function filterToCurrentUser<T extends { user_id: UUID }>(
+  items: T[]
+): T[] {
   const currentUserId = getCurrentUserId();
-  return items.filter(item => item.user_id === currentUserId);
+  return items.filter((item) => item.user_id === currentUserId);
+}
+
+// your existing code here
+
+export function logoutUser() {
+  // Implement your logout logic here, e.g., clearing tokens, redirecting, etc.
+  localStorage.removeItem("token");
+  window.location.href = "/login";
 }
