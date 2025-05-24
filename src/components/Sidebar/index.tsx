@@ -160,7 +160,10 @@ const Sidebar: React.FC = () => {
         {/* Logout Button */}
         <button
           className="logout-btn"
-          onClick={logoutUser}
+          onClick={() => {
+            logoutUser();
+            navigate("/login");
+          }}
           style={{
             margin: "2rem auto 1rem auto",
             padding: "0.8rem 1.5rem",

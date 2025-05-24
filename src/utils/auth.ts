@@ -39,8 +39,13 @@ export function filterToCurrentUser<T extends { user_id: UUID }>(
 
 // your existing code here
 
+// export function logoutUser() {
+//   // Implement your logout logic here, e.g., clearing tokens, redirecting, etc.
+//   localStorage.removeItem("token");
+//   window.location.href = "/login";
+// }
 export function logoutUser() {
-  // Implement your logout logic here, e.g., clearing tokens, redirecting, etc.
+  // Clear user data and tokens
   localStorage.removeItem("token");
-  window.location.href = "/login";
+  localStorage.removeItem("user");
 }
