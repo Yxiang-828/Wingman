@@ -11,7 +11,7 @@
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build:win": "electron-builder --win",
     "dev:full": "concurrently \"npm run dev\" \"npm run backend:dev\"",
-    "backend:dev": "cd Wingman-backend && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8080"
+    "backend:dev": "cd Wingman-backend && py -m uvicorn main:app --reload --host 127.0.0.1 --port 8080"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
