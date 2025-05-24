@@ -14,6 +14,7 @@
     "backend:dev": "cd Wingman-backend && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8080"
   },
   "devDependencies": {
+    "@types/node": "^22.15.21",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
@@ -33,6 +34,7 @@
     "@supabase/supabase-js": "^2.49.8",
     "axios": "^1.9.0",
     "date-fns": "^2.30.0",
+    "dotenv": "^16.5.0",
     "lucide-react": "^0.511.0",
     "react": "^18.2.0",
     "react-calendar": "^4.8.0",
@@ -55,11 +57,19 @@
       {
         "from": "Wingman-backend",
         "to": "Wingman-backend"
+      },
+      {
+        "from": "python-dist",
+        "to": "python-dist"
+      },
+      {
+        "from": "assets",
+        "to": "assets"
       }
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icons/wingman-productive.ico"
     }
   }
 }
