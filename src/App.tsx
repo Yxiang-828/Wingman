@@ -22,7 +22,7 @@ import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
 import Profile from "./Pages/Profile";
 import Notifications from "./Pages/Notifications";
-import Login from "./components/Profile/login"; 
+import Login from "./components/Profile/login";
 import ScrollToTop from "./components/ScrollToTop";
 import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";
@@ -63,14 +63,14 @@ const AppContent = () => {
 
   return (
     <div className="app flex h-screen bg-dark text-light">
-      <Sidebar />
+      {user && !isLoginPage && <Sidebar />}
       <div
         className={`main-content-wrapper ${
           sidebarVisible ? "sidebar-visible" : ""
         }`}
       >
         <div className="flex-1 flex flex-col overflow-auto">
-          <Header />
+          {user && !isLoginPage && <Header />}
           <main className="flex-1 p-6 overflow-auto">
             <Routes>
               <Route path="/login" element={<Login onLogin={setUser} />} />
