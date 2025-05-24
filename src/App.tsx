@@ -124,6 +124,7 @@ const App = () => {
   const [backendChecked, setBackendChecked] = useState(false);
   const [backendReady, setBackendReady] = useState(false);
   const [backendError, setBackendError] = useState<string | null>(null);
+  const [backendStatus, setBackendStatus] = useState("Checking...");
 
   // Initialize and listen for auth changes
   useEffect(() => {
@@ -155,20 +156,23 @@ const App = () => {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await fetch("http://localhost:8080/");
+        const response = await fetch("http://localhost:8080/health");
         if (response.ok) {
+          setBackendStatus("Connected");
           setBackendReady(true);
           setBackendError(null);
         } else {
-          const errorText = await response.text();
-          setBackendError(`Backend error: ${response.status} - ${errorText}`);
+          setBackendStatus("Error");
           setBackendReady(false);
         }
       } catch (error) {
         console.error("Backend not ready:", error);
-        setBackendError(`Cannot connect to backend server: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`);
+        setBackendStatus("Disconnected");
+        setBackendError(
+          `Cannot connect to backend server: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
         setBackendReady(false);
       } finally {
         setBackendChecked(true);
@@ -176,7 +180,7 @@ const App = () => {
     };
 
     checkBackend();
-    const interval = setInterval(checkBackend, 3000);
+    const interval = setInterval(checkBackend, 5000);
     return () => clearInterval(interval);
   }, []);
 

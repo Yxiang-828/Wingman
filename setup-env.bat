@@ -28,6 +28,10 @@ if not exist Wingman-backend\.venv (
 :: Activate and install dependencies
 echo Installing Python dependencies...
 call Wingman-backend\.venv\Scripts\activate
+
+:: Set PyO3 compatibility flag for Python 3.13
+set PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1
+
 pip install -r Wingman-backend\requirements.txt
 
 echo Python environment setup complete!

@@ -36,32 +36,30 @@ if %errorlevel% neq 0 (
   exit /b 1
 )
 
-REM === Build the frontend ===
-echo Building the frontend application...
-call npm run build 2>&1
+REM === Download portable Python ===
+echo Downloading portable Python distribution...
+call download-python.bat
 if %errorlevel% neq 0 (
-  echo ERROR: Frontend build failed with code %errorlevel%!
-  pause
+  echo ERROR: Failed to download portable Python!
   exit /b 1
 )
 
-REM Move this BEFORE the packaging step
+REM === Copy backend files to bundle with the app ===
+echo Preparing backend files...
+xcopy Wingman-backend\*.* python-dist\backend\ /E /I /Y
+xcopy Wingman-backend\.env python-dist\backend\ /Y
+
+REM === Copy environment files ===
 echo Copying environment files...
-mkdir dist_electron\resources\Wingman-backend 2>nul
+if not exist dist_electron\resources\Wingman-backend mkdir dist_electron\resources\Wingman-backend 2>nul
 copy Wingman-backend\.env dist_electron\resources\Wingman-backend\ /Y
 
-REM Package the application (Windows only)
+REM === Package the application ===
 echo Packaging the application for Windows...
 npm run electron:build:win
-if %errorlevel% neq 0 (
-  echo ERROR: Packaging failed!
-  pause
-  exit /b 1
-)
 
-REM === Done ===
 echo.
-echo Build complete! Your application is in the dist_electron directory.
-echo You can now distribute the installer from the dist_electron folder.
+echo Build complete! Your application is in the dist directory.
+echo You can now distribute the installer from the dist folder.
 pause
 endlocal
