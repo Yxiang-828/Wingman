@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "declaration": false
+  },
+  "include": ["src", "src/types"],
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts"]
+}

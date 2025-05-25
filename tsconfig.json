@@ -1,0 +1,17 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": false,             // Disable unused warnings
+    "noUnusedParameters": false,         // Disable unused warnings  
+    "exactOptionalPropertyTypes": false, // Disable strict optional warnings
+    "noImplicitReturns": false,          // Disable implicit return warnings
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,   // Disable unchecked index warnings
+    "skipLibCheck": true                 // Skip checking .d.ts files in node_modules
+  }
+}

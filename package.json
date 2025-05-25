@@ -1,0 +1,77 @@
+{
+  "name": "wingman",
+  "version": "1.0.0",
+  "description": "Wingman productivity application",
+  "author": "your mum",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "set NODE_ENV=development && electron .",
+    "electron:build:win": "electron-builder --win",
+    "backend:dev": "cd Wingman-backend && .\\.venv\\Scripts\\activate.bat && py -m uvicorn main:app --reload --host 127.0.0.1 --port 8080",
+    "dev:full": "concurrently \"npm run backend:dev\" \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron:dev\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^27.1.3",
+    "electron-builder": "^24.8.1",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "axios": "^1.9.0",
+    "date-fns": "^2.30.0",
+    "dotenv": "^16.5.0",
+    "lucide-react": "^0.511.0",
+    "react": "^18.2.0",
+    "react-calendar": "^4.8.0",
+    "react-dom": "^18.2.0",
+    "react-intersection-observer": "^9.16.0",
+    "react-router-dom": "^6.30.1"
+  },
+  "build": {
+    "appId": "com.wingman.app",
+    "productName": "Wingman",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "Wingman-backend",
+        "to": "Wingman-backend"
+      },
+      {
+        "from": "python-dist",
+        "to": "python-dist"
+      },
+      {
+        "from": "assets",
+        "to": "assets"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/wingman-productive.ico"
+    }
+  }
+}

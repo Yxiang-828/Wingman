@@ -1,0 +1,39 @@
+* [33mf788e3e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m app fully functional but not optimised cache system
+* [33mfec9035[m 99% completed packaging
+* [33m2081531[m I'm done with this so I'm not looking back anymore
+* [33m757003e[m fully packaged running app
+* [33m83a5fe9[m app fully built but connection no good
+* [33m0cc56ef[m[33m ([m[1;31morigin/Package-testing[m[33m)[m packaging app code done, package not yet
+* [33me4dc140[m packaging files to test
+* [33mf3c3e72[m[33m ([m[1;31morigin/Testing[m[33m, [m[1;32mTesting[m[33m)[m month view done
+* [33ma74cdab[m completed task button fixed
+* [33mca8ab55[m working version
+* [33mb073ae2[m Prepare for GitHub Pages deployment
+* [33mfcc00eb[m beta stage, testing cache structure
+* [33ma2918cc[m test function
+* [33m97323f5[m fixed buggy time input format
+* [33m3eddbb0[m created full navigation for calendar and dashboard
+* [33m6efcd32[m created a completed tasks page
+* [33m2cc354a[m dashboard done
+* [33mc8dc3ed[m setlled, balanced front and backend
+* [33ma0c04d5[m fixed update events, delete events, add events. Likewise tasks
+* [33m41d8b2c[m damn bugS
+* [33m5837a53[m bug fixes
+* [33m7c41d94[m update on backend
+* [33ma3eef69[m bug fixes
+* [33m44528e8[m merging frontend with backend
+*   [33m3ca5241[m Merge pull request #1 from Yxiang-828/frontend_cleanup_19May
+[32m|[m[33m\[m  
+[32m|[m * [33m1b6c25b[m[33m ([m[1;31morigin/frontend_cleanup_19May[m[33m)[m 1. removed create task button in Sidebar 2. routed write new entry button in Dashboard 3. merged preferences and settings into settings 4. added interfaces for profile, notification and settings Pages
+[32m|[m[32m/[m  
+* [33mbbfa956[m Initial commit: daily task logging backend and frontend
+* [33m30a4108[m Update README.md
+*   [33m956eeac[m[33m ([m[1;33mtag: [m[1;33mv1.0.0-beta[m[33m)[m Merge branch 'main' of https://github.com/Yxiang-828/Wingman
+[34m|[m[35m\[m  
+[34m|[m * [33m49709c4[m Update README.md
+* [35m|[m [33m4fe6e38[m Initial commit
+[35m|[m[35m/[m  
+*   [33mbe2ae91[m to main
+[36m|[m[1;31m\[m  
+[36m|[m * [33medb3df5[m Initial commit
+* [33mad15996[m Initial commit of Electron+React+Vite Wingman framework

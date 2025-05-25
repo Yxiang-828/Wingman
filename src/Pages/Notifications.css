@@ -1,0 +1,424 @@
+.notifications-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.notifications-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.notifications-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.notifications-mark-all,
+.notifications-clear-all {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(30, 30, 50, 0.6);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.notifications-mark-all:hover,
+.notifications-clear-all:hover {
+  background: rgba(40, 40, 60, 0.8);
+  transform: translateY(-2px);
+}
+
+.notifications-mark-all:disabled,
+.notifications-clear-all:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.notifications-clear-all {
+  color: rgba(255, 150, 150, 0.8);
+}
+
+.notifications-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.notifications-tab {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.notifications-tab.active {
+  color: white;
+}
+
+.notifications-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(100, 108, 255, 0.8);
+  border-radius: 1px;
+}
+
+.notifications-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40, 40, 60, 0.8);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 1rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
+.notification-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(30, 30, 50, 0.3);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: rgba(40, 40, 60, 0.4);
+  transform: translateY(-2px);
+}
+
+.notification-item.unread {
+  background: rgba(40, 40, 60, 0.6);
+  border-left: 3px solid rgba(100, 108, 255, 0.8);
+}
+
+.notification-item.task {
+  border-left-color: rgba(74, 222, 128, 0.8);
+}
+
+.notification-item.event {
+  border-left-color: rgba(100, 108, 255, 0.8);
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.notification-icon.task {
+  background: rgba(74, 222, 128, 0.15);
+  color: #a7f3c1;
+}
+
+.notification-icon.event {
+  background: rgba(100, 108, 255, 0.15);
+  color: #c4c6ff;
+}
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.notification-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+.notification-badge {
+  margin-left: 0.6rem;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  background: rgba(100, 108, 255, 0.2);
+  color: #c4c6ff;
+  border-radius: 1rem;
+}
+
+.notification-message {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
+}
+
+.notification-meta {
+  display: flex;
+  gap: 0.8rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.3rem;
+}
+
+.notification-time {
+  display: flex;
+  align-items: center;
+}
+
+.notification-time::before {
+  content: "🕒";
+  font-size: 0.9rem;
+  margin-right: 0.3rem;
+}
+
+.notification-date {
+  display: flex;
+  align-items: center;
+}
+
+.notification-date::before {
+  content: "📆";
+  font-size: 0.9rem;
+  margin-right: 0.3rem;
+}
+
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.notification-action-btn {
+  padding: 0.5rem 0.8rem;
+  background: rgba(74, 222, 128, 0.15);
+  color: #a7f3c1;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.notification-action-btn:hover {
+  background: rgba(74, 222, 128, 0.3);
+  transform: translateY(-2px);
+}
+
+.notification-dismiss {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 77, 77, 0.1);
+  color: rgba(255, 150, 150, 0.8);
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  transition: all 0.2s ease;
+  line-height: 1;
+  margin-left: auto;
+}
+
+.notification-dismiss:hover {
+  background: rgba(255, 77, 77, 0.3);
+  transform: rotate(90deg);
+}
+
+.notification-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: rgba(30, 30, 50, 0.3);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.notification-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.notification-empty-text {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.notification-empty-subtext {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1.5rem;
+}
+
+.notification-action {
+  padding: 0.8rem 1.5rem;
+  background: rgba(100, 108, 255, 0.2); 
+  color: #c4c6ff;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-action:hover {
+  background: rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Add these new styles to your existing Notifications.css file */
+
+/* Container for the notifications items */
+.notifications-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Load more button styling */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(100, 108, 255, 0.15);
+  color: #c4c6ff;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+}
+
+.load-more-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Small loading spinner for the Load More button */
+.loading-spinner-small {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(100, 108, 255, 0.2);
+  border-top-color: #c4c6ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Pagination information display */
+.pagination-info {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  margin: 0.5rem 0 1rem;
+}
+
+/* Improve scrolling performance */
+.notifications-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Loading states */
+.notifications-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Ensure the existing loading spinner has these styles */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(100, 108, 255, 0.3);
+  border-top-color: rgba(100, 108, 255, 0.8);
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@media (max-width: 768px) {
+  .notifications-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .notification-item {
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+  }
+
+  .notification-actions {
+    grid-row: 2;
+    grid-column: 1 / 3;
+    flex-direction: row;
+    margin-top: 0.5rem;
+  }
+}
