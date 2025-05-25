@@ -1,0 +1,18 @@
+/* Only essential resets and font imports */
+
+/* Font imports would go here */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Basic reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow-y: scroll; /* Always show scrollbar to prevent layout shifts */
+  scrollbar-gutter: stable; /* Reserve space for scrollbar */
+}
+
+/* Remove all other styles from index.css since they're in main.css */

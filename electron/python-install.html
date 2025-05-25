@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Python 3.13 Required</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1a2e;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      color: #646cff;
+    }
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    ol {
+      margin-left: 20px;
+    }
+    li {
+      margin-bottom: 15px;
+    }
+    .download-btn {
+      background: #646cff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .warning {
+      background: rgba(255, 100, 100, 0.2);
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Python 3.13 Required</h1>
+    <p>Wingman requires Python 3.13 to run properly. Please follow these steps:</p>
+    
+    <ol>
+      <li>Download Python 3.13.0 from the official website</li>
+      <li>During installation, <strong>check "Add Python to PATH"</strong></li>
+      <li>Complete the installation</li>
+      <li>Restart Wingman</li>
+    </ol>
+    
+    <a href="https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe" class="download-btn">Download Python 3.13</a>
+    
+    <div class="warning">
+      <strong>Important:</strong> Make sure to check "Add Python to PATH" during installation!
+    </div>
+  </div>
+
+  <script>
+    document.querySelector('.download-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      require('electron').shell.openExternal('https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe');
+    });
+  </script>
+</body>
+</html>

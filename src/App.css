@@ -1,0 +1,43 @@
+/* App structure styles */
+.app {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+.app, .dashboard {
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+}
+
+/* Light theme overrides */
+.light-theme {
+  background-color: #fff !important;
+  color: #222 !important;
+}
+
+.light-theme .bg-card,
+.light-theme .sidebar,
+.light-theme .dashboard-card,
+.light-theme .diary-card,
+.light-theme .calendar-day-view {
+  background-color: #f5f5f5 !important;
+  color: #222 !important;
+}
+
+.light-theme h1,
+.light-theme h2,
+.light-theme h3,
+.light-theme label,
+.light-theme input,
+.light-theme select,
+.light-theme textarea {
+  color: #222 !important;
+}
+
+.light-theme .action-btn,
+.light-theme button {
+  background-color: #646cff;
+  color: #fff;
+}

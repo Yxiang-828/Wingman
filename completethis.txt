@@ -1,0 +1,148 @@
+You're right to connect the OS-level notifications to this failure management flow. Here's how they integrate with the proposed strategy:
+
+The `TaskFailureManager` becomes the central point for triggering OS notifications for failed tasks.
+
+1.  **`TaskFailureManager.ts` - Triggering OS Notifications:**
+    *   When `checkForFailedTasks` identifies a task that has passed its `task_time`, is not `completed`, and not already `failed`:
+        *   It updates the task in the database to `failed: true`.
+        *   **Immediately after successfully updating the database**, it should call the `systemNotificationService` to show an OS notification.
+        *   Then, it dispatches the internal events (`tasks-failed-update`, `dashboard-refresh`, etc.) for UI updates.
+
+    ```typescript
+    // filepath: c:\Users\xiang\checker\Wingman\src\services\TaskFailureManager.ts
+    // ...existing code...
+    import { systemNotificationService } from './SystemNotificationService'; // Ensure this is imported
+    // ...existing code...
+
+    class TaskFailureManager {
+        // ...existing code...
+
+        public async checkForFailedTasks(): Promise<void> {
+            const userId = getCurrentUserId();
+            if (!userId) {
+                console.warn("TaskFailureManager: User ID not found, skipping failure check.");
+                return;
+            }
+
+            try {
+                const today = getTodayDateString();
+                // Fetch all tasks for today that could potentially fail
+                // This might need to fetch tasks directly from DB if local state isn't comprehensive
+                const allTodayTasks = await window.electronAPI.db.getTasks(userId, today);
+
+                const currentTime = getCurrentTimeString();
+                const newlyFailedTasks: Task[] = [];
+
+                for (const task of allTodayTasks) {
+                    if (
+                        !task.completed &&
+                        !task.failed &&
+                        task.task_time &&
+                        task.task_time < currentTime &&
+                        task.task_date === today // Ensure it's for today
+                    ) {
+                        console.log(`TaskFailureManager: Task ${task.id} (${task.title}) is overdue. Marking as failed.`);
+                        try {
+                            const updatedTask = await window.electronAPI.db.updateTask(task.id, { failed: true });
+                            if (updatedTask) {
+                                newlyFailedTasks.push(updatedTask);
+                            }
+                        } catch (dbError) {
+                            console.error(`TaskFailureManager: Error updating task ${task.id} to failed in DB:`, dbError);
+                            // Optionally, decide if you still want to send a notification or retry DB update
+                        }
+                    }
+                }
+
+                if (newlyFailedTasks.length > 0) {
+                    console.log(`TaskFailureManager: ${newlyFailedTasks.length} tasks newly marked as failed.`);
+                    // Dispatch internal UI update events
+                    const failedTaskIds = newlyFailedTasks.map(t => t.id);
+                    window.dispatchEvent(new CustomEvent('tasks-failed-update', { detail: { failedTaskIds } }));
+                    window.dispatchEvent(new CustomEvent('dashboard-refresh'));
+                    window.dispatchEvent(new CustomEvent('notifications-refresh'));
+
+                    // Trigger OS notifications for each newly failed task
+                    for (const failedTask of newlyFailedTasks) {
+                        try {
+                            await systemNotificationService.showImmediate(
+                                `Wingman Mission Alert: "${failedTask.title}" Overdue`,
+                                `Your mission "${failedTask.title}" was due at ${failedTask.task_time} and is now marked as failed.`,
+                                'task'
+                            );
+                            console.log(`TaskFailureManager: OS notification sent for failed task ${failedTask.id}`);
+                        } catch (notificationError) {
+                            console.error(`TaskFailureManager: Failed to send OS notification for task ${failedTask.id}`, notificationError);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("TaskFailureManager: Error checking for failed tasks:", error);
+            }
+        }
+
+        public forceCheck(): void {
+            console.log("TaskFailureManager: Force check triggered.");
+            this.checkForFailedTasks();
+        }
+
+        // ...existing code...
+    }
+    // ...existing code...
+    ```
+
+2.  **Notifications.tsx (`CountdownTimer`'s `onTaskFail`):**
+    *   When a `CountdownTimer` in Notifications.tsx expires, its `onTaskFail` callback (e.g., `handleTaskFailure`) calls `TaskFailureManager.getInstance().forceCheck()`.
+    *   It **does not** directly trigger an OS notification. The `TaskFailureManager` will handle that as part of its `checkForFailedTasks` logic (which `forceCheck` invokes).
+    *   The `CountdownTimer` can still update its *own UI* to "OVERDUE" immediately for responsiveness within that specific component.
+
+3.  **SystemNotificationService.ts:**
+    *   This service is already designed to handle sending notifications via Electron's main process (for when the app is backgrounded or to ensure persistence) or browser notifications.
+    *   The `showImmediate` method is suitable for these "task failed" alerts.
+
+**Why this relationship?**
+
+*   **Centralized Logic:** The `TaskFailureManager` is the single source of truth for when a task is officially considered "failed." Tying OS notifications to this point ensures consistency.
+*   **Avoids Duplicate Notifications:** If UI timers and the `TaskFailureManager` both tried to send OS notifications, you could get duplicates.
+*   **Robustness:** OS notifications for failures will be sent even if the Notifications.tsx page (with the UI timers) isn't open, because the `TaskFailureManager` runs its checks periodically regardless.
+*   **Correct Channel:** `SystemNotificationService` uses Electron's IPC for notifications, which is necessary for them to appear even if the app window is not focused or is minimized.
+
+This way, the OS notification acts as an external alert triggered by the internal, authoritative failure detection mechanism.
+
+
+
+for the os side
+ WHAT I IMPLEMENTED FOR YOU
+1. System-Level Notifications (NEW)
+File: SystemNotificationService.ts
+
+2. Electron Main Process Notification Handlers (NEW)
+File: main.js (additions)
+
+3. Preload API Extensions (NEW)
+File: preload.js (additions)
+
+4. Auto-Scheduling Integration (NEW)
+File: DataContext.tsx (updated)
+
+5. App-Level Initialization (NEW)
+File: App.tsx (updated)
+
+🎯 CURRENT NOTIFICATION FEATURES
+Real Device Notifications
+✅ OS-Level Alerts: Windows/Mac/Linux native notifications
+✅ Smart Scheduling: 5 min before tasks, 10 min before events
+✅ Click Navigation: Notifications navigate to relevant app sections
+✅ Persistent: Survives app restarts via Electron main process
+✅ Fallback Support: Browser notifications if Electron fails
+UI Notifications
+✅ Live Countdown Timers: Real-time mission deadlines
+✅ Mission Status Tracking: Complete/Failed/Pending states
+✅ Urgency Levels: Visual indicators for deadline proximity
+✅ Auto-Failure Detection: Tasks auto-fail when overdue
+✅ Interactive Popups: Detailed task/event information
+Smart Features
+✅ Auto-Scheduling: New tasks automatically get notifications
+✅ Permission Management: Proper notification permission handling
+✅ Theme Integration: Wingman personality in all notifications
+✅ Performance Optimized: Efficient scheduling and cleanup

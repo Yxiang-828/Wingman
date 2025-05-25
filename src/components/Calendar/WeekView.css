@@ -1,0 +1,309 @@
+/* Elegant and minimalist week view - Title-focused styling */
+.calendar-week-view {
+  height: calc(100vh - 120px);
+  background: var(--color-bg-card-secondary, rgba(25, 25, 45, 0.5));
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-medium, 0 4px 20px rgba(0, 0, 0, 0.25));
+  display: flex;
+  flex-direction: column;
+  contain: content; /* Performance optimization */
+  transition: opacity 0.3s ease;
+}
+
+/* Clean, minimalist loading state */
+.week-view-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
+  font-size: 1.2rem;
+  padding: 2rem;
+  background: var(--color-bg-main-secondary-fade, rgba(25, 25, 45, 0.7));
+  border-radius: 16px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--color-accent-bg, rgba(100, 108, 255, 0.3));
+  border-radius: 50%;
+  border-top-color: var(--color-accent-primary, rgba(100, 108, 255, 0.8));
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-hint {
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.5));
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Sleek header with softer gradients */
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  background: rgba(25, 25, 45, 0.7);
+}
+
+.week-title-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.week-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text, white);
+  text-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+.week-subtitle {
+  font-size: 1rem;
+  color: var(--color-text, rgba(255, 255, 255, 0.8));
+  margin-top: 0.5rem;
+}
+
+/* Navigation text links instead of buttons */
+.calendar-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-btn {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.nav-btn:hover {
+  color: white;
+  background: rgba(100, 108, 255, 0.15);
+}
+
+.nav-btn.today-btn {
+  color: rgba(100, 108, 255, 0.9);
+}
+
+/* Week grid with elegant spacing */
+.week-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 15px;
+  padding: 16px;
+  overflow-y: auto;
+  height: calc(100vh - 180px);
+  contain: content; /* Performance optimization */
+}
+
+/* Individual day cards with subtle hover effects */
+.week-day {
+  background: rgba(30, 30, 50, 0.7);
+  border-radius: 12px;
+  padding: 12px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(100, 108, 255, 0.15);
+  min-height: 250px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+.week-day:hover {
+  background: rgba(35, 35, 55, 0.8);
+  border-color: rgba(100, 108, 255, 0.3);
+}
+
+.week-day.today {
+  background: rgba(35, 35, 60, 0.85);
+  border: 1px solid rgba(100, 108, 255, 0.4);
+}
+
+/* Day header with elegant typography */
+.week-day-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.8rem;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
+  background: rgba(30, 30, 50, 0.5);
+  border-radius: 8px;
+}
+
+.week-day-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.week-day-date {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Content area with scrolling */
+.week-day-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
+  padding: 0.25rem 0.5rem;
+}
+
+.week-day-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.week-day-content::-webkit-scrollbar-track {
+  background: rgba(30, 30, 50, 0.3);
+  border-radius: 3px;
+}
+
+.week-day-content::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.3);
+  border-radius: 3px;
+}
+
+/* Title sections */
+.title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  padding: 0 4px;
+}
+
+.title-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title-item {
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  background: rgba(40, 40, 60, 0.5);
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.2s ease;
+}
+
+.title-item:hover {
+  background: rgba(45, 45, 70, 0.7);
+}
+
+/* .event-title {
+  border-left: 3px solid rgba(100, 108, 255, 0.8);
+} */
+
+/* .task-title {
+  border-left: 3px solid rgba(74, 222, 128, 0.8);
+} */
+
+.task-title.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+  border-left-color: rgba(74, 222, 128, 0.4);
+}
+
+/* Empty day state */
+.day-empty {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  text-align: center;
+  padding: 12px;
+  background: rgba(30, 30, 50, 0.3);
+  border-radius: 8px;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+/* New week view grid for time slots */
+.week-view-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  gap: 2px;
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.hour-cell {
+  padding: 0.5rem;
+  text-align: center;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-cell {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  min-height: 60px;
+  background: rgba(30, 30, 40, 0.4);
+  transition: all 0.2s;
+}
+
+.day-cell:hover {
+  background: rgba(30, 30, 40, 0.6);
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .week-days-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .week-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .calendar-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .week-days-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

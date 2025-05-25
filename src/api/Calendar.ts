@@ -1,0 +1,158 @@
+import { api } from './apiClient';
+
+
+export interface CalendarEvent {
+  id: number;
+  title: string;        
+  event_date: string;   
+  event_time: string;   
+  type: string;         
+  description: string; 
+  user_id: string;      
+}
+
+export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
+  try {
+    // Get current user from localStorage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.id) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Use api client instead of raw fetch
+    const events = await api.get(`/v1/calendar?date=${date}&user_id=${user.id}`);
+    
+    // Map backend fields to frontend
+    return events.map((event: any) => ({
+      ...event,
+      event_date: event.event_date, // Map event_date to date
+      event_time: event.event_time  // Map event_time to time
+    }));
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    return [];
+  }
+};
+
+// Ensure we're transforming fields correctly both ways
+export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> => {
+  try {
+    // Get current user from localStorage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.id) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Transform frontend fields to backend fields
+    const backendEvent = {
+      user_id: user.id,
+      title: event.title,
+      event_date: event.event_date,
+      event_time: event.event_time || '',
+      type: event.type,
+      description: event.description
+    };
+    
+    // Use api client instead of raw fetch
+    const data = await api.post('/v1/calendar', backendEvent);
+    
+    // Transform backend response to frontend format
+    return {
+      ...data,
+      id: data.id,
+      event_date: data.event_date,
+      event_time: data.event_time || ''
+    };
+  } catch (error) {
+    console.error('Error adding event:', error);
+    throw error;
+  }
+};
+
+export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
+  try {
+    console.log("API: Updating event:", event);
+    
+    // Create a copy and remove the id field to prevent Supabase identity column error
+    const { id, ...rest } = event;
+    
+    // Map frontend fields to backend fields
+    const backendEvent: Record<string, any> = {
+      user_id: event.user_id || JSON.parse(localStorage.getItem('user') || '{}').id,
+      title: rest.title,
+      event_date: rest.event_date,
+      event_time: rest.event_time || '',
+      type: rest.type,
+      description: rest.description
+    };
+    
+    // Use api client instead of raw fetch
+    const result = await api.put(`/v1/calendar/${id}`, backendEvent);
+    
+    // Map backend fields to frontend
+    return {
+      ...result,
+      id: result.id || id,
+      event_date: result.event_date,
+      event_time: result.event_time || ''
+    };
+  } catch (error) {
+    console.error('Error updating event:', error);
+    throw error;
+  }
+};
+
+export const deleteEvent = async (id: number): Promise<void> => {
+  try {
+    console.log("API: Deleting event:", id);
+    // Use api client instead of raw fetch
+    await api.delete(`/v1/calendar/${id}`);
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    throw error;
+  }
+};
+
+// Replace the failing fetchMultipleDaysData function with this implementation
+
+export const fetchMultipleDaysData = async (dates: string[]): Promise<Record<string, any>> => {
+  try {
+    // Get current user from localStorage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.id) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Make parallel requests using the existing single-date endpoint
+    const promises = dates.map(date => 
+      api.get(`/v1/calendar?date=${date}&user_id=${user.id}`)
+        .then(events => ({
+          date,
+          data: {
+            events: events.map((event: any) => ({
+              ...event,
+              event_date: event.event_date,
+              event_time: event.event_time || ''
+            }))
+          }
+        }))
+    );
+    
+    // Wait for all requests to complete
+    const results = await Promise.all(promises);
+    
+    // Convert array of results to an object keyed by date
+    const combinedData: Record<string, any> = {};
+    results.forEach(result => {
+      combinedData[result.date] = result.data;
+    });
+    
+    return combinedData;
+  } catch (error) {
+    console.error('Error fetching multiple days data:', error);
+    throw error;
+  }
+};
