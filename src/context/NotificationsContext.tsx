@@ -53,7 +53,13 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   // Access tasks and events from DataContext
-  const { taskCache, eventCache, toggleTask, currentWeekId } = useData();
+  const {
+    taskCache,
+    eventCache,
+    toggleTask,
+    currentWeekId,
+    fixedCurrentWeekCache, // Add this import
+  } = useData();
 
   // States
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -77,13 +83,94 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   // IMPORTANT: Define the generateNotificationsFromCache function BEFORE any useEffects that use it
   const generateNotificationsFromCache = useCallback(() => {
     console.log("NotificationsContext: Generating notifications from cache");
-    console.log("Available weeks in task cache:", Object.keys(taskCache));
-    console.log("Available weeks in event cache:", Object.keys(eventCache));
 
     const newNotifications: Notification[] = [];
 
-    // Process task cache
+    // OPTIMIZATION: Check fixed cache first for current week data
+    if (fixedCurrentWeekCache) {
+      console.log("Using fixed cache for current week notifications");
+
+      // Process tasks from fixed cache
+      if (fixedCurrentWeekCache.tasks) {
+        Object.keys(fixedCurrentWeekCache.tasks).forEach((dateStr) => {
+          const tasks = fixedCurrentWeekCache.tasks[dateStr];
+          console.log(
+            `Found ${tasks.length} tasks for ${dateStr} in fixed cache`
+          );
+
+          // Create notifications from tasks
+          tasks.forEach((task) => {
+            // Skip if this notification was dismissed
+            const notificationId = `task-${task.id}`;
+            if (dismissedIds.includes(notificationId)) {
+              return;
+            }
+
+            // Create the notification object
+            const notification: Notification = {
+              id: notificationId,
+              sourceId: task.id,
+              type: "task",
+              title: task.text,
+              message: task.completed
+                ? "This task has been completed"
+                : "Don't forget to complete this task",
+              date: task.date,
+              time: task.time || "",
+              read: readMap[notificationId] || false,
+              actionable: !task.completed,
+              completed: task.completed,
+            };
+
+            newNotifications.push(notification);
+          });
+        });
+      }
+
+      // Process events from fixed cache
+      Object.keys(fixedCurrentWeekCache.events).forEach((dateStr) => {
+        const events = fixedCurrentWeekCache.events[dateStr];
+        console.log(
+          `Found ${events.length} events for ${dateStr} in fixed cache`
+        );
+
+        // Create notifications from events
+        events.forEach((event) => {
+          // Skip if this notification was dismissed
+          const notificationId = `event-${event.id}`;
+          if (dismissedIds.includes(notificationId)) {
+            return;
+          }
+
+          // Create the notification object
+          const notification: Notification = {
+            id: notificationId,
+            sourceId: event.id,
+            type: "event",
+            title: event.title,
+            message: `${event.type} event: ${event.title}`,
+            date: event.date,
+            time: event.time || "",
+            read: readMap[notificationId] || false,
+            actionable: false,
+          };
+
+          newNotifications.push(notification);
+        });
+      });
+    }
+
+    // Then process regular cache for any additional weeks
+    // (original code remains the same here)
     Object.keys(taskCache).forEach((weekId) => {
+      // Skip processing current week from regular cache if we already got it from fixed cache
+      if (fixedCurrentWeekCache && weekId === fixedCurrentWeekCache.weekId) {
+        console.log(
+          `Skipping regular cache for week ${weekId} - already processed from fixed cache`
+        );
+        return;
+      }
+
       console.log(`Processing task week: ${weekId}`);
 
       // For each date in this week's data
@@ -123,6 +210,11 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // Process event cache
     Object.keys(eventCache).forEach((weekId) => {
+      // Skip processing current week from regular cache if we already got it from fixed cache
+      if (fixedCurrentWeekCache && weekId === fixedCurrentWeekCache.weekId) {
+        return;
+      }
+
       console.log(`Processing event week: ${weekId}`);
 
       // For each date in this week's data
@@ -159,7 +251,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     console.log(`Total notifications generated: ${newNotifications.length}`);
     return newNotifications;
-  }, [taskCache, eventCache, dismissedIds, readMap]);
+  }, [taskCache, eventCache, dismissedIds, readMap, fixedCurrentWeekCache]);
 
   // NOW we can use it in useEffect hooks
   useEffect(() => {
@@ -372,31 +464,34 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Implement the loadMoreNotifications function that was missing but referenced in the interface
-  const loadMoreNotifications = useCallback((type: "task" | "event") => {
-    setIsLoadingMore(true);
+  const loadMoreNotifications = useCallback(
+    (type: "task" | "event") => {
+      setIsLoadingMore(true);
 
-    try {
-      // This is a simplified implementation since we're loading all notifications at once
-      // In a real pagination scenario, you would fetch more data from the server
+      try {
+        // This is a simplified implementation since we're loading all notifications at once
+        // In a real pagination scenario, you would fetch more data from the server
 
-      if (type === "task") {
-        // If we had more tasks to load, we would do it here
-        // For now, just set hasMoreTasks to false to indicate no more tasks
-        setHasMoreTasks(false);
-      } else if (type === "event") {
-        // If we had more events to load, we would do it here
-        // For now, just set hasMoreEvents to false to indicate no more events
-        setHasMoreEvents(false);
+        if (type === "task") {
+          // If we had more tasks to load, we would do it here
+          // For now, just set hasMoreTasks to false to indicate no more tasks
+          setHasMoreTasks(false);
+        } else if (type === "event") {
+          // If we had more events to load, we would do it here
+          // For now, just set hasMoreEvents to false to indicate no more events
+          setHasMoreEvents(false);
+        }
+
+        // After loading more notifications, update hasMoreNotifications
+        setHasMoreNotifications(hasMoreTasks || hasMoreEvents);
+      } catch (error) {
+        console.error(`Error loading more ${type} notifications:`, error);
+      } finally {
+        setIsLoadingMore(false);
       }
-
-      // After loading more notifications, update hasMoreNotifications
-      setHasMoreNotifications(hasMoreTasks || hasMoreEvents);
-    } catch (error) {
-      console.error(`Error loading more ${type} notifications:`, error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [hasMoreTasks, hasMoreEvents]);
+    },
+    [hasMoreTasks, hasMoreEvents]
+  );
 
   // Provider value
   const value = {

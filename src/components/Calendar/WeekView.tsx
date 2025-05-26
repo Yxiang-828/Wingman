@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { format, startOfWeek, addDays, isToday } from "date-fns";
 import { useData } from "../../context/DataContext";
@@ -9,7 +14,6 @@ import DetailPopup from "../Common/DetailPopup";
 import { VirtualizedEventList, VirtualizedTaskList } from "./VirtualizedList";
 import "./WeekView.css";
 import "./Calendar.css";
-import { debounce } from "lodash";
 
 const WeekView: React.FC = () => {
   const location = useLocation();
@@ -26,6 +30,11 @@ const WeekView: React.FC = () => {
     deleteExistingTask,
     deleteExistingEvent,
     loading: isLoading,
+    fixedCurrentWeekCache,
+    currentWeekId,
+    ensureCurrentWeekLoaded,
+    forceRefreshCurrentData,
+    isCacheStale,
   } = useData();
 
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
@@ -33,6 +42,9 @@ const WeekView: React.FC = () => {
   // State
   const [activeWeekId, setActiveWeekId] = useState("");
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Add this state to track if we're viewing the current week
+  const [isCurrentWeek, setIsCurrentWeek] = useState(false);
 
   // Parse date from URL and set active week
   useEffect(() => {
@@ -45,26 +57,36 @@ const WeekView: React.FC = () => {
         const weekStart = startOfWeek(date);
         const weekId = format(weekStart, "yyyy-MM-dd");
         setActiveWeekId(weekId);
+
+        // Check if this is the current week
+        setIsCurrentWeek(weekId === currentWeekId);
       } else {
         // Fallback to current week
         const today = new Date();
         const weekStart = startOfWeek(today);
-        setActiveWeekId(format(weekStart, "yyyy-MM-dd"));
+        const weekId = format(weekStart, "yyyy-MM-dd");
+        setActiveWeekId(weekId);
+        setIsCurrentWeek(true); // Default to current week on error
       }
     } catch (err) {
       console.error("Error setting active week:", err);
       // Fallback to current week
       const today = new Date();
       const weekStart = startOfWeek(today);
-      setActiveWeekId(format(weekStart, "yyyy-MM-dd"));
+      const weekId = format(weekStart, "yyyy-MM-dd");
+      setActiveWeekId(weekId);
+      setIsCurrentWeek(true); // Default to current week on error
     }
-  }, [location.search]);
+  }, [location.search, currentWeekId]);
 
-  // Add memoization for expensive calculations
+  // Enhanced weeklyData that prioritizes fixed cache for current week
   const weeklyData = useMemo(() => {
-    if (!activeWeekId || !taskCache || !eventCache) return {};
+    if (!activeWeekId) return {};
 
-    const processedData: Record<string, { tasks: Task[]; events: CalendarEvent[] }> = {};
+    const processedData: Record<
+      string,
+      { tasks: Task[]; events: CalendarEvent[] }
+    > = {};
     const weekStart = new Date(activeWeekId);
 
     for (let i = 0; i < 7; i++) {
@@ -72,40 +94,74 @@ const WeekView: React.FC = () => {
       const dateStr = format(currentDate, "yyyy-MM-dd");
       const weekId = format(startOfWeek(currentDate), "yyyy-MM-dd");
 
-      processedData[dateStr] = {
-        tasks: taskCache[weekId]?.[dateStr] || [],
-        events: eventCache[weekId]?.[dateStr] || [],
-      };
+      // Use fixed cache for current week when available
+      if (
+        isCurrentWeek &&
+        fixedCurrentWeekCache &&
+        fixedCurrentWeekCache.tasks[dateStr]
+      ) {
+        processedData[dateStr] = {
+          tasks: fixedCurrentWeekCache.tasks[dateStr] || [],
+          events: fixedCurrentWeekCache.events[dateStr] || [],
+        };
+        console.log(`✅ Using fixed cache for ${dateStr}`);
+      } else {
+        // Fall back to regular cache
+        processedData[dateStr] = {
+          tasks: taskCache[weekId]?.[dateStr] || [],
+          events: eventCache[weekId]?.[dateStr] || [],
+        };
+      }
     }
 
     return processedData;
-  }, [activeWeekId, taskCache, eventCache]);
+  }, [
+    activeWeekId,
+    taskCache,
+    eventCache,
+    fixedCurrentWeekCache,
+    isCurrentWeek,
+  ]);
 
-  // Debounced data fetching
-  const debouncedFetchWeekData = useMemo(
-    () => debounce(fetchWeekData, 300),
-    [fetchWeekData]
-  );
-
-  // Simplified load effect - only fetch when needed
+  // Simplified load effect with fixed cache optimization
   useEffect(() => {
     if (!activeWeekId) return;
 
     const loadTimeout = setTimeout(() => setLoadingTimeout(true), 5000);
 
-    // Check if we already have this data
-    const weekId = activeWeekId;
-    const hasData = taskCache[weekId] && eventCache[weekId];
+    const loadData = async () => {
+      try {
+        if (isCurrentWeek) {
+          // For current week, ensure fixed cache is loaded and up-to-date
+          await ensureCurrentWeekLoaded();
+          console.log("📅 Using optimized fixed cache for current week");
+        } else {
+          // For other weeks, use regular cache mechanism
+          const hasData = taskCache[activeWeekId] && eventCache[activeWeekId];
+          if (!hasData) {
+            console.log(`📅 Fetching data for week: ${activeWeekId}`);
+            await fetchWeekData(activeWeekId);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading week data:", error);
+      }
+    };
 
-    if (!hasData) {
-      debouncedFetchWeekData(activeWeekId);
-    }
+    loadData();
 
     return () => {
       clearTimeout(loadTimeout);
       setLoadingTimeout(false);
     };
-  }, [activeWeekId]); // Only depend on activeWeekId
+  }, [
+    activeWeekId,
+    isCurrentWeek,
+    ensureCurrentWeekLoaded,
+    fetchWeekData,
+    taskCache,
+    eventCache,
+  ]);
 
   // Generate array of dates for the week
   const getDaysOfWeek = () => {
@@ -262,7 +318,10 @@ const WeekView: React.FC = () => {
         </div>
         <div className="header-right">
           <div className="calendar-buttons">
-            <button className="calendar-btn" onClick={handlePrevWeek}>
+            <button
+              className="calendar-btn"
+              onClick={() => handlePrevWeek()} // Remove unused 'e' parameter
+            >
               ←
             </button>
             <button className="calendar-btn today-btn" onClick={handleToday}>
@@ -271,6 +330,16 @@ const WeekView: React.FC = () => {
             <button className="calendar-btn" onClick={handleNextWeek}>
               →
             </button>
+
+            {isCacheStale() && (
+              <button
+                className="calendar-btn refresh-btn"
+                onClick={forceRefreshCurrentData}
+                title="Refresh data"
+              >
+                Refresh
+              </button>
+            )}
           </div>
         </div>
       </div>

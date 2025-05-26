@@ -519,6 +519,39 @@
   transform: translateY(-2px);
 }
 
+/* Refresh buttons styling */
+.refresh-data-btn, .day-refresh-btn {
+  background-color: rgba(100, 108, 255, 0.1);
+  color: rgba(100, 108, 255, 0.9);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.refresh-data-btn:hover, .day-refresh-btn:hover {
+  background-color: rgba(100, 108, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.cache-status {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.cache-fresh {
+  color: rgba(75, 192, 75, 0.8);
+}
+
+.load-more-btn {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  background-color: rgba(100, 108, 255, 0.05);
+}
+
 /* Responsive layout */
 @media (max-width: 768px) {
   .dashboard-content {

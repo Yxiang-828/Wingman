@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useData } from "../../context/DataContext";
 import { useDiary } from "../../context/DiaryContext";
-import { getCurrentUserId } from "../../utils/auth"; // Add this import
+import { getCurrentUserId } from "../../utils/auth";
 import DiaryCard from "./DiaryCard";
 import TasksCard from "./TasksCard";
 import EventsCard from "./EventsCard";
@@ -12,7 +12,13 @@ import type { CalendarEvent } from "../../api/Calendar";
 import "./Dashboard.css";
 
 const Dashboard: React.FC = () => {
-  const { fetchTasksByDate, fetchEventsByDate } = useData();
+  // Update to use new optimized methods
+  const {
+    getTasksForToday,
+    getEventsForToday,
+    forceRefreshCurrentData,
+    isCacheStale,
+  } = useData();
 
   const { entries, refreshEntries } = useDiary();
 
@@ -22,10 +28,7 @@ const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split("T")[0];
-
-  // Fetch data when component mounts - focused only on today's data
+  // Fetch data when component mounts - now using optimized methods
   useEffect(() => {
     const loadDashboard = async () => {
       // Get current user ID first
@@ -36,16 +39,13 @@ const Dashboard: React.FC = () => {
       }
 
       setIsLoading(true);
-      // Set a timeout to prevent infinite loading
-      const timeoutId = setTimeout(() => {
-        setLoadingTimeout(true);
-      }, 10000);
+      const timeoutId = setTimeout(() => setLoadingTimeout(true), 10000);
 
       try {
-        // Get today's tasks and events only
+        // Use new optimized methods that check fixed cache first
         const [tasksData, eventsData] = await Promise.all([
-          fetchTasksByDate(today),
-          fetchEventsByDate(today),
+          getTasksForToday(), // No longer needs today parameter
+          getEventsForToday(), // No longer needs today parameter
         ]);
 
         setTodaysTasks(tasksData || []);
@@ -65,7 +65,7 @@ const Dashboard: React.FC = () => {
     };
 
     loadDashboard();
-  }, [today, fetchTasksByDate, fetchEventsByDate, refreshEntries]);
+  }, [getTasksForToday, getEventsForToday, refreshEntries]); // Updated dependencies
 
   // Update diary entries when entries change
   useEffect(() => {
@@ -122,6 +122,22 @@ const Dashboard: React.FC = () => {
         <CompletedTasksCard tasks={todaysCompletedTasks} />
         <DiaryCard entries={recentDiaryEntries} />
       </div>
+      {!isLoading && (
+        <div className="dashboard-footer">
+          <div className="cache-status">
+            {isCacheStale() ? (
+              <button
+                className="refresh-data-btn"
+                onClick={forceRefreshCurrentData}
+              >
+                Data may be stale. Click to refresh
+              </button>
+            ) : (
+              <span className="cache-fresh">Data is up to date</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

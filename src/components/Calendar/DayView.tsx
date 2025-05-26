@@ -6,13 +6,14 @@ import TimeInput from "../Common/TimeInput";
 import DetailPopup from "../Common/DetailPopup";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
+import { isWithinInterval, startOfWeek, endOfWeek } from "date-fns";
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Global data context
+  // Global data context - add the fixed cache properties
   const {
     fetchTasksByDate,
     fetchEventsByDate,
@@ -23,6 +24,12 @@ const DayView: React.FC = () => {
     deleteExistingEvent,
     updateTask,
     updateEvent,
+    // Add these fixed cache properties
+    fixedCurrentWeekCache,
+    currentWeekId,
+    ensureCurrentWeekLoaded,
+    forceRefreshCurrentData,
+    isCacheStale,
   } = useData();
 
   const { showPopupFor, currentPopupItem, closePopup, completeTask } =
@@ -55,6 +62,9 @@ const DayView: React.FC = () => {
     []
   );
 
+  // Add state to track if the day is in current week
+  const [isInCurrentWeek, setIsInCurrentWeek] = useState(false);
+
   // Parse date from URL
   useEffect(() => {
     try {
@@ -77,6 +87,17 @@ const DayView: React.FC = () => {
         // Create date with noon UTC time to avoid timezone issues
         const newDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
         setDate(newDate);
+
+        // Check if this day is in the current week
+        const currentWeekStart = startOfWeek(new Date(currentWeekId));
+        const currentWeekEnd = endOfWeek(currentWeekStart);
+        setIsInCurrentWeek(
+          isWithinInterval(newDate, {
+            start: currentWeekStart,
+            end: currentWeekEnd,
+          })
+        );
+
         // Fetch data for this date
         fetchData(dateStr);
       } else {
@@ -84,6 +105,7 @@ const DayView: React.FC = () => {
         const today = new Date();
         const todayStr = today.toISOString().split("T")[0];
         setDate(today);
+        setIsInCurrentWeek(true); // Today is always in current week
         fetchData(todayStr);
       }
     } catch (err) {
@@ -91,17 +113,46 @@ const DayView: React.FC = () => {
       // Default to today
       const today = new Date();
       setDate(today);
+      setIsInCurrentWeek(true); // Today is always in current week
       fetchData(today.toISOString().split("T")[0]);
     }
-  }, [location.search]);
+  }, [location.search, currentWeekId]);
 
-  // Fetch data for a specific date
+  // Enhanced fetchData to use fixed cache for current week days
   const fetchData = async (dateStr: string) => {
     try {
-      const [tasksData, eventsData] = await Promise.all([
-        fetchTasksByDate(dateStr),
-        fetchEventsByDate(dateStr),
-      ]);
+      let tasksData: Task[] = [];
+      let eventsData: CalendarEvent[] = [];
+
+      // If date is in current week, check fixed cache first
+      if (isInCurrentWeek && fixedCurrentWeekCache) {
+        // Check if we have data in fixed cache
+        const tasksInFixedCache = fixedCurrentWeekCache.tasks[dateStr];
+        const eventsInFixedCache = fixedCurrentWeekCache.events[dateStr];
+
+        if (tasksInFixedCache && eventsInFixedCache) {
+          console.log(`✅ CACHE HIT (fixed): Data for ${dateStr}`);
+          tasksData = tasksInFixedCache;
+          eventsData = eventsInFixedCache;
+        } else {
+          // If not in fixed cache, ensure current week is loaded then get from API
+          console.log(
+            `⚠️ CACHE MISS (fixed): Data for ${dateStr}, fetching...`
+          );
+          await ensureCurrentWeekLoaded(); // Make sure current week is loaded
+          [tasksData, eventsData] = await Promise.all([
+            fetchTasksByDate(dateStr),
+            fetchEventsByDate(dateStr),
+          ]);
+        }
+      } else {
+        // Not in current week, use regular API fetch with normal caching
+        console.log(`📅 Regular fetch for ${dateStr} (not in current week)`);
+        [tasksData, eventsData] = await Promise.all([
+          fetchTasksByDate(dateStr),
+          fetchEventsByDate(dateStr),
+        ]);
+      }
 
       // Set current date data
       setCurrentDateTasks(tasksData);
@@ -183,7 +234,10 @@ const DayView: React.FC = () => {
   const updatingRef = useRef<Set<number>>(new Set());
 
   // Optimized event submit handler
-  const handleEventSubmit = async (e: React.FormEvent, isEditing: boolean) => {
+  const handleEventSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+    isEditing: boolean
+  ) => {
     e.preventDefault();
 
     if (!date) return;
@@ -398,7 +452,10 @@ const DayView: React.FC = () => {
   };
 
   // Unified handler for task submission (both add and edit)
-  const handleTaskSubmit = async (e: React.FormEvent, isEditing: boolean) => {
+  const handleTaskSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+    isEditing: boolean
+  ) => {
     e.preventDefault();
 
     if (!date) return;
@@ -462,6 +519,84 @@ const DayView: React.FC = () => {
     navigate("/notifications?tab=event");
   };
 
+  // Create a wrapper function for handleEventSubmit
+  const handleEventFormSubmit = (
+    e: React.FormEvent<HTMLFormElement>,
+    isEditing: boolean
+  ) => {
+    e.preventDefault();
+    handleEventSubmit(e, isEditing);
+  };
+
+  // Create a wrapper for button clicks that need to call handleEventSubmit
+  const handleEventButtonSubmit = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    isEditing: boolean
+  ) => {
+    e.preventDefault();
+    // Create a synthetic form event or call the logic directly
+    const formData = isEditing ? editEventForm : newEvent;
+
+    // Add your validation and submission logic here
+    if (!formData.title.trim() || !formData.time || !formData.type) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    // Call the logic without passing the event
+    if (isEditing && editingEvent) {
+      updateEvent({
+        ...editingEvent,
+        title: formData.title.trim(),
+        time: formData.time,
+        type: formData.type,
+        description: formData.description || "",
+      }).then(/* handle result */);
+    } else {
+      // Handle new event creation
+    }
+  };
+
+  // Create a wrapper for button clicks:
+  const handleTaskButtonSubmit = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    isEditing: boolean
+  ) => {
+    e.preventDefault();
+
+    if (!date) return;
+
+    const dateStr = date.toISOString().split("T")[0];
+    const taskData = isEditing ? editTaskForm : newTask;
+
+    // Validation
+    if (!taskData.text.trim()) {
+      // Handle validation error
+      return;
+    }
+
+    try {
+      if (isEditing && editingTask) {
+        // Update existing task without passing the event
+        updateTask({
+          ...editingTask,
+          text: taskData.text,
+          time: taskData.time || "",
+        });
+      } else {
+        // Create new task without passing the event
+        addNewTask({
+          date: dateStr,
+          text: taskData.text,
+          time: taskData.time || "",
+          completed: false,
+        });
+      }
+    } catch (error) {
+      console.error("Task operation failed:", error);
+    }
+  };
+
   // Return the UI
   return (
     <div className="day-view-container">
@@ -484,6 +619,17 @@ const DayView: React.FC = () => {
         <button className="day-nav-btn" onClick={handleNextDay}>
           Next Day &gt;
         </button>
+
+        {/* Add this refresh button */}
+        {isCacheStale() && (
+          <button
+            className="day-refresh-btn"
+            onClick={forceRefreshCurrentData}
+            title="Refresh data"
+          >
+            Refresh Data
+          </button>
+        )}
       </div>
 
       <div className="day-view-stats">
@@ -550,7 +696,7 @@ const DayView: React.FC = () => {
             </div>
 
             <form
-              onSubmit={(e) => handleEventSubmit(e, false)}
+              onSubmit={(e) => handleEventFormSubmit(e, false)}
               className="day-form"
             >
               <div className="day-form-grid">
@@ -706,18 +852,15 @@ const DayView: React.FC = () => {
                               className="edit-save-btn"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleEventSubmit(e, true);
+                                handleEventButtonSubmit(e, true); // Use the button wrapper instead
                               }}
                             >
                               Save
                             </button>
                             <button
-                              type="button"
-                              className="edit-cancel-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                cancelEdit();
-                              }}
+                              type="button" // Add this to explicitly mark it as a button
+                              onClick={(e) => handleEventButtonSubmit(e, true)}
+                              className="form-cancel-btn"
                             >
                               Cancel
                             </button>
@@ -873,7 +1016,7 @@ const DayView: React.FC = () => {
                             <button
                               type="button"
                               className="edit-save-btn"
-                              onClick={(e) => handleTaskSubmit(e, true)}
+                              onClick={(e) => handleTaskButtonSubmit(e, true)}
                             >
                               Save
                             </button>

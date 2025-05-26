@@ -1,38 +1,36 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { format } from "date-fns";
+import { format, addDays, startOfWeek } from "date-fns";
 import { useData } from "../context/DataContext";
 import { useNotifications } from "../context/NotificationsContext";
 import DetailPopup from "../components/Common/DetailPopup";
-import { useInView } from 'react-intersection-observer';
 import "./Notifications.css";
 
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const listRef = useRef<HTMLDivElement>(null);
-  const { ref: loadMoreRef, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: false
-  });
+  // Add a mount-only reference
+  const hasInitialized = useRef(false);
 
-  const { 
-    notifications, 
-    unreadCount, 
-    markAsRead, 
-    markAllAsRead, 
-    completeTask, 
-    showPopupFor, 
-    currentPopupItem, 
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    completeTask,
+    showPopupFor,
+    currentPopupItem,
     closePopup,
     loadMoreNotifications,
     isLoadingMore,
     hasMoreTasks,
-    hasMoreEvents
+    hasMoreEvents,
   } = useNotifications();
-  
-  const { batchFetchData, taskCache, eventCache } = useData();
-  
+
+  const { batchFetchData, taskCache, eventCache, ensureCurrentWeekLoaded } =
+    useData();
+
   // Get tab from URL if provided
   const query = new URLSearchParams(location.search);
   const tabFromUrl = query.get("tab");
@@ -41,6 +39,11 @@ const Notifications: React.FC = () => {
     tabFromUrl === "task" || tabFromUrl === "event" ? tabFromUrl : "all"
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [visibleDays, setVisibleDays] = useState<number>(7); // Start with 7 days
+  const [hasMoreDays, setHasMoreDays] = useState<boolean>(true);
+  // NEW: Track total loaded notifications to prevent excess loading
+  const [totalLoaded, setTotalLoaded] = useState<number>(0);
+  const MAX_NOTIFICATIONS = 100; // Reasonable maximum limit
 
   // Navigate to a specific notification
   const goToNotificationSource = (type: string, id: number) => {
@@ -50,59 +53,76 @@ const Notifications: React.FC = () => {
       navigate(`/calendar/day?highlight=event-${id}`);
     }
   };
-  
+
   // Fetch notifications data when component mounts
   useEffect(() => {
+    // Skip if already initialized
+    if (hasInitialized.current) {
+      return;
+    }
+
     const loadNotifications = async () => {
       setIsLoading(true);
       try {
-        console.log("Notifications: Starting data load");
-        
+        console.log("Notifications: Starting one-time data load");
+
         // Get today's date for reference
         const today = new Date();
-        
-        // Only load today and FUTURE data, not past
-        const startDate = format(today, "yyyy-MM-dd");
-        
-        console.log(`Notifications: Loading data from ${startDate} with 14 days range`);
-        await batchFetchData(startDate, 14); // Today + 14 days future
-        
+
+        // OPTIMIZATION: First ensure current week is loaded from fixed cache
+        await ensureCurrentWeekLoaded();
+        console.log("📅 Using optimized fixed cache for current week");
+
+        // Then load additional data for future dates - BUT ONLY ONCE
+        console.log(
+          `📅 Loading additional data from current week + 1 with 7 days range`
+        );
+
+        // Calculate next week's start date to avoid duplicating data
+        const nextWeekStart = addDays(startOfWeek(today), 7);
+        const nextWeekDate = format(nextWeekStart, "yyyy-MM-dd");
+
+        // Only load data that's not already in fixed cache
+        await batchFetchData(nextWeekDate, 7);
+        console.log("Notifications: Next week data fetch complete");
+
         console.log("Notifications: Data fetch complete");
       } catch (error) {
         console.error("Error loading notifications data:", error);
       } finally {
         setIsLoading(false);
+        hasInitialized.current = true; // Mark as initialized
       }
     };
-    
-    loadNotifications();
-  }, [batchFetchData]);
 
-const formatDateHeader = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  if (date.toDateString() === today.toDateString()) {
-    return "Today";
-  } else if (date.toDateString() === tomorrow.toDateString()) {
-    return "Tomorrow";
-  } else {
-    return date.toLocaleDateString(undefined, {
-      weekday: 'long', 
-      month: 'long', 
-      day: 'numeric'
-    });
-  }
-};
+    loadNotifications();
+  }, [ensureCurrentWeekLoaded, batchFetchData]); // Remove nextWeekLoaded from dependencies
+
+  const formatDateHeader = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return "Tomorrow";
+    } else {
+      return date.toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      });
+    }
+  };
 
   // Update the handleNotificationClick function
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id);
-    
+
     // IMPORTANT: Always use popup for completed tasks instead of navigating
     // Find the actual item to show in the popup
     if (notification.type === "task") {
@@ -120,7 +140,7 @@ const formatDateHeader = (dateStr: string) => {
         return;
       }
     }
-    
+
     // Only navigate if we couldn't find the item for the popup
     goToNotificationSource(notification.type, notification.sourceId);
   };
@@ -129,7 +149,9 @@ const formatDateHeader = (dateStr: string) => {
   const findTaskInCache = (taskId: number): any | undefined => {
     for (const weekId in taskCache) {
       for (const dateKey in taskCache[weekId]) {
-        const task = taskCache[weekId][dateKey].find((t: any) => t.id === taskId);
+        const task = taskCache[weekId][dateKey].find(
+          (t: any) => t.id === taskId
+        );
         if (task) return task;
       }
     }
@@ -139,7 +161,9 @@ const formatDateHeader = (dateStr: string) => {
   const findEventInCache = (eventId: number): any | undefined => {
     for (const weekId in eventCache) {
       for (const dateKey in eventCache[weekId]) {
-        const event = eventCache[weekId][dateKey].find((e: any) => e.id === eventId);
+        const event = eventCache[weekId][dateKey].find(
+          (e: any) => e.id === eventId
+        );
         if (event) return event;
       }
     }
@@ -151,45 +175,84 @@ const formatDateHeader = (dateStr: string) => {
     // Get today's date at 00:00:00 for proper comparison
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    console.log("Filtering notifications for today and future only");
+
+    // Calculate the earliest date to show (today minus visibleDays)
+    const earliestDate = new Date(today);
+    earliestDate.setDate(earliestDate.getDate() - visibleDays);
+
+    console.log(
+      `Showing notifications from ${earliestDate.toISOString()} to future`
+    );
+
     return notifications
       .filter((notification) => {
         // First filter by type if needed
-        if (activeTab !== "all" && notification.type !== activeTab) return false;
-        
-        // Then filter by date - ONLY show today and future
+        if (activeTab !== "all" && notification.type !== activeTab)
+          return false;
+
+        // Then filter by date range
         const notificationDate = new Date(notification.date);
-        notificationDate.setHours(0, 0, 0, 0); // Compare dates only, not times
-        
-        return notificationDate >= today; // Only include today and future dates
+        notificationDate.setHours(0, 0, 0, 0);
+
+        return notificationDate >= earliestDate; // Only include dates within range
       })
       .sort((a, b) => {
-        // Sort by date (oldest first for upcoming items)
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
+        // Sort by date (newest first)
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
       });
-  }, [notifications, activeTab]);
+  }, [notifications, activeTab, visibleDays]);
 
-  // Trigger loading more items when scrolling
-  useEffect(() => {
-    if (inView && !isLoadingMore) {
-      if (activeTab === 'task' && hasMoreTasks) {
-        loadMoreNotifications('task');
-      } else if (activeTab === 'event' && hasMoreEvents) {
-        loadMoreNotifications('event');
-      } else if (activeTab === 'all') {
-        if (hasMoreTasks) loadMoreNotifications('task');
-        if (hasMoreEvents) loadMoreNotifications('event');
+  // Update the loadMore function
+  const loadMoreDays = () => {
+    // Don't load more if we're already loading or at the limit
+    if (isLoadingMore || totalLoaded >= MAX_NOTIFICATIONS) {
+      return;
+    }
+
+    // Increase visible days to show more historical notifications
+    setVisibleDays((prev) => prev + 7); // Load 7 more days
+
+    // Check if we've reached the limit of data
+    if (visibleDays >= 28) {
+      // Stop after 28 days (4 weeks)
+      setHasMoreDays(false);
+    }
+
+    // Track total loaded for safety - use current count
+    const newTotal = totalLoaded + filteredNotifications.length;
+    setTotalLoaded(newTotal);
+
+    console.log(
+      `Loaded ${visibleDays + 7} days of notifications, total count: ${newTotal}`
+    );
+
+    // Only fetch more data if needed AND not already fetched
+    if (
+      visibleDays >= 14 &&
+      (hasMoreTasks || hasMoreEvents) &&
+      !isLoadingMore
+    ) {
+      console.log("Fetching additional historical data...");
+
+      // Only fetch one type at a time to prevent duplicate calls
+      if (activeTab === "task" && hasMoreTasks) {
+        loadMoreNotifications("task");
+      } else if (activeTab === "event" && hasMoreEvents) {
+        loadMoreNotifications("event");
+      } else if (activeTab === "all") {
+        // Only load the type with more items
+        if (hasMoreTasks) loadMoreNotifications("task");
+        else if (hasMoreEvents) loadMoreNotifications("event");
       }
     }
-  }, [inView, isLoadingMore, activeTab, hasMoreTasks, hasMoreEvents, loadMoreNotifications]);
+  };
 
   return (
     <div className="notifications-container">
       <div className="notifications-header">
         <h1 className="notifications-title">Notifications</h1>
         <div className="notifications-actions">
-          <button 
+          <button
             className="notifications-mark-all"
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
@@ -202,19 +265,25 @@ const formatDateHeader = (dateStr: string) => {
 
       <div className="notifications-tabs">
         <button
-          className={`notifications-tab ${activeTab === "all" ? "active" : ""}`}
+          className={`notifications-tab ${
+            activeTab === "all" ? "active" : ""
+          }`}
           onClick={() => setActiveTab("all")}
         >
           All
         </button>
         <button
-          className={`notifications-tab ${activeTab === "task" ? "active" : ""}`}
+          className={`notifications-tab ${
+            activeTab === "task" ? "active" : ""
+          }`}
           onClick={() => setActiveTab("task")}
         >
           Tasks
         </button>
         <button
-          className={`notifications-tab ${activeTab === "event" ? "active" : ""}`}
+          className={`notifications-tab ${
+            activeTab === "event" ? "active" : ""
+          }`}
           onClick={() => setActiveTab("event")}
         >
           Events
@@ -243,9 +312,11 @@ const formatDateHeader = (dateStr: string) => {
                   {formatDateHeader(date)}
                 </div>
                 {dateNotifications.map((notification) => (
-                  <div 
-                    key={notification.id} 
-                    className={`notification-item ${notification.type} ${notification.read ? "" : "unread"}`}
+                  <div
+                    key={notification.id}
+                    className={`notification-item ${notification.type} ${
+                      notification.read ? "" : "unread"
+                    }`}
                     onClick={() => handleNotificationClick(notification)}
                   >
                     <div className={`notification-icon ${notification.type}`}>
@@ -255,25 +326,30 @@ const formatDateHeader = (dateStr: string) => {
                       <div className="notification-title">
                         {notification.title}
                       </div>
-                      <div className="notification-message">{notification.message}</div>
+                      <div className="notification-message">
+                        {notification.message}
+                      </div>
                       <div className="notification-meta">
                         {notification.date}
                         {notification.time && ` at ${notification.time}`}
                       </div>
                     </div>
-                    {notification.type === "task" && notification.actionable && (
-                      <div className="notification-actions">
-                        <button
-                          className="notification-action-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            completeTask(notification.sourceId);
-                          }}
-                        >
-                          Complete
-                        </button>
-                      </div>
-                    )}
+                    {notification.type === "task" &&
+                      notification.actionable && (
+                        <div className="notification-actions">
+                          <button
+                            className="notification-action-btn"
+                            onClick={(
+                              e: React.MouseEvent<HTMLButtonElement>
+                            ) => {
+                              e.stopPropagation();
+                              completeTask(notification.sourceId);
+                            }}
+                          >
+                            Complete
+                          </button>
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>
@@ -282,36 +358,35 @@ const formatDateHeader = (dateStr: string) => {
         ) : (
           <div className="notification-empty">
             <div className="notification-empty-icon">📅</div>
-            <h2 className="notification-empty-text">No upcoming notifications</h2>
+            <h2 className="notification-empty-text">
+              No upcoming notifications
+            </h2>
             <p className="notification-empty-subtext">
-              You don't have any tasks or events scheduled for today or upcoming days.
+              You don't have any tasks or events scheduled for today or upcoming
+              days.
             </p>
           </div>
         )}
-        
+
         <div className="notifications-pagination">
-          {filteredNotifications.length > 0 && (
-            <>
-              <div ref={loadMoreRef} className="load-more-trigger">
-                {isLoadingMore && <div className="loading-spinner small"></div>}
-                {!isLoadingMore && hasMoreTasks && (
-                  <div className="scroll-indicator">
-                    <div className="scroll-indicator-text">Scroll for more</div>
-                    <div className="scroll-indicator-arrow">↓</div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Simplify pagination status */}
-              <div className="pagination-status">
-                Showing {filteredNotifications.length} notifications
-                {hasMoreTasks || hasMoreEvents ? ' (scroll for more)' : ''}
-              </div>
-            </>
+          {filteredNotifications.length > 0 && hasMoreDays && !isLoading && (
+            <button
+              className="load-more-btn"
+              onClick={loadMoreDays}
+              disabled={isLoadingMore || totalLoaded >= MAX_NOTIFICATIONS}
+            >
+              {isLoadingMore ? (
+                <div className="loading-spinner small"></div>
+              ) : totalLoaded >= MAX_NOTIFICATIONS ? (
+                "Maximum notifications loaded"
+              ) : (
+                "Load Previous 7 Days"
+              )}
+            </button>
           )}
         </div>
       </div>
-      
+
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}

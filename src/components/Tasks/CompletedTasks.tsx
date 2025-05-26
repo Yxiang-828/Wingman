@@ -34,7 +34,10 @@ const CompletedTasks: React.FC = () => {
   };
 
   // Handle clicking on the task status circle specifically - toggle completion
-  const handleStatusClick = async (e: React.MouseEvent, task: Task) => {
+  const handleStatusClick = async (
+    e: React.MouseEvent<HTMLDivElement>,
+    task: Task
+  ) => {
     e.stopPropagation(); // Prevent triggering the task item click
     e.preventDefault(); // Prevent default behavior
 
@@ -210,7 +213,7 @@ const CompletedTasks: React.FC = () => {
   useEffect(() => {
     // If no date specified but coming from dashboard, default to today
     if (!dateFromUrl && location.state?.fromDashboard) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
       setFilterDate(today);
       console.log("Setting filter to today:", today);
     }
@@ -250,7 +253,9 @@ const CompletedTasks: React.FC = () => {
             {filterDate && (
               <button
                 className="clear-filter"
-                onClick={() => setFilterDate("")}
+                onClick={(_: React.MouseEvent<HTMLButtonElement>) =>
+                  setFilterDate("")
+                }
                 title="Clear filter"
               >
                 ✕
