@@ -124,7 +124,7 @@ const App = () => {
   const [backendChecked, setBackendChecked] = useState(false);
   const [backendReady, setBackendReady] = useState(false);
   const [backendError, setBackendError] = useState<string | null>(null);
-  const [backendStatus, setBackendStatus] = useState("Checking...");
+  const [_backendStatus, setBackendStatus] = useState("Checking...");
 
   // Initialize and listen for auth changes
   useEffect(() => {

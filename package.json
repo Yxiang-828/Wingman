@@ -10,11 +10,16 @@
     "preview": "vite preview",
     "electron": "electron .",
     "electron:dev": "set NODE_ENV=development && electron .",
-    "electron:build:win": "electron-builder --win",
+    "electron:build:win": "npm run clean:asar && electron-builder --win",
     "backend:dev": "cd Wingman-backend && .\\.venv\\Scripts\\activate.bat && py -m uvicorn main:app --reload --host 127.0.0.1 --port 8080",
-    "dev:full": "concurrently \"npm run backend:dev\" \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron:dev\""
+    "dev:full": "concurrently \"npm run backend:dev\" \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron:dev\"",
+    "dev:electron": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "clean:asar": "node electron/build-helper.js",
+    "type-check": "tsc --noEmit",
+    "build:strict": "npm run type-check && tsc && vite build"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.17",
     "@types/node": "^22.15.21",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",

@@ -10,7 +10,14 @@ REM Kill any running processes
 echo [DEBUG] Step 1: Cleanup processes...
 taskkill /f /im "Wingman.exe" 2>nul || echo No Wingman.exe found
 taskkill /f /im "python.exe" 2>nul || echo No Python processes found
+taskkill /F /IM electron.exe /T 2>nul || echo No Electron processes found
+taskkill /F /IM node.exe /T 2>nul || echo No Node processes found
 timeout /t 2 /nobreak >nul
+
+REM Free port 8080 explicitly
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8080 ^| findstr LISTENING') do (
+    taskkill /F /PID %%a 2>nul || echo No process using port 8080
+)
 
 REM Clean build files
 echo [DEBUG] Step 2: Cleaning build files...

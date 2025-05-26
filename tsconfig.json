@@ -5,13 +5,28 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
     "strict": true,
-    "noUnusedLocals": false,             // Disable unused warnings
-    "noUnusedParameters": false,         // Disable unused warnings  
-    "exactOptionalPropertyTypes": false, // Disable strict optional warnings
-    "noImplicitReturns": false,          // Disable implicit return warnings
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": false,   // Disable unchecked index warnings
-    "skipLibCheck": true                 // Skip checking .d.ts files in node_modules
-  }
+    "forceConsistentCasingInFileNames": true,
+    "exactOptionalPropertyTypes": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

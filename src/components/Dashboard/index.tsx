@@ -12,13 +12,10 @@ import type { CalendarEvent } from "../../api/Calendar";
 import "./Dashboard.css";
 
 const Dashboard: React.FC = () => {
-  const {
-    fetchTasksByDate,
-    fetchEventsByDate
-  } = useData();
-  
+  const { fetchTasksByDate, fetchEventsByDate } = useData();
+
   const { entries, refreshEntries } = useDiary();
-  
+
   const [todaysTasks, setTodaysTasks] = useState<Task[]>([]);
   const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
   const [recentDiaryEntries, setRecentDiaryEntries] = useState<any[]>([]);
@@ -37,23 +34,23 @@ const Dashboard: React.FC = () => {
         console.log("Dashboard: User not authenticated, skipping data fetch");
         return;
       }
-      
+
       setIsLoading(true);
       // Set a timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
         setLoadingTimeout(true);
       }, 10000);
-      
+
       try {
         // Get today's tasks and events only
         const [tasksData, eventsData] = await Promise.all([
           fetchTasksByDate(today),
-          fetchEventsByDate(today)
+          fetchEventsByDate(today),
         ]);
-        
-        setTodaysTasks(tasksData || []); 
+
+        setTodaysTasks(tasksData || []);
         setTodaysEvents(eventsData || []);
-        
+
         // Also refresh diary entries
         await refreshEntries();
       } catch (error) {
@@ -84,8 +81,8 @@ const Dashboard: React.FC = () => {
   // Update the handleToggleTask function
   const handleToggleTask = (updatedTask: Task) => {
     // Only update local state, don't call toggleTask again
-    setTodaysTasks(prev => 
-      prev.map(task => task.id === updatedTask.id ? updatedTask : task)
+    setTodaysTasks((prev) =>
+      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
   };
 
@@ -99,7 +96,10 @@ const Dashboard: React.FC = () => {
           {loadingTimeout && (
             <div className="loading-error">
               <p>Taking longer than usual. You can try refreshing the page.</p>
-              <button onClick={() => window.location.reload()} className="refresh-btn">
+              <button
+                onClick={() => window.location.reload()}
+                className="refresh-btn"
+              >
                 Refresh
               </button>
             </div>
@@ -110,8 +110,8 @@ const Dashboard: React.FC = () => {
   }
 
   // Filter completed tasks for today only
-  const todaysCompletedTasks = todaysTasks.filter(task => task.completed);
-  const pendingTasks = todaysTasks.filter(t => !t.completed);
+  const todaysCompletedTasks = todaysTasks.filter((task) => task.completed);
+  const pendingTasks = todaysTasks.filter((t) => !t.completed);
 
   return (
     <div className="dashboard-container">

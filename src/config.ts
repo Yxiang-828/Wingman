@@ -1,12 +1,16 @@
 // Environment configuration for both development and production
 const isElectron = window.electronAPI !== undefined;
-const isProd = import.meta.env.PROD;
+/** Used for environment detection */
+// @ts-ignore
+const _isProd = import.meta.env.PROD;
 
 // Handle connection issues with proper fallback
 export const getApiBaseUrl = () => {
-  if (isProd && isElectron) {
+  // Always use direct URL in Electron (both dev and prod)
+  if (window.electronAPI) {
     return 'http://localhost:8080';
   }
+  // Empty string for browser dev (uses Vite proxy)
   return '';
 };
 
@@ -32,11 +36,11 @@ export function getApiUrl(endpoint: string): string {
   // Ensure API prefix is present but not duplicated
   const path = normalizedEndpoint.startsWith('/api') ? normalizedEndpoint : `/api${normalizedEndpoint}`;
   
-  // For Electron in production, use the full URL with base
-  if (isProd && isElectron) {
-    return `${CONFIG.API_BASE_URL}${path}`;
+  // ALWAYS use full URL for Electron (both dev and prod)
+  if (window.electronAPI !== undefined) {
+    return `http://localhost:8080${path}`;
   }
   
-  // For development or browser environments, use relative path
-  return path.replace(/^\/+/, '/'); // Ensure only one leading slash
+  // For browser environments, use relative path
+  return path.replace(/^\/+/, '/');
 }

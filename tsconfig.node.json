@@ -11,7 +11,7 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "noEmit": false, // Changed from true to false
 
     /* Linting - ERRORS ONLY */
     "strict": true,
@@ -19,7 +19,11 @@
     "noUnusedParameters": false,         // ✅ Disable unused warnings
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": false // ✅ Disable side effect warnings
+    "noUncheckedSideEffectImports": false, // Added comma here
+
+    "composite": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "dist-node"
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "electron"]
 }

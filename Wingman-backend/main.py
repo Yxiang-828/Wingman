@@ -2,13 +2,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints import calendar, task, user, diary
 from app.core.responses import CustomJSONResponse
+from fastapi.responses import JSONResponse
+import logging
 
 app = FastAPI(default_response_class=CustomJSONResponse)
+
+# Configure logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # For development only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,3 +33,14 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+@app.middleware("http")
+async def add_global_exception_handler(request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as e:
+        logger.error(f"Unhandled exception: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"}
+        )

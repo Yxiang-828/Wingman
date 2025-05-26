@@ -4,12 +4,14 @@ const { contextBridge, ipcRenderer } = require('electron');
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   onMoodChange: (callback) => {
-    ipcRenderer.on('mood-changed', (_, mood) => callback(mood));
+    ipcRenderer.on('mood-change', (_, mood) => callback(mood));
     // Return a cleanup function
     return () => {
-      ipcRenderer.removeListener('mood-changed', callback);
+      ipcRenderer.removeListener('mood-change', callback);
     };
-  }
+  },
+  
+  toggleDevTools: () => ipcRenderer.send('toggle-dev-tools')
 });
 
 window.addEventListener('DOMContentLoaded', () => {

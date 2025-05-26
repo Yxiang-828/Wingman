@@ -9,7 +9,7 @@ interface DiaryDetailPopupProps {
   onClose: () => void;
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
-  container?: HTMLElement;
+  container?: HTMLElement | undefined; // Allow explicit undefined
 }
 
 const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({ 

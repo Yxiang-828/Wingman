@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import type { ReactNode } from 'react'; // Change to type-only import
 import { createPortal } from 'react-dom';
 
 interface PortalProps {
-  children: ReactNode;
-  container?: HTMLElement;
+  children: React.ReactNode;
+  container?: HTMLElement | undefined; // Allow explicit undefined
 }
 
 /**
