@@ -1,0 +1,170 @@
+Folder map of c:\Users\xiang\final\Wingman\src
+==================================================
+
+├── api/
+│   ├── apiClient.ts
+│   ├── auth.ts
+│   ├── axios.ts
+│   ├── Calendar.ts
+│   ├── chat.ts
+│   ├── Diary.ts
+│   ├── Task.ts
+│   └── user.ts
+├── assets/
+│   ├── moody.icns
+│   ├── moody.ico
+│   ├── moody.png
+│   ├── productive.icns
+│   ├── productive.ico
+│   ├── productive.png
+│   └── react.svg
+├── components/
+│   ├── Calendar/
+│   │   ├── Calendar.css
+│   │   ├── DayView.tsx
+│   │   ├── EventModal.tsx
+│   │   ├── index.tsx
+│   │   ├── MonthView.tsx
+│   │   ├── TimeBlockVisualizer.tsx
+│   │   ├── TimeInput.css
+│   │   ├── TimeInput.tsx
+│   │   ├── VirtualizedList.tsx
+│   │   ├── WeekView.css
+│   │   └── WeekView.tsx
+│   ├── ChatBot/
+│   │   ├── ChatBot.css
+│   │   ├── HumorSetting.tsx
+│   │   ├── index.tsx
+│   │   ├── MessageBubble.tsx
+│   │   └── QuickReplies.tsx
+│   ├── Common/
+│   │   ├── DetailPopup.css
+│   │   ├── DetailPopup.tsx
+│   │   ├── FontSizeInitializer.tsx
+│   │   ├── LoadingScreen.css
+│   │   ├── LoadingScreen.tsx
+│   │   ├── MedievalModal.css
+│   │   ├── MedievalModal.tsx
+│   │   ├── Modal.css
+│   │   ├── Modal.tsx
+│   │   ├── Portal.tsx
+│   │   ├── TimeInput.css
+│   │   └── TimeInput.tsx
+│   ├── Dashboard/
+│   │   ├── ChatCard.tsx
+│   │   ├── CompletedTasksCard.tsx
+│   │   ├── Dashboard.css
+│   │   ├── DiaryCard.tsx
+│   │   ├── EventsCard.tsx
+│   │   ├── index.tsx
+│   │   ├── MoodGraph.tsx
+│   │   ├── SummaryCard.tsx
+│   │   ├── TasksCard.tsx
+│   │   └── TimeTracker.tsx
+│   ├── Diary/
+│   │   ├── DiaryDetailPopup.css
+│   │   ├── DiaryDetailPopup.tsx
+│   │   ├── DiaryEntry.css
+│   │   ├── DiaryEntry.tsx
+│   │   ├── DiarySearch.css
+│   │   ├── DiarySearch.tsx
+│   │   ├── EditEntry.tsx
+│   │   ├── index.tsx
+│   │   ├── MoodTracker.tsx
+│   │   ├── ViewEntries.css
+│   │   ├── ViewEntries.tsx
+│   │   └── VoiceEntry.tsx
+│   ├── Header/
+│   │   ├── Header.css
+│   │   ├── index.tsx
+│   │   ├── Notifications.tsx
+│   │   └── SearchBar.tsx
+│   ├── Profile/
+│   │   ├── index.tsx
+│   │   ├── login.css
+│   │   ├── login.tsx
+│   │   ├── Profile.css
+│   │   ├── ProfileAvatar.tsx
+│   │   ├── ProfileSettings.tsx
+│   │   ├── Settings.css
+│   │   ├── UserSettings.tsx
+│   │   ├── WelcomePopup.css
+│   │   └── WelcomePopup.tsx
+│   ├── Sidebar/
+│   │   ├── index.tsx
+│   │   ├── MiniCalendar.css
+│   │   ├── MiniCalendar.tsx
+│   │   ├── NavSection.tsx
+│   │   ├── QuickAdd.tsx
+│   │   ├── Sidebar.css
+│   │   └── Sidebar.tsx
+│   ├── Tasks/
+│   │   ├── CompletedTasks.css
+│   │   └── CompletedTasks.tsx
+│   ├── ErrorBoundary.tsx
+│   └── ScrollToTop.tsx
+├── config/
+│   ├── apiConfig.ts
+│   └── llmConfig.ts
+├── context/
+│   ├── AuthContext.tsx
+│   ├── ChatContext.tsx
+│   ├── DataContext.tsx
+│   ├── DiaryContext.tsx
+│   ├── NotificationsContext.tsx
+│   └── ThemeContext.tsx
+├── Hooks/
+│   ├── useAuth.ts
+│   ├── useCalendar.ts
+│   ├── useChat.ts
+│   ├── useDiary.ts
+│   └── useMood.ts
+├── Pages/
+│   ├── Auth/
+│   │   ├── Login.tsx
+│   │   ├── OnboardingWizard.tsx
+│   │   └── Register.tsx
+│   ├── CalendarPage.tsx
+│   ├── DiaryPage.tsx
+│   ├── Home.css
+│   ├── Home.tsx
+│   ├── Notifications.css
+│   ├── Notifications.tsx
+│   └── Profile.tsx
+├── services/
+│   ├── authService.ts
+│   ├── calendarService.ts
+│   ├── diaryService.ts
+│   ├── llmService.ts
+│   ├── NavigationService.ts
+│   ├── NotificationCleanupService.ts
+│   └── NotificationService.ts
+├── styles/
+│   └── scrollbars.css
+├── types/
+│   ├── auth.d.ts
+│   ├── chat.d.ts
+│   ├── database.ts
+│   ├── diary.d.ts
+│   ├── electron.d.ts
+│   ├── global.d.ts
+│   ├── index.d.ts
+│   ├── react-calendar.d.ts
+│   └── user.ts
+├── utils/
+│   ├── api.ts
+│   ├── auth.ts
+│   ├── AuthStateManager.ts
+│   ├── dateUtils.ts
+│   ├── debounce.ts
+│   ├── helpers.ts
+│   └── moodAlgorithm.ts
+├── App.css
+├── App.tsx
+├── config.ts
+├── index.css
+├── main.css
+├── main.tsx
+├── scroll_top.tsx
+├── vite-env.d.ts
+└── WelcomePopup.tsx

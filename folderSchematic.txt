@@ -1,0 +1,103 @@
+🏠 WINGMAN PROJECT ROOT
+c:\Users\xiang\final\Wingman\
+│
+├── 📋 PROJECT MANAGEMENT
+│   ├── README.md                    # Project documentation
+│   ├── PACKAGING.md                 # Build/packaging guide
+│   ├── documentation.txt            # Comprehensive docs
+│   ├── WINGMAN_COMPREHENSIVE_GUIDE.txt
+│   ├── cache-mission.txt            # Current analysis mission
+│   ├── description.txt              # Type definitions
+│   ├── fkingcheck.txt              # Implementation checklist
+│   ├── app-flow.txt                # UI flow documentation
+│   └── data_algo.txt               # Caching strategy spec
+│
+├── 🔧 DEVELOPMENT TOOLS
+│   ├── setup-env.bat               # Environment setup
+│   ├── venvset.bat                 # Quick backend start
+│   ├── start-backend.bat           # Backend launcher
+│   ├── debug-wingman.bat           # Debug tools
+│   ├── audit.bat / audit-lenient.bat # Security audits
+│   ├── clean.bat                   # Cleanup script
+│   ├── complete-build.bat          # Full build process
+│   └── deactivate.bat              # Environment cleanup
+│
+├── 🎨 FRONTEND (React + Electron)
+│   ├── 📦 CORE CONFIG
+│   │   ├── package.json            # Dependencies & scripts
+│   │   ├── vite.config.ts          # Vite bundler config
+│   │   ├── index.html              # Entry point
+│   │   ├── eslint.config.js        # Code linting
+│   │   └── tsconfig.*.json         # TypeScript configs
+│   │
+│   ├── 🌐 ENVIRONMENT
+│   │   └── .env                    # Frontend env variables
+│   │
+│   ├── 📁 SRC/ (SOURCE CODE)
+│   │   ├── main.tsx                # React entry point
+│   │   ├── App.tsx                 # Main app component
+│   │   ├── WelcomePopup.tsx        # Welcome screen
+│   │   ├── scroll_top.tsx          # Utility component
+│   │   ├── main.css / index.css / App.css
+│   │   │
+│   │   ├── 📁 api/
+│   │   │   └── apiClient.ts        # API communication layer
+│   │   │
+│   │   ├── 📁 components/
+│   │   │   ├── Calendar/           # Calendar views
+│   │   │   ├── Dashboard/          # Dashboard cards
+│   │   │   └── Common/             # Shared components
+│   │   │
+│   │   ├── 📁 context/
+│   │   │   └── AuthContext.tsx     # Authentication state
+│   │   │   # ❌ DataContext.tsx (MISSING!)
+│   │   │
+│   │   ├── 📁 utils/
+│   │   │   ├── api.ts              # API utilities
+│   │   │   ├── auth.ts             # Auth utilities
+│   │   │   └── moodAlgorithm.ts    # Mood calculation
+│   │   │
+│   │   ├── 📁 types/
+│   │   │   ├── global.d.ts         # Global type definitions
+│   │   │   ├── electron.d.ts       # Electron types
+│   │   │   ├── react-calendar.d.ts # Calendar types
+│   │   │   └── vite-env.d.ts       # Vite environment
+│   │   │
+│   │   ├── 📁 services/            # Business logic layer
+│   │   │
+│   │   └── config.ts               # App configuration
+│   │
+│   └── 📁 electron/
+│       ├── main.js                 # Electron main process
+│       └── preload.js              # Electron preload script
+│
+├── 🐍 BACKEND (FastAPI + Python)
+│   └── 📁 Wingman-backend/
+│       ├── 🔧 ENVIRONMENT
+│       │   ├── .env                # Backend env variables
+│       │   ├── .venv/              # Python virtual environment
+│       │   ├── requirements.txt    # Python dependencies
+│       │   └── python313_compat.py # Python 3.13 compatibility
+│       │
+│       ├── 🚀 CORE
+│       │   └── main.py             # FastAPI application entry
+│       │
+│       ├── 📁 app/
+│       │   ├── api/
+│       │   │   └── v1/
+│       │   │       └── endpoints/
+│       │   │           ├── task.py      # Task management
+│       │   │           ├── calendar.py  # Calendar operations
+│       │   │           └── diary.py     # Diary entries
+│       │   │
+│       │   ├── core/               # Core configuration
+│       │   ├── models/             # Database models
+│       │   └── services/           # Business logic
+│       │
+│       └── 📁 tests/
+│           └── conftest.py         # Test configuration
+│
+└── 🔍 ANALYSIS FILES
+    ├── .gitignore                  # Git ignore rules
+    ├── server.js                   # Development server
+    └── et --hard fec9035          # Git reference (?)
