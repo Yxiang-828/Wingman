@@ -46,7 +46,7 @@ export const cleanupExpiredItems = () => {
         if (dismissedIds.includes(`event-${event.id}`)) {
           return false; // Already dismissed
         }
-        return event.date < todayStr; // Auto-dismiss past events
+        return event.event_date < todayStr; // Auto-dismiss past events
       })
       .map(event => `event-${event.id}`);
     

@@ -1,8 +1,10 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
+import { useData } from "../../context/DataContext";
 import Portal from "./Portal";
+import EditPopup from "./EditPopup";
 import "./DetailPopup.css";
 import { format } from "date-fns";
 
@@ -15,7 +17,7 @@ interface DetailPopupProps {
 
 // Function to check if an object is a Task
 const isTask = (item: Task | CalendarEvent): item is Task => {
-  return "text" in item && "completed" in item;
+  return "task_date" in item && "completed" in item;
 };
 
 // Helper to format dates consistently
@@ -35,7 +37,31 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
   container,
 }) => {
   const navigate = useNavigate();
+  const { updateTask, updateEvent } = useData();
   const popupRef = useRef<HTMLDivElement>(null);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+
+  // Handle edit button click
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowEditPopup(true);
+  };
+
+  // Handle save from edit popup
+  const handleSave = async (updatedItem: Task | CalendarEvent) => {
+    try {
+      if (isTask(updatedItem)) {
+        await updateTask(updatedItem);
+      } else {
+        await updateEvent(updatedItem);
+      }
+      setShowEditPopup(false);
+      onClose(); // Close detail popup after successful edit
+    } catch (error) {
+      console.error("Error updating item:", error);
+      throw error; // Let EditPopup handle the error
+    }
+  };
 
   // Handle complete task function call
   const handleCompleteTask = async (e: React.MouseEvent) => {
@@ -57,8 +83,9 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
     // Stop event propagation to prevent the overlay click from firing
     e.stopPropagation();
 
-    const type = isTask(item) ? "task" : "event";
-    navigate(`/calendar/day?date=${item.date}&highlight=${type}-${item.id}`);
+    const type = "task_date" in item ? "task" : "event";
+    const itemDate = "task_date" in item ? item.task_date : item.event_date;
+    navigate(`/calendar/day?date=${itemDate}&highlight=${type}-${item.id}`);
     onClose();
   };
 
@@ -91,13 +118,13 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
                   {item.completed ? "Completed" : "Pending"}
                 </div>
                 <div className="detail-date">
-                  {formatDateDisplay(item.date)}
+                  {formatDateDisplay(item.task_date)}
                 </div>
               </div>
 
-              <div className="detail-text">{item.text}</div>
+              <div className="detail-text">{item.title}</div>
 
-              {item.time && <div className="detail-time">{item.time}</div>}
+              {item.task_time && <div className="detail-time">{item.task_time}</div>}
 
               <div className="detail-popup-actions">
                 {!item.completed && onComplete && (
@@ -108,6 +135,12 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
                     Mark Complete
                   </button>
                 )}
+                <button
+                  className="detail-action-btn edit"
+                  onClick={handleEdit}
+                >
+                  Edit Task
+                </button>
                 <button
                   className="detail-action-btn view"
                   onClick={navigateToItem}
@@ -127,14 +160,14 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
                   {(item as CalendarEvent).type}
                 </div>
                 <div className="detail-date">
-                  {formatDateDisplay(item.date)}
+                  {formatDateDisplay(item.event_date)}
                 </div>
               </div>
 
               <div className="detail-text">{(item as CalendarEvent).title}</div>
 
-              {item.time && (
-                <div className="detail-time">Time: {item.time}</div>
+              {item.event_time && (
+                <div className="detail-time">Time: {item.event_time}</div>
               )}
 
               {(item as CalendarEvent).description && (
@@ -144,6 +177,12 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
               )}
 
               <div className="detail-popup-actions">
+                <button
+                  className="detail-action-btn edit"
+                  onClick={handleEdit}
+                >
+                  Edit Event
+                </button>
                 <button
                   className="detail-action-btn view"
                   onClick={navigateToItem}
@@ -155,6 +194,16 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
           </>
         )}
       </div>
+
+      {/* ✅ NEW: Edit Popup */}
+      {showEditPopup && (
+        <EditPopup
+          item={item}
+          onClose={() => setShowEditPopup(false)}
+          onSave={handleSave}
+          container={container}
+        />
+      )}
     </div>
   );
 

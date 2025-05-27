@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { useData } from "../../context/DataContext";
+import { useCalendarCache } from "../../Hooks/useCalendar";
 import "./MiniCalendar.css";
 
 interface MiniCalendarProps {
@@ -11,91 +11,53 @@ interface MiniCalendarProps {
 
 const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
   const navigate = useNavigate();
-  const { eventCache, taskCache } = useData();
+  const { getDayData } = useCalendarCache("MiniCalendar");
   const [currentDate] = useState(new Date());
   const [eventsMap, setEventsMap] = useState<Record<string, number>>({});
 
-  // Generate calendar days for current month
   useEffect(() => {
-    const days: Date[] = [];
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
+    const loadEventCounts = async () => {
+      const newEventsMap: Record<string, number> = {};
 
-    // Create first day of month
-    const firstDay = new Date(year, month, 1);
+      // Get current month's date range
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Fill in days from previous month to align with week
-    const firstDayOfWeek = firstDay.getDay();
-    for (let i = firstDayOfWeek; i > 0; i--) {
-      days.push(new Date(year, month, 1 - i));
-    }
+      // Load data for each day of the month
+      const promises = [];
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateStr = format(date, "yyyy-MM-dd");
+        promises.push(
+          getDayData(dateStr).then((dayData) => ({
+            date: dateStr,
+            count: dayData.tasks.length + dayData.events.length,
+          }))
+        );
+      }
 
-    // Fill in days for current month
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(year, month, i));
-    }
-
-    // Create a proper Record<string, number> from the days array
-    const eventsRecord: Record<string, number> = {};
-    days.forEach((day) => {
-      const dateKey = formatDateKey(day);
-      eventsRecord[dateKey] = 0; // Default value, update as needed
-    });
-    setEventsMap(eventsRecord);
-  }, [currentDate]);
-
-  // Count events for each day
-  useEffect(() => {
-    // Fix date handling in the useEffect
-    const newEventsMap: Record<string, number> = {};
-
-    // Process events
-    Object.values(eventCache || {}).forEach((weekData) => {
-      Object.values(weekData || {}).forEach((dayEvents) => {
-        dayEvents.forEach((event: { date: string | Date | number }) => {
-          if (event.date) {
-            // Convert to string safely
-            const dateStr = format(new Date(String(event.date)), "yyyy-MM-dd");
-            newEventsMap[dateStr] = (newEventsMap[dateStr] || 0) + 1;
-          }
-        });
-      });
-    });
-
-    // Process tasks
-    Object.values(taskCache || {}).forEach((weekData) => {
-      Object.values(weekData || {}).forEach((dayTasks) => {
-        interface Task {
-          date?: string | Date | number;
-          // Other possible task properties would go here
+      const results = await Promise.all(promises);
+      results.forEach(({ date, count }) => {
+        if (count > 0) {
+          newEventsMap[date] = count;
         }
-
-        dayTasks.forEach((task: Task) => {
-          if (task.date) {
-            // Convert to string safely
-            const dateStr = format(new Date(String(task.date)), "yyyy-MM-dd");
-            newEventsMap[dateStr] = (newEventsMap[dateStr] || 0) + 1;
-          }
-        });
       });
-    });
 
-    setEventsMap(newEventsMap);
-  }, [eventCache, taskCache]);
+      setEventsMap(newEventsMap);
+    };
+
+    loadEventCounts();
+  }, [currentDate, getDayData]);
 
   const formatDateKey = (date: Date): string => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(date.getDate()).padStart(2, "0")}`;
+    return format(date, "yyyy-MM-dd");
   };
 
   const handleDayClick = (date: Date) => {
     const dateStr = formatDateKey(date);
     navigate(`/calendar/day?date=${dateStr}`);
 
-    // Also call the callback if provided
     if (onDateSelect) {
       onDateSelect(date);
     }
@@ -106,7 +68,8 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
       <Calendar
         onClickDay={handleDayClick}
         className="react-calendar--small"
-        calendarType="hebrew"
+        // @ts-ignore
+        calendarType="iso8601"
         tileClassName={({ date }) => {
           const hasEvent = eventsMap[formatDateKey(date)] > 0;
           const today = new Date();

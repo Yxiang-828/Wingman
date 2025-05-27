@@ -43,8 +43,8 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
               <div className="event-details">
                 <div className="event-title">{event.title}</div>
                 <div className="event-meta">
-                  {event.time && (
-                    <span className="event-time">{event.time}</span>
+                  {event.event_time && (
+                    <span className="event-time">{event.event_time}</span>
                   )}
                 </div>
               </div>

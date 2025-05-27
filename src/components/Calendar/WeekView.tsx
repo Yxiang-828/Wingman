@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { format, startOfWeek, addDays, isToday } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
 import { useCalendarCache } from "../../Hooks/useCalendar";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
@@ -19,8 +19,7 @@ const WeekView: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { getWeekData, loading: cacheLoading } = useCalendarCache("WeekView");
-  const { createTask, createEvent, toggleTask, deleteTask, deleteEvent } =
-    useData();
+  const { createTask, createEvent, toggleTask } = useData();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
 
   const [activeWeekId, setActiveWeekId] = useState("");
@@ -439,7 +438,7 @@ const WeekView: React.FC = () => {
       </div>
 
       <div className="week-days-grid">
-        {days.map((day, index) => {
+        {days.map((day) => {
           const dateStr = day.toISOString().split("T")[0];
           const dayData = weeklyData[dateStr] || { tasks: [], events: [] };
 

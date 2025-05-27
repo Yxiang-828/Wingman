@@ -74,7 +74,25 @@
   border-radius: 12px;
   border: 1px solid rgba(100, 108, 255, 0.1);
   transition: all 0.2s ease;
-  cursor: pointer;
+  cursor: pointer; /* Add cursor pointer to indicate clickable */
+  position: relative;
+  overflow: hidden;
+}
+
+.day-stat-card:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+/* Add active/click effect */
+.day-stat-card:active {
+  transform: scale(0.98); /* Slight scale down when clicked */
 }
 
 .day-stat-card:nth-child(1) {

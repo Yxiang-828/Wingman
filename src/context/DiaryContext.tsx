@@ -7,7 +7,6 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
-import { throttle } from "lodash";
 import {
   fetchDiaryEntries,
   fetchDiaryEntry,

@@ -181,9 +181,10 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           <div style={{ fontSize: "0.8rem", color: "#666" }}>
             Total received: {tasks?.length || 0} | Pending: {pendingTasks.length}
           </div>
+          {/* Change this button to navigate to tasks tab specifically */}
           <button
             className="action-btn small"
-            onClick={() => navigate("/calendar/day")}
+            onClick={() => navigate("/calendar/day?tab=tasks")}
           >
             Add Task
           </button>

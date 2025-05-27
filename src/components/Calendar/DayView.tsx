@@ -8,6 +8,7 @@ import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import DetailPopup from "../Common/DetailPopup";
 import TimeInput from "../Common/TimeInput"; // ✅ YOU ALREADY HAVE THIS IMPORTED
+import EditPopup from "../Common/EditPopup";
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -88,6 +89,21 @@ const DayView: React.FC = () => {
       console.error("Error parsing date:", err);
       const today = new Date();
       setDate(today);
+    }
+  }, [location.search]);
+
+  // Add this near the start of your component, after setting the date
+  useEffect(() => {
+    try {
+      const query = new URLSearchParams(location.search);
+      const tabParam = query.get("tab");
+      
+      // Set the active tab based on URL parameter if present
+      if (tabParam === "tasks" || tabParam === "events") {
+        setActiveTab(tabParam);
+      }
+    } catch (err) {
+      console.error("Error parsing tab parameter:", err);
     }
   }, [location.search]);
 
@@ -414,30 +430,86 @@ const DayView: React.FC = () => {
     showPopupFor(event);
   };
 
-  const handleEditTask = (task: Task) => {
-    setEditingTask(task);
-    setEditTaskForm({
-      title: task.title,
-      task_time: task.task_time || "",
-    });
+  // ✅ NEW: Add edit popup state
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [editingItem, setEditingItem] = useState<Task | CalendarEvent | null>(null);
+
+  // ✅ NEW: Handle edit button click (same class as DetailPopup)
+  const handleEditTask = (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEditingItem(task);
+    setShowEditPopup(true);
   };
 
-  const handleEditEvent = (event: CalendarEvent) => {
-    setEditingEvent(event);
-    setEditEventForm({
-      title: event.title,
-      event_time: event.event_time || "",
-      type: event.type || "",
-      description: event.description || "",
-    });
+  const handleEditEvent = (e: React.MouseEvent, event: CalendarEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEditingItem(event);
+    setShowEditPopup(true);
   };
 
+  // ✅ NEW: Handle save from edit popup
+  const handleSaveEdit = async (updatedItem: Task | CalendarEvent) => {
+    try {
+      if ("task_date" in updatedItem) {
+        const updatedTask = await updateTask(updatedItem as Task);
+        setCurrentDateTasks(prev => 
+          prev.map(task => task.id === updatedTask.id ? updatedTask : task)
+        );
+      } else {
+        const updatedEvent = await updateEvent(updatedItem as CalendarEvent);
+        setCurrentDateEvents(prev => 
+          prev.map(event => event.id === updatedEvent.id ? updatedEvent : event)
+        );
+      }
+      setShowEditPopup(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Error updating item:", error);
+      throw error;
+    }
+  };
+
+  // ✅ NEW: Close edit popup
+  const closeEditPopup = () => {
+    setShowEditPopup(false);
+    setEditingItem(null);
+  };
+
+  // ✅ ADD: Missing cancelEdit function after the other edit handlers
   const cancelEdit = () => {
     setEditingTask(null);
     setEditingEvent(null);
+    setEditTaskForm({ title: "", task_time: "" });
+    setEditEventForm({
+      title: "",
+      event_time: "",
+      type: "",
+      description: "",
+    });
   };
 
   const stats = getStats();
+  const navigateToNotificationsEvents = () => {
+    // Pre-fetch events data before navigation for smooth transition
+    const today = new Date().toISOString().split('T')[0];
+    getDayData(today, true).then(() => {
+      navigate('/notifications?tab=event');
+    });
+  };
+
+  const navigateToCompletedTasks = () => {
+    navigate('/completed-tasks');
+  };
+
+  const navigateToNotificationsTasks = () => {
+    // Pre-fetch tasks data before navigation for smooth transition
+    const today = new Date().toISOString().split('T')[0];
+    getDayData(today, true).then(() => {
+      navigate('/notifications?tab=task');
+    });
+  };
 
   // ✅ Show loading state
   if (loading) {
@@ -512,7 +584,11 @@ const DayView: React.FC = () => {
       </div>
 
       <div className="day-view-stats">
-        <div className="day-stat-card" onClick={() => setActiveTab("events")}>
+        <div 
+          className="day-stat-card" 
+          onClick={navigateToNotificationsEvents}
+          title="View all events"
+        >
           <div className="day-stat-icon">📅</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.events}</div>
@@ -520,7 +596,11 @@ const DayView: React.FC = () => {
           </div>
         </div>
 
-        <div className="day-stat-card" onClick={() => setActiveTab("tasks")}>
+        <div 
+          className="day-stat-card" 
+          onClick={navigateToCompletedTasks}
+          title="View completed tasks"
+        >
           <div className="day-stat-icon">✅</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.completedTasks}</div>
@@ -528,8 +608,12 @@ const DayView: React.FC = () => {
           </div>
         </div>
 
-        <div className="day-stat-card" onClick={() => setActiveTab("tasks")}>
-          <div className="day-stat-icon">⏳</div>
+        <div 
+          className="day-stat-card" 
+          onClick={navigateToNotificationsTasks}
+          title="View pending tasks"
+        >
+          <div className="day-stat-icon">⏰</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.pendingTasks}</div>
             <div className="day-stat-label">Pending</div>
@@ -716,7 +800,7 @@ const DayView: React.FC = () => {
                         className="event-btn edit"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleEditEvent(event);
+                          handleEditEvent(e, event);
                         }}
                         title="Edit event"
                       >
@@ -858,7 +942,7 @@ const DayView: React.FC = () => {
                         className="task-btn edit"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleEditTask(task);
+                          handleEditTask(e, task);
                         }}
                         title="Edit task"
                       >
@@ -892,6 +976,16 @@ const DayView: React.FC = () => {
           item={currentPopupItem}
           onClose={closePopup}
           onComplete={completeTask}
+        />
+      )}
+
+      {/* ✅ NEW: EditPopup for direct editing */}
+      {showEditPopup && editingItem && (
+        <EditPopup
+          item={editingItem}
+          onClose={closeEditPopup}
+          onSave={handleSaveEdit}
+          container={document.body}
         />
       )}
     </div>

@@ -117,10 +117,10 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
                 ✓
               </div>
               <div className="task-details">
-                <div className="task-title">{task.text}</div>
+                <div className="task-title">{task.title}</div>
                 <div className="task-meta">
-                  {task.time && <span className="task-time">{task.time}</span>}
-                  <span className="task-date">{formatDate(task.date)}</span>
+                  {task.task_time && <span className="task-time">{task.task_time}</span>}
+                  <span className="task-date">{formatDate(task.task_date)}</span>
                 </div>
               </div>
             </li>

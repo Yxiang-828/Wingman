@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { format } from "date-fns";
 import { useNotifications } from "../context/NotificationsContext";
 import type { Task } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
 import DetailPopup from "../components/Common/DetailPopup";
 import "./Notifications.css";
+import { useNavigationRefresh } from '../hooks/useNavigationRefresh';
 
 // ✅ NEW: Countdown Timer Component (keeping existing)
 interface CountdownTimerProps {
@@ -115,7 +115,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     return null;
   }
 
-  const { hours, minutes, seconds, isOverdue, isPast } = timeLeft;
+  const { hours, minutes, seconds, isPast } = timeLeft;
 
   const getUrgencyLevel = () => {
     if (isPast) return "overdue";
@@ -206,7 +206,6 @@ const Notifications: React.FC = () => {
   const location = useLocation();
 
   const {
-    todaysTasks,
     todaysEvents,
     pendingTasks,
     loading,
@@ -218,7 +217,6 @@ const Notifications: React.FC = () => {
     currentPopupItem,
     closePopup,
     unreadCount,
-    dismissNotification, // ✅ Get from context
   } = useNotifications();
 
   // ✅ NEW: Alert system state
@@ -349,6 +347,9 @@ const Notifications: React.FC = () => {
   const { tasks: filteredTasks, events: filteredEvents } = getFilteredItems();
   const totalItems = filteredTasks.length + filteredEvents.length;
 
+  // Add this hook to trigger refresh on navigation
+  useNavigationRefresh();
+
   if (!isReady || loading) {
     return (
       <div className="notifications-container">
@@ -382,25 +383,27 @@ const Notifications: React.FC = () => {
           onClick={() => setActiveTab("all")}
         >
           All
-          <span className="notifications-count">{totalItems}</span>
+          <span className="notifications-count">
+            {pendingTasks.length + todaysEvents.length}
+          </span>
         </button>
         <button
-          className={`notifications-tab ${
-            activeTab === "task" ? "active" : ""
-          }`}
+          className={`notifications-tab ${activeTab === "task" ? "active" : ""}`}
           onClick={() => setActiveTab("task")}
         >
           Tasks
-          <span className="notifications-count">{filteredTasks.length}</span>
+          <span className="notifications-count">
+            {pendingTasks.length}
+          </span>
         </button>
         <button
-          className={`notifications-tab ${
-            activeTab === "event" ? "active" : ""
-          }`}
+          className={`notifications-tab ${activeTab === "event" ? "active" : ""}`}
           onClick={() => setActiveTab("event")}
         >
           Events
-          <span className="notifications-count">{filteredEvents.length}</span>
+          <span className="notifications-count">
+            {todaysEvents.length}
+          </span>
         </button>
       </div>
 

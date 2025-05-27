@@ -192,6 +192,16 @@
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
+.detail-action-btn.edit {
+  background: rgba(255, 193, 7, 0.8);
+  color: #1a1a1a;
+}
+
+.detail-action-btn.edit:hover {
+  background: rgba(255, 193, 7, 1);
+  transform: translateY(-2px);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

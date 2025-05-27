@@ -54,6 +54,9 @@ interface NotificationsContextType {
   loadMoreNotifications: (type: string) => void;
   hasMoreTasks: boolean;
   hasMoreEvents: boolean;
+  
+  // Refresh function
+  refreshNotifications: () => Promise<void>;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | null>(
@@ -132,7 +135,6 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentPopupItem, setCurrentPopupItem] = useState<
     Task | CalendarEvent | null
   >(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(Auth.isAuthenticated);
 
   // ✅ Legacy state for backwards compatibility
   const [hasMoreNotifications] = useState(false);
@@ -180,7 +182,6 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   // ✅ Auth listener
   useEffect(() => {
     const unsubscribe = Auth.addListener((isAuth) => {
-      setIsAuthenticated(isAuth);
       if (!isAuth) {
         // Clear notification-specific data on logout
         setReadMap({});
@@ -304,6 +305,25 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log(`Loading more ${type} notifications...`);
   };
 
+  // Add manual refresh function
+  const refreshNotifications = useCallback(async () => {
+    const today = new Date().toISOString().split('T')[0];
+    console.log(`📋 Manually refreshing notifications data for ${today}`);
+    
+    try {
+      // Get today's data
+      const todayData = await getDayData(today, true); // Force refresh
+    
+      setTodaysTasks(todayData.tasks);
+      setTodaysEvents(todayData.events);
+      setIsReady(true);
+    
+      console.log(`📋 Refreshed notifications with ${todayData.tasks.length} tasks and ${todayData.events.length} events`);
+    } catch (error) {
+      console.error("Error refreshing notifications:", error);
+    }
+  }, [getDayData]);
+
   // ✅ Provider value with today's data
   const value = {
     // Today's data (main functionality)
@@ -332,6 +352,9 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     loadMoreNotifications,
     hasMoreTasks,
     hasMoreEvents,
+
+    // Refresh function
+    refreshNotifications,
   };
 
   return (

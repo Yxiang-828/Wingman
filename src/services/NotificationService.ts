@@ -26,15 +26,14 @@ const checkNotificationPermission = async (): Promise<boolean> => {
 export const showTaskNotification = (task: Task) => {
   checkNotificationPermission().then(granted => {
     if (granted) {
-      const notification = new Notification(`Task Reminder: ${task.text}`, {
-        body: `Due on ${formatDate(task.date)} ${task.time ? 'at ' + task.time : ''}`,
-        icon: '/src/assets/task-icon.png', // Create or use an appropriate icon
+      const notification = new Notification(`Task Reminder: ${task.title}`, {
+        body: `Due on ${formatDate(task.task_date)} ${task.task_time ? 'at ' + task.task_time : ''}`,
+        icon: '/assets/icons/wingman-productive.ico',
         tag: `task-${task.id}` // Prevents duplicate notifications for the same task
       });
       
       notification.onclick = () => {
-        window.focus();
-        window.location.href = `/calendar/day?date=${task.date}&highlight=task-${task.id}`;
+        window.location.href = `/calendar/day?date=${task.task_date}&highlight=task-${task.id}`;
       };
     }
   });
@@ -45,7 +44,7 @@ export const showEventNotification = (event: CalendarEvent) => {
   checkNotificationPermission().then(granted => {
     if (granted) {
       const notification = new Notification(`Event: ${event.title}`, {
-        body: `${event.type} at ${event.time} on ${formatDate(event.date)}`,
+        body: `${event.type} at ${event.event_time} on ${formatDate(event.event_date)}`,
         icon: `/src/assets/event-icon.png`, // Create or use an appropriate icon
         tag: `event-${event.id}` // Prevents duplicate notifications for the same event
       });
@@ -74,17 +73,17 @@ export const checkUpcomingNotifications = (tasks: Task[], events: CalendarEvent[
   const today = now.toISOString().split('T')[0];
   
   // Now 'today' is available here
-  const todayTasks = tasks.filter(task => task.date === today && !task.completed);
+  const todayTasks = tasks.filter(task => task.task_date === today && !task.completed);
   
   todayTasks.forEach(task => {
-    if (!task.time) {
+    if (!task.task_time) {
       // Task with no specific time - notify at the start of the day
       showTaskNotification(task);
       return;
     }
     
     // Check if it's time to notify for timed tasks
-    const [hours, minutes] = task.time.split(':').map(Number);
+    const [hours, minutes] = task.task_time.split(':').map(Number);
     const taskTime = new Date(now);
     taskTime.setHours(hours, minutes, 0, 0);
     
@@ -98,14 +97,14 @@ export const checkUpcomingNotifications = (tasks: Task[], events: CalendarEvent[
   });
   
   // Now 'today' is available here too
-  const todayEvents = events.filter(event => event.date === today);
+  const todayEvents = events.filter(event => event.event_date === today);
   
   todayEvents.forEach(event => {
     // Check if it's time to notify
-    if (!event.time) return;
+    if (!event.event_time) return;
     
     // FIXED: Use time instead of event_time
-    const [hours, minutes] = event.time.split(':').map(Number);
+    const [hours, minutes] = event.event_time.split(':').map(Number);
     const eventTime = new Date(now);
     eventTime.setHours(hours, minutes, 0, 0);
     

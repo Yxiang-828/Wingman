@@ -27,7 +27,7 @@ export const VirtualizedEventList: React.FC<{
           className={`week-event-item ${event.type.toLowerCase()}`}
           onClick={() => onEventClick(event)}
         >
-          {event.time && <div className="week-event-time">{event.time}</div>}
+          {event.event_time && <div className="week-event-time">{event.event_time}</div>}
           <div className="week-event-title" title={event.title}>
             {truncateTitle(event.title)}
           </div>
@@ -70,10 +70,10 @@ export const VirtualizedTaskList: React.FC<{
           >
             {task.completed ? "✓" : "○"}
           </div>
-          <div className="week-task-text" title={task.text}>
-            {truncateTitle(task.text)}
+          <div className="week-task-text" title={task.title}>
+            {truncateTitle(task.title)}
           </div>
-          {task.time && <div className="week-task-time">{task.time}</div>}
+          {task.task_time && <div className="week-task-time">{task.task_time}</div>}
           <button
             className="week-item-delete"
             onClick={(e) => {

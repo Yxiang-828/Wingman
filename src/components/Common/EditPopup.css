@@ -1,0 +1,144 @@
+.edit-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.edit-popup {
+  background: rgba(30, 30, 50, 0.95);
+  border-radius: 16px;
+  padding: 0;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.edit-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+}
+
+.edit-popup-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.edit-popup-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.edit-popup-close:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.edit-popup-form {
+  padding: 1.5rem;
+}
+
+.edit-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.edit-form-group label {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.edit-form-input,
+.edit-form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(40, 40, 60, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.edit-form-input:focus,
+.edit-form-textarea:focus {
+  outline: none;
+  border-color: rgba(100, 108, 255, 0.5);
+  background: rgba(40, 40, 60, 0.8);
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.1);
+}
+
+.edit-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.edit-popup-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(100, 108, 255, 0.1);
+}
+
+.edit-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.edit-btn.cancel {
+  background: rgba(40, 40, 60, 0.6);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.edit-btn.cancel:hover {
+  background: rgba(50, 50, 70, 0.8);
+  color: white;
+}
+
+.edit-btn.save {
+  background: rgba(100, 108, 255, 0.8);
+  color: white;
+}
+
+.edit-btn.save:hover {
+  background: rgba(100, 108, 255, 1);
+  transform: translateY(-1px);
+}
+
+.edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

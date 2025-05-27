@@ -14,14 +14,13 @@ export const navigateToDayView = (date: string) => {
   }
 };
 
-export const navigateToTaskDetails = (task: Task) => {
-  if (navigateInstance) {
-    navigateInstance(`/calendar/day?date=${task.date}&highlight=task-${task.id}`);
-  }
+// ✅ FIXED: Use correct field names
+export const navigateToTask = (task: Task) => {
+  if (!navigateInstance) return;
+  navigateInstance(`/calendar/day?date=${task.task_date}&highlight=task-${task.id}`);
 };
 
-export const navigateToEventDetails = (event: CalendarEvent) => {
-  if (navigateInstance) {
-    navigateInstance(`/calendar/day?date=${event.date}&highlight=event-${event.id}`);
-  }
+export const navigateToEvent = (event: CalendarEvent) => {
+  if (!navigateInstance) return;
+  navigateInstance(`/calendar/day?date=${event.event_date}&highlight=event-${event.id}`);
 };
