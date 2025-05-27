@@ -17,7 +17,6 @@ import Login from "./components/Profile/login";
 import Profile from "./components/Profile/index";
 import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";
-import CompletedTasks from "./components/Tasks/CompletedTasks";
 import Notifications from "./Pages/Notifications";
 import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
@@ -106,7 +105,6 @@ const AppContent = ({
                 <Route path="avatar" element={<ProfileAvatar />} />
               </Route>
               <Route path="/home" element={<Home />} />
-              <Route path="/completed-tasks" element={<CompletedTasks />} />
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

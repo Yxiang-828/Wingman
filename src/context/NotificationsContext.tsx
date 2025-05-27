@@ -11,6 +11,7 @@ import { getCurrentUserId } from "../utils/auth";
 import type { Task } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
 import { Auth } from "../utils/AuthStateManager";
+import { getTodayDateString } from "../utils/dateUtils";
 
 // Define the notification type structure
 export interface Notification {
@@ -154,7 +155,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
       try {
         // Get today's date
-        const today = new Date().toISOString().split("T")[0];
+        const today = getTodayDateString();
         console.log(`📅 Notifications: Loading data for ${today}`);
         
         // Copy data from shared cache (DayView is primary owner)

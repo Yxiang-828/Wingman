@@ -4,8 +4,18 @@ setlocal EnableDelayedExpansion
 echo Starting Wingman Project Audit...
 echo.
 
-:: Log file in temp directory with consistent naming
-set "LOGFILE=%TEMP%\wingman-audit-log.txt"
+:: Initialize all result variables
+set "OVERALL_STATUS=0"
+set "LINT_RESULT=1"
+set "TYPE_RESULT=1"
+set "PY_RESULT=1"
+set "BUILD_RESULT=0"
+
+:: Create error-log directory if it doesn't exist
+if not exist "error-log" mkdir "error-log"
+
+:: Log file in current directory
+set "LOGFILE=error-log\wingman-audit-log.txt"
 echo Wingman Audit Log > "%LOGFILE%"
 echo Started: %DATE% %TIME% >> "%LOGFILE%"
 echo Working Directory: "%CD%" >> "%LOGFILE%"
@@ -58,16 +68,16 @@ echo Checking npm...
 echo Checking npm... >> "%LOGFILE%"
 
 :: Clean up any existing temp file
-if exist "temp_npm_check.txt" del /f /q "temp_npm_check.txt"
+if exist "error-log\npm-check.txt" del /f /q "error-log\npm-check.txt"
 
 :: Test npm with timeout protection
 echo Testing npm command...
-start /wait /b cmd /c "npm --version > temp_npm_check.txt 2>&1 & echo NPM_EXIT_CODE:!ERRORLEVEL! >> temp_npm_check.txt"
+start /wait /b cmd /c "npm --version > error-log\npm-check.txt 2>&1 & echo NPM_EXIT_CODE:!ERRORLEVEL! >> error-log\npm-check.txt"
 
 :: Wait a moment for file to be written
 timeout /t 2 /nobreak >nul 2>&1
 
-if not exist "temp_npm_check.txt" (
+if not exist "error-log\npm-check.txt" (
     echo ERROR: npm test failed - no output file created!
     echo ERROR: npm test failed - no output file created! >> "%LOGFILE%"
     echo This might indicate npm is not installed or PATH issues
@@ -77,7 +87,7 @@ if not exist "temp_npm_check.txt" (
 
 :: Check the content
 set "NPM_WORKS=0"
-for /f "tokens=*" %%a in (temp_npm_check.txt) do (
+for /f "tokens=*" %%a in (error-log\npm-check.txt) do (
     echo npm output: %%a
     echo npm output: %%a >> "%LOGFILE%"
     echo %%a | findstr /r "^[0-9]" >nul
@@ -94,15 +104,14 @@ if !NPM_WORKS! equ 0 (
     echo ERROR: npm not working properly! >> "%LOGFILE%"
     echo Please check that Node.js is installed and npm is in your PATH
     echo Full npm test output:
-    type temp_npm_check.txt
-    del /f /q "temp_npm_check.txt" 2>nul
+    type error-log\npm-check.txt
     pause
     exit /b 1
 )
 
 echo ✓ npm is available
 echo ✓ npm is available >> "%LOGFILE%"
-del /f /q "temp_npm_check.txt" 2>nul
+del /f /q "error-log\npm-check.txt" 2>nul
 
 :: Install dependencies with proper error handling
 echo.
@@ -110,13 +119,15 @@ echo Installing ESLint dependencies...
 echo This may take a moment...
 echo Installing ESLint dependencies... >> "%LOGFILE%"
 
-call npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-react-hooks eslint-plugin-react-refresh globals
+call npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-react-hooks eslint-plugin-react-refresh globals > "error-log\npm-install.txt" 2>&1
 set "INSTALL_RESULT=!ERRORLEVEL!"
 
 if !INSTALL_RESULT! neq 0 (
     echo ERROR: Dependency installation failed!
     echo ERROR: Dependency installation failed! >> "%LOGFILE%"
     echo Exit code: !INSTALL_RESULT!
+    echo Install log: >> "%LOGFILE%"
+    type "error-log\npm-install.txt" >> "%LOGFILE%"
     pause
     exit /b 1
 )
@@ -128,35 +139,37 @@ echo.
 echo Running ESLint check...
 echo Running ESLint check... >> "%LOGFILE%"
 
-call npm run lint
+:: Create a file to capture errors
+set "ESLINT_OUTPUT=error-log\eslint-output.txt"
+call npm run lint > "%ESLINT_OUTPUT%" 2>&1
 set "LINT_RESULT=!ERRORLEVEL!"
 
 if !LINT_RESULT! neq 0 (
     echo ✗ ESLint found issues
     echo ✗ ESLint found issues >> "%LOGFILE%"
     
+    :: Display full error output instead of trying to filter
+    echo. >> "%LOGFILE%"
+    echo ESLint errors found: >> "%LOGFILE%"
+    echo. >> "%LOGFILE%"
+    type "%ESLINT_OUTPUT%" >> "%LOGFILE%"
+    echo. >> "%LOGFILE%"
+    
     echo Attempting auto-fix...
-    call npm run lint:fix
+    call npm run lint:fix > "error-log\eslint-fix.txt" 2>&1
     set "LINT_FIX_RESULT=!ERRORLEVEL!"
     
     if !LINT_FIX_RESULT! equ 0 (
         echo ✓ Auto-fix completed
         echo ✓ Auto-fix completed >> "%LOGFILE%"
-        
-        echo Re-checking...
-        call npm run lint
-        set "LINT_RESULT=!ERRORLEVEL!"
-        
-        if !LINT_RESULT! equ 0 (
-            echo ✓ All ESLint issues fixed!
-            echo ✓ All ESLint issues fixed! >> "%LOGFILE%"
-        ) else (
-            echo ✗ Some ESLint issues remain
-            echo ✗ Some ESLint issues remain >> "%LOGFILE%"
-        )
     ) else (
         echo ✗ Auto-fix failed
         echo ✗ Auto-fix failed >> "%LOGFILE%"
+        echo. >> "%LOGFILE%"
+        echo Auto-fix errors: >> "%LOGFILE%"
+        echo. >> "%LOGFILE%"
+        type "error-log\eslint-fix.txt" >> "%LOGFILE%"
+        echo. >> "%LOGFILE%"
     )
 ) else (
     echo ✓ ESLint passed
@@ -168,7 +181,9 @@ echo.
 echo Checking TypeScript...
 echo Checking TypeScript... >> "%LOGFILE%"
 
-call npm run type-check
+:: Create a file to capture errors
+set "TS_OUTPUT=error-log\typescript-output.txt"
+call npm run type-check > "%TS_OUTPUT%" 2>&1
 set "TYPE_RESULT=!ERRORLEVEL!"
 
 if !TYPE_RESULT! equ 0 (
@@ -177,6 +192,13 @@ if !TYPE_RESULT! equ 0 (
 ) else (
     echo ✗ TypeScript errors found
     echo ✗ TypeScript errors found >> "%LOGFILE%"
+    
+    :: Display full TypeScript error output
+    echo. >> "%LOGFILE%"
+    echo TypeScript errors found: >> "%LOGFILE%"
+    echo. >> "%LOGFILE%"
+    type "%TS_OUTPUT%" >> "%LOGFILE%"
+    echo. >> "%LOGFILE%"
 )
 
 :: Check Python backend with Windows path handling
@@ -208,7 +230,9 @@ if exist "Wingman-backend\requirements.txt" (
             )
             
             if defined PYTHON_EXE (
-                "!PYTHON_EXE!" -m py_compile main.py >nul 2>&1
+                :: Create file for Python errors
+                set "PY_OUTPUT=..\error-log\python-output.txt"
+                "!PYTHON_EXE!" -m py_compile main.py > "%PY_OUTPUT%" 2>&1
                 set "PY_COMPILE_RESULT=!ERRORLEVEL!"
                 
                 if !PY_COMPILE_RESULT! equ 0 (
@@ -218,6 +242,7 @@ if exist "Wingman-backend\requirements.txt" (
                 ) else (
                     echo ✗ Python backend syntax errors
                     echo ✗ Python backend syntax errors >> "..\%LOGFILE%"
+                    type "%PY_OUTPUT%" >> "..\%LOGFILE%"
                     set "PY_RESULT=1"
                 )
             ) else (
@@ -249,6 +274,8 @@ echo.
 echo Checking build configuration...
 echo Checking build configuration... >> "%LOGFILE%"
 
+set "BUILD_CONFIG_STATUS=0"
+
 if exist "vite.config.ts" (
     echo ✓ Vite config found
     echo ✓ Vite config found >> "%LOGFILE%"
@@ -258,6 +285,7 @@ if exist "vite.config.ts" (
 ) else (
     echo ✗ Vite config missing
     echo ✗ Vite config missing >> "%LOGFILE%"
+    set "BUILD_CONFIG_STATUS=1"
 )
 
 if exist "electron\main.js" (
@@ -266,6 +294,7 @@ if exist "electron\main.js" (
 ) else (
     echo ✗ Electron main process missing
     echo ✗ Electron main process missing >> "%LOGFILE%"
+    set "BUILD_CONFIG_STATUS=1"
 )
 
 if exist "electron\preload.js" (
@@ -274,7 +303,10 @@ if exist "electron\preload.js" (
 ) else (
     echo ✗ Electron preload script missing
     echo ✗ Electron preload script missing >> "%LOGFILE%"
+    set "BUILD_CONFIG_STATUS=1"
 )
+
+if !BUILD_CONFIG_STATUS! neq 0 set "OVERALL_STATUS=1"
 
 :: Final results
 echo.
@@ -284,8 +316,6 @@ echo ==========================================
 echo ==========================================>> "%LOGFILE%"
 echo              FINAL RESULTS>> "%LOGFILE%"
 echo ==========================================>> "%LOGFILE%"
-
-set "OVERALL_STATUS=0"
 
 if !LINT_RESULT! equ 0 (
     echo ESLint: PASSED
@@ -336,7 +366,7 @@ if !OVERALL_STATUS! equ 0 (
 echo.
 echo Audit completed: %TIME%
 echo Audit completed: %TIME% >> "%LOGFILE%"
-echo Full log saved to: %LOGFILE%
+echo Full log saved to: %CD%\%LOGFILE%
 
 echo.
 echo Copying results to clipboard...
@@ -344,7 +374,7 @@ type "%LOGFILE%" | clip 2>nul
 if !ERRORLEVEL! equ 0 (
     echo ✓ Results copied to clipboard!
 ) else (
-    echo Results saved to %LOGFILE%
+    echo Results saved to %CD%\%LOGFILE%
 )
 
 echo.

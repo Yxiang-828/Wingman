@@ -54,7 +54,7 @@ export class MoodManager {
   private getWeightedRandomMood(): typeof this.MOODS[number] {
     // Time-based mood adjustments
     const hour = new Date().getHours();
-    let adjustedWeights = { ...this.MOOD_WEIGHTS };
+    const adjustedWeights = { ...this.MOOD_WEIGHTS };
 
     // Morning boost for energetic/productive
     if (hour >= 6 && hour <= 10) {

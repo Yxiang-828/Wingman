@@ -1,0 +1,155 @@
+
+> wingman@1.0.0 lint
+> eslint "src/**/*.{ts,tsx}" --quiet
+
+
+C:\Users\xiang\PIG\Wingman\src\App.tsx
+   81:20  error  '_user' is defined but never used                    @typescript-eslint/no-unused-vars
+   81:27  error  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  127:10  error  '_backendStatus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  212:26  error  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\Hooks\useCalendar.ts
+  182:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\Pages\Notifications.tsx
+  261:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\api\Calendar.ts
+  28:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\api\Diary.ts
+   31:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\api\Task.ts
+   16:30  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+   40:46  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  177:17  error  'isProcessing' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\api\apiClient.ts
+    9:37  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+   42:38  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  133:13  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  136:14  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  136:43  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  143:13  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  143:42  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  150:16  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  155:7   error  'defaultDate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\components\Calendar\DayView.tsx
+   8:3  error  'getTodayDateString' is defined but never used    @typescript-eslint/no-unused-vars
+  10:3  error  'parseLocalDateString' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\components\Calendar\WeekView.tsx
+  158:15  error  'todayStr' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\components\ChatBot\index.tsx
+  49:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\components\Common\DetailPopup.tsx
+  28:12  error  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\components\Common\EditPopup.tsx
+   63:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   66:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  106:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  132:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\components\Dashboard\CompletedTasksCard.tsx
+  57:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\components\Dashboard\DiaryCard.tsx
+   9:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  15:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  67:14  error  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\components\Dashboard\TasksCard.tsx
+  71:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  73:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\components\Dashboard\index.tsx
+  23:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\components\Diary\EditEntry.tsx
+  11:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\components\Diary\ViewEntries.tsx
+  23:26  error  '_setSuccessMessage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\components\Profile\login.tsx
+   13:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\components\Sidebar\MiniCalendar.tsx
+  71:9  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+C:\Users\xiang\PIG\Wingman\src\components\Sidebar\Sidebar.tsx
+  8:25  error  React Hook "useNotifications" cannot be called at the top level. React Hooks must be called in a React function component or a custom React Hook function  react-hooks/rules-of-hooks
+
+C:\Users\xiang\PIG\Wingman\src\components\Tasks\CompletedTasks.tsx
+  211:27  error  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\config.ts
+  4:1  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  5:7  error  '_isProd' is assigned a value but never used                                                                         @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\context\DataContext.tsx
+   16:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:15  error  'id' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  296:17  error  'id' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\context\NotificationsContext.tsx
+   96:17  error  '_' is defined but never used  @typescript-eslint/no-unused-vars
+  108:42  error  '_' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\xiang\PIG\Wingman\src\services\NotificationService.ts
+  171:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  171:65  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  194:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\types\electron.d.ts
+  7:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\types\global.d.ts
+  8:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\utils\AuthStateManager.ts
+  67:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\utils\auth.ts
+  43:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\utils\debounce.ts
+  1:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\utils\helpers.ts
+  7:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  7:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\utils\moodAlgorithm.ts
+  117:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  186:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\xiang\PIG\Wingman\src\utils\timeUtils.ts
+  44:10  error  '_' is never reassigned. Use 'const' instead        prefer-const
+  44:10  error  '_' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  44:13  error  'hours' is never reassigned. Use 'const' instead    prefer-const
+  44:20  error  'minutes' is never reassigned. Use 'const' instead  prefer-const
+  44:29  error  'period' is never reassigned. Use 'const' instead   prefer-const
+
+✖ 79 problems (79 errors, 0 warnings)
+  4 errors and 0 warnings potentially fixable with the `--fix` option.
+

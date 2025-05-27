@@ -314,12 +314,14 @@
 }
 
 .task-title {
+  flex: 1;
+  margin-right: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 0.9rem;
   line-height: 1.3;
   margin-bottom: 0.2rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .task-item.completed .task-title {
@@ -886,4 +888,36 @@
   text-overflow: ellipsis;
   max-height: 1.2em;
   line-height: 1.2;
+}
+
+/* Add to Dashboard.css */
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.task-complete-btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(74, 222, 128, 0.2);
+  color: #a7f3c1;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 75px;
+  text-align: center;
+}
+
+.task-complete-btn:hover {
+  background: rgba(74, 222, 128, 0.3);
+}
+
+.task-complete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

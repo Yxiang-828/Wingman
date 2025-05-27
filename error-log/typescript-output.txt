@@ -1,0 +1,8 @@
+
+> wingman@1.0.0 type-check
+> tsc --noEmit
+
+src/api/apiClient.ts(155,7): error TS6133: 'defaultDate' is declared but its value is never read.
+src/components/Calendar/DayView.tsx(8,3): error TS6133: 'getTodayDateString' is declared but its value is never read.
+src/components/Calendar/DayView.tsx(10,3): error TS6133: 'parseLocalDateString' is declared but its value is never read.
+src/components/Calendar/WeekView.tsx(158,15): error TS6133: 'todayStr' is declared but its value is never read.

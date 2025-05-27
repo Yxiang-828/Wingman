@@ -1,3 +1,189 @@
+/* Base container styling */
+.calendar-week-view {
+  padding: 1rem;
+  height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(30, 30, 50, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* Week header bar */
+.week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+
+.week-title-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.week-title {
+  font-size: 1.5rem;
+  margin: 0;
+  color: white;
+}
+
+.week-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Navigation buttons */
+.calendar-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.calendar-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(40, 40, 60, 0.5);
+  color: white;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-btn:hover {
+  background: rgba(50, 50, 80, 0.7);
+  transform: translateY(-1px);
+}
+
+.calendar-btn.today-btn {
+  background: rgba(100, 108, 255, 0.2);
+  color: rgb(180, 180, 255);
+}
+
+/* Week view grid */
+.week-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto; /* Enable scrolling */
+  padding-bottom: 0.5rem;
+}
+
+.week-day {
+  background: rgba(30, 30, 50, 0.4);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s, background 0.2s;
+  cursor: pointer;
+}
+
+.week-day:hover {
+  transform: translateY(-1px);
+  background: rgba(40, 40, 60, 0.6);
+  transition: transform 0.2s, background 0.2s;
+  will-change: transform; /* Tells browser to optimize for animation */
+}
+
+.week-day.today {
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  background: rgba(40, 40, 60, 0.6);
+}
+
+/* Day header */
+.week-day-header {
+  padding: 0.5rem;
+  background: rgba(20, 20, 40, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.week-day-name {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+}
+
+.week-day-date {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+}
+
+/* Day content */
+.week-day-content {
+  flex: 1;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto; /* Allow scrolling within day */
+}
+
+/* Simplified item styling */
+.week-event-item, .week-task-item {
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(30, 30, 50, 0.6);
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.week-event-item:hover, .week-task-item:hover {
+  background: rgba(40, 40, 60, 0.8);
+  transform: translateY(-1px);
+}
+
+/* Event color coding */
+.week-event-item.meeting { border-left: 3px solid #646cff; }
+.week-event-item.personal { border-left: 3px solid #4ade80; }
+.week-event-item.reminder { border-left: 3px solid #f87171; }
+
+/* Task styling */
+.week-task-item { border-left: 3px solid #646cff; }
+.week-task-item.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Loading state */
+.week-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(100, 108, 255, 0.1);
+  border-left-color: rgba(100, 108, 255, 0.8);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Day View Comprehensive Styling */
 .day-view-container {
   display: flex;
@@ -957,9 +1143,10 @@
 }
 
 .week-day:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  border-color: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px);
+  background: rgba(40, 40, 60, 0.6);
+  transition: transform 0.2s, background 0.2s;
+  will-change: transform; /* Tells browser to optimize for animation */
 }
 
 .week-day.today {
@@ -1172,6 +1359,175 @@
   font-size: 0.75rem;
   padding: 0.3rem 0.6rem;
   background-color: rgba(100, 108, 255, 0.05);
+}
+
+/* Add to Calendar.css */
+.week-event-item-simple, .week-task-item-simple {
+  padding: 4px 8px;
+  margin-bottom: 3px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.2s;
+}
+
+.week-event-item-simple {
+  border-left: 3px solid var(--event-color);
+  background: rgba(40, 40, 60, 0.4);
+}
+
+.week-event-item-simple.meeting { 
+  --event-color: #646cff;
+  border-left-color: var(--event-color);
+}
+
+.week-event-item-simple.personal {
+  --event-color: #4ade80;
+  border-left-color: var(--event-color);
+}
+
+.week-event-item-simple.reminder {
+  --event-color: #f87171;
+  border-left-color: var(--event-color);
+}
+
+.week-task-item-simple {
+  border-left: 3px solid #646cff;
+  background: rgba(40, 40, 60, 0.2);
+}
+
+.week-task-item-simple.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.more-items-indicator {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 2px 0;
+}
+
+.item-time {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-right: 5px;
+}
+
+.item-title {
+  flex: 1;
+}
+
+/* PERFORMANCE: Optimize animations */
+.week-day:hover {
+  transform: translateY(-1px);
+  background: rgba(40, 40, 60, 0.6);
+  transition: transform 0.2s, background 0.2s;
+  will-change: transform; /* Tells browser to optimize for animation */
+}
+
+/* PERFORMANCE: Add will-change for elements that animate */
+.calendar-btn:hover,
+.week-event-item:hover, 
+.week-task-item:hover {
+  will-change: transform;
+}
+
+/* PERFORMANCE: Simplify complex selectors */
+.week-day.today {
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  background: rgba(40, 40, 60, 0.6);
+}
+
+/* NEW: Add status indicator CSS */
+.task-status-circle {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(100, 108, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  cursor: pointer;
+  color: transparent;
+  transition: all 0.2s ease;
+}
+
+.task-status-circle:hover {
+  background: rgba(100, 108, 255, 0.1);
+}
+
+.task-status-circle.completed {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(74, 222, 128, 0.2);
+  color: rgba(74, 222, 128, 1);
+}
+
+/* Processing state indicator */
+.task-item.processing .task-status-circle {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.task-item.processing .task-title {
+  opacity: 0.7;
+}
+
+/* Add these simplified styles */
+.day-indicators {
+  margin: 8px 0;
+  padding: 5px;
+  background: rgba(30, 30, 50, 0.3);
+  border-radius: 6px;
+}
+
+.event-indicator, .task-indicator {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+}
+
+.indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.event-indicator .indicator-dot {
+  background: #646cff;
+}
+
+.task-indicator .indicator-dot {
+  background: #4ade80;
+}
+
+.indicator-count {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.day-empty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.8rem;
+  padding: 10px 0;
+}
+
+/* Remove these complex hover effects and animations */
+.week-day:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.calendar-btn:hover {
+  transform: none;
 }
 
 

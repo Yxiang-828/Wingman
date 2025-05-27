@@ -365,3 +365,8 @@ PREVENTION BEST PRACTICES
 - [ ] Enable `strict` in `tsconfig.json`
 
 OVERALL STATUS: ____________________________
+
+
+unused variable
+undeclared functions
+not alter the flow of current tsx and css

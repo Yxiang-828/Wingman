@@ -127,45 +127,107 @@ class SmartCache {
     const cached = this.get(date);
     if (!cached) return;
 
+    // Skip optimistic updates that have already been processed
+    if ('_isOptimistic' in item && item._isOptimistic) {
+      // Check if we already have a non-optimistic version with same ID
+      if (type === 'task') {
+        const task = item as Task;
+        const existingFinal = cached.tasks.find(t => 
+          (t.id === task.id && !('_isOptimistic' in t))
+        );
+        if (existingFinal) {
+          console.log(`📦 Cache SKIP: Optimistic task update already processed for ${task.id}`);
+          return;
+        }
+      } else if (type === 'event') {
+        const event = item as CalendarEvent;
+        const existingFinal = cached.events.find(e => 
+          (e.id === event.id && !('_isOptimistic' in e))
+        );
+        if (existingFinal) {
+          console.log(`📦 Cache SKIP: Optimistic event update already processed for ${event.id}`);
+          return;
+        }
+      }
+    }
+
     if (type === 'task' && 'title' in item) {
       const task = item as Task;
+      
+      // Check for duplicate before adding
+      const existingIndex = cached.tasks.findIndex(t => t.id === task.id);
+      
       switch (operation) {
         case 'add':
-          if (cached.tasks.length < this.maxItemsPerDay) {
+          // Only add if not already present
+          if (existingIndex === -1) {
             cached.tasks.push(task);
+            console.log(`📦 Cache ADD: Task ${task.id} added to ${date}`);
+          } else {
+            console.log(`📦 Cache SKIP: Task ${task.id} already exists in ${date}`);
           }
           break;
+          
         case 'update':
-          const taskIndex = cached.tasks.findIndex(t => t.id === task.id);
-          if (taskIndex !== -1) {
-            cached.tasks[taskIndex] = task;
+          // Only update if found
+          if (existingIndex !== -1) {
+            cached.tasks[existingIndex] = task;
+            console.log(`📦 Cache UPDATE: Task ${task.id} updated in ${date}`);
+          } else {
+            // If task not found but this is an update operation, add it
+            // This handles the case when tasks are moved between dates
+            cached.tasks.push(task);
+            console.log(`📦 Cache ADD-UPDATE: Task ${task.id} added during update to ${date}`);
           }
           break;
+          
         case 'delete':
-          cached.tasks = cached.tasks.filter(t => t.id !== task.id);
+          // Only filter if found
+          if (existingIndex !== -1) {
+            cached.tasks = cached.tasks.filter(t => t.id !== task.id);
+            console.log(`📦 Cache DELETE: Task ${task.id} removed from ${date}`);
+          }
           break;
       }
     } else if (type === 'event' && 'event_date' in item) {
       const event = item as CalendarEvent;
+      const existingIndex = cached.events.findIndex(e => e.id === event.id);
+      
       switch (operation) {
         case 'add':
-          if (cached.events.length < this.maxItemsPerDay) {
+          // Only add if not already present
+          if (existingIndex === -1) {
             cached.events.push(event);
+            console.log(`📦 Cache ADD: Event ${event.id} added to ${date}`);
+          } else {
+            console.log(`📦 Cache SKIP: Event ${event.id} already exists in ${date}`);
           }
           break;
+          
         case 'update':
-          const eventIndex = cached.events.findIndex(e => e.id === event.id);
-          if (eventIndex !== -1) {
-            cached.events[eventIndex] = event;
+          // Only update if found
+          if (existingIndex !== -1) {
+            cached.events[existingIndex] = event;
+            console.log(`📦 Cache UPDATE: Event ${event.id} updated in ${date}`);
+          } else {
+            // If event not found but this is an update operation, add it
+            // This handles the case when events are moved between dates
+            cached.events.push(event);
+            console.log(`📦 Cache ADD-UPDATE: Event ${event.id} added during update to ${date}`);
           }
           break;
+          
         case 'delete':
-          cached.events = cached.events.filter(e => e.id !== event.id);
+          // Only filter if found
+          if (existingIndex !== -1) {
+            cached.events = cached.events.filter(e => e.id !== event.id);
+            console.log(`📦 Cache DELETE: Event ${event.id} removed from ${date}`);
+          }
           break;
       }
     }
-
-    // Update cache
+    
+    // Set the updated cache
     this.set(date, cached);
   }
 }

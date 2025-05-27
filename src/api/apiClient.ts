@@ -1,11 +1,12 @@
 import { getApiUrl } from '../config';
 import { Auth } from '../utils/AuthStateManager';
+import { getTodayDateString } from '../utils/timeUtils';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
 // Add this at the start of your file
-let apiQueue: Array<() => Promise<any>> = [];
+const apiQueue: Array<() => Promise<any>> = [];
 let isProcessingQueue = false;
 
 // Process queued API requests when authentication is confirmed

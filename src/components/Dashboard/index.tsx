@@ -7,6 +7,7 @@ import TasksCard from "./TasksCard";
 import EventsCard from "./EventsCard";
 import SummaryCard from "./SummaryCard";
 import CompletedTasksCard from "./CompletedTasksCard";
+import { getTodayDateString } from '../../utils/timeUtils';
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import "./Dashboard.css";
@@ -37,8 +38,8 @@ const Dashboard: React.FC = () => {
       }
 
       try {
-        // Get today's date
-        const today = new Date().toISOString().split("T")[0];
+        // Use standardized time utility
+        const today = getTodayDateString();
         console.log(`📊 Dashboard: Loading data for ${today}`);
         
         // Copy data from shared cache (DayView is primary owner)
@@ -97,9 +98,14 @@ const Dashboard: React.FC = () => {
 
   // ✅ Handle task toggle with cache awareness
   const handleToggleTask = (updatedTask: Task) => {
-    setTodaysTasks((prev) =>
-      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+    // Update ALL tasks, not just displayed ones
+    setTodaysTasks(prev => 
+      prev.map(task => task.id === updatedTask.id ? updatedTask : task)
     );
+    
+    // Force refresh the cache for today to ensure consistency
+    const today = getTodayDateString();
+    getDayData(today, true).catch(console.error);
   };
 
   if (!isReady) {

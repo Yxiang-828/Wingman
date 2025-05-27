@@ -4,6 +4,7 @@ import { useCalendarCache } from "../../Hooks/useCalendar";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import { getCurrentUserId } from "../../utils/auth";
+import { formatDateToString } from "../../utils/timeUtils";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import DetailPopup from "../Common/DetailPopup";
@@ -15,7 +16,11 @@ const DayView: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { getDayData, loading: cacheLoading, error: cacheError } = useCalendarCache("DayView");
+  const {
+    getDayData,
+    loading: cacheLoading,
+    error: cacheError,
+  } = useCalendarCache("DayView");
   const {
     createTask,
     updateTask,
@@ -57,7 +62,9 @@ const DayView: React.FC = () => {
 
   // ✅ Current date data from cache
   const [currentDateTasks, setCurrentDateTasks] = useState<Task[]>([]);
-  const [currentDateEvents, setCurrentDateEvents] = useState<CalendarEvent[]>([]);
+  const [currentDateEvents, setCurrentDateEvents] = useState<CalendarEvent[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
 
   // ✅ FIXED: Parse date from URL and set it immediately
@@ -83,7 +90,9 @@ const DayView: React.FC = () => {
         targetDate = new Date();
       }
 
-      console.log(`📅 DayView: Setting date to ${targetDate.toISOString().split('T')[0]}`);
+      console.log(
+        `📅 DayView: Setting date to ${targetDate.toISOString().split("T")[0]}`
+      );
       setDate(targetDate);
     } catch (err) {
       console.error("Error parsing date:", err);
@@ -97,7 +106,7 @@ const DayView: React.FC = () => {
     try {
       const query = new URLSearchParams(location.search);
       const tabParam = query.get("tab");
-      
+
       // Set the active tab based on URL parameter if present
       if (tabParam === "tasks" || tabParam === "events") {
         setActiveTab(tabParam);
@@ -124,7 +133,7 @@ const DayView: React.FC = () => {
 
       setLoading(true);
       try {
-        const dateStr = date.toISOString().split("T")[0];
+        const dateStr = formatDateToString(date);
         console.log(`📅 DayView: Fetching data for ${dateStr}`);
 
         // ✅ FIXED: Just get data normally, don't force refresh
@@ -132,8 +141,10 @@ const DayView: React.FC = () => {
 
         setCurrentDateTasks(dayData.tasks);
         setCurrentDateEvents(dayData.events);
-        
-        console.log(`📅 DayView: Loaded ${dayData.tasks.length} tasks, ${dayData.events.length} events`);
+
+        console.log(
+          `📅 DayView: Loaded ${dayData.tasks.length} tasks, ${dayData.events.length} events`
+        );
       } catch (error) {
         console.error("📅 DayView: Error loading data:", error);
         setCurrentDateTasks([]);
@@ -155,7 +166,7 @@ const DayView: React.FC = () => {
       const prevDay = new Date(date);
       prevDay.setDate(prevDay.getDate() - 1);
       const prevDayStr = prevDay.toISOString().split("T")[0];
-      
+
       console.log(`📅 DayView: Navigating to PREVIOUS day: ${prevDayStr}`);
       navigate(`/calendar/day?date=${prevDayStr}`);
     } catch (error) {
@@ -170,7 +181,7 @@ const DayView: React.FC = () => {
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
       const nextDayStr = nextDay.toISOString().split("T")[0];
-      
+
       console.log(`📅 DayView: Navigating to NEXT day: ${nextDayStr}`);
       navigate(`/calendar/day?date=${nextDayStr}`);
     } catch (error) {
@@ -192,23 +203,27 @@ const DayView: React.FC = () => {
 
     // Set new timer for 10 seconds
     autoFetchTimerRef.current = setTimeout(async () => {
-      console.log(`🤖 DayView: Auto-fetching adjacent days for ${date.toISOString().split('T')[0]}`);
-      
+      console.log(
+        `🤖 DayView: Auto-fetching adjacent days for ${
+          date.toISOString().split("T")[0]
+        }`
+      );
+
       try {
         const prevDay = new Date(date);
         prevDay.setDate(prevDay.getDate() - 1);
         const nextDay = new Date(date);
         nextDay.setDate(nextDay.getDate() + 1);
 
-        const prevDayStr = prevDay.toISOString().split("T")[0];
-        const nextDayStr = nextDay.toISOString().split("T")[0];
+        const prevDayStr = formatDateToString(prevDay);
+        const nextDayStr = formatDateToString(nextDay);
 
         // Pre-fetch adjacent days
         await Promise.all([
           getDayData(prevDayStr, true),
-          getDayData(nextDayStr, true)
+          getDayData(nextDayStr, true),
         ]);
-        
+
         console.log(`✅ DayView: Pre-fetched adjacent days`);
       } catch (error) {
         console.error("Error pre-fetching adjacent days:", error);
@@ -432,7 +447,9 @@ const DayView: React.FC = () => {
 
   // ✅ NEW: Add edit popup state
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingItem, setEditingItem] = useState<Task | CalendarEvent | null>(null);
+  const [editingItem, setEditingItem] = useState<Task | CalendarEvent | null>(
+    null
+  );
 
   // ✅ NEW: Handle edit button click (same class as DetailPopup)
   const handleEditTask = (e: React.MouseEvent, task: Task) => {
@@ -454,13 +471,15 @@ const DayView: React.FC = () => {
     try {
       if ("task_date" in updatedItem) {
         const updatedTask = await updateTask(updatedItem as Task);
-        setCurrentDateTasks(prev => 
-          prev.map(task => task.id === updatedTask.id ? updatedTask : task)
+        setCurrentDateTasks((prev) =>
+          prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
         );
       } else {
         const updatedEvent = await updateEvent(updatedItem as CalendarEvent);
-        setCurrentDateEvents(prev => 
-          prev.map(event => event.id === updatedEvent.id ? updatedEvent : event)
+        setCurrentDateEvents((prev) =>
+          prev.map((event) =>
+            event.id === updatedEvent.id ? updatedEvent : event
+          )
         );
       }
       setShowEditPopup(false);
@@ -493,21 +512,21 @@ const DayView: React.FC = () => {
   const stats = getStats();
   const navigateToNotificationsEvents = () => {
     // Pre-fetch events data before navigation for smooth transition
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     getDayData(today, true).then(() => {
-      navigate('/notifications?tab=event');
+      navigate("/notifications?tab=event");
     });
   };
 
   const navigateToCompletedTasks = () => {
-    navigate('/completed-tasks');
+    navigate("/completed-tasks");
   };
 
   const navigateToNotificationsTasks = () => {
     // Pre-fetch tasks data before navigation for smooth transition
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     getDayData(today, true).then(() => {
-      navigate('/notifications?tab=task');
+      navigate("/notifications?tab=task");
     });
   };
 
@@ -518,10 +537,10 @@ const DayView: React.FC = () => {
         <div className="day-view-loading">
           <div className="loading-spinner"></div>
           <p>Loading day data...</p>
-          <small style={{color: '#666', marginTop: '10px'}}>
-            Date: {date ? date.toISOString().split('T')[0] : 'Not set'} | 
-            Cache: {cacheLoading ? 'loading...' : 'ready'} | 
-            Local: {loading ? 'loading...' : 'ready'}
+          <small style={{ color: "#666", marginTop: "10px" }}>
+            Date: {date ? date.toISOString().split("T")[0] : "Not set"} | Cache:{" "}
+            {cacheLoading ? "loading..." : "ready"} | Local:{" "}
+            {loading ? "loading..." : "ready"}
           </small>
         </div>
       </div>
@@ -584,8 +603,8 @@ const DayView: React.FC = () => {
       </div>
 
       <div className="day-view-stats">
-        <div 
-          className="day-stat-card" 
+        <div
+          className="day-stat-card"
           onClick={navigateToNotificationsEvents}
           title="View all events"
         >
@@ -596,8 +615,8 @@ const DayView: React.FC = () => {
           </div>
         </div>
 
-        <div 
-          className="day-stat-card" 
+        <div
+          className="day-stat-card"
           onClick={navigateToCompletedTasks}
           title="View completed tasks"
         >
@@ -608,8 +627,8 @@ const DayView: React.FC = () => {
           </div>
         </div>
 
-        <div 
-          className="day-stat-card" 
+        <div
+          className="day-stat-card"
           onClick={navigateToNotificationsTasks}
           title="View pending tasks"
         >

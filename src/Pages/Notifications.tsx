@@ -5,7 +5,12 @@ import type { Task } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
 import DetailPopup from "../components/Common/DetailPopup";
 import "./Notifications.css";
-import { useNavigationRefresh } from '../hooks/useNavigationRefresh';
+import { useNavigationRefresh } from "../Hooks/useNavigationRefresh";
+import {
+  getTodayDateString,
+  formatDateToString,
+  parseLocalDateString,
+} from "../utils/timeUtils";
 
 // ✅ NEW: Countdown Timer Component (keeping existing)
 interface CountdownTimerProps {
@@ -16,12 +21,12 @@ interface CountdownTimerProps {
   onComplete?: () => void; // ✅ NEW: Callback when timer hits 0
 }
 
-const CountdownTimer: React.FC<CountdownTimerProps> = ({ 
-  targetTime, 
-  date, 
-  type, 
+const CountdownTimer: React.FC<CountdownTimerProps> = ({
+  targetTime,
+  date,
+  type,
   isCompleted = false,
-  onComplete // ✅ NEW: Callback prop
+  onComplete, // ✅ NEW: Callback prop
 }) => {
   const [timeLeft, setTimeLeft] = useState<{
     hours: number;
@@ -42,39 +47,30 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   useEffect(() => {
     const calculateTimeLeft = () => {
       try {
-        if (!targetTime || targetTime === "All day") {
-          setTimeLeft({
-            hours: 0,
-            minutes: 0,
-            seconds: 0,
-            isOverdue: false,
-            isPast: false,
-          });
-          return;
+        // Use parseLocalDateString for consistent time handling
+        const targetDate = parseLocalDateString(date);
+        if (targetTime) {
+          const [hours, minutes] = targetTime.split(":").map(Number);
+          targetDate.setHours(hours, minutes, 0, 0);
         }
 
-        const [hours, minutes, seconds = "00"] = targetTime.split(":");
-        const targetDate = new Date(date);
-        targetDate.setHours(
-          parseInt(hours, 10),
-          parseInt(minutes, 10),
-          parseInt(seconds, 10),
-          0
-        );
-
+        const todayStr = getTodayDateString();
         const now = new Date();
         const diff = targetDate.getTime() - now.getTime();
 
         if (diff <= 0) {
           // ✅ NEW: Trigger callback when timer hits 0 (only once)
-          if (!timeLeft.isPast && onComplete && Math.abs(diff) < 2000) { // Within 2 seconds of hitting 0
+          if (!timeLeft.isPast && onComplete && Math.abs(diff) < 2000) {
+            // Within 2 seconds of hitting 0
             console.log(`⏰ Timer completed for ${type}:`, targetTime);
             onComplete();
           }
 
           const absDiff = Math.abs(diff);
           const hoursOverdue = Math.floor(absDiff / (1000 * 60 * 60));
-          const minutesOverdue = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+          const minutesOverdue = Math.floor(
+            (absDiff % (1000 * 60 * 60)) / (1000 * 60)
+          );
           const secondsOverdue = Math.floor((absDiff % (1000 * 60)) / 1000);
 
           setTimeLeft({
@@ -86,7 +82,9 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
           });
         } else {
           const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
-          const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const minutesLeft = Math.floor(
+            (diff % (1000 * 60 * 60)) / (1000 * 60)
+          );
           const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000);
 
           setTimeLeft({
@@ -98,7 +96,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
           });
 
           if (diff < 30 * 60 * 1000 && diff > 0) {
-            setPulseKey(prev => prev + 1);
+            setPulseKey((prev) => prev + 1);
           }
         }
       } catch (error) {
@@ -167,7 +165,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
             )}
           </div>
         )}
-        
+
         {/* Progress ring for visual countdown */}
         {!isPast && hours < 24 && (
           <div className="countdown-ring">
@@ -189,7 +187,9 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeDasharray="50.27"
-                strokeDashoffset={50.27 * (1 - Math.min((hours * 60 + minutes) / (24 * 60), 1))}
+                strokeDashoffset={
+                  50.27 * (1 - Math.min((hours * 60 + minutes) / (24 * 60), 1))
+                }
                 transform="rotate(-90 10 10)"
                 className="countdown-progress"
               />
@@ -221,7 +221,9 @@ const Notifications: React.FC = () => {
 
   // ✅ NEW: Alert system state
   const [alertItems, setAlertItems] = useState<Set<string>>(new Set());
-  const [activeAlerts, setActiveAlerts] = useState<Map<string, { task?: Task; event?: CalendarEvent }>>(new Map());
+  const [activeAlerts, setActiveAlerts] = useState<
+    Map<string, { task?: Task; event?: CalendarEvent }>
+  >(new Map());
 
   const query = new URLSearchParams(location.search);
   const tabFromUrl = query.get("tab");
@@ -244,21 +246,26 @@ const Notifications: React.FC = () => {
   }, []);
 
   // ✅ NEW: Alert Me functionality
-  const handleSetAlert = (item: Task | CalendarEvent, type: "task" | "event") => {
+  const handleSetAlert = (
+    item: Task | CalendarEvent,
+    type: "task" | "event"
+  ) => {
     const itemId = `${type}-${item.id}`;
-    
+
     // Add to alert list
-    setAlertItems(prev => new Set([...prev, itemId]));
-    
+    setAlertItems((prev) => new Set([...prev, itemId]));
+
     // Save to localStorage
     const alerts = JSON.parse(localStorage.getItem("alertItems") || "[]");
     alerts.push(itemId);
     localStorage.setItem("alertItems", JSON.stringify(alerts));
-    
+
     // Mark as read
     markAsRead(itemId);
-    
-    console.log(`🔔 Alert set for ${type}: ${item.title || (item as any).text}`);
+
+    console.log(
+      `🔔 Alert set for ${type}: ${item.title || (item as any).text}`
+    );
   };
 
   const goToNotificationSource = (type: string, id: number) => {
@@ -270,7 +277,7 @@ const Notifications: React.FC = () => {
   };
 
   const formatDateHeader = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = parseLocalDateString(dateStr);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -292,30 +299,33 @@ const Notifications: React.FC = () => {
   };
 
   // ✅ NEW: Handle timer completion
-  const handleTimerComplete = useCallback((item: Task | CalendarEvent, type: "task" | "event") => {
-    const itemId = `${type}-${item.id}`;
-    
-    // Only show alert if this item is in alert list
-    if (alertItems.has(itemId)) {
-      setActiveAlerts(prev => new Map(prev.set(itemId, { [type]: item })));
-      
-      // Remove from alert list since it's now triggered
-      setAlertItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemId);
-        return newSet;
-      });
-      
-      // Update localStorage
-      const alerts = JSON.parse(localStorage.getItem("alertItems") || "[]");
-      const filteredAlerts = alerts.filter((id: string) => id !== itemId);
-      localStorage.setItem("alertItems", JSON.stringify(filteredAlerts));
-    }
-  }, [alertItems]);
+  const handleTimerComplete = useCallback(
+    (item: Task | CalendarEvent, type: "task" | "event") => {
+      const itemId = `${type}-${item.id}`;
+
+      // Only show alert if this item is in alert list
+      if (alertItems.has(itemId)) {
+        setActiveAlerts((prev) => new Map(prev.set(itemId, { [type]: item })));
+
+        // Remove from alert list since it's now triggered
+        setAlertItems((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+
+        // Update localStorage
+        const alerts = JSON.parse(localStorage.getItem("alertItems") || "[]");
+        const filteredAlerts = alerts.filter((id: string) => id !== itemId);
+        localStorage.setItem("alertItems", JSON.stringify(filteredAlerts));
+      }
+    },
+    [alertItems]
+  );
 
   // ✅ NEW: Close alert popup
   const closeAlert = (itemId: string) => {
-    setActiveAlerts(prev => {
+    setActiveAlerts((prev) => {
       const newMap = new Map(prev);
       newMap.delete(itemId);
       return newMap;
@@ -329,17 +339,17 @@ const Notifications: React.FC = () => {
       case "task":
         return {
           tasks: pendingTasks,
-          events: []
+          events: [],
         };
       case "event":
         return {
           tasks: [],
-          events: todaysEvents
+          events: todaysEvents,
         };
       default: // "all"
         return {
           tasks: pendingTasks,
-          events: todaysEvents
+          events: todaysEvents,
         };
     }
   };
@@ -388,22 +398,22 @@ const Notifications: React.FC = () => {
           </span>
         </button>
         <button
-          className={`notifications-tab ${activeTab === "task" ? "active" : ""}`}
+          className={`notifications-tab ${
+            activeTab === "task" ? "active" : ""
+          }`}
           onClick={() => setActiveTab("task")}
         >
           Tasks
-          <span className="notifications-count">
-            {pendingTasks.length}
-          </span>
+          <span className="notifications-count">{pendingTasks.length}</span>
         </button>
         <button
-          className={`notifications-tab ${activeTab === "event" ? "active" : ""}`}
+          className={`notifications-tab ${
+            activeTab === "event" ? "active" : ""
+          }`}
           onClick={() => setActiveTab("event")}
         >
           Events
-          <span className="notifications-count">
-            {todaysEvents.length}
-          </span>
+          <span className="notifications-count">{todaysEvents.length}</span>
         </button>
       </div>
 
@@ -412,7 +422,9 @@ const Notifications: React.FC = () => {
           <div className="notifications-items">
             <div className="notification-date-group">
               <div className="notification-date-header">
-                <h3>{formatDateHeader(new Date().toISOString().split("T")[0])}</h3>
+                <h3>
+                  {formatDateHeader(new Date().toISOString().split("T")[0])}
+                </h3>
               </div>
 
               {/* Render Tasks */}
@@ -429,10 +441,9 @@ const Notifications: React.FC = () => {
                       <span className="notification-badge">Pending Task</span>
                     </div>
                     <div className="notification-message">
-                      {task.task_time 
-                        ? `Scheduled for ${task.task_time}` 
-                        : "No specific time"
-                      }
+                      {task.task_time
+                        ? `Scheduled for ${task.task_time}`
+                        : "No specific time"}
                     </div>
                     <div className="notification-meta">
                       <span className="notification-time">
@@ -442,7 +453,7 @@ const Notifications: React.FC = () => {
                         {task.task_date}
                       </span>
                     </div>
-                    
+
                     <CountdownTimer
                       targetTime={task.task_time || ""}
                       date={task.task_date}
@@ -461,19 +472,27 @@ const Notifications: React.FC = () => {
                     >
                       Complete
                     </button>
-                    
+
                     {/* ✅ NEW: Alert Me button */}
                     <button
-                      className={`notification-alert-btn ${alertItems.has(`task-${task.id}`) ? 'active' : ''}`}
+                      className={`notification-alert-btn ${
+                        alertItems.has(`task-${task.id}`) ? "active" : ""
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSetAlert(task, "task");
                       }}
-                      title={alertItems.has(`task-${task.id}`) ? "Alert is set" : "Set alert for when time is up"}
+                      title={
+                        alertItems.has(`task-${task.id}`)
+                          ? "Alert is set"
+                          : "Set alert for when time is up"
+                      }
                     >
-                      {alertItems.has(`task-${task.id}`) ? "🔔 Alert Set" : "🔔 Alert Me"}
+                      {alertItems.has(`task-${task.id}`)
+                        ? "🔔 Alert Set"
+                        : "🔔 Alert Me"}
                     </button>
-                    
+
                     <button
                       className="notification-navigate"
                       onClick={(e) => {
@@ -513,7 +532,7 @@ const Notifications: React.FC = () => {
                         {event.event_date}
                       </span>
                     </div>
-                    
+
                     <CountdownTimer
                       targetTime={event.event_time || ""}
                       date={event.event_date}
@@ -524,16 +543,24 @@ const Notifications: React.FC = () => {
                   <div className="notification-actions">
                     {/* ✅ NEW: Alert Me button for events */}
                     <button
-                      className={`notification-alert-btn ${alertItems.has(`event-${event.id}`) ? 'active' : ''}`}
+                      className={`notification-alert-btn ${
+                        alertItems.has(`event-${event.id}`) ? "active" : ""
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSetAlert(event, "event");
                       }}
-                      title={alertItems.has(`event-${event.id}`) ? "Alert is set" : "Set alert for when time is up"}
+                      title={
+                        alertItems.has(`event-${event.id}`)
+                          ? "Alert is set"
+                          : "Set alert for when time is up"
+                      }
                     >
-                      {alertItems.has(`event-${event.id}`) ? "🔔 Alert Set" : "🔔 Alert Me"}
+                      {alertItems.has(`event-${event.id}`)
+                        ? "🔔 Alert Set"
+                        : "🔔 Alert Me"}
                     </button>
-                    
+
                     <button
                       className="notification-navigate"
                       onClick={(e) => {
@@ -557,9 +584,12 @@ const Notifications: React.FC = () => {
               {activeTab === "all" && "No notifications today"}
             </h2>
             <p className="notification-empty-subtext">
-              {activeTab === "task" && "All your tasks are completed or dismissed!"}
-              {activeTab === "event" && "You don't have any events scheduled for today."}
-              {activeTab === "all" && "You don't have any pending tasks or events for today."}
+              {activeTab === "task" &&
+                "All your tasks are completed or dismissed!"}
+              {activeTab === "event" &&
+                "You don't have any events scheduled for today."}
+              {activeTab === "all" &&
+                "You don't have any pending tasks or events for today."}
             </p>
             <button
               className="notification-action"
@@ -585,27 +615,40 @@ const Notifications: React.FC = () => {
       {/* ✅ NEW: Alert Popups */}
       {Array.from(activeAlerts.entries()).map(([itemId, alertData]) => {
         const item = alertData.task || alertData.event;
-        const type = alertData.task ? 'task' : 'event';
-        
+        const type = alertData.task ? "task" : "event";
+
         return (
-          <div key={itemId} className="alert-popup-overlay" onClick={() => closeAlert(itemId)}>
+          <div
+            key={itemId}
+            className="alert-popup-overlay"
+            onClick={() => closeAlert(itemId)}
+          >
             <div className="alert-popup" onClick={(e) => e.stopPropagation()}>
               <div className="alert-header">
                 <span className="alert-icon">⏰</span>
                 <h3>Time's Up!</h3>
-                <button className="alert-close" onClick={() => closeAlert(itemId)}>×</button>
+                <button
+                  className="alert-close"
+                  onClick={() => closeAlert(itemId)}
+                >
+                  ×
+                </button>
               </div>
-              
+
               <div className="alert-content">
-                <div className="alert-item-type">{type === 'task' ? '📋 Task' : '📅 Event'}</div>
+                <div className="alert-item-type">
+                  {type === "task" ? "📋 Task" : "📅 Event"}
+                </div>
                 <div className="alert-title">{item?.title}</div>
-                {type === 'event' && (item as CalendarEvent).description && (
-                  <div className="alert-description">{(item as CalendarEvent).description}</div>
+                {type === "event" && (item as CalendarEvent).description && (
+                  <div className="alert-description">
+                    {(item as CalendarEvent).description}
+                  </div>
                 )}
               </div>
-              
+
               <div className="alert-actions">
-                {type === 'task' && (
+                {type === "task" && (
                   <button
                     className="alert-action-btn complete"
                     onClick={() => {
@@ -616,7 +659,7 @@ const Notifications: React.FC = () => {
                     Complete Task
                   </button>
                 )}
-                
+
                 <button
                   className="alert-action-btn view"
                   onClick={() => {
@@ -624,9 +667,9 @@ const Notifications: React.FC = () => {
                     closeAlert(itemId);
                   }}
                 >
-                  View {type === 'task' ? 'Task' : 'Event'}
+                  View {type === "task" ? "Task" : "Event"}
                 </button>
-                
+
                 <button
                   className="alert-action-btn dismiss"
                   onClick={() => closeAlert(itemId)}

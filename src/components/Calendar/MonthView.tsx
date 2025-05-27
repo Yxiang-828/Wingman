@@ -1,60 +1,29 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import Calendar from "react-calendar";
+import { format } from "date-fns";
 import "./Calendar.css";
-
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 
 const MonthView: React.FC = () => {
   const navigate = useNavigate();
-  const [year, setYear] = React.useState(new Date().getFullYear());
+
+  // Navigate to week view when a day is clicked
+  const handleDateClick = useCallback(
+    (date: Date) => {
+      const formattedDate = format(date, "yyyy-MM-dd");
+      navigate(`/calendar/week?date=${formattedDate}`);
+    },
+    [navigate]
+  );
 
   return (
-    <div className="calendar-months-view">
-      <div className="monthview-header flex items-center justify-center gap-4 mb-4">
-        <button
-          className="calendar-btn calendar-nav-btn"
-          onClick={() => setYear((y) => y - 1)}
-        >
-          &lt;
-        </button>
-        <h2 className="monthview-title text-center">Select a Month in {year}</h2>
-        <button
-          className="calendar-btn calendar-nav-btn"
-          onClick={() => setYear((y) => y + 1)}
-        >
-          &gt;
-        </button>
-      </div>
-      <div className="months-grid grid grid-cols-3 gap-4">
-        {months.map((month, idx) => (
-          <div
-            key={month}
-            className="calendar-btn month-cell bg-dark rounded-lg p-6 text-center cursor-pointer hover:bg-accent-primary hover:text-white transition"
-            onClick={() => {
-              const monthNum = idx + 1;
-              const firstDay = `${year}-${monthNum
-                .toString()
-                .padStart(2, "0")}-01`;
-              navigate(`/calendar/week?date=${firstDay}`);
-              window.scrollTo(0, 0); // Scroll to top after navigation
-            }}
-          >
-            <span className="text-lg font-semibold">{month}</span>
-          </div>
-        ))}
+    <div className="month-view-container">
+      <h1 className="month-view-title">Month View</h1>
+      <div className="month-calendar">
+        <Calendar
+          onClickDay={handleDateClick}
+          calendarType="iso8601"
+        />
       </div>
     </div>
   );
