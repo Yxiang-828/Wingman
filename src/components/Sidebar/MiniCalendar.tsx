@@ -53,7 +53,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
     // Process events
     Object.values(eventCache || {}).forEach((weekData) => {
       Object.values(weekData || {}).forEach((dayEvents) => {
-        dayEvents.forEach((event) => {
+        dayEvents.forEach((event: { date: string | Date | number }) => {
           if (event.date) {
             // Convert to string safely
             const dateStr = format(new Date(String(event.date)), "yyyy-MM-dd");
@@ -66,7 +66,12 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
     // Process tasks
     Object.values(taskCache || {}).forEach((weekData) => {
       Object.values(weekData || {}).forEach((dayTasks) => {
-        dayTasks.forEach((task) => {
+        interface Task {
+          date?: string | Date | number;
+          // Other possible task properties would go here
+        }
+
+        dayTasks.forEach((task: Task) => {
           if (task.date) {
             // Convert to string safely
             const dateStr = format(new Date(String(task.date)), "yyyy-MM-dd");
@@ -101,6 +106,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ onDateSelect }) => {
       <Calendar
         onClickDay={handleDayClick}
         className="react-calendar--small"
+        calendarType="hebrew"
         tileClassName={({ date }) => {
           const hasEvent = eventsMap[formatDateKey(date)] > 0;
           const today = new Date();

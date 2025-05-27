@@ -1,15 +1,15 @@
 import { api } from './apiClient';
 import { getCurrentUserId } from '../utils/auth';
 
-// Update Task interface to support string user_id and add isProcessing
+// ✅ CORRECTED Interface based on your Supabase schema
 export interface Task {
   id: number;
-  text: string;
-  date: string;
-  time?: string;
-  completed: boolean;
-  user_id?: string | number;
-  isProcessing?: boolean; // Add this property
+  title: string;        // ✅ Based on description.txt - tasks.title is "text" type
+  task_date: string;    // ✅ Based on description.txt - tasks.task_date is "date" type
+  task_time?: string;   // ✅ Based on description.txt - tasks.task_time is "time" type
+  completed: boolean;   // ✅ Based on description.txt - tasks.completed is "bool" type
+  user_id?: string | number; // ✅ Based on description.txt - tasks.user_id is "uuid" type
+  isProcessing?: boolean; // Frontend-only field for UI state
 }
 
 // Map server response to frontend model with better error handling
@@ -28,9 +28,9 @@ const mapServerTask = (task: any): Task => {
 
   return {
     id: task.id,
-    date: task.task_date || task.date || new Date().toISOString().split('T')[0],
-    text: task.text || "",
-    time: task.task_time || task.time || '',
+    task_date: task.task_date || task.date || new Date().toISOString().split('T')[0],
+    title: task.title || "",  // ✅ SIMPLIFIED: Backend now sends 'title' directly
+    task_time: task.task_time || task.time || '',
     completed: !!task.completed,
     user_id: task.user_id || ''
   };
@@ -43,9 +43,9 @@ const mapClientTask = (task: Partial<Task>): any => {
   
   return {
     ...(task.id ? { id: task.id } : {}),
-    text: task.text,
-    task_date: task.date,
-    task_time: task.time || '',
+    title: task.title,        // ✅ KEEP: Send 'title' to backend (matches database)
+    task_date: task.task_date, 
+    task_time: task.task_time || '', 
     completed: task.completed || false,
     user_id: userId
   };
@@ -106,9 +106,9 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
       // Return a constructed task as fallback with a temporary ID
       return {
         id: Date.now(), // Temporary ID
-        text: task.text,
-        date: task.date,
-        time: task.time || '',
+        title: task.title,
+        task_date: task.task_date,
+        task_time: task.task_time || '',
         completed: task.completed || false,
         user_id: getCurrentUserId()
       };
@@ -121,9 +121,9 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
       // Still return a usable task object
       return {
         id: Date.now(), // Temporary ID
-        text: task.text,
-        date: task.date,
-        time: task.time || '',
+        title: task.title,
+        task_date: task.task_date,
+        task_time: task.task_time || '',
         completed: task.completed || false,
         user_id: getCurrentUserId()
       };
@@ -134,9 +134,9 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
       console.warn("Response missing task ID, using generated ID:", response);
       return {
         id: Date.now(), // Generate a temporary ID
-        text: response.text || task.text,
-        date: response.task_date || response.date || task.date,
-        time: response.task_time || response.time || task.time || '',
+        title: response.title || task.title,
+        task_date: response.task_date || response.date || task.task_date,
+        task_time: response.task_time || response.time || task.task_time || '',
         completed: response.completed !== undefined ? response.completed : (task.completed || false),
         user_id: response.user_id || getCurrentUserId()
       };
@@ -145,9 +145,9 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
     // Return properly mapped task
     return mapServerTask({
       ...response,
-      date: response.task_date || response.date || task.date,
-      text: response.text || task.text,
-      time: response.task_time || response.time || task.time || ''
+      task_date: response.task_date || response.date || task.task_date,
+      title: response.title || task.title,
+      task_time: response.task_time || response.time || task.task_time || ''
     });
   } catch (error) {
     console.error('Error adding task:', error);
@@ -155,9 +155,9 @@ export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
     // Return a constructed task as fallback
     return {
       id: Date.now(), // Generate a temporary ID
-      text: task.text,
-      date: task.date,
-      time: task.time || '',
+      title: task.title,
+      task_date: task.task_date,
+      task_time: task.task_time || '',
       completed: task.completed || false,
       user_id: getCurrentUserId()
     };
@@ -188,9 +188,9 @@ export const updateTask = async (task: Task): Promise<Task> => {
         // Return properly mapped task with all fields present
         return {
           id: id,
-          date: response.task_date || response.date || originalTask.date,
-          text: response.text || originalTask.text,
-          time: response.task_time || response.time || originalTask.time || '',
+          task_date: response.task_date || response.date || originalTask.task_date,
+          title: response.title || originalTask.title,
+          task_time: response.task_time || response.time || originalTask.task_time || '',
           completed: response.completed !== undefined ? response.completed : originalTask.completed,
           user_id: response.user_id || originalTask.user_id || ''
         };

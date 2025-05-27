@@ -114,6 +114,7 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.2s ease;
   cursor: pointer;
+  position: relative;
 }
 
 .notification-item:hover {
@@ -159,6 +160,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+  position: relative;
 }
 
 .notification-title {
@@ -190,6 +192,7 @@
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.5);
   margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
 }
 
 .notification-time {
@@ -261,164 +264,652 @@
   transform: rotate(90deg);
 }
 
-.notification-empty {
+/* ✅ NEW: Fancy Dismiss Button Styles */
+.notification-dismiss-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 193, 7, 0.1);
+  color: rgba(255, 193, 7, 0.8);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.notification-dismiss-btn:hover {
+  background: rgba(255, 193, 7, 0.2);
+  color: rgba(255, 193, 7, 1);
+  border-color: rgba(255, 193, 7, 0.4);
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.notification-dismiss-btn:active {
+  transform: scale(0.95) rotate(180deg);
+}
+
+/* ✅ Ripple effect for dismiss button */
+.notification-dismiss-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 193, 7, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.notification-dismiss-btn:hover::before {
+  width: 40px;
+  height: 40px;
+}
+
+/* ✅ Update notification actions layout */
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* ✅ Rename old dismiss button to navigate button */
+.notification-navigate {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(100, 108, 255, 0.1);
+  color: rgba(100, 108, 255, 0.8);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.notification-navigate:hover {
+  background: rgba(100, 108, 255, 0.2);
+  color: rgba(100, 108, 255, 1);
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+}
+
+/* ✅ Enhanced action button spacing */
+.notification-action-btn {
+  padding: 0.4rem 0.8rem;
+  background: rgba(74, 222, 128, 0.15);
+  color: #a7f3c1;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-bottom: 0.2rem;
+}
+
+.notification-action-btn:hover {
+  background: rgba(74, 222, 128, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(74, 222, 128, 0.2);
+}
+
+/* ✅ Animation for dismissed items (fade out) */
+.notification-item.dismissing {
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+/* ✅ Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .notification-actions {
+    flex-direction: row;
+    gap: 0.3rem;
+  }
+  
+  .notification-dismiss-btn,
+  .notification-navigate {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .notification-action-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+/* ✅ RESTORED: Full Countdown Timer Styles */
+.countdown-timer {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(20, 20, 35, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.countdown-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+/* Time Display */
+.time-display {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.time-unit {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.1rem;
+}
+
+.time-value {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.time-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1;
+}
+
+.time-separator {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  animation: blink 2s infinite;
+}
+
+/* Overdue Indicator */
+.overdue-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.overdue-icon {
+  animation: shake 0.5s infinite;
+}
+
+.overdue-text {
+  font-size: 0.9rem;
+}
+
+/* Progress Ring */
+.countdown-ring {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.countdown-progress {
+  transition: stroke-dashoffset 1s ease;
+  filter: drop-shadow(0 0 3px currentColor);
+}
+
+/* Urgency Level Styles */
+.countdown-timer.normal {
+  background: rgba(20, 20, 35, 0.4);
+  border-color: rgba(100, 108, 255, 0.2);
+  color: #c4c6ff;
+}
+
+.countdown-timer.upcoming {
+  background: rgba(255, 165, 0, 0.1);
+  border-color: rgba(255, 165, 0, 0.3);
+  color: #ffb366;
+  animation: gentle-glow 3s ease-in-out infinite;
+}
+
+.countdown-timer.warning {
+  background: rgba(255, 193, 7, 0.15);
+  border-color: rgba(255, 193, 7, 0.4);
+  color: #ffd93d;
+  animation: warning-pulse 2s ease-in-out infinite;
+}
+
+.countdown-timer.critical {
+  background: rgba(255, 107, 107, 0.15);
+  border-color: rgba(255, 107, 107, 0.5);
+  color: #ff6b6b;
+  animation: critical-pulse 1s ease-in-out infinite;
+  position: relative;
+}
+
+.countdown-timer.critical::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(255, 107, 107, 0.2), transparent);
+  animation: critical-sweep 2s linear infinite;
+  z-index: 1;
+}
+
+.countdown-timer.overdue {
+  background: rgba(139, 0, 0, 0.2);
+  border-color: rgba(255, 0, 0, 0.6);
+  color: #ff4444;
+  animation: overdue-flash 0.8s ease-in-out infinite;
+}
+
+/* Task vs Event Specific Styles */
+.countdown-timer.task {
+  border-left: 3px solid #4ade80;
+}
+
+.countdown-timer.event {
+  border-left: 3px solid #646cff;
+}
+
+/* Animations */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes gentle-glow {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.5);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes warning-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.7);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes critical-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(255, 107, 107, 0.8);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes critical-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes overdue-flash {
+  0%, 100% { 
+    background: rgba(139, 0, 0, 0.2);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+  }
+  50% { 
+    background: rgba(139, 0, 0, 0.4);
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
+  }
+}
+
+/* ✅ NEW: Fancy Dismiss Text Styles */
+.notification-dismiss-text {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: rgba(255, 193, 7, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.notification-dismiss-text:hover {
+  color: rgba(255, 193, 7, 1);
+  font-style: normal;
+  font-weight: 600;
+  transform: scale(1.1);
+  text-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.notification-dismiss-text:active {
+  transform: scale(0.95);
+  color: rgba(255, 150, 0, 1);
+}
+
+/* ✅ Remove the old dismiss button styles */
+.notification-dismiss-btn {
+  display: none;
+}
+
+/* ✅ Update notification actions layout */
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   justify-content: center;
-  padding: 3rem 2rem;
-  background: rgba(30, 30, 50, 0.3);
+  align-items: flex-end;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .countdown-timer {
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.6rem;
+  }
+  
+  .time-value {
+    font-size: 1rem;
+  }
+  
+  .time-label {
+    font-size: 0.65rem;
+  }
+  
+  .countdown-ring {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .notification-dismiss-text {
+    font-size: 0.8rem;
+  }
+}
+
+/* Integration with existing notification item */
+.notification-item {
+  position: relative;
+}
+
+.notification-item .countdown-timer.critical {
+  border-left-color: #ff6b6b !important;
+}
+
+.notification-item .countdown-timer.overdue {
+  border-left-color: #ff0000 !important;
+}
+
+/* Enhanced notification content to accommodate timer */
+.notification-content {
+  position: relative;
+}
+
+.notification-meta {
+  margin-bottom: 0.5rem;
+}
+
+/* Hover effects */
+.notification-item:hover .countdown-timer {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.countdown-timer.critical:hover {
+  animation-duration: 0.5s; /* Speed up animation on hover */
+}
+
+/* ✅ NEW: Alert Me Button Styles */
+.notification-alert-btn {
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 193, 7, 0.15);
+  color: rgba(255, 193, 7, 0.8);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.notification-alert-btn:hover {
+  background: rgba(255, 193, 7, 0.3);
+  color: rgba(255, 193, 7, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(255, 193, 7, 0.2);
+}
+
+.notification-alert-btn.active {
+  background: rgba(255, 193, 7, 0.4);
+  color: rgba(255, 193, 7, 1);
+  border-color: rgba(255, 193, 7, 0.5);
+  box-shadow: 0 0 8px rgba(255, 193, 7, 0.3);
+}
+
+.notification-alert-btn.active:hover {
+  background: rgba(255, 193, 7, 0.5);
+}
+
+/* ✅ NEW: Alert Popup Styles */
+.alert-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+  animation: alertFadeIn 0.3s ease;
+}
+
+.alert-popup {
+  background: linear-gradient(135deg, rgba(40, 40, 60, 0.95), rgba(30, 30, 50, 0.95));
   border-radius: 16px;
-  text-align: center;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  border: 2px solid rgba(255, 193, 7, 0.3);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(255, 193, 7, 0.2);
+  animation: alertSlideIn 0.3s ease;
+  position: relative;
 }
 
-.notification-empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.6;
+.alert-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.2);
 }
 
-.notification-empty-text {
-  font-size: 1.3rem;
+.alert-icon {
+  font-size: 2rem;
+  animation: alertPulse 2s infinite;
+}
+
+.alert-header h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.alert-close:hover {
+  background: rgba(255, 77, 77, 0.2);
+  color: rgba(255, 150, 150, 1);
+}
+
+.alert-content {
+  margin-bottom: 1.5rem;
+}
+
+.alert-item-type {
+  font-size: 0.9rem;
+  color: rgba(255, 193, 7, 0.8);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.alert-title {
+  font-size: 1.2rem;
   font-weight: 600;
   color: white;
   margin-bottom: 0.5rem;
 }
 
-.notification-empty-subtext {
+.alert-description {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
 }
 
-.notification-action {
-  padding: 0.8rem 1.5rem;
-  background: rgba(100, 108, 255, 0.2); 
-  color: #c4c6ff;
-  border: 1px solid rgba(100, 108, 255, 0.3);
+.alert-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.alert-action-btn {
+  padding: 0.6rem 1.2rem;
   border-radius: 8px;
-  font-size: 1rem;
   font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: 1px solid transparent;
+  min-width: 80px;
 }
 
-.notification-action:hover {
+.alert-action-btn.complete {
+  background: rgba(74, 222, 128, 0.2);
+  color: #a7f3c1;
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.alert-action-btn.complete:hover {
+  background: rgba(74, 222, 128, 0.3);
+  transform: translateY(-2px);
+}
+
+.alert-action-btn.view {
+  background: rgba(100, 108, 255, 0.2);
+  color: #c4c6ff;
+  border-color: rgba(100, 108, 255, 0.3);
+}
+
+.alert-action-btn.view:hover {
   background: rgba(100, 108, 255, 0.3);
   transform: translateY(-2px);
 }
 
-/* Add these new styles to your existing Notifications.css file */
-
-/* Container for the notifications items */
-.notifications-items {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.alert-action-btn.dismiss {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Load more button styling */
-.load-more-container {
-  display: flex;
-  justify-content: center;
-  margin: 1.5rem 0;
-}
-
-.load-more-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background: rgba(100, 108, 255, 0.15);
-  color: #c4c6ff;
-  border: 1px solid rgba(100, 108, 255, 0.3);
-  border-radius: 8px;
-  padding: 0.8rem 2rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 160px;
-}
-
-.load-more-btn:hover {
-  background: rgba(100, 108, 255, 0.25);
+.alert-action-btn.dismiss:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
   transform: translateY(-2px);
 }
 
-.load-more-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+/* ✅ NEW: Alert Animations */
+@keyframes alertFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-/* Small loading spinner for the Load More button */
-.loading-spinner-small {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(100, 108, 255, 0.2);
-  border-top-color: #c4c6ff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+@keyframes alertSlideIn {
+  0% { transform: scale(0.8) translateY(-20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* Pagination information display */
-.pagination-info {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.85rem;
-  margin: 0.5rem 0 1rem;
+@keyframes alertPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
-/* Improve scrolling performance */
-.notifications-list {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Loading states */
-.notifications-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* Ensure the existing loading spinner has these styles */
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(100, 108, 255, 0.3);
-  border-top-color: rgba(100, 108, 255, 0.8);
-  border-radius: 50%;
-  margin-bottom: 1rem;
-  animation: spin 1s linear infinite;
-}
-
+/* ✅ Mobile responsive */
 @media (max-width: 768px) {
-  .notifications-header {
+  .alert-popup {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .alert-actions {
     flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
   }
-
-  .notification-item {
-    grid-template-columns: auto 1fr;
-    gap: 0.8rem;
-  }
-
-  .notification-actions {
-    grid-row: 2;
-    grid-column: 1 / 3;
-    flex-direction: row;
-    margin-top: 0.5rem;
+  
+  .alert-action-btn {
+    width: 100%;
   }
 }

@@ -1,19 +1,17 @@
 import { api } from './apiClient';
 
-// Update the export to ensure TypeScript properly recognizes it
+// ✅ CORRECTED Interface based on your Supabase schema
 export interface CalendarEvent {
   id: number;
-  title: string;
-  date: string;       // Frontend field
-  event_date?: string; // DB field
-  time: string;       // Frontend field
-  event_time?: string; // DB field
-  type: string;
-  description: string;
-  user_id?: string | number;
+  title: string;        // ✅ Based on description.txt - calendar_events.title is "text" type
+  event_date: string;   // ✅ Based on description.txt - calendar_events.event_date is "date" type
+  event_time: string;   // ✅ Based on description.txt - calendar_events.event_time is "time" type
+  type: string;         // ✅ Based on description.txt - calendar_events.type is "text" type
+  description: string;  // ✅ Based on description.txt - calendar_events.description is "text" type
+  user_id: string;      // ✅ Based on description.txt - calendar_events.user_id is "uuid" type
 }
 
-// Keep your existing API functions below
+// Keep all your existing API functions but ensure field names match Supabase
 export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
   try {
     // Get current user from localStorage
@@ -29,8 +27,8 @@ export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
     // Map backend fields to frontend
     return events.map((event: any) => ({
       ...event,
-      date: event.event_date, // Map event_date to date
-      time: event.event_time  // Map event_time to time
+      event_date: event.event_date, // Map event_date to date
+      event_time: event.event_time  // Map event_time to time
     }));
   } catch (error) {
     console.error('Error fetching events:', error);
@@ -52,8 +50,8 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
     const backendEvent = {
       user_id: user.id,
       title: event.title,
-      event_date: event.date,
-      event_time: event.time || '',
+      event_date: event.event_date,
+      event_time: event.event_time || '',
       type: event.type,
       description: event.description
     };
@@ -65,8 +63,8 @@ export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<Calend
     return {
       ...data,
       id: data.id,
-      date: data.event_date,
-      time: data.event_time || ''
+      event_date: data.event_date,
+      event_time: data.event_time || ''
     };
   } catch (error) {
     console.error('Error adding event:', error);
@@ -85,8 +83,8 @@ export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> 
     const backendEvent: Record<string, any> = {
       user_id: event.user_id || JSON.parse(localStorage.getItem('user') || '{}').id,
       title: rest.title,
-      event_date: rest.date,
-      event_time: rest.time || '',
+      event_date: rest.event_date,
+      event_time: rest.event_time || '',
       type: rest.type,
       description: rest.description
     };
@@ -98,8 +96,8 @@ export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> 
     return {
       ...result,
       id: result.id || id,
-      date: result.event_date,
-      time: result.event_time || ''
+      event_date: result.event_date,
+      event_time: result.event_time || ''
     };
   } catch (error) {
     console.error('Error updating event:', error);

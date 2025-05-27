@@ -259,6 +259,79 @@
   box-shadow: none;
 }
 
+/* ✅ ADD: Missing form actions styling */
+.day-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.day-form-btn {
+  background: rgba(100, 108, 255, 0.2);
+  color: #c4c6ff;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-form-btn:hover {
+  background: rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.day-form-btn.cancel {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.day-form-btn.cancel:hover {
+  background: rgba(255, 107, 107, 0.3);
+}
+
+.task-actions,
+.event-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.task-btn,
+.event-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.task-btn:hover,
+.event-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.task-btn.edit,
+.event-btn.edit {
+  color: #ffd93d;
+}
+
+.task-btn.delete,
+.event-btn.delete {
+  color: #ff6b6b;
+}
+
 /* Time picker styling */
 .time-picker-popup {
   position: absolute;
@@ -575,7 +648,8 @@
 
 .task-actions {
   display: flex;
-  gap: 0.6rem;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
 .task-btn {

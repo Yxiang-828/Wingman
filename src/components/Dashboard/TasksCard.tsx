@@ -16,6 +16,30 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
   const { toggleTask } = useData();
 
+  // ✅ ADD: Debug logging to see what we receive
+  React.useEffect(() => {
+    console.log(`🔧 TasksCard DEBUG: Received ${tasks?.length || 0} tasks`);
+    console.log(`🔧 TasksCard DEBUG: Tasks data:`, tasks);
+    if (tasks && tasks.length > 0) {
+      console.log(`🔧 TasksCard DEBUG: First task:`, tasks[0]);
+      const pending = tasks.filter((t) => !t.completed);
+      console.log(`🔧 TasksCard DEBUG: Pending tasks: ${pending.length}`);
+    }
+  }, [tasks]);
+
+  // ✅ ADD: Show what we're rendering
+  const pendingTasks = React.useMemo(() => {
+    if (!tasks || !Array.isArray(tasks)) {
+      console.log(`🔧 TasksCard DEBUG: Invalid tasks data:`, tasks);
+      return [];
+    }
+    const pending = tasks.filter((task) => !task.completed);
+    console.log(
+      `🔧 TasksCard DEBUG: Filtered ${pending.length} pending from ${tasks.length} total`
+    );
+    return pending;
+  }, [tasks]);
+
   // Handle clicking on a task item - show popup
   const handleTaskClick = (task: Task) => {
     showPopupFor(task);
@@ -110,9 +134,27 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         </button>
       </div>
 
-      {tasks.length > 0 ? (
+      {/* ✅ ADD: Debug display */}
+      <div
+        style={{
+          fontSize: "0.8rem",
+          color: "#666",
+          padding: "0.5rem",
+          backgroundColor: "rgba(255,255,255,0.1)",
+        }}
+      >
+        DEBUG: Received {tasks?.length || 0} tasks, {pendingTasks.length} pending
+        {tasks && tasks.length > 0 && (
+          <div>
+            Sample: {tasks[0]?.title} (completed:{" "}
+            {tasks[0]?.completed ? "true" : "false"})
+          </div>
+        )}
+      </div>
+
+      {pendingTasks.length > 0 ? (
         <ul className="tasks-list">
-          {tasks.map((task) => (
+          {pendingTasks.map((task) => (
             <li
               key={`task-${task.id}`}
               className={`task-item ${task.completed ? "completed" : ""}`}
@@ -124,10 +166,10 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
               >
                 {task.completed ? "✓" : "○"}
               </div>
-              <div className="task-title">{task.text}</div>
-              {task.time && (
+              <div className="task-title">{task.title}</div>
+              {task.task_time && (
                 <div className="task-meta">
-                  <span className="task-time">{task.time}</span>
+                  <span className="task-time">{task.task_time}</span>
                 </div>
               )}
             </li>
@@ -135,7 +177,10 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         </ul>
       ) : (
         <div className="empty-list-message">
-          <p>No tasks for today</p>
+          <p>No pending tasks for today</p>
+          <div style={{ fontSize: "0.8rem", color: "#666" }}>
+            Total received: {tasks?.length || 0} | Pending: {pendingTasks.length}
+          </div>
           <button
             className="action-btn small"
             onClick={() => navigate("/calendar/day")}

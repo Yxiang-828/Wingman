@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { format, endOfWeek } from "date-fns";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
+import { useCalendarCache } from "../../Hooks/useCalendar";
 import type { Task } from "../../api/Task";
 import DetailPopup from "../Common/DetailPopup";
 import "./CompletedTasks.css";
@@ -13,15 +14,9 @@ const CompletedTasks: React.FC = () => {
   const query = new URLSearchParams(location.search);
   const dateFromUrl = query.get("date") || "";
 
-  const {
-    taskCache,
-    currentWeekId,
-    fetchWeekData,
-    loading: dataLoading,
-    toggleTask,
-  } = useData();
-
+  const { toggleTask } = useData();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
+  const { getDayData, getWeekData } = useCalendarCache("CompletedTasks");
 
   const [loading, setLoading] = useState(true);
   const [filterDate, setFilterDate] = useState<string>(dateFromUrl);
@@ -138,95 +133,55 @@ const CompletedTasks: React.FC = () => {
 
   // Ensure we have the current week's data loaded
   useEffect(() => {
-    const loadWeekData = async () => {
+    const loadCompletedTasks = async () => {
       setLoading(true);
       try {
-        // Fetch current week data if needed
-        await fetchWeekData(currentWeekId);
+        if (filterDate) {
+          // Load specific date
+          const dayData = await getDayData(filterDate);
+          const completedTasks = dayData.tasks.filter((t) => t.completed);
+          setGroupedTasks({ [filterDate]: completedTasks });
+          setTotalCompleted(completedTasks.length);
+        } else {
+          // Load current week
+          const today = new Date();
+          const dates = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            return date.toISOString().split("T")[0];
+          });
 
-        // Add loading buffer time to prevent flickering
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-      } catch (err) {
-        console.error("Error loading week data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+          const weekData = await getWeekData(dates);
+          const grouped: Record<string, Task[]> = {};
+          let total = 0;
 
-    loadWeekData();
-  }, [fetchWeekData, currentWeekId]);
-
-  // Process and group completed tasks from this week
-  useEffect(() => {
-    // Get tasks directly from cache if currentWeekId fails
-    const processCompletedTasks = () => {
-      setLoading(true);
-
-      // Get today's date in YYYY-MM-DD format for comparison
-      const today = new Date().toISOString().split("T")[0];
-      console.log("Today's date for comparison:", today);
-
-      try {
-        // Create a map to store tasks grouped by date
-        const tasksByDate: Record<string, Task[]> = {};
-        let completedCount = 0;
-
-        // Process ALL weeks in cache, not just currentWeekId
-        Object.keys(taskCache).forEach((weekId) => {
-          Object.keys(taskCache[weekId] || {}).forEach((dateStr) => {
-            // Get tasks for this date
-            const tasksForDay = taskCache[weekId][dateStr] || [];
-
-            // Filter for completed tasks only
-            const completedTasks = tasksForDay.filter((task) => task.completed);
-
-            if (completedTasks.length > 0) {
-              // If we have a filter date, only include tasks from that date
-              if (!filterDate || dateStr === filterDate) {
-                tasksByDate[dateStr] = completedTasks;
-                completedCount += completedTasks.length;
-                console.log(
-                  `Found ${completedTasks.length} completed tasks for ${dateStr}`
-                );
-              }
+          dates.forEach((date) => {
+            const completed = weekData[date]?.tasks.filter((t) => t.completed) || [];
+            if (completed.length > 0) {
+              grouped[date] = completed;
+              total += completed.length;
             }
           });
-        });
 
-        // Set state with grouped tasks and total count
-        setGroupedTasks(tasksByDate);
-        setTotalCompleted(completedCount);
-
-        console.log("Processed completed tasks:", tasksByDate);
-        console.log(`Total completed tasks: ${completedCount}`);
+          setGroupedTasks(grouped);
+          setTotalCompleted(total);
+        }
       } catch (error) {
-        console.error("Error processing completed tasks:", error);
+        console.error("Error loading completed tasks:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    processCompletedTasks();
-  }, [taskCache, filterDate]); // Remove currentWeekId dependency to avoid errors
-
-  // Ensure filter date defaults to today if coming from dashboard
-  useEffect(() => {
-    // If no date specified but coming from dashboard, default to today
-    if (!dateFromUrl && location.state?.fromDashboard) {
-      const today = new Date().toISOString().split("T")[0];
-      setFilterDate(today);
-      console.log("Setting filter to today:", today);
-    }
-  }, [dateFromUrl, location]);
+    loadCompletedTasks();
+  }, [filterDate, getDayData, getWeekData]);
 
   // Get week range display for UI
   const getWeekRangeDisplay = useCallback(() => {
-    if (!currentWeekId) return "";
-
-    const weekStart = new Date(currentWeekId);
-    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 0 });
-    return `${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`;
-  }, [currentWeekId]);
+    const today = new Date();
+    const weekEnd = endOfWeek(today, { weekStartsOn: 0 });
+    return `${format(today, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`;
+  }, []);
 
   // Format date for headers
   const formatDateHeader = useCallback((dateStr: string) => {
@@ -270,7 +225,7 @@ const CompletedTasks: React.FC = () => {
         <span>This Week: {getWeekRangeDisplay()}</span>
       </div>
 
-      {loading || dataLoading ? (
+      {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading completed tasks...</p>
@@ -322,10 +277,10 @@ const CompletedTasks: React.FC = () => {
                       ✓
                     </div>
                     <div className="task-content">
-                      <div className="task-text">{task.text}</div>
+                      <div className="task-text">{task.title}</div>
                       <div className="task-meta">
-                        {task.time && (
-                          <span className="task-time">{task.time}</span>
+                        {task.task_time && (
+                          <span className="task-time">{task.task_time}</span>
                         )}
                       </div>
                     </div>
