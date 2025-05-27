@@ -2,6 +2,10 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import type { Task } from '../api/Task';
 import type { CalendarEvent } from '../api/Calendar';
+import { fetchMultipleDaysData } from '../api/Calendar';
+
+// Cache TTL in milliseconds (5 minutes)
+const CACHE_TTL = 5 * 60 * 1000;
 
 interface DayData {
   tasks: Task[];
@@ -349,24 +353,77 @@ export const useCalendarCache = (componentId: string) => {
     }
   }, [componentId, fetchDayData]);
 
-  // ✅ FIXED: Update getWeekData to support force refresh
+  // Replace the getWeekData function with this implementation
   const getWeekData = useCallback(async (dates: string[], forceRefresh = false): Promise<Record<string, DayData>> => {
     const results: Record<string, DayData> = {};
+    const datesToFetch: string[] = [];
     
-    // Process in parallel with force refresh option
-    const promises = dates.map(async (date) => {
-      const data = await getDayData(date, forceRefresh);
-      return { date, data };
+    // First check which dates we already have in cache
+    dates.forEach(date => {
+      const cachedData = sharedCache.get(date);
+      if (!forceRefresh && cachedData && Date.now() - cachedData.lastFetched < CACHE_TTL) {
+        // Use cached data if it's fresh
+        results[date] = cachedData;
+      } else {
+        // Mark this date for fetching
+        datesToFetch.push(date);
+      }
     });
-
-    const resolved = await Promise.all(promises);
     
-    resolved.forEach(({ date, data }) => {
-      results[date] = data;
-    });
-
+    // If we have dates to fetch, make ONE batch API call
+    if (datesToFetch.length > 0) {
+      try {
+        console.log(`Batch fetching ${datesToFetch.length} days of data`);
+        const batchData = await fetchMultipleDaysData(datesToFetch);
+        
+        // Process and cache the batch results
+        Object.entries(batchData).forEach(([date, data]) => {
+          const processedData = {
+            tasks: data.tasks || [],
+            events: data.events || [],
+            lastFetched: Date.now(),
+            hasMore: data.hasMore || { tasks: false, events: false },
+            totalAvailable: data.totalAvailable || { tasks: 0, events: 0 }
+          };
+          
+          // Update cache
+          sharedCache.set(date, processedData);
+          
+          // Add to results
+          results[date] = processedData;
+        });
+      } catch (error) {
+        console.error('Error in batch fetching week data:', error);
+        
+        // Fall back to individual fetches if batch fails
+        const individualPromises = datesToFetch.map(async (date) => {
+          try {
+            const data = await getDayData(date, true);
+            return { date, data };
+          } catch (e) {
+            console.error(`Error fetching individual day ${date}:`, e);
+            return { date, data: createEmptyDayData() };
+          }
+        });
+        
+        const individualResults = await Promise.all(individualPromises);
+        individualResults.forEach(({ date, data }) => {
+          results[date] = data;
+        });
+      }
+    }
+    
     return results;
   }, [getDayData]);
+
+  // Helper function to create empty day data
+  const createEmptyDayData = (): DayData => ({
+    tasks: [],
+    events: [],
+    lastFetched: Date.now(),
+    hasMore: { tasks: false, events: false },
+    totalAvailable: { tasks: 0, events: 0 }
+  });
 
   // Cache management functions
   const clearCache = useCallback(() => {

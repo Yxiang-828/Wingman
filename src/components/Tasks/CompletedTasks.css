@@ -1,0 +1,234 @@
+/* Performance-optimized CompletedTasks CSS with 'ct-' prefix */
+
+.ct-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+  background: rgba(25, 25, 45, 0.3);
+  border-radius: 12px;
+  /* No animations or transforms */
+}
+
+.ct-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
+  padding-bottom: 16px;
+}
+
+.ct-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.ct-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.ct-back-btn {
+  padding: 8px 16px;
+  background: rgba(30, 30, 50, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.ct-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ct-date-input {
+  padding: 8px;
+  background: rgba(30, 30, 50, 0.4);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.ct-clear-btn {
+  background: rgba(255, 77, 77, 0.1);
+  color: rgba(255, 150, 150, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.ct-count {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 24px;
+  background: rgba(30, 30, 50, 0.4);
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.ct-date-group {
+  margin-bottom: 32px;
+}
+
+.ct-date-header {
+  font-size: 1.2rem;
+  color: white;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+}
+
+.ct-task-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+}
+
+.ct-task-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  background: rgba(25, 25, 45, 0.4);
+  border-radius: 12px;
+  border-left: 3px solid #4ade80;
+  /* No animations or transforms */
+}
+
+.ct-task-status {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+}
+
+.ct-task-content {
+  cursor: pointer;
+}
+
+.ct-task-text {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.ct-task-meta {
+  display: flex;
+  gap: 16px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.ct-task-time {
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(30, 30, 50, 0.5);
+  border-radius: 4px;
+}
+
+.ct-week-range {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 24px;
+}
+
+.ct-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  text-align: center;
+  background: rgba(25, 25, 45, 0.4);
+  border-radius: 16px;
+}
+
+.ct-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+.ct-empty h2 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.ct-empty p {
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 24px;
+}
+
+.ct-action-btn {
+  padding: 12px 24px;
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.ct-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .ct-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .ct-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .ct-task-item {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+  }
+}

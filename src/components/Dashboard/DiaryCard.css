@@ -1,0 +1,123 @@
+/* Performance-optimized DiaryCard styling with unique 'dc-' prefixes */
+
+.dc-card {
+  background: rgba(25, 25, 45, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  height: 340px;
+  overflow-y: auto;
+  /* No transitions or animations */
+}
+
+.dc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+}
+
+.dc-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+}
+
+.dc-action-btn {
+  background: rgba(30, 30, 50, 0.6);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(100, 108, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  /* No hover animations */
+}
+
+.dc-entries-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dc-entry-item {
+  background: rgba(30, 30, 50, 0.5);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  /* No transform or box-shadow animations */
+}
+
+.dc-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.dc-entry-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+}
+
+.dc-entry-date {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(30, 30, 50, 0.6);
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.dc-entry-mood {
+  margin-right: 6px;
+}
+
+.dc-entry-preview {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+  max-height: 3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.dc-empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.dc-small-btn {
+  background: rgba(100, 108, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  /* No hover animations */
+}
+
+.dc-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(255, 255, 255, 0.6);
+}

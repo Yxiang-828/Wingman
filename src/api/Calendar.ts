@@ -115,3 +115,45 @@ export const deleteEvent = async (id: number): Promise<void> => {
     throw error;
   }
 };
+
+// Replace the failing fetchMultipleDaysData function with this implementation
+
+export const fetchMultipleDaysData = async (dates: string[]): Promise<Record<string, any>> => {
+  try {
+    // Get current user from localStorage
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    if (!user.id) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Make parallel requests using the existing single-date endpoint
+    const promises = dates.map(date => 
+      api.get(`/v1/calendar?date=${date}&user_id=${user.id}`)
+        .then(events => ({
+          date,
+          data: {
+            events: events.map((event: any) => ({
+              ...event,
+              event_date: event.event_date,
+              event_time: event.event_time || ''
+            }))
+          }
+        }))
+    );
+    
+    // Wait for all requests to complete
+    const results = await Promise.all(promises);
+    
+    // Convert array of results to an object keyed by date
+    const combinedData: Record<string, any> = {};
+    results.forEach(result => {
+      combinedData[result.date] = result.data;
+    });
+    
+    return combinedData;
+  } catch (error) {
+    console.error('Error fetching multiple days data:', error);
+    throw error;
+  }
+};

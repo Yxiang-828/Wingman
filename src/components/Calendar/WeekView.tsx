@@ -1,22 +1,27 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addDays, startOfWeek, format } from "date-fns";
 import { useCalendarCache } from "../../Hooks/useCalendar";
-import { useNotifications } from "../../context/NotificationsContext";
 import { formatDateToString, getTodayDateString, parseLocalDateString } from "../../utils/timeUtils";
-import "./Calendar.css";
+import "./WeekView.css";
 
-// Ultra-simplified day component that only shows dots/indicators
+// Simplified day component that only shows titles
+interface WeekDayProps {
+  date: Date;
+  events: any[];
+  tasks: any[];
+  isToday: boolean;
+  onDayClick: (dateStr: string) => void;
+}
+
 const WeekDay = React.memo(({ 
   date, 
-  eventCount = 0,
-  taskCount = 0,
-  completedTaskCount = 0,
+  events = [],
+  tasks = [],
   isToday, 
   onDayClick
-}) => {
+}: WeekDayProps) => {
   const dateStr = formatDateToString(date);
-  const pendingTaskCount = taskCount - completedTaskCount;
   
   return (
     <div 
@@ -28,29 +33,34 @@ const WeekDay = React.memo(({
         <span className="week-day-date">{date.getDate()}</span>
       </div>
       
-      {/* JUST SHOW INDICATORS - NOT ACTUAL CONTENT */}
       <div className="week-day-content">
-        {eventCount > 0 && (
-          <div className="day-indicators">
-            <div className="event-indicator">
-              <span className="indicator-dot"></span>
-              <span className="indicator-count">{eventCount} events</span>
-            </div>
+        {events.length > 0 && (
+          <div className="title-section">
+            <h4 className="section-title">Events</h4>
+            <ul className="title-list">
+              {events.map((event, idx) => (
+                <li key={`event-${idx}`} className="title-item event-title">
+                  {event.title}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         
-        {taskCount > 0 && (
-          <div className="day-indicators">
-            <div className="task-indicator">
-              <span className="indicator-dot"></span>
-              <span className="indicator-count">
-                {taskCount} tasks ({pendingTaskCount} pending)
-              </span>
-            </div>
+        {tasks.length > 0 && (
+          <div className="title-section">
+            <h4 className="section-title">Tasks</h4>
+            <ul className="title-list">
+              {tasks.map((task, idx) => (
+                <li key={`task-${idx}`} className={`title-item task-title ${task.completed ? 'completed' : ''}`}>
+                  {task.title}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
         
-        {eventCount === 0 && taskCount === 0 && (
+        {events.length === 0 && tasks.length === 0 && (
           <div className="day-empty">No events or tasks</div>
         )}
       </div>
@@ -58,153 +68,135 @@ const WeekDay = React.memo(({
   );
 });
 
-const WeekView = () => {
-  const navigate = useNavigate();
+const WeekView: React.FC = () => {
   const location = useLocation();
-  const { getWeekData } = useCalendarCache("WeekView");
-  
-  // We only need counts, not actual data!
-  const [activeWeekId, setActiveWeekId] = useState("");
-  const [dayCounts, setDayCounts] = useState({});
-  const [loading, setLoading] = useState(false);
-  
-  // Navigation functions
-  const handlePrevWeek = useCallback(() => {
-    if (!activeWeekId) return;
-    const weekStart = parseLocalDateString(activeWeekId);
-    const prevWeekStart = addDays(weekStart, -7);
-    const prevWeekId = formatDateToString(prevWeekStart);
-    navigate(`/calendar/week?date=${prevWeekId}`);
-  }, [activeWeekId, navigate]);
-
-  const handleNextWeek = useCallback(() => {
-    if (!activeWeekId) return;
-    const weekStart = parseLocalDateString(activeWeekId);
-    const nextWeekStart = addDays(weekStart, 7);
-    const nextWeekId = formatDateToString(nextWeekStart);
-    navigate(`/calendar/week?date=${nextWeekId}`);
-  }, [activeWeekId, navigate]);
-
-  const handleToday = useCallback(() => {
+  const navigate = useNavigate();
+  const [weekStart, setWeekStart] = useState(() => {
     const today = new Date();
-    const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-    const weekId = formatDateToString(weekStart);
-    navigate(`/calendar/week?date=${weekId}`);
-  }, [navigate]);
+    return startOfWeek(today, { weekStartsOn: 1 }); // Week starts on Monday
+  });
   
-  // Day click navigates to day view
-  const handleDayClick = useCallback((dateStr) => {
-    navigate(`/calendar/day?date=${dateStr}`);
-  }, [navigate]);
+  const [loading, setLoading] = useState(true);
+  const [weekData, setWeekData] = useState<Record<string, any>>({});
   
-  // Load only count data, not actual content
-  const loadWeekData = useCallback(async (weekId) => {
-    setLoading(true);
+  const { getWeekData } = useCalendarCache();
+  
+  // Generate week dates
+  const weekDates = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  }, [weekStart]);
+  
+  // Fetch week data in batch
+  const fetchWeekData = useCallback(async () => {
     try {
-      const weekStart = parseLocalDateString(weekId);
-      const dates = Array.from({ length: 7 }, (_, i) => 
-        formatDateToString(addDays(weekStart, i))
-      );
+      setLoading(true);
       
-      // Get actual data BUT only extract counts from it
-      const weekData = await getWeekData(dates);
+      // Batch fetch for all dates in the week
+      const dates = weekDates.map(date => formatDateToString(date));
+      const data = await getWeekData(dates);
       
-      // Transform to just counts
-      const countData = {};
-      Object.entries(weekData).forEach(([date, data]) => {
-        countData[date] = {
-          eventCount: data.events?.length || 0,
-          taskCount: data.tasks?.length || 0,
-          completedTaskCount: data.tasks?.filter(t => t.completed).length || 0
-        };
-      });
-      
-      // Set only the count data
-      setDayCounts(countData);
+      setWeekData(data);
     } catch (error) {
-      console.error("Error loading week data:", error);
+      console.error("Error fetching week data:", error);
     } finally {
       setLoading(false);
     }
-  }, [getWeekData]);
+  }, [weekDates, getWeekData]);
   
   // Initialize from URL
   useEffect(() => {
     const initializeWeek = () => {
-      try {
-        const query = new URLSearchParams(location.search);
-        const dateParam = query.get("date");
-        
-        let weekStart;
-        if (dateParam) {
-          weekStart = startOfWeek(parseLocalDateString(dateParam), { weekStartsOn: 1 });
-        } else {
-          weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const query = new URLSearchParams(location.search);
+      const dateParam = query.get("date");
+      
+      let newWeekStart;
+      if (dateParam) {
+        try {
+          const paramDate = parseLocalDateString(dateParam);
+          newWeekStart = startOfWeek(paramDate, { weekStartsOn: 1 });
+        } catch (e) {
+          newWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
         }
-        
-        const weekId = formatDateToString(weekStart);
-        setActiveWeekId(weekId);
-        loadWeekData(weekId);
-      } catch (err) {
-        console.error("Error initializing week:", err);
+      } else {
+        newWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
       }
+      
+      setWeekStart(newWeekStart);
     };
-
+    
     initializeWeek();
-  }, [location.search, loadWeekData]);
+  }, [location.search]);
   
-  // Calculate days based on active week
-  const days = useMemo(() => {
-    if (!activeWeekId) return [];
-    try {
-      const weekStart = parseLocalDateString(activeWeekId);
-      return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-    } catch (e) {
-      console.error("Error calculating days:", e);
-      return [];
-    }
-  }, [activeWeekId]);
+  // Fetch data when week changes
+  useEffect(() => {
+    fetchWeekData();
+  }, [fetchWeekData]);
   
-  // Display data
-  const weekStart = days[0] || new Date();
-  const weekEnd = days[6] || new Date();
+  // Navigation handlers
+  const handlePrevWeek = () => {
+    const newWeekStart = addDays(weekStart, -7);
+    navigate(`/calendar/week?date=${formatDateToString(newWeekStart)}`);
+  };
+  
+  const handleNextWeek = () => {
+    const newWeekStart = addDays(weekStart, 7);
+    navigate(`/calendar/week?date=${formatDateToString(newWeekStart)}`);
+  };
+  
+  const handleToday = () => {
+    const today = new Date();
+    const newWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+    navigate(`/calendar/week?date=${formatDateToString(newWeekStart)}`);
+  };
+  
+  const handleDayClick = (dateStr: string) => {
+    navigate(`/calendar/day?date=${dateStr}`);
+  };
+  
+  // Format week date range for display
+  const weekDateRange = `${format(weekStart, 'MMM d')} - ${format(addDays(weekStart, 6), 'MMM d, yyyy')}`;
   const todayStr = getTodayDateString();
-
+  
   return (
     <div className="calendar-week-view">
-      <div className="week-header">
-        <div className="week-title-container">
-          <h1 className="week-title">{format(weekStart, 'MMMM yyyy')}</h1>
-          <p className="week-subtitle">
-            {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
-          </p>
+      {loading ? (
+        <div className="week-view-loading">
+          <div className="loading-spinner"></div>
+          <div>Loading your week...</div>
+          <div className="loading-hint">Fetching events and tasks</div>
         </div>
-        <div className="calendar-buttons">
-          <button className="calendar-btn" onClick={handlePrevWeek}>Previous</button>
-          <button className="calendar-btn today-btn" onClick={handleToday}>Today</button>
-          <button className="calendar-btn" onClick={handleNextWeek}>Next</button>
-        </div>
-      </div>
-
-      <div className="week-days-grid">
-        {days.map((day) => {
-          const dateStr = formatDateToString(day);
-          const isToday = dateStr === todayStr;
-          const dayCount = dayCounts[dateStr] || { eventCount: 0, taskCount: 0, completedTaskCount: 0 };
-          
-          return (
-            <WeekDay
-              key={dateStr}
-              date={day}
-              eventCount={dayCount.eventCount}
-              taskCount={dayCount.taskCount}
-              completedTaskCount={dayCount.completedTaskCount}
-              isToday={isToday}
-              onDayClick={handleDayClick}
-            />
-          );
-        })}
-      </div>
+      ) : (
+        <>
+          <div className="week-header">
+            <div className="week-title-container">
+              <h2 className="week-title">Week View</h2>
+              <div className="week-subtitle">{weekDateRange}</div>
+            </div>
+            <div className="calendar-buttons">
+              <span className="nav-btn" onClick={handlePrevWeek}>Previous</span>
+              <span className="nav-btn today-btn" onClick={handleToday}>Today</span>
+              <span className="nav-btn" onClick={handleNextWeek}>Next</span>
+            </div>
+          </div>
+          <div className="week-days-grid">
+            {weekDates.map(date => {
+              const dateStr = formatDateToString(date);
+              const dayData = weekData[dateStr] || { events: [], tasks: [] };
+              
+              return (
+                <WeekDay
+                  key={dateStr}
+                  date={date}
+                  events={dayData.events || []}
+                  tasks={dayData.tasks || []}
+                  isToday={dateStr === todayStr}
+                  onDayClick={handleDayClick}
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 };
