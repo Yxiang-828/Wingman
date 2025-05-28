@@ -5,7 +5,7 @@ import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import type { Task } from "../../api/Task";
 import DetailPopup from "../Common/DetailPopup";
-import "./CompletedTasks.css"; // Use the dedicated CSS file
+import "./CompletedTasks.css";
 
 const CompletedTasks: React.FC = () => {
   const navigate = useNavigate();

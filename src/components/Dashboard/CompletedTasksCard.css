@@ -295,6 +295,55 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* CompletedTasksCard-specific styles, inheriting general styling from Dashboard.css */
+
+.completed-tasks-card {
+  /* Only override what's different from the base dashboard-card */
+  background: linear-gradient(135deg, rgba(20, 35, 25, 0.85) 0%, rgba(15, 30, 20, 0.9) 100%);
+}
+
+/* Completed task specifics */
+.completed-status {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74, 222, 128, 0.15);
+  border: 2px solid rgba(74, 222, 128, 0.5);
+  color: rgba(74, 222, 128, 0.9);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.completed-time {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.3rem;
+}
+
+.clear-completed {
+  padding: 0.3rem 0.5rem;
+  background: rgba(255, 77, 77, 0.1);
+  color: rgba(255, 150, 150, 0.8);
+  border: 1px solid rgba(255, 77, 77, 0.2);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-completed:hover {
+  background: rgba(255, 77, 77, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Empty state specific to CompletedTasksCard */
+.completed-empty {
+  color: rgba(74, 222, 128, 0.6);
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .cpt-header {

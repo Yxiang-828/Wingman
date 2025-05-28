@@ -104,15 +104,15 @@
 }
 
 .ct-task-item {
+  padding: 1rem 1.2rem; /* Increased padding */
+  min-height: 4.5rem; /* Ensure consistent height */
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 16px;
+  gap: 0.75rem;
   align-items: center;
-  padding: 16px;
-  background: rgba(25, 25, 45, 0.4);
-  border-radius: 12px;
-  border-left: 3px solid #4ade80;
-  /* No animations or transforms */
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  border-left: 3px solid var(--accent-primary);
 }
 
 .ct-task-status {
@@ -212,6 +212,16 @@
   align-items: center;
   min-height: 300px;
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* ADD AT END OF FILE */
+.task-item {
+  padding: 1rem 1.2rem; /* Increased padding */
+  min-height: 4.5rem; /* Ensure consistent height */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 /* Responsive styles */

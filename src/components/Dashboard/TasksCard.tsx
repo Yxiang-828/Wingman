@@ -4,7 +4,8 @@ import type { Task } from "../../api/Task";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
-import "./Dashboard.css";
+import "./Dashboard.css"; // Import shared styles first
+import "./TasksCard.css"; // Then component-specific styles
 
 interface TasksCardProps {
   tasks: Task[];
@@ -113,29 +114,22 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
             <li 
               key={`task-${task.id}`} 
               className={`task-item ${task.isProcessing ? "processing" : ""}`}
+              onClick={() => handleTaskClick(task)}
             >
-              <div className="task-row" onClick={() => handleTaskClick(task)}>
-                {/* FIXED: Clearer visual status for task completion */}
-                <div
+              <div className="task-row">
+                {/* Keep only the circle, remove the Complete button */}
+                <div 
                   className={`task-status-circle ${task.completed ? "completed" : ""}`}
-                  onClick={(e) => handleCompleteTask(e, task)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleTask(task);
+                  }}
                 >
-                  {task.completed ? "✓" : ""}
+                  {task.completed && <span>✓</span>}
                 </div>
-                <div className="task-title">{task.title}</div>
-                <button 
-                  className="task-complete-btn"
-                  onClick={(e) => handleCompleteTask(e, task)}
-                  disabled={task.isProcessing}
-                >
-                  {task.isProcessing ? "..." : task.completed ? "Completed" : "Complete"}
-                </button>
+                <span className="task-title">{task.title}</span>
+                <span className="task-meta">{task.due_time}</span>
               </div>
-              
-              {/* Show time if available */}
-              {task.task_time && (
-                <div className="task-time">{task.task_time}</div>
-              )}
             </li>
           ))}
         </ul>

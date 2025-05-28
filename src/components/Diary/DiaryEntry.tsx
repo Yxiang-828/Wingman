@@ -4,7 +4,6 @@ import { useDiary } from "../../context/DiaryContext";
 import { format } from "date-fns";
 import "./DiaryEntry.css";
 
-
 // Writing prompts to inspire journaling
 const WRITING_PROMPTS = [
   "What made you smile today?",

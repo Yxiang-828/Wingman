@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiary } from "../../context/DiaryContext";
-import DiaryDetailPopup from "../Diary/DiaryDetailPopup";
 import { format } from "date-fns";
+import DiaryDetailPopup from "../Diary/DiaryDetailPopup";
 import "./Dashboard.css";
+import "./DiaryCard.css"; // Add this import
 
 interface DiaryCardProps {
   entries?: any[]; // Make entries optional

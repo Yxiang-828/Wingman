@@ -1530,4 +1530,71 @@
   transform: none;
 }
 
+/* Calendar button styles - moved from main.css */
+.calendar-btn,
+.day-form-btn,
+.day-nav-btn,
+.hour-btn {
+  background: rgba(30, 30, 50, 0.6);
+  color: white;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.calendar-btn:hover,
+.day-form-btn:hover,
+.day-nav-btn:hover,
+.hour-btn:hover {
+  transform: translateY(-2px) rotate(2deg);
+  box-shadow: 0 0 12px rgba(100, 108, 255, 0.6);
+  background: rgba(30, 30, 50, 0.7) !important; /* Force this to override globals */
+  border-color: rgba(100, 108, 255, 0.4);
+}
+
+/* Calendar event styling */
+.event-item {
+  padding: 1rem 1.2rem;
+  min-height: 5rem;
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+
+/* Quick action forms in calendar */
+.quick-action-form {
+  background: rgba(25, 25, 45, 0.95);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  min-width: 300px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+
+/* ADD AT END OF FILE */
+.calendar-btn,
+.day-form-btn,
+.day-nav-btn,
+.hour-btn {
+  background: rgba(30, 30, 50, 0.6);
+  color: white;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.calendar-btn:hover,
+.day-form-btn:hover,
+.day-nav-btn:hover,
+.hour-btn:hover {
+  transform: translateY(-2px) rotate(2deg);
+  box-shadow: 0 0 12px rgba(100, 108, 255, 0.6);
+  background: rgba(30, 30, 50, 0.7) !important;
+  border-color: rgba(100, 108, 255, 0.4);
+}
+
 

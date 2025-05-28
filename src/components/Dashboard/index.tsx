@@ -10,8 +10,7 @@ import CompletedTasksCard from "./CompletedTasksCard";
 import { getTodayDateString } from '../../utils/timeUtils';
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import "./Dashboard.css";
-
+import "./Dashboard.css"; // This now contains only Dashboard-specific styles
 const Dashboard: React.FC = () => {
   const { entries, refreshEntries, loading: diaryLoading } = useDiary();
   

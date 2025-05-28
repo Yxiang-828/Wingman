@@ -898,18 +898,44 @@
   100% { transform: scale(1); }
 }
 
-/* ✅ Mobile responsive */
-@media (max-width: 768px) {
-  .alert-popup {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-  
-  .alert-actions {
-    flex-direction: column;
-  }
-  
-  .alert-action-btn {
-    width: 100%;
-  }
+/* ADD AT END OF FILE */
+.notification-item {
+  padding: 1rem 1.2rem;
+  margin-bottom: 0.75rem;
+  border-radius: 10px;
+  border-left: 3px solid var(--accent-primary);
+  background: rgba(30, 30, 50, 0.4);
+  transition: all 0.2s ease;
+}
+
+.notification-item:hover {
+  transform: translateX(5px);
+  background: rgba(30, 30, 50, 0.6);
+}
+
+.notification-item.unread {
+  border-left-color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.notification-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.notification-time {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.notification-content {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
 }

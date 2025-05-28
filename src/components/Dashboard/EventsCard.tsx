@@ -4,6 +4,7 @@ import type { CalendarEvent } from "../../api/Calendar";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
 import "./Dashboard.css";
+import "./EventsCard.css"; // Add this import
 
 interface EventsCardProps {
   events: CalendarEvent[]; // Today's events only

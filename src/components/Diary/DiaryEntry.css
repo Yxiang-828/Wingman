@@ -16,6 +16,19 @@
   padding-left: 80px; /* Add padding to make room for the mood selector */
 }
 
+/* Entry component styling */
+.entry-item {
+  min-height: 6rem; /* Minimum height for entries */
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(30, 30, 50, 0.5);
+}
+
 /* MOOD SELECTOR STYLING - COLLAPSIBLE SIDEBAR */
 .mood-selector {
   position: absolute;
@@ -843,13 +856,13 @@ body.immersive-mode::after {
     opacity: 0;
   }
   10% {
-    opacity: 0.1;
+    opacity: 0.15;
   }
   90% {
-    opacity: 0.1;
+    opacity: 0.15;
   }
   100% {
-    transform: translate(20px, -100vh) rotate(360deg);
+    transform: translate(20px, -20px) rotate(10deg);
     opacity: 0;
   }
 }
