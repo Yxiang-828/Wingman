@@ -248,33 +248,38 @@ export const useCalendarCache = (componentId: string) => {
 
   // Subscribe to CRUD broadcasts
   useEffect(() => {
-    const handleCacheUpdate = (operation: any) => {
+    subscribeToCacheUpdates(componentId, (operation) => {
       const { type, entity, data, affectedDate } = operation;
       
       if (!affectedDate) return;
-
-      const itemType = entity === 'TASK' ? 'task' : 'event';
       
+      const itemType = entity === 'TASK' ? 'task' : 'event';
+      const cache = sharedCache.get(affectedDate);
+      
+      if (!cache) return;
+      
+      // Update cache with deduplication
       switch (type) {
         case 'CREATE':
-          sharedCache.updateItem(affectedDate, itemType, data, 'add');
+          if (itemType === 'task') {
+            // Only add if not already in cache
+            if (!cache.data.tasks.some(t => t.id === data.id)) {
+              cache.data.tasks.push(data);
+            }
+          } else if (itemType === 'event') {
+            if (!cache.data.events.some(e => e.id === data.id)) {
+              cache.data.events.push(data);
+            }
+          }
           break;
-        case 'UPDATE':
-          sharedCache.updateItem(affectedDate, itemType, data, 'update');
-          break;
-        case 'DELETE':
-          sharedCache.updateItem(affectedDate, itemType, data, 'delete');
-          break;
-        case 'TOGGLE':
-          sharedCache.updateItem(affectedDate, itemType, data, 'update');
-          break;
+        
+        // Handle other cases...
       }
-
-      console.log(`🔄 ${componentId}: Cache updated for ${affectedDate}`);
-    };
-
-    subscribeToCacheUpdates(componentId, handleCacheUpdate);
-
+      
+      // Update component state to trigger re-render
+      setLastUpdated(Date.now());
+    });
+    
     return () => {
       unsubscribeFromCacheUpdates(componentId);
     };
