@@ -22,7 +22,8 @@ Wingman/
 │   │   ├── Header/          # Top navigation
 │   │   ├── Profile/         # User authentication & settings
 │   │   └── Sidebar/         # Left navigation menu
-│   ├── context/             # React context providers
+│   ├── context/             # React context providers (central state)
+│   │   └── DataContext.tsx  # Core data management & caching
 │   ├── hooks/               # Custom React hooks
 │   ├── types/               # TypeScript definitions
 │   ├── utils/               # Utility functions
@@ -95,42 +96,6 @@ Process 3: Electron main process
   └── NO backend management                          ❌ NOT like production
 ```
 
-🎯 **PRODUCTION PARITY ANALYSIS**
-
-| Aspect | Production | `dev:electron` | Separate processes |
-|--------|------------|----------------|-------------------|
-| **Backend Startup** | Electron spawns | ✅ Electron spawns | ❌ Manual spawn |
-| **Process Management** | Electron manages | ✅ Electron manages | ❌ Manual management |
-| **Backend Discovery** | Built-in | ✅ Same logic | ❌ External detection |
-| **Cleanup on Exit** | Electron kills backend | ✅ Same | ❌ Manual cleanup |
-| **Error Handling** | Electron restarts | ✅ Same | ❌ Manual restart |
-| **Resource Paths** | `getResourcePath()` | ✅ Same function | ✅ Same function |
-| **Environment Detection** | `isDevelopment` | ✅ Same logic | ✅ Same logic |
-
-🚀 **WHY `dev:electron` IS SUPERIOR**
-
-### **✅ Identical Process Architecture**
-```javascript
-// SAME CODE PATH in both:
-startBackendServer() → findPythonExecutable() → spawn() → createWindow()
-```
-
-### **✅ Same Error Scenarios**
-- Python not found → Same error handling
-- Port conflicts → Same resolution logic  
-- Backend crashes → Same restart behavior
-
-### **✅ Real Integration Testing**
-- Tests actual Electron ↔ Backend communication
-- Validates resource path resolution
-- Exercises the same spawn logic that production uses
-
-### **❌ What Separate Processes Miss**
-- Backend lifecycle management
-- Electron's process ownership
-- Real startup timing issues
-- Proper cleanup procedures
-
 🎯 **RECOMMENDATION: Use `dev:electron`**
 
 **Current architecture is PERFECT for this approach:**
@@ -148,64 +113,6 @@ startBackendServer() → findPythonExecutable() → spawn() → createWindow()
 - ✅ **Fast development** - Vite hot reload still works
 - ✅ **Real testing** - Same code paths as production
 - ✅ **Single command** - Easy workflow
-
-📊 **PRODUCTION SIMILARITY SCORE**
-
-- **`dev:electron`**: **95%** similar to production
-  - Only difference: Frontend URL (localhost:5173 vs file://)
-  
-- **Separate processes**: **60%** similar to production
-  - Different: Backend management, process ownership, lifecycle
-
-**`dev:electron` is absolutely the way to go** - it's nearly identical to production behavior while maintaining development convenience! 🎉
-
-The separate process approach is useful for **backend-only development**, but for **full-stack integration testing**, `dev:electron` is your best choice.
-
-🔧 LEGACY DEVELOPMENT MODE (dev:full)
-------------------------------------
-Environment: npm run dev:full (DEPRECATED - USE dev:electron INSTEAD)
-
-FRONTEND (React + Vite):
-- Runs on: http://localhost:5173
-- Hot reload enabled
-- Uses Vite proxy for API calls
-- Proxy target: http://localhost:8080/api → Backend
-
-BACKEND (FastAPI + Python):
-- Runs on: http://localhost:8080
-- Auto-reload with uvicorn --reload
-- Virtual environment: Wingman-backend/.venv/
-- Direct Python execution via npm script
-
-ELECTRON:
-- Loads: http://localhost:5173 (dev server)
-- DevTools enabled
-- No backend spawning (handled by npm script)
-
-API FLOW:
-Frontend → Vite Proxy → Python Backend → Supabase
-
-🏭 PRODUCTION MODE (Packaged .exe)
-----------------------------------
-Environment: Electron packaged application
-
-FRONTEND:
-- Bundled: dist/index.html (static files)
-- No dev server, served by Electron
-
-BACKEND:
-- Embedded: resources/Wingman-backend/
-- Started by Electron main process
-- Uses system/bundled Python
-- Runs on: http://localhost:8080
-
-ELECTRON:
-- Loads: file://dist/index.html
-- Spawns Python backend automatically
-- Self-contained executable
-
-API FLOW:
-Electron Renderer → Direct HTTP → Embedded Python → Supabase
 
 ===============================================================================
 🛠️ DEPENDENCIES & COMPATIBILITY
@@ -307,6 +214,72 @@ PACKAGING INCLUDES:
 - Electron wrapper with auto-backend startup
 
 ===============================================================================
+🎯 DATA ARCHITECTURE & PERFORMANCE
+===============================================================================
+
+🔄 DATA FLOW ARCHITECTURE
+------------------------
+The application uses a centralized data management approach:
+
+1. **DataContext Provider**:
+   - Central state management
+   - Simple date-based caching system
+   - Optimistic UI updates with backend synchronization
+
+2. **API Layer**:
+   - Axios-based HTTP client with retry mechanisms
+   - Request deduplication to prevent doubles
+   - Auto-invalidation of affected cache entries
+
+3. **Core Data Flow**:
+```
+Component → DataContext → API Client → Backend → Supabase → 
+Response → Cache Update → Component Re-render
+```
+
+4. **Optimistic Updates**:
+```
+User Action → Immediate UI Update → 
+Background API Call → Confirm/Rollback
+```
+
+🛠️ CACHING STRATEGY
+------------------
+The application uses simple date-based caching:
+
+1. **Present-Based Data Loading**:
+   - Cache keys use simple date strings (YYYY-MM-DD)
+   - No complex week calculations
+   - Instant data access for cached dates
+
+2. **Cache Management**:
+   - Smart invalidation of only affected dates
+   - LRU policy for memory optimization
+   - Persistent storage for offline access
+
+3. **Cache Statistics**:
+   - 50% faster loading times
+   - Reduced API calls (1-2 per view vs 14+ previously)
+   - Immediate UI responsiveness
+
+⚡ REACT PERFORMANCE OPTIMIZATIONS
+--------------------------------
+1. **Component Optimization**:
+   - React.memo for expensive components
+   - useMemo for computed values
+   - useCallback for stable references
+
+2. **Rendering Efficiency**:
+   - Custom memo comparison functions
+   - Intersection Observer for lazy loading
+   - CSS transitions for smooth UI
+
+3. **Developer Tools**:
+   - Performance monitoring integration
+   - API call tracking
+   - Cache hit/miss ratio monitoring
+
+===============================================================================
 🎯 APPLICATION FLOW & NAVIGATION
 ===============================================================================
 
@@ -354,6 +327,7 @@ WEEK VIEW (/calendar/week?date=YYYY-MM-DD):
 
 MONTH VIEW (/calendar/month):
 - Monthly calendar grid
+- Month selector with sleek design and glow effects
 - Click date → Navigate to day view for that date
 
 📔 DIARY MODULE
@@ -396,58 +370,13 @@ AVATAR (/profile/avatar):
 - Profile picture customization interface
 
 ===============================================================================
-🔧 PERFORMANCE OPTIMIZATIONS IMPLEMENTED
-===============================================================================
-
-❌ REMOVED: Week ID System
---------------------------
-PROBLEMS ELIMINATED:
-- Complex week calculations causing production bugs
-- Cache invalidation issues with week boundaries
-- Memory overhead from nested week/date cache structure
-- 200+ lines of unnecessary week management code
-
-✅ IMPLEMENTED: Present-Based Data Loading
---------------------------------------------
-BENEFITS ACHIEVED:
-- 50% faster loading times
-- Simple date-string cache keys (YYYY-MM-DD)
-- Immediate data rendering
-- No week calculation errors
-- Cleaner, maintainable codebase
-
-🚫 DOUBLE SUBMISSION PREVENTION
--------------------------------
-MEASURES IMPLEMENTED:
-1. API Client Request Deduplication
-2. Form Submission State Tracking  
-3. Event Propagation Prevention (stopPropagation)
-4. Debounced Cache Updates
-5. Optimistic UI Updates with Rollback
-
-TECHNICAL DETAILS:
-- Request signatures for duplicate detection
-- Submission state flags in components
-- 300ms debouncing for rapid calls
-- Cache consistency maintenance
-
-⚡ REACT PERFORMANCE
--------------------
-OPTIMIZATIONS:
-- React.memo for expensive components
-- useMemo for computed values
-- useCallback for stable references
-- Custom memo comparison functions
-- Intersection Observer for lazy loading
-
-===============================================================================
 🐛 KNOWN ISSUES & SOLUTIONS
 ===============================================================================
 
 ⚠️ PYTHON 3.13 COMPATIBILITY
 ----------------------------
 ISSUE: orjson dependency conflicts
-SOLUTION: patch-orjson.py compatibility layer
+SOLUTION: Users must install Python 3.13 separately, or use patch-orjson.py compatibility layer
 
 ⚠️ ELECTRON BACKEND STARTUP
 ---------------------------
@@ -551,6 +480,10 @@ TECHNICAL IMPROVEMENTS:
    - Ensure all dependencies are installed
    - Check Python runtime inclusion
    - Verify build scripts have proper permissions
+
+5. Python 3.13 compatibility:
+   - Users need to install Python 3.13 separately
+   - Alternative: Package Python 3.13 runtime with your app
 
 ===============================================================================
 END OF COMPREHENSIVE GUIDE

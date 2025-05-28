@@ -529,19 +529,25 @@ const DayView: React.FC = () => {
     );
   }
 
-  const navigateToNotificationsTasks = (event: React.MouseEvent<HTMLDivElement>) => {
+  const navigateToNotificationsTasks = (
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
     event.preventDefault();
-    navigate('/notifications?filter=pending-tasks');
+    navigate("/notifications?filter=pending-tasks");
   };
 
-  const navigateToNotificationsEvents = (event: React.MouseEvent<HTMLDivElement>) => {
+  const navigateToNotificationsEvents = (
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
     event.preventDefault();
-    navigate('/notifications?filter=events');
+    navigate("/notifications?filter=events");
   };
 
-  const navigateToCompletedTasks = (event: React.MouseEvent<HTMLDivElement>) => {
+  const navigateToCompletedTasks = (
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
     event.preventDefault();
-    navigate('/notifications?filter=completed-tasks');
+    navigate("/notifications?filter=completed-tasks");
   };
 
   const cancelEdit = () => {

@@ -396,3 +396,47 @@ async function restartBackend() {
   await forceReleasePort(8080);
   startBackendServer().catch(console.error);
 }
+
+// Add this to your main.js
+async function checkPythonVersion() {
+  try {
+    const { stdout } = await execPromise('python --version');
+    console.log(`Python version check: ${stdout}`);
+    
+    if (!stdout.includes('Python 3.13')) {
+      return {
+        installed: false,
+        version: stdout.trim()
+      };
+    }
+    
+    return {
+      installed: true,
+      version: stdout.trim()
+    };
+  } catch (error) {
+    console.error('Python not found:', error);
+    return {
+      installed: false,
+      version: null
+    };
+  }
+}
+
+function showPythonInstallDialog() {
+  const pythonDialog = new BrowserWindow({
+    width: 600,
+    height: 400,
+    parent: BrowserWindow.getFocusedWindow(),
+    modal: true,
+    title: 'Python 3.13 Required',
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+  
+  // Load HTML content
+  pythonDialog.loadFile(path.join(__dirname, 'python-install.html'));
+  pythonDialog.setMenu(null);
+}
