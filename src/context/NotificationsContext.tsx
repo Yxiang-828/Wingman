@@ -293,9 +293,11 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // ✅ Popup management
-  const showPopupFor = (item: Task | CalendarEvent) => {
+  const showPopupFor = useCallback((item: Task | CalendarEvent) => {
+    console.log("Showing popup for item:", item);
+    // Just use the item directly - NO additional fetching
     setCurrentPopupItem(item);
-  };
+  }, []);
 
   const closePopup = () => {
     setCurrentPopupItem(null);

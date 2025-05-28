@@ -64,37 +64,46 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     }
   }, [onToggleTask, toggleTask]);
   
-  // FIXED: Function to handle task completion from popup
+  // Keep only ONE version of completeTask:
   const completeTask = useCallback(async (taskId: number): Promise<void> => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
     
     try {
-      // 1. Apply optimistic update
+      // Show processing state
       onToggleTask({
         ...task,
         isProcessing: true,
-        completed: !task.completed
+        completed: true
       });
       
-      // 2. Call API
+      // Call API
       const updatedTask = await toggleTask(task);
       
-      // 3. Update with final state
+      // Update UI with result
       onToggleTask(updatedTask);
       
-      // 4. Close popup
+      // Close popup
       closePopup();
     } catch (error) {
-      console.error("Error toggling task status:", error);
+      console.error("Error completing task:", error);
       
-      // 5. Revert on error
+      // Revert on error
       onToggleTask({
         ...task,
-        isProcessing: false
+        isProcessing: false,
+        completed: false
       });
     }
   }, [tasks, onToggleTask, toggleTask, closePopup]);
+
+  // Update task status circle click handler:
+  const handleStatusCircleClick = useCallback((e: React.MouseEvent, task: Task) => {
+    e.stopPropagation(); // Prevent item click
+    
+    // Use the shared completeTask function
+    completeTask(task.id);
+  }, [completeTask]);
 
   return (
     <div className="dashboard-card tasks-card">
