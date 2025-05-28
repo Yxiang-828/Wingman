@@ -9,7 +9,6 @@ import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import DetailPopup from "../Common/DetailPopup";
 import TimeInput from "../Common/TimeInput"; // ✅ YOU ALREADY HAVE THIS IMPORTED
-import EditPopup from "../Common/EditPopup";
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -445,89 +444,48 @@ const DayView: React.FC = () => {
     showPopupFor(event);
   };
 
-  // ✅ NEW: Add edit popup state
-  const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingItem, setEditingItem] = useState<Task | CalendarEvent | null>(
-    null
-  );
-
-  // ✅ NEW: Handle edit button click (same class as DetailPopup)
+  // MODIFY: handleEditTask function to use inline editing
   const handleEditTask = (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
     e.preventDefault();
-    setEditingItem(task);
-    setShowEditPopup(true);
+
+    // Use the existing inline editing state
+    setEditingTask(task);
+
+    // Populate the edit form
+    setEditTaskForm({
+      title: task.title,
+      task_time: task.task_time || "",
+    });
+
+    // Switch to tasks tab
+    setActiveTab("tasks");
+
+    // Scroll to form
+    document.querySelector(".day-form")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // MODIFY: handleEditEvent function to use inline editing
   const handleEditEvent = (e: React.MouseEvent, event: CalendarEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    setEditingItem(event);
-    setShowEditPopup(true);
-  };
 
-  // ✅ NEW: Handle save from edit popup
-  const handleSaveEdit = async (updatedItem: Task | CalendarEvent) => {
-    try {
-      if ("task_date" in updatedItem) {
-        const updatedTask = await updateTask(updatedItem as Task);
-        setCurrentDateTasks((prev) =>
-          prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-        );
-      } else {
-        const updatedEvent = await updateEvent(updatedItem as CalendarEvent);
-        setCurrentDateEvents((prev) =>
-          prev.map((event) =>
-            event.id === updatedEvent.id ? updatedEvent : event
-          )
-        );
-      }
-      setShowEditPopup(false);
-      setEditingItem(null);
-    } catch (error) {
-      console.error("Error updating item:", error);
-      throw error;
-    }
-  };
+    // Use the existing inline editing state
+    setEditingEvent(event);
 
-  // ✅ NEW: Close edit popup
-  const closeEditPopup = () => {
-    setShowEditPopup(false);
-    setEditingItem(null);
-  };
-
-  // ✅ ADD: Missing cancelEdit function after the other edit handlers
-  const cancelEdit = () => {
-    setEditingTask(null);
-    setEditingEvent(null);
-    setEditTaskForm({ title: "", task_time: "" });
+    // Populate the edit form
     setEditEventForm({
-      title: "",
-      event_time: "",
-      type: "",
-      description: "",
+      title: event.title,
+      event_time: event.event_time || "",
+      type: event.type || "",
+      description: event.description || "",
     });
-  };
 
-  const stats = getStats();
-  const navigateToNotificationsEvents = () => {
-    // Pre-fetch events data before navigation for smooth transition
-    const today = new Date().toISOString().split("T")[0];
-    getDayData(today, true).then(() => {
-      navigate("/notifications?tab=event");
-    });
-  };
+    // Switch to events tab
+    setActiveTab("events");
 
-  const navigateToCompletedTasks = () => {
-    navigate("/completed-tasks");
-  };
-
-  const navigateToNotificationsTasks = () => {
-    // Pre-fetch tasks data before navigation for smooth transition
-    const today = new Date().toISOString().split("T")[0];
-    getDayData(today, true).then(() => {
-      navigate("/notifications?tab=task");
-    });
+    // Scroll to form
+    document.querySelector(".day-form")?.scrollIntoView({ behavior: "smooth" });
   };
 
   // ✅ Show loading state
@@ -570,6 +528,30 @@ const DayView: React.FC = () => {
       </div>
     );
   }
+
+  const navigateToNotificationsTasks = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    navigate('/notifications?filter=pending-tasks');
+  };
+
+  const navigateToNotificationsEvents = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    navigate('/notifications?filter=events');
+  };
+
+  const navigateToCompletedTasks = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    navigate('/notifications?filter=completed-tasks');
+  };
+
+  const cancelEdit = () => {
+    setEditingTask(null);
+    setEditingEvent(null);
+    setEditTaskForm({ title: "", task_time: "" });
+    setEditEventForm({ title: "", event_time: "", type: "", description: "" });
+  };
+
+  const stats = getStats();
 
   return (
     <div className="day-view-container">
@@ -995,16 +977,6 @@ const DayView: React.FC = () => {
           item={currentPopupItem}
           onClose={closePopup}
           onComplete={completeTask}
-        />
-      )}
-
-      {/* ✅ NEW: EditPopup for direct editing */}
-      {showEditPopup && editingItem && (
-        <EditPopup
-          item={editingItem}
-          onClose={closeEditPopup}
-          onSave={handleSaveEdit}
-          container={document.body}
         />
       )}
     </div>
