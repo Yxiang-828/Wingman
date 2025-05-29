@@ -5,5 +5,5 @@ export const logout = () => {
   localStorage.removeItem("authToken");
 
   // Redirect to login
-  window.location.href = "/login";
+  // window.location.href = "/login";
 };

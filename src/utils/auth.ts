@@ -36,7 +36,7 @@ export const isLoggedIn = (): boolean => {
 export const logoutUser = () => {
   localStorage.removeItem("user");
   // Redirect to login page if needed
-  window.location.href = "/login";
+  // window.location.href = "/login";
 };
 
 // Set user data

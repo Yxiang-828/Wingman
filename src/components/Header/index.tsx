@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../main.css";
 import { logout } from "../../utils/logout";
+import { Auth } from "../../utils/AuthStateManager"; // if using AuthStateManager
 
 const Header: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -29,8 +30,7 @@ const Header: React.FC = () => {
     return date.toLocaleDateString(undefined, options);
   };
   const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
+    Auth.handleLogout();
   };
   // Format time for display
   const formatTime = (date: Date): string => {
