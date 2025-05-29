@@ -7,21 +7,23 @@ import TasksCard from "./TasksCard";
 import EventsCard from "./EventsCard";
 import SummaryCard from "./SummaryCard";
 import CompletedTasksCard from "./CompletedTasksCard";
-import { getTodayDateString } from '../../utils/timeUtils';
+import { getTodayDateString } from "../../utils/timeUtils";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
+import { logout } from "../../utils/logout";
+
 import "./Dashboard.css"; // This now contains only Dashboard-specific styles
 const Dashboard: React.FC = () => {
   const { entries, refreshEntries, loading: diaryLoading } = useDiary();
-  
+
   // ✅ Use shared cache to copy from DayView
-  const { getDayData, loading: cacheLoading } = useCalendarCache('Dashboard');
+  const { getDayData, loading: cacheLoading } = useCalendarCache("Dashboard");
 
   const [todaysTasks, setTodaysTasks] = useState<Task[]>([]);
   const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
   const [recentDiaryEntries, setRecentDiaryEntries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // ✅ SIMPLIFIED: Single loading state with timeout
   const [isReady, setIsReady] = useState(false);
 
@@ -40,15 +42,17 @@ const Dashboard: React.FC = () => {
         // Use standardized time utility
         const today = getTodayDateString();
         console.log(`📊 Dashboard: Loading data for ${today}`);
-        
+
         // Copy data from shared cache (DayView is primary owner)
         const todayData = await getDayData(today);
-        
+
         setTodaysTasks(todayData.tasks);
         setTodaysEvents(todayData.events);
 
-        console.log(`📊 Dashboard: Loaded ${todayData.tasks.length} tasks, ${todayData.events.length} events`);
-        
+        console.log(
+          `📊 Dashboard: Loaded ${todayData.tasks.length} tasks, ${todayData.events.length} events`
+        );
+
         // Load diary entries
         await refreshEntries();
       } catch (error) {
@@ -76,8 +80,10 @@ const Dashboard: React.FC = () => {
 
   // ✅ FIXED: Better loading condition with individual states
   useEffect(() => {
-    console.log(`📊 Dashboard Loading States: cache=${cacheLoading}, diary=${diaryLoading}, isReady=${isReady}`);
-    
+    console.log(
+      `📊 Dashboard Loading States: cache=${cacheLoading}, diary=${diaryLoading}, isReady=${isReady}`
+    );
+
     // Set loading to false when:
     // 1. Cache is not loading AND data is loaded
     // 2. Diary is loaded (regardless of diaryLoading from context)
@@ -87,21 +93,21 @@ const Dashboard: React.FC = () => {
     }
   }, [cacheLoading, diaryLoading, isReady]);
 
-  // ✅ DEBUG: Add this before your loading check  
-  console.log('Dashboard Loading Debug:', {
+  // ✅ DEBUG: Add this before your loading check
+  console.log("Dashboard Loading Debug:", {
     cacheLoading,
     dataLoaded: isReady,
     diaryLoaded: !diaryLoading,
-    isLoading
+    isLoading,
   });
 
   // ✅ Handle task toggle with cache awareness
   const handleToggleTask = (updatedTask: Task) => {
     // Update ALL tasks, not just displayed ones
-    setTodaysTasks(prev => 
-      prev.map(task => task.id === updatedTask.id ? updatedTask : task)
+    setTodaysTasks((prev) =>
+      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
-    
+
     // Force refresh the cache for today to ensure consistency
     const today = getTodayDateString();
     getDayData(today, true).catch(console.error);
@@ -114,10 +120,10 @@ const Dashboard: React.FC = () => {
           <div className="loading-spinner"></div>
           <p>Loading today's schedule...</p>
           {/* ✅ ADD: Debug info */}
-          <small style={{color: '#666', marginTop: '10px'}}>
-            Cache: {cacheLoading ? 'loading...' : 'ready'} | 
-            Data: {isReady ? 'loaded' : 'loading...'} | 
-            Diary: {diaryLoading ? 'loading...' : 'loaded'}
+          <small style={{ color: "#666", marginTop: "10px" }}>
+            Cache: {cacheLoading ? "loading..." : "ready"} | Data:{" "}
+            {isReady ? "loaded" : "loading..."} | Diary:{" "}
+            {diaryLoading ? "loading..." : "loaded"}
           </small>
         </div>
       </div>
@@ -129,11 +135,34 @@ const Dashboard: React.FC = () => {
   const pendingTasks = todaysTasks.filter((t) => !t.completed);
 
   // ✅ ADD: Debug what we're passing to TasksCard
-  console.log(`📊 Dashboard DEBUG: Passing ${pendingTasks.length} pending tasks to TasksCard`);
+  console.log(
+    `📊 Dashboard DEBUG: Passing ${pendingTasks.length} pending tasks to TasksCard`
+  );
   console.log(`📊 Dashboard DEBUG: Total tasks: ${todaysTasks.length}`);
+
+  // ...existing code above...
 
   return (
     <div className="dashboard-container">
+      {/* Logout button at top right */}
+      <button
+        onClick={logout}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          background: "#dc2626",
+          color: "white",
+          border: "none",
+          padding: "8px 16px",
+          borderRadius: "6px",
+          cursor: "pointer",
+          zIndex: 10,
+        }}
+      >
+        🚪 Logout
+      </button>
+
       <SummaryCard tasks={todaysTasks} events={todaysEvents} />
       <div className="dashboard">
         <TasksCard tasks={pendingTasks} onToggleTask={handleToggleTask} />
