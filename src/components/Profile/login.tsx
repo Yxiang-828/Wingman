@@ -143,12 +143,11 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
     try {
       const userData = {
-        name,
+        name: name || undefined, // optional
         email,
         password,
-        username: username || email.split("@")[0],
+        username, // required
       };
-
       // Use absolute URL for all fetch calls
       const apiUrl = "http://localhost:8080/api/v1/user/register";
 
@@ -205,7 +204,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+              className="p-3 rounded ... "
             />
             <div className="password-field">
               <input
@@ -241,10 +240,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
           <form onSubmit={handleRegister} className="w-72 flex flex-col gap-4">
             <input
               type="text"
-              placeholder="Your Name"
+              placeholder="Your Name (optional)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
               className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
             />
             <input
@@ -257,9 +255,10 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             />
             <input
               type="text"
-              placeholder="Username (optional)"
+              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              required
               className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
             />
             <div className="password-field">

@@ -41,7 +41,7 @@ def create_user(user_data):
     """
     try:
         # Ensure we have required fields
-        if not all(k in user_data for k in ['name', 'email', 'password']):
+        if not all(k in user_data for k in ['username', 'email', 'password']):
             logger.error("Missing required user fields")
             return None
         
