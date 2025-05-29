@@ -54,12 +54,17 @@ const DiarySearch = () => {
           : true;
 
         // Match date range
-        const entryDate = new Date(entry.date);
+        const entryDateStr = (
+          entry.entry_date ||
+          entry.date ||
+          entry.created_at ||
+          ""
+        ).slice(0, 10);
         const matchesStartDate = searchParams.startDate
-          ? entryDate >= new Date(searchParams.startDate)
+          ? entryDateStr >= searchParams.startDate
           : true;
         const matchesEndDate = searchParams.endDate
-          ? entryDate <= new Date(searchParams.endDate)
+          ? entryDateStr <= searchParams.endDate
           : true;
 
         // Match mood
@@ -300,7 +305,10 @@ const DiarySearch = () => {
                   >
                     <h4>{entry.title || "Untitled Entry"}</h4>
                     <p className="result-date">
-                      {formatSafeDate(entry.entry_date || entry.created_at, "date")}
+                      {formatSafeDate(
+                        entry.entry_date || entry.created_at,
+                        "date"
+                      )}
                     </p>
                     <p className="result-preview">
                       {entry.content.substring(0, 100)}

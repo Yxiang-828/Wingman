@@ -26,12 +26,14 @@ const ViewEntries: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
 
   // More accurate calculation of displayed entries
-  const totalEntriesDisplayed = expandedMonth 
-    ? groupedEntries[expandedMonth]?.entries.slice(0, page * entriesPerPage).length || 0 
+  const totalEntriesDisplayed = expandedMonth
+    ? groupedEntries[expandedMonth]?.entries.slice(0, page * entriesPerPage)
+        .length || 0
     : 0;
 
   // Make sure this condition is more explicit
-  const hasMoreEntries = expandedMonth && 
+  const hasMoreEntries =
+    expandedMonth &&
     groupedEntries[expandedMonth]?.entries.length > page * entriesPerPage;
 
   // Group entries by month for better organization
@@ -213,39 +215,40 @@ const ViewEntries: React.FC = () => {
                         isExpanded ? "expanded" : ""
                       }`}
                     >
-                      {isExpanded && monthData.entries
-                        .slice(0, page * entriesPerPage)
-                        .map((entry: DiaryEntry) => (
-                          <div
-                            key={entry.id}
-                            className="diary-entry-preview"
-                            onClick={() => viewEntry(entry)}
-                          >
-                            <div className="entry-preview-header">
-                              <div className="entry-preview-date-mood">
-                                <span className="entry-preview-date">
-                                  {formatSafeDate(
-                                    entry.entry_date || entry.created_at,
-                                    "date"
-                                  )}
-                                </span>
-                                <span className="entry-preview-mood">
-                                  {getMoodEmoji(entry.mood)}
-                                </span>
+                      {isExpanded &&
+                        monthData.entries
+                          .slice(0, page * entriesPerPage)
+                          .map((entry: DiaryEntry) => (
+                            <div
+                              key={entry.id}
+                              className="diary-entry-preview"
+                              onClick={() => viewEntry(entry)}
+                            >
+                              <div className="entry-preview-header">
+                                <div className="entry-preview-date-mood">
+                                  <span className="entry-preview-date">
+                                    {formatSafeDate(
+                                      entry.entry_date || entry.created_at,
+                                      "date"
+                                    )}
+                                  </span>
+                                  <span className="entry-preview-mood">
+                                    {getMoodEmoji(entry.mood)}
+                                  </span>
+                                </div>
+                                <h4 className="entry-preview-title">
+                                  {entry.title || "Untitled Entry"}
+                                </h4>
                               </div>
-                              <h4 className="entry-preview-title">
-                                {entry.title || "Untitled Entry"}
-                              </h4>
+                              <p className="entry-preview-content">
+                                {entry.content.substring(0, 150)}
+                                {entry.content.length > 150 ? "..." : ""}
+                              </p>
+                              <div className="entry-preview-footer">
+                                <span className="read-more">Read more →</span>
+                              </div>
                             </div>
-                            <p className="entry-preview-content">
-                              {entry.content.substring(0, 150)}
-                              {entry.content.length > 150 ? "..." : ""}
-                            </p>
-                            <div className="entry-preview-footer">
-                              <span className="read-more">Read more →</span>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
                     </div>
                   </div>
                 );
@@ -261,13 +264,15 @@ const ViewEntries: React.FC = () => {
                   <span>Loading more entries...</span>
                 </>
               ) : (
-                <button 
-                  className="load-more-btn" 
+                <button
+                  className="load-more-btn"
                   onClick={handleLoadMore}
                   disabled={!hasMoreEntries}
                 >
-                  {hasMoreEntries 
-                    ? `Load More Entries (${entries.length - totalEntriesDisplayed} remaining)` 
+                  {hasMoreEntries
+                    ? `Load More Entries (${
+                        entries.length - totalEntriesDisplayed
+                      } remaining)`
                     : "All Entries Loaded"}
                 </button>
               )}
