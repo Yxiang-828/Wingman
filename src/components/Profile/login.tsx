@@ -31,7 +31,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     let cleanup: (() => void) | undefined;
     if (window.electronAPI?.onMoodChange) {
       const result = window.electronAPI.onMoodChange(handleMoodChange);
-      if (typeof result === 'function') {
+      if (typeof result === "function") {
         cleanup = result;
       }
     }
@@ -80,7 +80,11 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          if (response.status === 401) {
+            throw new Error("Invalid username or password");
+          } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
         }
 
         const result = await response.json();
@@ -107,7 +111,8 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         // Only set error and stop trying on final attempt
         if (attempt === 2) {
           setError(
-            "Connection to server failed. Please restart the application."
+            err.message ||
+              "Connection to server failed. Please restart the application."
           );
         } else {
           // Wait before retrying (1s, 3s)
