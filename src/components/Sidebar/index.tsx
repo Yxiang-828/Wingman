@@ -44,7 +44,10 @@ const Sidebar: React.FC = () => {
     window.addEventListener("toggle-sidebar", handleToggle as EventListener);
 
     return () => {
-      window.removeEventListener("toggle-sidebar", handleToggle as EventListener);
+      window.removeEventListener(
+        "toggle-sidebar",
+        handleToggle as EventListener
+      );
     };
   }, []);
 

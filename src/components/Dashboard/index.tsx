@@ -10,7 +10,7 @@ import CompletedTasksCard from "./CompletedTasksCard";
 import { getTodayDateString } from "../../utils/timeUtils";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import { logout } from "../../utils/logout";
+// import { logout } from "../../utils/logout";
 
 import "./Dashboard.css"; // This now contains only Dashboard-specific styles
 const Dashboard: React.FC = () => {
@@ -144,25 +144,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Logout button at top right */}
-      <button
-        onClick={logout}
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          background: "#dc2626",
-          color: "white",
-          border: "none",
-          padding: "8px 16px",
-          borderRadius: "6px",
-          cursor: "pointer",
-          zIndex: 10,
-        }}
-      >
-        🚪 Logout
-      </button>
-
       <SummaryCard tasks={todaysTasks} events={todaysEvents} />
       <div className="dashboard">
         <TasksCard tasks={pendingTasks} onToggleTask={handleToggleTask} />

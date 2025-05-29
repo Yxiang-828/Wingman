@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../main.css";
+import { logout } from "../../utils/logout";
 
 const Header: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -27,7 +28,10 @@ const Header: React.FC = () => {
     };
     return date.toLocaleDateString(undefined, options);
   };
-
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
   // Format time for display
   const formatTime = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -63,6 +67,13 @@ const Header: React.FC = () => {
           onClick={() => navigate("/profile/settings")}
         >
           <span className="icon-rotate">⚙️</span>
+        </button>
+        <button
+          className="rounded-full bg-card p-2 hover-glow-tile logout-btn-red"
+          onClick={handleLogout}
+          title="Logout"
+        >
+          <span className="icon-rotate">🚪 Logout </span>
         </button>
       </div>
     </header>
