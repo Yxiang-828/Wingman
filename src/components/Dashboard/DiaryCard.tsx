@@ -4,20 +4,25 @@ import { useDiary } from "../../context/DiaryContext";
 import { format } from "date-fns";
 import DiaryDetailPopup from "../Diary/DiaryDetailPopup";
 import "./Dashboard.css";
-import "./DiaryCard.css"; // Add this import
+import "./DiaryCard.css";
 
 interface DiaryCardProps {
-  entries?: any[]; // Make entries optional
+  entries?: any[]; // Optional prop entries
 }
 
 const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
   const navigate = useNavigate();
-  const { entries, loading, deleteEntry, refreshEntries } = useDiary();
+  const {
+    entries: contextEntries,
+    loading,
+    deleteEntry,
+    refreshEntries,
+  } = useDiary();
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
   const dashboardRef = useRef<HTMLElement | null>(null);
   const [displayEntries, setDisplayEntries] = useState<any[]>([]);
 
-  // Find dashboard container for modal positioning
+  // Set container for modal
   useEffect(() => {
     dashboardRef.current =
       document.querySelector(".dashboard") ||
@@ -25,59 +30,98 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
       document.getElementById("dashboard");
   }, []);
 
-  // If entries are passed as props, use those; otherwise, use entries from context
-  useEffect(() => {
-    // Display recent diary entries summary in dashboard
-    // Fetch diary entries and map them here with title + date + snippet
-    if (propEntries && propEntries.length > 0) {
-      setDisplayEntries(propEntries.slice(0, 3)); // Show at most 3 entries
-    } else if (entries && entries.length > 0) {
-      // Sort entries by date (newest first) and take the most recent ones
-      const sortedEntries = [...entries].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-      setDisplayEntries(sortedEntries.slice(0, 3)); // Show at most 3 entries
-    } else {
-      setDisplayEntries([]);
-    }
-  }, [propEntries, entries]);
+  // Sort helper
+  const sortByCreatedAtDesc = (entryList: any[]) => {
+    const validEntries = entryList.filter((e) => e.created_at); // Skip undefined dates
+    const sorted = [...validEntries].sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return dateB - dateA;
+    });
+    return sorted;
+  };
 
-  // Refresh diary entries when component mounts
+  // Handle sorting + logging
+  useEffect(() => {
+    console.log("DiaryCard useEffect triggered");
+    console.log("propEntries:", propEntries);
+    console.log("context entries:", contextEntries);
+    console.log("🔎 Checking for May 30 entries...");
+    contextEntries.forEach((entry) => {
+      const d = new Date(entry.created_at);
+      if (d.toISOString().startsWith("2025-05-30")) {
+        console.log(
+          `🎯 Found May 30 entry: ID ${entry.id}, title: ${entry.title}, created_at: ${entry.created_at}`
+        );
+      }
+    });
+
+    // const sourceEntries =
+    //   propEntries && propEntries.length > 0 ? propEntries : contextEntries;
+    const hasValidPropEntries = propEntries?.some((e) => e.created_at);
+    const sourceEntries =
+      propEntries && propEntries.length > 0
+        ? [
+            ...propEntries,
+            ...contextEntries.filter(
+              (e) => !propEntries.some((p) => p.id === e.id)
+            ),
+          ]
+        : contextEntries;
+    const selectedDate = new Date("2025-05-30"); // Hardcoded for testing — replace with your actual selectedDate
+
+    console.log("📅 selectedDate:", selectedDate?.toISOString().slice(0, 10));
+    console.log("🔍 Filtering entries...");
+    sourceEntries.forEach((entry) => {
+      const createdDate = new Date(entry.created_at);
+      const match =
+        createdDate.toISOString().slice(0, 10) ===
+        selectedDate?.toISOString().slice(0, 10);
+      console.log(
+        `📝 ID ${entry.id}: created=${createdDate
+          .toISOString()
+          .slice(0, 10)}, match=${match}`
+      );
+    });
+
+    console.log("🚨 Raw created_at values:");
+    sourceEntries.forEach((e) => {
+      console.log(`ID ${e.id} | created_at: ${e.created_at}`);
+    });
+
+    const sorted = sortByCreatedAtDesc(sourceEntries);
+
+    console.log("✅ Sorted by created_at:");
+    sorted.forEach((e) => {
+      console.log(`ID ${e.id} | created_at: ${e.created_at}`);
+    });
+
+    setDisplayEntries(sorted.slice(0, 3)); // Only show top 3
+  }, [propEntries, contextEntries]);
+
+  // Refresh entries on mount
   useEffect(() => {
     refreshEntries();
   }, []);
 
-  const handleEntryClick = (entry: any) => {
-    setSelectedEntry(entry);
-  };
-
+  const handleEntryClick = (entry: any) => setSelectedEntry(entry);
   const handleDelete = (id: number) => {
     deleteEntry(id);
     setSelectedEntry(null);
   };
+  const handleEdit = (id: number) => navigate(`/diary/edit?id=${id}`);
 
-  const handleEdit = (id: number) => {
-    navigate(`/diary/edit?id=${id}`); // Make sure we use the correct path
-  };
-
-  // Format date for display
   const formatDateDisplay = (dateStr: string) => {
     try {
-      const date = new Date(dateStr);
-      return format(date, "MMM d, yyyy");
-    } catch (e) {
+      return format(new Date(dateStr), "MMM d, yyyy");
+    } catch {
       return dateStr;
     }
   };
 
-  // Truncate text to a shorter length
-  const truncateTextDisplay = (text: string, maxLength: number = 40) => {
-    if (!text) return "";
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + "...";
-  };
+  const truncateTextDisplay = (text: string, maxLength = 40) =>
+    text?.length > maxLength ? text.slice(0, maxLength) + "..." : text;
 
-  // Get mood emoji
   const getMoodEmoji = (mood: string) => {
     switch (mood) {
       case "happy":
@@ -91,7 +135,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
       case "relaxed":
         return "😌";
       default:
-        return "😐"; // neutral
+        return "😐";
     }
   };
 
@@ -106,6 +150,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
           View All
         </button>
       </div>
+
       {loading ? (
         <div className="card-loading">Loading entries...</div>
       ) : displayEntries && displayEntries.length > 0 ? (
@@ -120,7 +165,9 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
                 <h3>{entry.title}</h3>
                 <div className="entry-date">
                   <span className="entry-mood">{getMoodEmoji(entry.mood)}</span>
-                  {formatDateDisplay(entry.entry_date || entry.date)}
+                  {formatDateDisplay(
+                    entry.created_at || entry.entry_date || entry.date
+                  )}
                 </div>
               </div>
               <div className="entry-preview">
@@ -141,7 +188,6 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
         </div>
       )}
 
-      {/* Popup for diary entry details - now using the dashboard container */}
       {selectedEntry && (
         <DiaryDetailPopup
           entry={selectedEntry}
