@@ -30,7 +30,7 @@ const MonthView: React.FC = () => {
       setSelectedMonth(monthIndex);
       const firstDayOfMonth = startOfMonth(new Date(currentYear, monthIndex));
       const formattedDate = format(firstDayOfMonth, "yyyy-MM-dd");
-      navigate(`/calendar/day?date=${formattedDate}`);
+      navigate(`/calendar/week?date=${formattedDate}`);
     },
     [navigate, currentYear]
   );
@@ -64,9 +64,7 @@ const MonthView: React.FC = () => {
         {months.map((month, index) => (
           <button
             key={month}
-            className={`ms-btn ${
-              selectedMonth === index ? "active" : ""
-            }`}
+            className={`ms-btn ${selectedMonth === index ? "active" : ""}`}
             onClick={() => handleMonthClick(index)}
           >
             {month}
