@@ -8,6 +8,7 @@ import {
 import { DataProvider } from "./context/DataContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import { DiaryProvider } from "./context/DiaryContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import Sidebar from "./components/Sidebar/index";
 import Header from "./components/Header/index";
 import Dashboard from "./components/Dashboard/index";
@@ -83,10 +84,13 @@ const AppContent = ({
 
   // Return the app content with FIXED routing structure
   return (
-    <div className="app flex h-screen bg-dark text-light">
+    <div className="app flex h-screen">
+      {" "}
+      {/* Removed bg-dark and text-light */}
       <Sidebar />
       <div
-        className={`main-content-wrapper ${
+        className={`main-content-wrapper flex-1 flex flex-col overflow-hidden ${
+          // Added flex-1, flex, flex-col, overflow-hidden
           sidebarVisible ? "sidebar-visible" : ""
         }`}
       >
@@ -217,15 +221,18 @@ const App = () => {
 
   return (
     <Router>
+      {" "}
       {isAuthenticated ? (
         <ErrorBoundary>
-          <DiaryProvider>
-            <DataProvider>
-              <NotificationsProvider>
-                <AppContent onAuthChange={setIsAuthenticated} />
-              </NotificationsProvider>
-            </DataProvider>
-          </DiaryProvider>
+          <ThemeProvider>
+            <DiaryProvider>
+              <DataProvider>
+                <NotificationsProvider>
+                  <AppContent onAuthChange={setIsAuthenticated} />
+                </NotificationsProvider>
+              </DataProvider>
+            </DiaryProvider>
+          </ThemeProvider>
         </ErrorBoundary>
       ) : (
         <Login

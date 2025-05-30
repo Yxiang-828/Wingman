@@ -5,13 +5,13 @@
   left: -280px; /* Start collapsed */
   width: 280px;
   height: 100vh;
-  background: linear-gradient(165deg, #1a1a2e 0%, #121220 100%);
+  background: var(--color-bg-card, linear-gradient(165deg, #1a1a2e 0%, #121220 100%));
   z-index: 100;
   transition: left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   padding: 1.5rem;
   overflow-y: auto;
   box-shadow: none;
-  border-right: 1px solid rgba(100, 108, 255, 0.05);
+  border-right: 1px solid var(--color-border, rgba(100, 108, 255, 0.05));
 }
 
 /* Visible state - improved shadow */

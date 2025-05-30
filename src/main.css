@@ -1,19 +1,38 @@
 /* Global CSS Variables and Base Styles Only */
 
 :root {
-  /* Color scheme */
-  --bg-dark: #121212;
-  --bg-card: #1e1e1e;
-  --bg-hover: #2a2a2a;
-  --text-light: #fff;
-  --text-primary: #fff;
-  --accent-primary: #646cff;
-  --accent-secondary: #535bf2;
-  --accent-tertiary: #7c7fff;
-  --glow-primary: rgba(100, 108, 255, 0.5);
-  --glow-secondary: rgba(83, 91, 242, 0.3);
-  --glow-tertiary: rgba(124, 127, 255, 0.7);
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Default: Dark Theme */
+  --color-bg-body: #121212;
+  --color-bg-card: #1e1e1e;
+  --color-bg-hover: #2a2a2a;
+  --color-text-primary: #fff;
+  --color-text-secondary: #e0e0e0; /* For less prominent text */
+  --color-accent-primary: #646cff;
+  --color-accent-secondary: #535bf2;
+  --color-accent-tertiary: #7c7fff;
+  --color-glow-primary: rgba(100, 108, 255, 0.5);
+  --color-glow-secondary: rgba(83, 91, 242, 0.3);
+  --color-glow-tertiary: rgba(124, 127, 255, 0.7);
+  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-button-text: #fff;
+}
+
+.light-theme {
+  --color-bg-body: #f4f6f8;
+  --color-bg-card: #ffffff;
+  --color-bg-hover: #e9ecef;
+  --color-text-primary: #212529;
+  --color-text-secondary: #495057;
+  --color-accent-primary: #007bff;
+  --color-accent-secondary: #0056b3;
+  --color-accent-tertiary: #58a6ff;
+  --color-glow-primary: rgba(0, 123, 255, 0.4);
+  --color-glow-secondary: rgba(0, 86, 179, 0.25);
+  --color-glow-tertiary: rgba(88, 166, 255, 0.6);
+  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --color-border: rgba(0, 0, 0, 0.15);
+  --color-button-text: #ffffff; /* Text on primary accent buttons, can be #212529 for light buttons */
 }
 
 /* Global styles */
@@ -27,8 +46,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: var(--bg-dark);
-  color: var(--text-light);
+  background-color: var(--color-bg-body);
+  color: var(--color-text-primary);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -37,27 +56,30 @@ h1 {
   font-size: 2.5rem;
   line-height: 1.1;
   margin-bottom: 1rem;
+  color: var(--color-text-primary); /* Ensure headers use theme color */
 }
 
 h2 {
   font-size: 1.8rem;
   margin-bottom: 0.8rem;
+  color: var(--color-text-primary); /* Ensure headers use theme color */
 }
 
 h3 {
   font-size: 1.5rem;
   margin-bottom: 0.6rem;
+  color: var(--color-text-primary); /* Ensure headers use theme color */
 }
 
 a {
   font-weight: 500;
-  color: var(--accent-primary);
+  color: var(--color-accent-primary);
   text-decoration: inherit;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: var(--accent-secondary);
+  color: var(--color-accent-secondary);
 }
 
 /* Base Button Styles */
@@ -68,20 +90,20 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--bg-card);
+  background-color: var(--color-bg-card); /* Default button background */
   cursor: pointer;
   transition: all 0.25s ease;
-  color: var(--text-light);
+  color: var(--color-text-primary); /* Default button text color */
 }
 
 button:hover {
-  border-color: var(--accent-primary);
-  background-color: var(--bg-hover);
+  border-color: var(--color-accent-primary);
+  background-color: var(--color-bg-hover);
 }
 
 button:focus,
 button:focus-visible {
-  outline: 2px solid var(--accent-primary);
+  outline: 2px solid var(--color-accent-primary);
 }
 
 /* Form element base styles */
@@ -90,19 +112,19 @@ textarea,
 select {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 1rem;
-  background-color: var(--bg-card);
-  color: var(--text-light);
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 5px var(--glow-secondary);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 5px var(--color-glow-secondary);
 }
 
 /* Basic container */
@@ -210,7 +232,7 @@ select:focus {
 
 /* main.css or a global stylesheet */
 .logout-btn-red {
-  background: #dc2626 !important;
+  background: #dc2626 !important; /* Kept as is, can be themed if needed */
   color: white !important;
   border: none;
   padding: 8px 16px;

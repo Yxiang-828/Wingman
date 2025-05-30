@@ -134,19 +134,15 @@ const ChatBot = () => {
     setInput("");
 
     try {
-      // Send to Supabase and get response
-      console.log("Sending message to Supabase:", msg);
+      // Send message to backend and get LLM response
       const response = await sendChatMessage(user.id, msg, timestamp);
 
-      // Create bot message
       const botMessage: Message = {
         id: Date.now() + 1,
         sender: "wingman",
         text:
-          typeof response === "string"
-            ? response
-            : response.message && typeof response.message === "string"
-            ? response.message
+          typeof response.response === "string"
+            ? response.response
             : "Sorry, I didn't understand that.",
         timestamp: new Date().toISOString(),
       };

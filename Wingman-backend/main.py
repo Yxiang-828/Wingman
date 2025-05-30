@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import calendar, task, user, diary
+from app.api.v1.endpoints import calendar, task, user, diary, chat  # Added chat
 from app.core.responses import CustomJSONResponse
 from fastapi.responses import JSONResponse
 import logging
@@ -25,6 +25,7 @@ app.include_router(calendar.router, prefix="/api/v1", tags=["calendar"])
 app.include_router(task.router, prefix="/api/v1", tags=["tasks"])
 app.include_router(user.router, prefix="/api/v1", tags=["users"])
 app.include_router(diary.router, prefix="/api/v1", tags=["diary"])
+app.include_router(chat.router, prefix="/api/v1", tags=["chat"])  # Added chat router
 
 @app.get("/")
 def read_root():
