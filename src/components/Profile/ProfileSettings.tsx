@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { getCurrentUser, setCurrentUser } from "../../utils/auth"; // Adjust path if needed
 import { useTheme } from "../../context/ThemeContext";
+import { useBackground } from "../../context/BackgroundContext";
 
 const ProfileSettings: React.FC = () => {
   const { theme, setTheme } = useTheme();
+  const { background, setBackground } = useBackground();
   const [user, setUser] = useState({
     username: "",
     email: "",
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [background, setBackground] = useState("default"); // Default background
   const [chatbot, setChatbot] = useState("gpt-4"); // Default chatbot
   //   const [volume, setVolume] = useState(true);
 
@@ -126,7 +127,7 @@ const ProfileSettings: React.FC = () => {
           <option value="light">Light</option>
         </select>
       </label>
-      <br />
+      <br />{" "}
       <label>
         Background:
         <select
@@ -136,6 +137,7 @@ const ProfileSettings: React.FC = () => {
           <option value="default">Default</option>
           <option value="mountain">Mountain</option>
           <option value="city">City</option>
+          <option value="space">Space</option>
         </select>
       </label>
       <br />

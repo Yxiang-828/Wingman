@@ -370,3 +370,341 @@ select:focus {
 .fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
+
+/* Background Feature Styles - Enhanced MVP */
+.bg-default {
+  background: var(--color-bg-body);
+  transition: background 0.3s ease;
+}
+
+.bg-mountain {
+  background: 
+    /* Mountain Range Layer 1 (Far) */ linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 35%,
+      #2d3748 35%,
+      #1a202c 70%,
+      transparent 70%
+    ),
+    /* Mountain Range Layer 2 (Mid) */
+      linear-gradient(
+        105deg,
+        transparent 0%,
+        transparent 40%,
+        #4a5568 40%,
+        #2d3748 65%,
+        transparent 65%
+      ),
+    /* Mountain Range Layer 3 (Near) */
+      linear-gradient(
+        95deg,
+        transparent 0%,
+        transparent 50%,
+        #1a202c 50%,
+        #0f1419 80%,
+        transparent 80%
+      ),
+    /* Sky gradient */
+      linear-gradient(to bottom, #1a365d 0%, #2d3748 50%, #1a202c 100%);
+  background-size: 100% 100%, 120% 100%, 110% 100%, 100% 100%;
+  background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
+  background-attachment: fixed;
+  animation: mountainShift 25s ease-in-out infinite;
+}
+
+@keyframes mountainShift {
+  0% {
+    background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
+  }
+  50% {
+    background-position: 2% 0%, -8% 0%, 7% 0%, 0% 0%;
+  }
+  100% {
+    background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
+  }
+}
+
+.bg-city {
+  background: 
+    /* City Skyline Buildings */ linear-gradient(
+      to top,
+      transparent 0%,
+      transparent 60%,
+      #2d3748 60%,
+      #2d3748 90%,
+      transparent 90%
+    ),
+    linear-gradient(
+      to top,
+      transparent 0%,
+      transparent 65%,
+      #1a202c 65%,
+      #1a202c 85%,
+      transparent 85%
+    ),
+    linear-gradient(
+      to top,
+      transparent 0%,
+      transparent 55%,
+      #4a5568 55%,
+      #4a5568 95%,
+      transparent 95%
+    ),
+    linear-gradient(
+      to top,
+      transparent 0%,
+      transparent 70%,
+      #2d3748 70%,
+      #2d3748 80%,
+      transparent 80%
+    ),
+    linear-gradient(
+      to top,
+      transparent 0%,
+      transparent 50%,
+      #1a202c 50%,
+      #1a202c 88%,
+      transparent 88%
+    ),
+    /* Building Windows (lights) */
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 8px,
+        rgba(255, 215, 0, 0.3) 8px,
+        rgba(255, 215, 0, 0.3) 10px
+      ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 12px,
+      rgba(0, 191, 255, 0.2) 12px,
+      rgba(0, 191, 255, 0.2) 14px
+    ),
+    /* Night Sky */
+      linear-gradient(to bottom, #0f172a 0%, #1e293b 30%, #334155 100%);
+  background-size: 15% 100%, 25% 100%, 20% 100%, 18% 100%, 22% 100%, 100% 100%,
+    100% 100%, 100% 100%;
+  background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
+    80% bottom, 0% 60%, 0% 50%, 0% 0%;
+  background-attachment: fixed;
+  animation: cityLights 20s ease-in-out infinite;
+}
+
+@keyframes cityLights {
+  0%,
+  100% {
+    filter: brightness(1) contrast(1);
+    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
+      80% bottom, 0% 60%, 0% 50%, 0% 0%;
+  }
+  25% {
+    filter: brightness(1.1) contrast(1.05);
+    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
+      80% bottom, -2% 60%, -1% 50%, 0% 0%;
+  }
+  50% {
+    filter: brightness(0.95) contrast(1.1);
+    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
+      80% bottom, 1% 60%, 2% 50%, 0% 0%;
+  }
+  75% {
+    filter: brightness(1.05) contrast(0.95);
+    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
+      80% bottom, -1% 60%, 1% 50%, 0% 0%;
+  }
+}
+
+.bg-space {
+  background: 
+    /* Stars - Small */ radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.8) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 80% 30%,
+      rgba(255, 255, 255, 0.6) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 40% 70%,
+      rgba(255, 255, 255, 0.9) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 90% 80%,
+      rgba(255, 255, 255, 0.7) 1px,
+      transparent 1px
+    ),
+    radial-gradient(
+      circle at 10% 90%,
+      rgba(255, 255, 255, 0.5) 1px,
+      transparent 1px
+    ),
+    /* Stars - Medium */
+      radial-gradient(
+        circle at 60% 10%,
+        rgba(255, 255, 255, 0.8) 2px,
+        transparent 2px
+      ),
+    radial-gradient(
+      circle at 30% 60%,
+      rgba(255, 255, 255, 0.6) 2px,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle at 85% 50%,
+      rgba(255, 255, 255, 0.7) 2px,
+      transparent 2px
+    ),
+    /* Nebula Effects */
+      radial-gradient(
+        ellipse at 75% 25%,
+        rgba(138, 43, 226, 0.3) 0%,
+        transparent 50%
+      ),
+    radial-gradient(
+      ellipse at 25% 75%,
+      rgba(30, 144, 255, 0.2) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(255, 20, 147, 0.15) 0%,
+      transparent 70%
+    ),
+    /* Deep Space Background */
+      linear-gradient(
+        135deg,
+        #0a0a0f 0%,
+        #1a0a1f 25%,
+        #0f0a1a 50%,
+        #1f0a0f 75%,
+        #0a0f1a 100%
+      );
+  background-size: 300px 300px, 400px 400px, 250px 250px, 350px 350px,
+    200px 200px, 500px 500px, 450px 450px, 380px 380px, 800px 800px, 700px 700px,
+    900px 900px, 100% 100%;
+  background-position: 0% 0%, 50% 20%, 80% 60%, 20% 80%, 70% 40%, 30% 70%,
+    90% 10%, 10% 30%, 0% 0%, 100% 100%, 50% 50%, 0% 0%;
+  background-attachment: fixed;
+  animation: spaceTwinkle 15s ease-in-out infinite;
+}
+
+@keyframes spaceTwinkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1) hue-rotate(0deg);
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(1.02);
+    filter: brightness(1.1) hue-rotate(5deg);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(0.98);
+    filter: brightness(0.9) hue-rotate(-5deg);
+  }
+  75% {
+    opacity: 1.1;
+    transform: scale(1.01);
+    filter: brightness(1.05) hue-rotate(3deg);
+  }
+}
+
+/* Light theme background variants */
+.light-theme.bg-mountain {
+  background: linear-gradient(
+      135deg,
+      rgba(248, 249, 250, 0.9) 0%,
+      rgba(255, 255, 255, 0.95) 100%
+    ),
+    linear-gradient(
+      45deg,
+      #ecf0f1 0%,
+      #bdc3c7 25%,
+      #ecf0f1 50%,
+      #bdc3c7 75%,
+      #ecf0f1 100%
+    );
+  background-attachment: fixed;
+}
+
+.light-theme.bg-city {
+  background: linear-gradient(
+      135deg,
+      rgba(248, 249, 250, 0.9) 0%,
+      rgba(255, 255, 255, 0.95) 100%
+    ),
+    linear-gradient(
+      90deg,
+      #f8f9fa 0%,
+      #e9ecef 25%,
+      #dee2e6 50%,
+      #e9ecef 75%,
+      #f8f9fa 100%
+    );
+  background-attachment: fixed;
+}
+
+.light-theme.bg-space {
+  background: linear-gradient(
+      135deg,
+      rgba(248, 249, 250, 0.9) 0%,
+      rgba(255, 255, 255, 0.95) 100%
+    ),
+    radial-gradient(
+      circle at 20% 80%,
+      rgba(99, 102, 241, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(79, 70, 229, 0.1) 0%,
+      transparent 50%
+    );
+  background-attachment: fixed;
+}
+
+/* Content overlay for background readability */
+.bg-mountain .main-content,
+.bg-city .main-content,
+.bg-space .main-content {
+  position: relative;
+}
+
+.bg-mountain .main-content::before,
+.bg-city .main-content::before,
+.bg-space .main-content::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Enhanced background visibility */
+.bg-mountain,
+.bg-city,
+.bg-space {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Ensure background covers full viewport */
+body.bg-mountain,
+body.bg-city,
+body.bg-space {
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
