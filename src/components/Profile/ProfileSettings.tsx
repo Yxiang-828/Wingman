@@ -7,26 +7,21 @@ const ProfileSettings: React.FC = () => {
   const [user, setUser] = useState({
     username: "",
     email: "",
-    displayName: "",
-    // Add settings to user state type if you want to type it more strictly
   });
-  const [displayName, setDisplayName] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [background, setBackground] = useState("default"); // Default background
   const [chatbot, setChatbot] = useState("gpt-4"); // Default chatbot
   //   const [volume, setVolume] = useState(true);
+
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (currentUser) {
-      // Ensure user state includes displayName if it exists
+      // Set user info for display
       setUser({
         username: currentUser.username || "",
         email: currentUser.email || "",
-        displayName: currentUser.displayName || "",
-        // ... any other properties from currentUser you want in the local user state
       });
-      setDisplayName(currentUser.displayName || "");
       // Load settings if they exist
       if (currentUser.settings) {
         setBackground(currentUser.settings.background || "default");
@@ -38,10 +33,10 @@ const ProfileSettings: React.FC = () => {
     setSaving(true);
     setMessage("");
     const currentUser = getCurrentUser();
+
     if (currentUser) {
       const updatedUser = {
         ...currentUser,
-        displayName: displayName, // Add displayName to the updated user object
         settings: {
           theme,
           background,
@@ -49,7 +44,6 @@ const ProfileSettings: React.FC = () => {
         },
       };
       setCurrentUser(updatedUser); // Save updated user object to localStorage
-      setUser(updatedUser); // Update local user state
 
       // Also save theme settings to userSettings for ThemeContext
       const savedSettings = localStorage.getItem("userSettings");
@@ -94,23 +88,16 @@ const ProfileSettings: React.FC = () => {
           maxWidth: "400px",
         }}
       >
+        {" "}
         <div style={{ marginBottom: "0.5rem" }}>
-          <span style={{ color: "#8a2be2", fontWeight: 600 }}>Username:</span>
-          <span style={{ marginLeft: "0.5rem", color: "#fff" }}>
+          <span style={{ color: "#9979F0", fontWeight: 600 }}>Username:</span>
+          <span style={{ marginLeft: "0.5rem", color: "#9979F0" }}>
             {user.username}
           </span>
         </div>
-        <div style={{ marginBottom: "0.5rem" }}>
-          <span style={{ color: "#8a2be2", fontWeight: 600 }}>
-            Display Name:
-          </span>
-          <span style={{ marginLeft: "0.5rem", color: "#fff" }}>
-            {user.displayName || "Not set"} {/* Display the displayName here */}
-          </span>
-        </div>
         <div>
-          <span style={{ color: "#8a2be2", fontWeight: 600 }}>Email:</span>
-          <span style={{ marginLeft: "0.5rem", color: "#fff" }}>
+          <span style={{ color: "#9979F0", fontWeight: 600 }}>Email:</span>
+          <span style={{ marginLeft: "0.5rem", color: "#9979F0" }}>
             {user.email}
           </span>
         </div>
@@ -129,25 +116,6 @@ const ProfileSettings: React.FC = () => {
           {message}
         </p>
       )}
-      <label>
-        Display Name:
-        <input
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          style={{
-            // Added styling for the input field
-            backgroundColor: "#2c2c40",
-            color: "#fff",
-            border: "1px solid #8a2be2",
-            borderRadius: "4px",
-            padding: "0.3rem 0.5rem",
-            marginLeft: "0.5rem",
-            outline: "none",
-          }}
-        />
-      </label>
-      <br /> {/* Added a line break for better spacing */}{" "}
       <label>
         Theme:
         <select
