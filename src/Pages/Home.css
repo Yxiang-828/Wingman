@@ -1,10 +1,10 @@
 .home-hero {
   max-width: 600px;
-  
+
   padding: 2.5rem 2rem;
-  background: var(--bg-card, #232323);
+  background: var(--color-bg-card, #232323);
   border-radius: 16px;
-  box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.1));
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.1));
   text-align: center;
 }
 
@@ -16,7 +16,7 @@
 .home-hero p {
   font-size: 1.2rem;
   margin-bottom: 2rem;
-  color: var(--text-light, #fff);
+  color: var(--color-text-secondary, #fff);
 }
 
 .home-list {
@@ -43,6 +43,6 @@
 
 .home-footer {
   font-size: 1.1rem;
-  color: var(--accent-primary, #646cff);
+  color: var(--color-accent-primary, #646cff);
   margin-top: 2rem;
 }

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../main.css";
-import { logout } from "../../utils/logout";
 import { Auth } from "../../utils/AuthStateManager"; // if using AuthStateManager
+import WingmanAvatar from "../Common/WingmanAvatar";
 
 const Header: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -40,10 +40,16 @@ const Header: React.FC = () => {
     };
     return date.toLocaleTimeString(undefined, options);
   };
-
   return (
     <header className="header p-4 flex items-center justify-between bg-card text-light">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        <WingmanAvatar
+          size="small"
+          mood="happy"
+          context="dashboard"
+          onClick={() => navigate("/profile")}
+          className="hover:scale-110 transition-transform duration-300"
+        />
         <span className="text-xl font-bold">Welcome back, Leader! </span>
       </div>
 

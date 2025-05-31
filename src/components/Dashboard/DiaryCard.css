@@ -1,7 +1,11 @@
 /* Performance-optimized DiaryCard styling with unique 'dc-' prefixes */
 
 .dc-card {
-  background: linear-gradient(135deg, rgba(30, 30, 40, 0.5) 0%, rgba(35, 35, 55, 0.6) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-card-light, rgba(30, 30, 40, 0.5)) 0%,
+    var(--color-bg-card-secondary, rgba(35, 35, 55, 0.6)) 100%
+  );
   border-radius: 12px;
   padding: 16px;
   height: 340px;
@@ -15,20 +19,22 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  border-bottom: 1px solid
+    var(--color-accent-primary-border-light, rgba(100, 108, 255, 0.15));
 }
 
 .dc-header h2 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: white;
+  color: var(--color-text-primary, white);
 }
 
 .dc-action-btn {
-  background: rgba(30, 30, 50, 0.6);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(100, 108, 255, 0.15);
+  background: var(--color-bg-card, rgba(30, 30, 50, 0.6));
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
+  border: 1px solid
+    var(--color-accent-primary-border-light, rgba(100, 108, 255, 0.15));
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 0.85rem;
@@ -56,14 +62,14 @@
   min-height: 50px;
   max-height: 80px;
   overflow: hidden;
-  background: rgba(30, 30, 50, 0.4);
+  background: var(--color-bg-card, rgba(30, 30, 50, 0.4));
   border-radius: 10px;
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .dc-entry-item:hover {
-  background: rgba(30, 30, 50, 0.6);
+  background: var(--color-bg-card-hover, rgba(30, 30, 50, 0.6));
   transform: translateX(5px);
 }
 
@@ -87,7 +93,7 @@
 .dc-entry-date {
   font-size: 0.8rem;
   white-space: nowrap;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
 }
 
 .dc-entry-mood {
@@ -96,13 +102,14 @@
 
 .dc-entry-preview {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.6));
   line-height: 1.4;
   max-height: 3em;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
 }
@@ -113,14 +120,14 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.5));
   text-align: center;
 }
 
 .dc-small-btn {
-  background: rgba(100, 108, 255, 0.2);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(100, 108, 255, 0.3);
+  background: var(--color-accent-primary-bg, rgba(100, 108, 255, 0.2));
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
+  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
   border-radius: 8px;
   padding: 8px 16px;
   margin-top: 16px;
@@ -134,14 +141,18 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.6));
 }
 
 /* DiaryCard-specific styles, inheriting shared styling from Dashboard.css */
 
 .diary-card {
   /* Only override what's different from the base dashboard-card */
-  background: linear-gradient(135deg, rgba(25, 25, 45, 0.85) 0%, rgba(20, 20, 35, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-card-secondary, rgba(25, 25, 45, 0.85)) 0%,
+    var(--color-bg-dark, rgba(20, 20, 35, 0.9)) 100%
+  );
 }
 
 /* Additional diary entry styling - specific elements not in Dashboard.css */
@@ -165,7 +176,7 @@
 .entry-date {
   font-size: 0.8rem;
   white-space: nowrap;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.6));
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -177,12 +188,13 @@
 
 .entry-preview {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
 }

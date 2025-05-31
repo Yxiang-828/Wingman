@@ -8,10 +8,11 @@
 .diary-entry-container {
   display: flex;
   height: calc(100vh - 120px);
-  background: rgba(25, 25, 45, 0.5);
+  background: var(--color-bg-card-secondary, rgba(25, 25, 45, 0.5));
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 160, 50, 0.15);
+  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.25)),
+    0 0 30px var(--color-glow-primary, rgba(255, 160, 50, 0.15));
   position: relative; /* Ensure this is set for absolute positioning */
   padding-left: 80px; /* Add padding to make room for the mood selector */
 }
@@ -26,7 +27,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: rgba(30, 30, 50, 0.5);
+  background: var(--color-bg-card, rgba(30, 30, 50, 0.5));
 }
 
 /* MOOD SELECTOR STYLING - COLLAPSIBLE SIDEBAR */
@@ -41,12 +42,11 @@
   width: 70px;
   padding: 12px 8px;
   border-radius: 12px;
-  background: rgba(30, 30, 50, 0.75);
+  background: var(--color-bg-card-secondary, rgba(30, 30, 50, 0.75));
   backdrop-filter: blur(5px);
-  box-shadow: 
-    0 0 20px rgba(0, 0, 0, 0.15),
-    0 0 10px rgba(100, 108, 255, 0.2);
-  border: 1px solid rgba(100, 108, 255, 0.3);
+  box-shadow: 0 0 20px var(--color-shadow, rgba(0, 0, 0, 0.15)),
+    0 0 10px var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
+  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
   z-index: 10;
   transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   max-height: 80px; /* Default collapsed state */
@@ -68,35 +68,37 @@
 /* Collapsed state after selection */
 .mood-selector.has-selection {
   max-height: 80px;
-  background: rgba(30, 30, 50, 0.5);
+  background: var(--color-bg-card, rgba(30, 30, 50, 0.5));
   border-radius: 10px 10px 16px 16px;
-  box-shadow: 0 0 25px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 0 25px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.3));
 }
 
 /* Scroll appearance for collapsed state */
 .mood-selector.has-selection::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 20px;
   height: 8px;
-  background: rgba(100, 108, 255, 0.6);
+  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.6));
   border-radius: 4px;
-  box-shadow: 0 0 10px rgba(100, 108, 255, 0.6);
+  box-shadow: 0 0 10px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.6));
 }
 
 /* Scroll ends */
 .mood-selector.has-selection::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   width: 50px;
   height: 2px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-text-secondary, rgba(255, 255, 255, 0.3));
   border-radius: 1px;
 }
 
@@ -110,8 +112,9 @@
   width: 100%;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  background: rgba(40, 40, 60, 0.4);
-  border: 2px solid rgba(100, 108, 255, 0.25);
+  background: var(--color-bg-input, rgba(40, 40, 60, 0.4));
+  border: 2px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.25));
   position: relative;
   overflow: hidden;
 }
@@ -127,51 +130,51 @@
 .mood-label {
   font-size: 0.7rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
 }
 
 /* HOVER EFFECTS with increased range of motion */
 .mood-option:hover {
   transform: translateX(8px) scale(1.07); /* Larger motion range */
-  background: rgba(50, 50, 80, 0.6);
-  border-color: rgba(100, 108, 255, 0.6);
-  box-shadow: 
-    0 0 15px rgba(100, 108, 255, 0.4),
-    0 0 30px rgba(100, 108, 255, 0.2);
+  background: var(--color-bg-input-hover, rgba(50, 50, 80, 0.6));
+  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.6));
+  box-shadow: 0 0 15px
+      var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4)),
+    0 0 30px var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
   z-index: 2;
 }
 
 /* Mood-specific hover animations with corresponding colors */
-.mood-option[data-mood="happy"]:hover .mood-emoji { 
-  color: #FFD700; /* Gold */
+.mood-option[data-mood="happy"]:hover .mood-emoji {
+  color: var(--color-mood-happy, #ffd700); /* Gold */
   text-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
   animation: bounce 0.7s infinite alternate;
   transform: translateY(-10px); /* Larger bounce */
 }
 
-.mood-option[data-mood="sad"]:hover .mood-emoji { 
-  color: #6495ED; /* Cornflower Blue */
+.mood-option[data-mood="sad"]:hover .mood-emoji {
+  color: var(--color-mood-sad, #6495ed); /* Cornflower Blue */
   text-shadow: 0 0 12px rgba(100, 149, 237, 0.7);
   animation: shake 0.7s infinite;
   transform: translateX(-6px); /* Larger shake */
 }
 
-.mood-option[data-mood="neutral"]:hover .mood-emoji { 
-  color: #E0E0E0; /* Light Gray */
+.mood-option[data-mood="neutral"]:hover .mood-emoji {
+  color: var(--color-mood-neutral, #e0e0e0); /* Light Gray */
   text-shadow: 0 0 12px rgba(224, 224, 224, 0.7);
-  animation: pulse 1s infinite alternate; 
+  animation: pulse 1s infinite alternate;
   transform: scale(1.15); /* Larger pulse */
 }
 
-.mood-option[data-mood="excited"]:hover .mood-emoji { 
-  color: #FF69B4; /* Hot Pink */
+.mood-option[data-mood="excited"]:hover .mood-emoji {
+  color: var(--color-mood-excited, #ff69b4); /* Hot Pink */
   text-shadow: 0 0 12px rgba(255, 105, 180, 0.7);
   animation: spin 1.2s infinite;
   transform: rotate(25deg); /* Larger rotation */
 }
 
-.mood-option[data-mood="anxious"]:hover .mood-emoji { 
-  color: #9370DB; /* Medium Purple */
+.mood-option[data-mood="anxious"]:hover .mood-emoji {
+  color: var(--color-mood-anxious, #9370db); /* Medium Purple */
   text-shadow: 0 0 12px rgba(147, 112, 219, 0.7);
   animation: wobble 0.6s infinite;
   transform: rotate(-15deg); /* Larger wobble */
@@ -186,125 +189,184 @@
 /* Mood-specific click animations with glowing outlines */
 .mood-option[data-mood="happy"]:active {
   box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.8);
-  border-color: #FFD700;
+  border-color: var(--color-mood-happy, #ffd700);
 }
 
 .mood-option[data-mood="sad"]:active {
-  box-shadow: 0 0 0 3px rgba(100, 149, 237, 0.5), 0 0 25px rgba(100, 149, 237, 0.8);
-  border-color: #6495ED;
+  box-shadow: 0 0 0 3px rgba(100, 149, 237, 0.5),
+    0 0 25px rgba(100, 149, 237, 0.8);
+  border-color: var(--color-mood-sad, #6495ed);
 }
 
 .mood-option[data-mood="neutral"]:active {
-  box-shadow: 0 0 0 3px rgba(224, 224, 224, 0.5), 0 0 25px rgba(224, 224, 224, 0.8);
-  border-color: #E0E0E0;
+  box-shadow: 0 0 0 3px rgba(224, 224, 224, 0.5),
+    0 0 25px rgba(224, 224, 224, 0.8);
+  border-color: var(--color-mood-neutral, #e0e0e0);
 }
 
 .mood-option[data-mood="excited"]:active {
-  box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.5), 0 0 25px rgba(255, 105, 180, 0.8);
-  border-color: #FF69B4;
+  box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.5),
+    0 0 25px rgba(255, 105, 180, 0.8);
+  border-color: var(--color-mood-excited, #ff69b4);
 }
 
 .mood-option[data-mood="anxious"]:active {
-  box-shadow: 0 0 0 3px rgba(147, 112, 219, 0.5), 0 0 25px rgba(147, 112, 219, 0.8);
-  border-color: #9370DB;
+  box-shadow: 0 0 0 3px rgba(147, 112, 219, 0.5),
+    0 0 25px rgba(147, 112, 219, 0.8);
+  border-color: var(--color-mood-anxious, #9370db);
 }
 
 /* SELECTED STATE with pulsing color-specific border */
 .mood-option.selected {
   border-width: 3px;
-  background: rgba(70, 70, 100, 0.6);
+  background: var(--color-bg-input-selected, rgba(70, 70, 100, 0.6));
 }
 
 /* Color-specific selected state */
 .mood-option.selected[data-mood="happy"] {
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-  border-color: #FFD700;
+  border-color: var(--color-mood-happy, #ffd700);
   animation: pulse-glow-gold 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="sad"] {
   box-shadow: 0 0 20px rgba(100, 149, 237, 0.6);
-  border-color: #6495ED;
+  border-color: var(--color-mood-sad, #6495ed);
   animation: pulse-glow-blue 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="neutral"] {
   box-shadow: 0 0 20px rgba(224, 224, 224, 0.6);
-  border-color: #E0E0E0;
+  border-color: var(--color-mood-neutral, #e0e0e0);
   animation: pulse-glow-gray 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="excited"] {
   box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
-  border-color: #FF69B4;
+  border-color: var(--color-mood-excited, #ff69b4);
   animation: pulse-glow-pink 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="anxious"] {
   box-shadow: 0 0 20px rgba(147, 112, 219, 0.6);
-  border-color: #9370DB;
+  border-color: var(--color-mood-anxious, #9370db);
   animation: pulse-glow-purple 2s infinite alternate;
 }
 
 /* Animation keyframes */
 @keyframes tremble {
-  0%, 100% { transform: rotate(0deg) translateY(0); }
-  25% { transform: rotate(-1deg) translateY(-2px); }
-  50% { transform: rotate(0deg) translateY(0); }
-  75% { transform: rotate(1deg) translateY(-1px); }
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-1deg) translateY(-2px);
+  }
+  50% {
+    transform: rotate(0deg) translateY(0);
+  }
+  75% {
+    transform: rotate(1deg) translateY(-1px);
+  }
 }
 
 @keyframes bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-12px); }
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-12px);
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.2); }
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.2);
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes wobble {
-  0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-15deg); }
-  75% { transform: rotate(15deg); }
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-15deg);
+  }
+  75% {
+    transform: rotate(15deg);
+  }
 }
 
 /* Color-specific pulsing glow animations */
 @keyframes pulse-glow-gold {
-  0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-  100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+  0% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+  }
 }
 
 @keyframes pulse-glow-blue {
-  0% { box-shadow: 0 0 10px rgba(100, 149, 237, 0.5); }
-  100% { box-shadow: 0 0 30px rgba(100, 149, 237, 0.8); }
+  0% {
+    box-shadow: 0 0 10px rgba(100, 149, 237, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(100, 149, 237, 0.8);
+  }
 }
 
 @keyframes pulse-glow-gray {
-  0% { box-shadow: 0 0 10px rgba(224, 224, 224, 0.5); }
-  100% { box-shadow: 0 0 30px rgba(224, 224, 224, 0.8); }
+  0% {
+    box-shadow: 0 0 10px rgba(224, 224, 224, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(224, 224, 224, 0.8);
+  }
 }
 
 @keyframes pulse-glow-pink {
-  0% { box-shadow: 0 0 10px rgba(255, 105, 180, 0.5); }
-  100% { box-shadow: 0 0 30px rgba(255, 105, 180, 0.8); }
+  0% {
+    box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(255, 105, 180, 0.8);
+  }
 }
 
 @keyframes pulse-glow-purple {
-  0% { box-shadow: 0 0 10px rgba(147, 112, 219, 0.5); }
-  100% { box-shadow: 0 0 30px rgba(147, 112, 219, 0.8); }
+  0% {
+    box-shadow: 0 0 10px rgba(147, 112, 219, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(147, 112, 219, 0.8);
+  }
 }
 
 /* Main writing area */
@@ -314,7 +376,11 @@
   flex-direction: column;
   padding: 2rem;
   overflow-y: auto;
-  background: linear-gradient(135deg, rgba(40, 35, 50, 0.6) 0%, rgba(25, 25, 45, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-main-primary, rgba(40, 35, 50, 0.6)) 0%,
+    var(--color-bg-main-secondary, rgba(25, 25, 45, 0.7)) 100%
+  );
   transition: all 0.3s ease;
 }
 
@@ -324,29 +390,30 @@
 }
 
 .diary-main::-webkit-scrollbar-track {
-  background: rgba(30, 30, 50, 0.2);
+  background: var(--color-scrollbar-track, rgba(30, 30, 50, 0.2));
   border-radius: 10px;
 }
 
 .diary-main::-webkit-scrollbar-thumb {
-  background: rgba(100, 108, 255, 0.4);
+  background: var(--color-scrollbar-thumb, rgba(100, 108, 255, 0.4));
   border-radius: 10px;
-  border: 2px solid rgba(30, 30, 50, 0.2);
+  border: 2px solid var(--color-scrollbar-track, rgba(30, 30, 50, 0.2));
 }
 
 .diary-main::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 108, 255, 0.6);
+  background: var(--color-scrollbar-thumb-hover, rgba(100, 108, 255, 0.6));
 }
 
 .diary-header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
+  border-bottom: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
   padding-bottom: 1rem;
 }
 
 .diary-date {
   font-size: 0.95rem;
-  color: rgba(255, 230, 200, 0.8);
+  color: var(--color-text-accent, rgba(255, 230, 200, 0.8));
   margin-bottom: 0.75rem;
   font-weight: 500;
 }
@@ -356,8 +423,8 @@
   background: transparent;
   border: none;
   outline: none;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 0 10px rgba(255, 160, 50, 0.2);
+  color: var(--color-text, rgba(255, 255, 255, 0.95));
+  text-shadow: 0 0 10px var(--color-glow-primary, rgba(255, 160, 50, 0.2));
   font-size: 1.8rem;
   font-weight: 600;
   padding: 0.5rem 0;
@@ -366,11 +433,11 @@
 }
 
 .diary-title:focus {
-  border-bottom-color: rgba(100, 108, 255, 0.4);
+  border-bottom-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
 }
 
 .diary-title::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-placeholder, rgba(255, 255, 255, 0.4));
   font-weight: 500;
 }
 
@@ -382,26 +449,30 @@
 .diary-textarea {
   width: 100%;
   min-height: 200px;
-  background: rgba(35, 32, 45, 0.4);
-  border: 1px solid rgba(100, 108, 255, 0.15);
+  background: var(--color-bg-input, rgba(35, 32, 45, 0.4));
+  border: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.15));
   border-radius: 12px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--color-text, rgba(255, 255, 255, 0.95));
   font-size: 1.1rem;
   line-height: 1.7;
   padding: 1.5rem;
   outline: none;
   resize: none;
   transition: all 0.3s;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) inset, 0 0 15px rgba(255, 160, 50, 0.05) inset;
+  box-shadow: 0 2px 10px var(--color-shadow, rgba(0, 0, 0, 0.1)) inset,
+    0 0 15px var(--color-glow-primary, rgba(255, 160, 50, 0.05)) inset;
 }
 
 .diary-textarea:focus {
-  border-color: rgba(255, 180, 100, 0.4);
-  box-shadow: 0 0 0 2px rgba(255, 180, 100, 0.1), 0 2px 10px rgba(0, 0, 0, 0.1) inset;
+  border-color: var(--color-accent-secondary, rgba(255, 180, 100, 0.4));
+  box-shadow: 0 0 0 2px
+      var(--color-accent-secondary-glow, rgba(255, 180, 100, 0.1)),
+    0 2px 10px var(--color-shadow, rgba(0, 0, 0, 0.1)) inset;
 }
 
 .diary-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-placeholder, rgba(255, 255, 255, 0.4));
 }
 
 /* Footer area with mood and actions */
@@ -409,7 +480,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid rgba(100, 108, 255, 0.2);
+  border-top: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
   padding-top: 1.5rem;
   gap: 2rem;
   flex-wrap: wrap;
@@ -422,15 +494,15 @@
 
 .diary-mood label {
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
   font-weight: 500;
 }
 
 .diary-mood-select {
-  background: rgba(30, 30, 50, 0.4);
-  border: 1px solid rgba(100, 108, 255, 0.2);
+  background: var(--color-bg-card, rgba(30, 30, 50, 0.4));
+  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
   border-radius: 8px;
-  color: white;
+  color: var(--color-text, white);
   padding: 0.5rem;
   min-width: 180px;
   outline: none;
@@ -438,8 +510,9 @@
 }
 
 .diary-mood-select:focus {
-  border-color: rgba(100, 108, 255, 0.4);
-  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.1);
+  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
+  box-shadow: 0 0 0 2px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.1));
 }
 
 .diary-actions {
@@ -450,24 +523,30 @@
 }
 
 .diary-save-btn {
-  background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
-  color: white;
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary, #646cff) 0%,
+    var(--color-accent-primary-dark, #535bf2) 100%
+  );
+  color: var(--color-text-contrast, white);
   border: none;
   border-radius: 8px;
   padding: 0.7rem 1.5rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 2px 8px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.3));
 }
 
 .diary-save-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4);
+  box-shadow: 0 4px 12px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4));
 }
 
 .diary-save-btn:disabled {
-  background: rgba(100, 108, 255, 0.4);
+  background: var(--color-accent-primary-disabled, rgba(100, 108, 255, 0.4));
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -482,28 +561,29 @@
   width: 80px; /* Wider for horizontal layout */
   height: 34px; /* Shorter height */
   border-radius: 16px 0 0 16px; /* Rounded on left side only */
-  background: rgba(40, 35, 50, 0.7);
-  border: 1px solid rgba(100, 108, 255, 0.3);
-  color: white;
+  background: var(--color-bg-main-primary, rgba(40, 35, 50, 0.7));
+  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
+  color: var(--color-text, white);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 100;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.2));
   animation: float-vertical 8s ease-in-out infinite alternate;
 }
 
 .diary-tools-toggle.open {
-  background: rgba(100, 108, 255, 0.2);
+  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
   /* Keep position fixed, just change color */
 }
 
 .diary-tools-toggle:hover {
   width: 90px; /* Expand slightly on hover */
-  background: rgba(50, 45, 60, 0.8);
-  box-shadow: 0 0 15px rgba(100, 108, 255, 0.4);
+  background: var(--color-bg-input-hover, rgba(50, 45, 60, 0.8));
+  box-shadow: 0 0 15px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4));
 }
 
 .tools-toggle-text {
@@ -514,8 +594,12 @@
 
 /* Vertical floating animation */
 @keyframes float-vertical {
-  0% { transform: translateY(calc(-50% - 10px)); }
-  100% { transform: translateY(calc(-50% + 10px)); }
+  0% {
+    transform: translateY(calc(-50% - 10px));
+  }
+  100% {
+    transform: translateY(calc(-50% + 10px));
+  }
 }
 
 /* Mobile responsiveness */
@@ -541,9 +625,10 @@
   right: -320px; /* Position it just outside the card */
   width: 320px;
   height: 100%;
-  background: rgba(28, 28, 40, 0.95);
-  border-left: 1px solid rgba(100, 108, 255, 0.3);
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+  background: var(--color-bg-tools-panel, rgba(28, 28, 40, 0.95));
+  border-left: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
+  box-shadow: -5px 0 15px var(--color-shadow, rgba(0, 0, 0, 0.2));
   padding: 2rem 1.5rem;
   z-index: 99;
   overflow-y: auto;
@@ -566,22 +651,23 @@
 }
 
 .diary-tools::-webkit-scrollbar-track {
-  background: rgba(30, 30, 50, 0.1);
+  background: var(--color-scrollbar-track, rgba(30, 30, 50, 0.1));
   border-radius: 10px;
 }
 
 .diary-tools::-webkit-scrollbar-thumb {
-  background: rgba(100, 108, 255, 0.3);
+  background: var(--color-scrollbar-thumb, rgba(100, 108, 255, 0.3));
   border-radius: 10px;
 }
 
 .diary-tools::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 108, 255, 0.5);
+  background: var(--color-scrollbar-thumb-hover, rgba(100, 108, 255, 0.5));
 }
 
 .diary-tools-header {
   margin-bottom: 2rem;
-  border-bottom: 1px solid rgba(100, 108, 255, 0.3);
+  border-bottom: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
   padding-bottom: 1rem;
 }
 
@@ -589,8 +675,9 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  color: white;
-  text-shadow: 0 0 10px rgba(100, 108, 255, 0.5);
+  color: var(--color-text, white);
+  text-shadow: 0 0 10px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.5));
 }
 
 .diary-tools-section {
@@ -600,7 +687,7 @@
 .diary-tools-section h3 {
   font-size: 1.1rem;
   margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text, rgba(255, 255, 255, 0.9));
 }
 
 /* Quick entry buttons */
@@ -613,10 +700,10 @@
 
 .quick-entry-btn {
   padding: 0.75rem 0.5rem;
-  background: rgba(40, 35, 50, 0.6);
-  border: 1px solid rgba(100, 108, 255, 0.2);
+  background: var(--color-bg-main-primary, rgba(40, 35, 50, 0.6));
+  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
   border-radius: 8px;
-  color: white;
+  color: var(--color-text, white);
   cursor: pointer;
   transition: all 0.3s;
   text-align: center;
@@ -624,9 +711,9 @@
 
 .quick-entry-btn:hover {
   transform: translateY(-2px);
-  background: rgba(100, 108, 255, 0.15);
-  border-color: rgba(100, 108, 255, 0.4);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.15));
+  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
+  box-shadow: 0 4px 12px var(--color-shadow, rgba(0, 0, 0, 0.2));
 }
 
 /* Writing prompts */
@@ -637,8 +724,9 @@
 }
 
 .writing-prompt {
-  background: rgba(40, 35, 50, 0.6);
-  border: 1px solid rgba(100, 108, 255, 0.15);
+  background: var(--color-bg-main-primary, rgba(40, 35, 50, 0.6));
+  border: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.15));
   border-radius: 10px;
   padding: 1rem;
   transition: all 0.3s;
@@ -647,10 +735,10 @@
 }
 
 .writing-prompt:hover {
-  background: rgba(40, 35, 50, 0.8);
+  background: var(--color-bg-input-hover, rgba(40, 35, 50, 0.8));
   transform: translateY(-2px);
-  border-color: rgba(100, 108, 255, 0.4);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
+  box-shadow: 0 4px 12px var(--color-shadow, rgba(0, 0, 0, 0.2));
 }
 
 /* Remove the use-prompt-btn since we're making the entire prompt clickable */
@@ -659,10 +747,11 @@
 }
 
 .refresh-prompts-btn {
-  background: rgba(40, 35, 50, 0.5);
-  border: 1px dashed rgba(100, 108, 255, 0.25);
+  background: var(--color-bg-card, rgba(40, 35, 50, 0.5));
+  border: 1px dashed
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.25));
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
   padding: 0.75rem;
   margin-top: 1rem;
   width: 100%;
@@ -671,8 +760,8 @@
 }
 
 .refresh-prompts-btn:hover {
-  background: rgba(40, 35, 50, 0.7);
-  border-color: rgba(100, 108, 255, 0.4);
+  background: var(--color-bg-input-hover, rgba(40, 35, 50, 0.7));
+  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
   transform: translateY(-2px);
 }
 
@@ -690,7 +779,7 @@
   pointer-events: none;
   z-index: -1;
   background: radial-gradient(
-    ellipse at center 60%, 
+    ellipse at center 60%,
     var(--mood-glow-color, rgba(255, 180, 50, 0.15)) 0%,
     rgba(20, 20, 40, 0) 70%
   );
@@ -698,11 +787,21 @@
 }
 
 @keyframes flicker {
-  0% { opacity: 0.7; }
-  25% { opacity: 0.8; }
-  50% { opacity: 0.6; }
-  75% { opacity: 0.9; }
-  100% { opacity: 0.7; }
+  0% {
+    opacity: 0.7;
+  }
+  25% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.7;
+  }
 }
 
 /* Responsive design */
@@ -745,9 +844,9 @@
 
 /* Add these card styles from Diary.css */
 .diary-card {
-  background: var(--bg-card, #232323);
+  background: var(--color-bg-card, #232323);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.2));
   padding: 2.5rem;
   margin-bottom: 2rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -756,27 +855,32 @@
 }
 
 .diary-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, #646cff, #535bf2);
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-primary, #646cff),
+    var(--color-accent-primary-dark, #535bf2)
+  );
   opacity: 0.7;
 }
 
 .diary-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(100, 108, 255, 0.15);
+  box-shadow: 0 8px 30px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.15));
 }
 
 /* Base immersive mode styling with enhanced edge glow */
 body.immersive-mode {
   background: radial-gradient(
     circle at center,
-    rgba(32, 32, 45, 0.95) 0%,
-    rgba(22, 22, 32, 0.98) 80%
+    var(--color-bg-main-primary, rgba(32, 32, 45, 0.95)) 0%,
+    var(--color-bg-main-secondary, rgba(22, 22, 32, 0.98)) 80%
   );
   position: relative;
   overflow: hidden;
@@ -784,7 +888,7 @@ body.immersive-mode {
 
 /* Edge glow effect - default theme */
 body.immersive-mode::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -792,21 +896,21 @@ body.immersive-mode::before {
   bottom: 0;
   pointer-events: none;
   z-index: 10;
-  box-shadow: 
-    inset 0 0 80px 10px var(--mood-glow-color, rgba(255, 180, 50, 0.15)),
+  box-shadow: inset 0 0 80px 10px
+      var(--mood-glow-color, rgba(255, 180, 50, 0.15)),
     inset 0 0 30px 5px var(--mood-inner-glow, rgba(255, 140, 50, 0.1));
   animation: subtle-flicker 8s infinite alternate;
 }
 
 /* Animated floating particles */
 body.immersive-mode::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('/assets/particles-light.png');
+  background-image: url("/assets/particles-light.png");
   background-size: cover;
   opacity: 0.08;
   z-index: 5;
@@ -815,16 +919,30 @@ body.immersive-mode::after {
 }
 
 @keyframes subtle-flicker {
-  0% { opacity: 0.7; }
-  25% { opacity: 0.8; }
-  50% { opacity: 0.7; }
-  75% { opacity: 0.9; }
-  100% { opacity: 0.7; }
+  0% {
+    opacity: 0.7;
+  }
+  25% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes float-particles {
-  from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
 }
 
 /* Floating icons animation */
@@ -844,11 +962,36 @@ body.immersive-mode::after {
   animation: float-icon 20s infinite linear;
 }
 
-.icon-1 { top: 10%; left: 5%; animation-duration: 25s; animation-delay: 0s; }
-.icon-2 { top: 15%; left: 85%; animation-duration: 30s; animation-delay: 2s; }
-.icon-3 { top: 80%; left: 15%; animation-duration: 22s; animation-delay: 5s; }
-.icon-4 { top: 35%; left: 90%; animation-duration: 18s; animation-delay: 3s; }
-.icon-5 { top: 65%; left: 75%; animation-duration: 28s; animation-delay: 1s; }
+.icon-1 {
+  top: 10%;
+  left: 5%;
+  animation-duration: 25s;
+  animation-delay: 0s;
+}
+.icon-2 {
+  top: 15%;
+  left: 85%;
+  animation-duration: 30s;
+  animation-delay: 2s;
+}
+.icon-3 {
+  top: 80%;
+  left: 15%;
+  animation-duration: 22s;
+  animation-delay: 5s;
+}
+.icon-4 {
+  top: 35%;
+  left: 90%;
+  animation-duration: 18s;
+  animation-delay: 3s;
+}
+.icon-5 {
+  top: 65%;
+  left: 75%;
+  animation-duration: 28s;
+  animation-delay: 1s;
+}
 
 @keyframes float-icon {
   0% {
@@ -874,35 +1017,36 @@ body.immersive-mode .main-content-wrapper {
 body.immersive-mode .diary-entry-container {
   max-width: 900px;
   margin: 0 auto;
-  box-shadow: 0 0 40px rgba(50, 50, 80, 0.15);
+  box-shadow: 0 0 40px var(--color-bg-main-glow, rgba(50, 50, 80, 0.15));
   border-radius: 20px;
   overflow: hidden;
 }
 
 /* Typography enhancements */
 body.immersive-mode .diary-title {
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   font-weight: 600;
   font-size: 2rem;
   letter-spacing: -0.01em;
 }
 
 body.immersive-mode .diary-textarea {
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   font-size: 1.2rem;
   line-height: 1.8;
-  background: rgba(35, 35, 50, 0.3);
-  border: 1px solid rgba(100, 108, 255, 0.15);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+  background: var(--color-bg-input, rgba(35, 35, 50, 0.3));
+  border: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.15));
+  box-shadow: inset 0 0 20px var(--color-shadow, rgba(0, 0, 0, 0.1));
 }
 
 body.immersive-mode .diary-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-placeholder, rgba(255, 255, 255, 0.4));
   opacity: 0.7;
 }
 
 body.immersive-mode .diary-date {
-  font-family: 'Georgia', serif;
+  font-family: "Georgia", serif;
   font-style: italic;
 }
 
@@ -916,16 +1060,16 @@ body.immersive-mode header {
   text-align: center;
   padding: 3rem;
   font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
 }
 
 .diary-error {
   text-align: center;
   padding: 2rem;
-  background: rgba(255, 80, 80, 0.1);
+  background: var(--color-error-bg, rgba(255, 80, 80, 0.1));
   border-radius: 8px;
-  border: 1px solid rgba(255, 80, 80, 0.3);
-  color: rgba(255, 160, 160, 0.9);
+  border: 1px solid var(--color-error-border, rgba(255, 80, 80, 0.3));
+  color: var(--color-error-text, rgba(255, 160, 160, 0.9));
   margin: 2rem auto;
   max-width: 600px;
 }
@@ -940,11 +1084,11 @@ body.immersive-mode header {
 /* Quirky "pick carefully" text */
 .mood-selector-label {
   position: absolute;
-  right: -90px;  /* Position to the right of the selector */
+  right: -90px; /* Position to the right of the selector */
   top: 10px;
   font-size: 0.65rem;
-  font-family: 'Courier New', monospace; /* Quirky typewriter font */
-  color: rgba(255, 255, 255, 0.6);
+  font-family: "Courier New", monospace; /* Quirky typewriter font */
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
   transform: rotate(90deg); /* Rotate vertically */
   transform-origin: left center;
   letter-spacing: 1px;
@@ -953,7 +1097,8 @@ body.immersive-mode header {
   white-space: nowrap;
   pointer-events: none;
   opacity: 0.8;
-  text-shadow: 0 0 5px rgba(100, 108, 255, 0.4);
+  text-shadow: 0 0 5px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4));
   transition: opacity 0.3s ease;
 }
 

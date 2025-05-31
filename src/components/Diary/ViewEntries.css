@@ -14,10 +14,10 @@
   position: relative;
   padding: 0;
   border-radius: 16px;
-  background: rgba(25, 25, 45, 0.6);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  background: var(--color-bg-card);
+  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.25));
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 108, 255, 0.5) rgba(30, 30, 50, 0.3);
+  scrollbar-color: var(--color-accent-primary) var(--color-bg-hover);
 }
 
 /* Fixed header that stays at the top */
@@ -25,10 +25,10 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(20, 20, 35, 0.95);
+  background: var(--color-bg-secondary);
   padding: 1.5rem 2rem;
   margin: 0;
-  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -38,10 +38,8 @@
 .view-entries-header h2 {
   font-size: 1.8rem;
   margin: 0;
-  background: linear-gradient(90deg, #fff, #b8b9ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-text);
+  font-weight: 600;
 }
 
 /* Action buttons */
@@ -61,26 +59,32 @@
 }
 
 .search-entries-btn {
-  background: rgba(30, 30, 50, 0.6);
-  border: 1px solid rgba(100, 108, 255, 0.2);
-  color: white;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
 .search-entries-btn:hover {
-  background: rgba(30, 30, 50, 0.8);
+  background: var(--color-bg-hover);
   transform: translateY(-2px);
 }
 
 .write-entry-btn {
-  background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary, #646cff) 0%,
+    var(--color-accent-primary-dark, #535bf2) 100%
+  );
   border: none;
-  color: white;
-  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+  color: var(--color-text-contrast, white);
+  box-shadow: 0 2px 8px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
 }
 
 .write-entry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 12px
+    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.3));
 }
 
 /* Content area - separate from header with padding */
@@ -96,9 +100,9 @@
 .month-group {
   border-radius: 12px;
   overflow: hidden;
-  background: rgba(25, 25, 45, 0.7);
+  background: var(--color-bg-secondary);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.1));
 }
 
 .month-header {
@@ -106,34 +110,34 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  background: rgba(30, 30, 50, 0.7);
+  background: var(--color-bg-card);
   cursor: pointer;
   position: relative;
   transition: background 0.2s ease;
 }
 
 .month-header:hover {
-  background: rgba(40, 40, 60, 0.8);
+  background: var(--color-bg-hover);
 }
 
 .month-header h3 {
   font-size: 1.2rem;
   margin: 0;
-  color: white;
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .entry-count {
   font-size: 0.85rem;
-  background: rgba(30, 30, 50, 0.8);
+  background: var(--color-bg-secondary);
   padding: 0.3rem 0.6rem;
   border-radius: 1rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary);
 }
 
 .expand-indicator {
   font-size: 0.9rem;
-  color: rgba(100, 108, 255, 0.8);
+  color: var(--color-accent-primary, rgba(100, 108, 255, 0.8));
   transition: transform 0.3s ease;
   margin-left: 10px;
 }
@@ -157,10 +161,10 @@
 /* Entry preview cards */
 .diary-entry-preview {
   padding: 1.2rem 1.5rem;
-  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: all 0.3s ease;
-  background: rgba(28, 28, 45, 0.3);
+  background: var(--color-bg-card);
   overflow: hidden; /* Prevent content overflow */
 }
 
@@ -169,7 +173,7 @@
 }
 
 .diary-entry-preview:hover {
-  background: rgba(35, 35, 55, 0.5);
+  background: var(--color-bg-hover, rgba(35, 35, 55, 0.5));
   transform: translateX(5px);
 }
 
@@ -186,9 +190,9 @@
 
 .entry-preview-date {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
   padding: 0.2rem 0.5rem;
-  background: rgba(30, 30, 50, 0.6);
+  background: var(--color-bg-card, rgba(30, 30, 50, 0.6));
   border-radius: 4px;
 }
 
@@ -199,14 +203,14 @@
 .entry-preview-title {
   font-size: 1.2rem;
   margin: 0;
-  color: white;
+  color: var(--color-text, white);
   font-weight: 600;
 }
 
 .entry-preview-content {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
   margin: 0 0 0.75rem 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -221,13 +225,13 @@
 
 .read-more {
   font-size: 0.9rem;
-  color: rgba(100, 108, 255, 0.8);
+  color: var(--color-accent-primary, rgba(100, 108, 255, 0.8));
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .diary-entry-preview:hover .read-more {
-  color: rgba(100, 108, 255, 1);
+  color: var(--color-accent-primary-bright, rgba(100, 108, 255, 1));
   transform: translateX(3px);
 }
 
@@ -237,9 +241,9 @@
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(74, 222, 128, 0.15);
-  border: 1px solid rgba(74, 222, 128, 0.3);
-  color: rgba(74, 222, 128, 0.9);
+  background: var(--color-success-bg, rgba(74, 222, 128, 0.15));
+  border: 1px solid var(--color-success-border, rgba(74, 222, 128, 0.3));
+  color: var(--color-success-text, rgba(74, 222, 128, 0.9));
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   animation: fade-in-up 0.5s ease forwards;
@@ -252,7 +256,7 @@
 .close-btn {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0;
@@ -265,7 +269,7 @@
 }
 
 .close-btn:hover {
-  color: white;
+  color: var(--color-text, white);
   transform: rotate(90deg);
 }
 
@@ -284,7 +288,7 @@
 .diary-loading {
   text-align: center;
   padding: 4rem 0;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
   font-size: 1.1rem;
 }
 
@@ -296,7 +300,7 @@
   justify-content: center;
   text-align: center;
   padding: 4rem 2rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
 }
 
 .diary-empty-state p {
@@ -315,7 +319,7 @@
   position: relative;
   padding: 1.5rem;
   text-align: center;
-  background: rgba(25, 25, 45, 0.7);
+  background: var(--color-bg-card-secondary, rgba(25, 25, 45, 0.7));
   position: sticky;
   bottom: 0;
   z-index: 10;
@@ -330,27 +334,36 @@
   padding: 1rem 0;
   margin-top: 1rem;
   text-align: center;
-  background: linear-gradient(to top, rgba(20, 20, 35, 0.95) 70%, rgba(20, 20, 35, 0.7) 100%);
-  border-top: 1px solid rgba(100, 108, 255, 0.2);
+  background: linear-gradient(
+    to top,
+    var(--color-bg-main-secondary, rgba(20, 20, 35, 0.95)) 70%,
+    var(--color-bg-main-secondary-fade, rgba(20, 20, 35, 0.7)) 100%
+  );
+  border-top: 1px solid
+    var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
   z-index: 90;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -4px 12px var(--color-shadow, rgba(0, 0, 0, 0.2));
 }
 
 .load-more-btn {
-  background: rgba(100, 108, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(100, 108, 255, 0.5);
+  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
+  color: var(--color-text, white);
+  border: 1px solid var(--color-accent-primary, rgba(100, 108, 255, 0.5));
   border-radius: 8px;
   padding: 12px 24px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.2));
 }
 
 .load-more-btn {
-  background: linear-gradient(135deg, rgba(100, 108, 255, 0.7), rgba(83, 91, 242, 0.7));
-  color: white;
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary, rgba(100, 108, 255, 0.7)),
+    var(--color-accent-primary-dark, rgba(83, 91, 242, 0.7))
+  );
+  color: var(--color-text-contrast, white);
   border: none;
   border-radius: 8px;
   padding: 12px 24px;
@@ -358,19 +371,24 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 10px var(--color-shadow, rgba(0, 0, 0, 0.3));
 }
 
 .load-more-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, rgba(110, 118, 255, 0.8), rgba(93, 101, 242, 0.8));
-  box-shadow: 0 6px 15px rgba(83, 91, 242, 0.4);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary-bright, rgba(110, 118, 255, 0.8)),
+    var(--color-accent-primary-dark-bright, rgba(93, 101, 242, 0.8))
+  );
+  box-shadow: 0 6px 15px
+    var(--color-accent-primary-glow, rgba(83, 91, 242, 0.4));
 }
 
 .load-more-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: rgba(60, 60, 80, 0.7);
+  background: var(--color-bg-disabled, rgba(60, 60, 80, 0.7));
 }
 
 .load-more-container.loading {
@@ -379,23 +397,27 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1.5rem 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
 }
 
 /* Loading spinner for automatic loading */
 .loading-spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(100, 108, 255, 0.3);
-  border-top-color: rgba(100, 108, 255, 0.8);
+  border: 3px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
+  border-top-color: var(--color-accent-primary, rgba(100, 108, 255, 0.8));
   border-radius: 50%;
   margin-right: 10px;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Scrollbar styling */
@@ -404,12 +426,12 @@
 }
 
 .diary-card.view-entries-container::-webkit-scrollbar-track {
-  background: rgba(30, 30, 50, 0.3);
+  background: var(--color-scrollbar-track, rgba(30, 30, 50, 0.3));
   border-radius: 4px;
 }
 
 .diary-card.view-entries-container::-webkit-scrollbar-thumb {
-  background: rgba(100, 108, 255, 0.5);
+  background: var(--color-scrollbar-thumb, rgba(100, 108, 255, 0.5));
   border-radius: 4px;
 }
 
@@ -421,27 +443,27 @@
     gap: 1rem;
     padding: 1.2rem 1.5rem;
   }
-  
+
   .view-entries-actions {
     width: 100%;
     display: flex;
   }
-  
+
   .search-entries-btn,
   .write-entry-btn {
     flex: 1;
     text-align: center;
     padding: 0.75rem 1rem;
   }
-  
+
   .entries-by-month {
     padding: 1rem;
   }
-  
+
   .month-header {
     padding: 0.75rem 1rem;
   }
-  
+
   .diary-entry-preview {
     padding: 1rem;
   }

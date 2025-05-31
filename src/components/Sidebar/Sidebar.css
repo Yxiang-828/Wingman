@@ -5,7 +5,10 @@
   left: -280px; /* Start collapsed */
   width: 280px;
   height: 100vh;
-  background: var(--color-bg-card, linear-gradient(165deg, #1a1a2e 0%, #121220 100%));
+  background: var(
+    --color-bg-sidebar,
+    linear-gradient(165deg, rgba(26, 26, 46, 1) 0%, rgba(18, 18, 32, 1) 100%)
+  );
   z-index: 100;
   transition: left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   padding: 1.5rem;
@@ -17,8 +20,7 @@
 /* Visible state - improved shadow */
 .sidebar.visible {
   left: 0;
-  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.4), 
-              0 0 20px rgba(100, 108, 255, 0.2);
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.4), 0 0 20px rgba(100, 108, 255, 0.2);
 }
 
 /* Main content wrapper that shifts right */
@@ -72,13 +74,16 @@
 }
 
 .sidebar-toggle::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #353563 0%, #1e1e38 100%);
+  background: var(
+    --color-bg-sidebar-toggle,
+    linear-gradient(135deg, rgba(53, 53, 99, 1) 0%, rgba(30, 30, 56, 1) 100%)
+  );
   border-radius: 0 50px 50px 0;
   z-index: -1;
 }
@@ -101,10 +106,87 @@
   object-fit: cover; /* Ensures image fills the circle */
 }
 
+/* Styling for WingmanAvatar wrapper in toggle button */
+.sidebar-toggle-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: bounce 2s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Force WingmanAvatar to fit in sidebar toggle - override all size classes */
+.sidebar-toggle-avatar .wingman-avatar {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.sidebar-toggle-avatar .wingman-avatar__container {
+  width: 20px !important;
+  height: 20px !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  gap: 0 !important;
+}
+
+.sidebar-toggle-avatar .wingman-avatar__image-wrapper {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3)) !important;
+  box-shadow: 0 0 8px var(--color-accent-primary-glow, rgba(100, 108, 255, 0.3)) !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+.sidebar-toggle-avatar .wingman-avatar__image {
+  width: 20px !important;
+  height: 20px !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: 50% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+/* Hide mood indicator and name in sidebar toggle */
+.sidebar-toggle-avatar .wingman-avatar__mood-indicator {
+  display: none !important;
+}
+
+.sidebar-toggle-avatar .wingman-avatar__name {
+  display: none !important;
+}
+
 /* Keep bounce animation for the icon */
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 /* Enhanced Sidebar Header */
@@ -116,19 +198,21 @@
   padding-bottom: 1.2rem;
   border-bottom: 1px solid rgba(100, 108, 255, 0.12);
   position: relative;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .sidebar-header::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 25%;
   right: 25%;
   height: 1px;
   background: linear-gradient(
-    90deg, 
+    90deg,
     rgba(100, 108, 255, 0.01),
-    rgba(100, 108, 255, 0.5), 
+    rgba(100, 108, 255, 0.5),
     rgba(100, 108, 255, 0.01)
   );
 }
@@ -137,12 +221,47 @@
   font-size: 1.8rem;
   font-weight: 700;
   color: transparent;
-  background: linear-gradient(135deg, #9d9eff, #646cff);
+  background: var(
+    --color-accent-gradient,
+    linear-gradient(135deg, rgba(157, 158, 255, 1), rgba(100, 108, 255, 1))
+  );
   -webkit-background-clip: text;
   background-clip: text;
   margin: 0;
   letter-spacing: 0.5px;
   text-shadow: 0 0 25px rgba(100, 108, 255, 0.4);
+}
+
+/* Sidebar header content wrapper */
+.sidebar-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 10px var(--color-accent-primary-glow);
+  transform: scale(1.05);
 }
 
 /* Navigation styling - improved visual hierarchy */
@@ -166,7 +285,7 @@
   justify-content: space-between;
   padding: 0.9rem 1rem;
   border-radius: 12px;
-  color: rgba(230, 230, 250, 0.85);
+  color: var(--color-text, rgba(230, 230, 250, 0.85));
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
   border: 1px solid transparent;
@@ -209,9 +328,7 @@
 .sidebar-link:hover {
   background: rgba(40, 40, 60, 0.5);
   transform: translateX(5px);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(100, 108, 255, 0.3);
   color: white;
 }
 
@@ -221,23 +338,25 @@
 
 /* Active state - more distinctive */
 .sidebar-link.active {
-  background: linear-gradient(135deg, rgba(100, 108, 255, 0.2) 0%, rgba(90, 98, 235, 0.15) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(100, 108, 255, 0.2) 0%,
+    rgba(90, 98, 235, 0.15) 100%
+  );
   color: white;
   border: 1px solid rgba(100, 108, 255, 0.3);
-  box-shadow: 
-    0 4px 15px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(100, 108, 255, 0.3),
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(100, 108, 255, 0.3),
     inset 0 0 8px rgba(100, 108, 255, 0.15);
 }
 
 .sidebar-link.active::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 3px;
   height: 100%;
-  background: #646cff;
+  background: var(--color-accent-primary, #646cff);
   border-radius: 0 3px 3px 0;
 }
 
@@ -275,7 +394,7 @@
   justify-content: center;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  color: rgba(220, 220, 250, 0.75);
+  color: var(--color-text, rgba(220, 220, 250, 0.75));
   text-decoration: none;
   font-size: 0.85rem;
   transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
@@ -296,13 +415,17 @@
 
 /* Pulse effect on hover */
 .sidebar-submenu-item:hover::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   width: 120%;
   height: 120%;
-  background: radial-gradient(circle, rgba(100, 108, 255, 0.15) 0%, rgba(100, 108, 255, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(100, 108, 255, 0.15) 0%,
+    rgba(100, 108, 255, 0) 70%
+  );
   border-radius: 50%;
   transform: translate(-50%, -50%);
   z-index: -1;
@@ -311,9 +434,18 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
-  70% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  70% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
 }
 
 /* Active submenu item */

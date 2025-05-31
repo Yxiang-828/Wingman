@@ -125,7 +125,7 @@
   font-size: 1rem;
   cursor: pointer;
   background: rgba(74, 222, 128, 0.2);
-  color: #4ade80;
+  color: var(--color-success, #4ade80);
   border: 1px solid rgba(74, 222, 128, 0.4);
 }
 
@@ -182,7 +182,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(74, 222, 128, 0.1);
-  color: #4ade80;
+  color: var(--color-success, #4ade80);
 }
 
 .ct-empty h2 {
@@ -199,7 +199,7 @@
 .ct-action-btn {
   padding: 12px 24px;
   background: rgba(74, 222, 128, 0.2);
-  color: #4ade80;
+  color: var(--color-success, #4ade80);
   border: 1px solid rgba(74, 222, 128, 0.4);
   border-radius: 8px;
   font-size: 1rem;
@@ -231,12 +231,12 @@
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .ct-actions {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .ct-task-item {
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto;

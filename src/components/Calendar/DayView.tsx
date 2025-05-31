@@ -9,6 +9,7 @@ import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import DetailPopup from "../Common/DetailPopup";
 import TimeInput from "../Common/TimeInput"; // ✅ YOU ALREADY HAVE THIS IMPORTED
+import WingmanAvatar from "../Common/WingmanAvatar";
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -561,18 +562,28 @@ const DayView: React.FC = () => {
 
   return (
     <div className="day-view-container">
+      {" "}
       {/* ✅ KEEP: All existing JSX structure exactly the same */}
       <div className="day-view-header">
-        <h1 className="day-view-date">
-          {date
-            ? date.toLocaleDateString(undefined, {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })
-            : "Today"}
-        </h1>
+        <div className="flex items-center gap-3 mb-4">
+          <WingmanAvatar
+            size="medium"
+            mood="happy"
+            context="dashboard"
+            onClick={() => navigate("/profile")}
+            className="hover:scale-110 transition-transform duration-300"
+          />
+          <h1 className="day-view-date">
+            {date
+              ? date.toLocaleDateString(undefined, {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              : "Today"}
+          </h1>
+        </div>
 
         <div className="day-view-navigation">
           <button className="day-nav-btn" onClick={handlePrevDay}>
@@ -589,7 +600,6 @@ const DayView: React.FC = () => {
           </button>
         </div>
       </div>
-
       <div className="day-view-stats">
         <div
           className="day-stat-card"
@@ -627,7 +637,6 @@ const DayView: React.FC = () => {
           </div>
         </div>
       </div>
-
       <div className="day-view-tabs">
         <button
           className={`day-view-tab ${activeTab === "events" ? "active" : ""}`}
@@ -642,7 +651,6 @@ const DayView: React.FC = () => {
           Tasks ({currentDateTasks.length})
         </button>
       </div>
-
       <div className="day-view-content">
         {activeTab === "events" && (
           <div className="day-view-section">
@@ -977,7 +985,6 @@ const DayView: React.FC = () => {
           </div>
         )}
       </div>
-
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}

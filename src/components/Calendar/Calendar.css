@@ -129,7 +129,8 @@
 }
 
 /* Simplified item styling */
-.week-event-item, .week-task-item {
+.week-event-item,
+.week-task-item {
   padding: 0.35rem 0.5rem;
   border-radius: 4px;
   background: rgba(30, 30, 50, 0.6);
@@ -144,18 +145,27 @@
   transition: transform 0.2s, background 0.2s;
 }
 
-.week-event-item:hover, .week-task-item:hover {
+.week-event-item:hover,
+.week-task-item:hover {
   background: rgba(40, 40, 60, 0.8);
   transform: translateY(-1px);
 }
 
 /* Event color coding */
-.week-event-item.meeting { border-left: 3px solid #646cff; }
-.week-event-item.personal { border-left: 3px solid #4ade80; }
-.week-event-item.reminder { border-left: 3px solid #f87171; }
+.week-event-item.meeting {
+  border-left: 3px solid var(--color-accent-primary, #646cff);
+}
+.week-event-item.personal {
+  border-left: 3px solid var(--color-success, #4ade80);
+}
+.week-event-item.reminder {
+  border-left: 3px solid var(--color-error, #f87171);
+}
 
 /* Task styling */
-.week-task-item { border-left: 3px solid #646cff; }
+.week-task-item {
+  border-left: 3px solid var(--color-accent-primary, #646cff);
+}
 .week-task-item.completed {
   text-decoration: line-through;
   opacity: 0.6;
@@ -181,7 +191,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Day View Comprehensive Styling */
@@ -211,7 +223,10 @@
   font-size: 1.3rem; /* Reduced from 1.8rem */
   font-weight: 600; /* Reduced from 700 */
   margin: 0;
-  background: linear-gradient(90deg, #fff, #b8b9ff);
+  background: var(
+    --color-text-gradient,
+    linear-gradient(90deg, rgba(255, 255, 255, 1), rgba(184, 185, 255, 1))
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -266,7 +281,7 @@
 }
 
 .day-stat-card:hover::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -282,15 +297,15 @@
 }
 
 .day-stat-card:nth-child(1) {
-  border-left: 3px solid #646cff; /* Events */
+  border-left: 3px solid var(--color-accent-primary, #646cff); /* Events */
 }
 
 .day-stat-card:nth-child(2) {
-  border-left: 3px solid #4ade80; /* Completed Tasks */
+  border-left: 3px solid var(--color-success, #4ade80); /* Completed Tasks */
 }
 
 .day-stat-card:nth-child(3) {
-  border-left: 3px solid #f59e0b; /* Pending Tasks */
+  border-left: 3px solid var(--color-warning, #f59e0b); /* Pending Tasks */
 }
 
 .day-stat-card:hover {
@@ -439,7 +454,14 @@
 }
 
 .day-form-btn {
-  background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
+  background: var(
+    --color-accent-gradient,
+    linear-gradient(
+      135deg,
+      rgba(100, 108, 255, 1) 0%,
+      rgba(83, 91, 242, 1) 100%
+    )
+  );
   color: white;
   border: none;
   border-radius: 8px;
@@ -473,7 +495,7 @@
 
 .day-form-btn {
   background: rgba(100, 108, 255, 0.2);
-  color: #c4c6ff;
+  color: var(--color-accent-tertiary, #c4c6ff);
   border: 1px solid rgba(100, 108, 255, 0.3);
   border-radius: 8px;
   padding: 0.6rem 1.2rem;
@@ -490,7 +512,7 @@
 
 .day-form-btn.cancel {
   background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
+  color: var(--color-error, #ff6b6b);
   border-color: rgba(255, 107, 107, 0.3);
 }
 
@@ -528,12 +550,12 @@
 
 .task-btn.edit,
 .event-btn.edit {
-  color: #ffd93d;
+  color: var(--color-warning, #ffd93d);
 }
 
 .task-btn.delete,
 .event-btn.delete {
-  color: #ff6b6b;
+  color: var(--color-error, #ff6b6b);
 }
 
 /* Time picker styling */
@@ -542,7 +564,7 @@
   top: 100%;
   left: 0;
   z-index: 1000; /* High z-index to ensure visibility */
-  background-color: var(--bg-dark, #121220);
+  background-color: var(--color-bg-card, #121220);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 1rem;
@@ -593,12 +615,13 @@
   overflow: hidden;
 }
 
-.hour-btn:hover, 
+.hour-btn:hover,
 .hour-btn:focus {
   background: #353552;
   color: #fff;
   transform: rotate(3deg) scale(1.05) translateY(-2px);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.25), 0 0 0 1px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.25),
+    0 0 0 1px rgba(100, 108, 255, 0.3);
   outline: none;
   z-index: 1;
 }
@@ -606,7 +629,8 @@
 .hour-btn.selected {
   background: #646cff;
   color: #fff;
-  box-shadow: 0 0 12px rgba(100, 108, 255, 0.4), 0 0 0 1px rgba(100, 108, 255, 0.6);
+  box-shadow: 0 0 12px rgba(100, 108, 255, 0.4),
+    0 0 0 1px rgba(100, 108, 255, 0.6);
 }
 
 /* AM/PM buttons */
@@ -654,9 +678,15 @@
   border-left: 3px solid transparent;
 }
 
-.event-meeting { border-left-color: #646cff; }
-.event-personal { border-left-color: #4ade80; }
-.event-reminder { border-left-color: #f87171; }
+.event-meeting {
+  border-left-color: #646cff;
+}
+.event-personal {
+  border-left-color: #4ade80;
+}
+.event-reminder {
+  border-left-color: #f87171;
+}
 
 .event-item:hover {
   transform: translateY(-3px);
@@ -724,9 +754,18 @@
   text-transform: capitalize;
 }
 
-.event-meeting .event-type { background: rgba(100, 108, 255, 0.2); color: #b8baff; }
-.event-personal .event-type { background: rgba(74, 222, 128, 0.2); color: #a7f3c1; }
-.event-reminder .event-type { background: rgba(248, 113, 113, 0.2); color: #ffc0c0; }
+.event-meeting .event-type {
+  background: rgba(100, 108, 255, 0.2);
+  color: #b8baff;
+}
+.event-personal .event-type {
+  background: rgba(74, 222, 128, 0.2);
+  color: #a7f3c1;
+}
+.event-reminder .event-type {
+  background: rgba(248, 113, 113, 0.2);
+  color: #ffc0c0;
+}
 
 .event-actions {
   display: flex;
@@ -1006,7 +1045,11 @@
 
 /* Today button special styling */
 .calendar-btn.today-btn {
-  background: linear-gradient(135deg, rgba(100, 108, 255, 0.25) 0%, rgba(83, 91, 242, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(100, 108, 255, 0.25) 0%,
+    rgba(83, 91, 242, 0.2) 100%
+  );
   color: #c4c6ff;
   border-color: rgba(100, 108, 255, 0.3);
   position: relative;
@@ -1015,14 +1058,18 @@
 
 /* Glow pulse animation for Today button */
 .calendar-btn.today-btn:after {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
   right: -2px;
   bottom: -2px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(100, 108, 255, 0.4), rgba(83, 91, 242, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(100, 108, 255, 0.4),
+    rgba(83, 91, 242, 0.2)
+  );
   z-index: -1;
   animation: glow-pulse 2s infinite;
 }
@@ -1061,13 +1108,17 @@
 }
 
 .view-btn.active:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(100, 108, 255, 0.2), rgba(83, 91, 242, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(100, 108, 255, 0.2),
+    rgba(83, 91, 242, 0.1)
+  );
   border-radius: 10px;
   z-index: -1;
   animation: slide-in 0.3s ease forwards;
@@ -1095,20 +1146,41 @@
 
 /* Animations */
 @keyframes glow-pulse {
-  0% { opacity: 0.6; transform: scale(0.98); }
-  50% { opacity: 1; transform: scale(1.01); }
-  100% { opacity: 0.6; transform: scale(0.98); }
+  0% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
 }
 
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes slide-in {
-  0% { opacity: 0; transform: translateY(5px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .view-btn.clicked {
@@ -1116,9 +1188,15 @@
 }
 
 @keyframes button-clicked {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Enhanced Week View with animations */
@@ -1156,7 +1234,7 @@
 }
 
 .week-day.today:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1169,14 +1247,26 @@
 }
 
 @keyframes pulse-glow {
-  0% { opacity: 0.7; }
-  50% { opacity: 1; }
-  100% { opacity: 0.7; }
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes fade-in {
-  0% { opacity: 0; transform: translateY(10px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Add this CSS to properly align the header elements */
@@ -1211,14 +1301,13 @@
   transform: rotate(2deg); /* Changed to 2 degrees rotation */
   border-color: rgba(100, 108, 255, 0.5);
   color: white;
-  box-shadow: 
-    0 0 20px rgba(100, 108, 255, 0.6), /* Outer glow */
-    0 0 35px rgba(100, 108, 255, 0.3); /* Wider secondary glow */
+  box-shadow: 0 0 20px rgba(100, 108, 255, 0.6),
+    /* Outer glow */ 0 0 35px rgba(100, 108, 255, 0.3); /* Wider secondary glow */
 }
 
 /* Add a pulse glow effect ONLY on hover */
 .month-cell:hover::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1253,7 +1342,7 @@
 
 /* The arrow indicator that's always visible */
 .floating-view-selector::before {
-  content: '〉';
+  content: "〉";
   position: absolute;
   left: 10px;
   top: 50%;
@@ -1268,8 +1357,7 @@
 /* Expanded state on hover with glow effect */
 .floating-view-selector:hover {
   right: 0;
-  box-shadow: 
-    0 0 20px rgba(100, 108, 255, 0.4),
+  box-shadow: 0 0 20px rgba(100, 108, 255, 0.4),
     0 0 40px rgba(100, 108, 255, 0.2);
 }
 
@@ -1281,8 +1369,12 @@
 
 /* Vertical floating animation */
 @keyframes float-vertical {
-  0% { margin-top: -30px; }
-  100% { margin-top: 30px; }
+  0% {
+    margin-top: -30px;
+  }
+  100% {
+    margin-top: 30px;
+  }
 }
 
 /* Button styling */
@@ -1306,17 +1398,21 @@
   opacity: 1;
   transform: translateX(0);
 }
-.floating-view-selector:hover .view-btn.day { transition-delay: 0.05s; }
-.floating-view-selector:hover .view-btn.week { transition-delay: 0.1s; }
-.floating-view-selector:hover .view-btn.month { transition-delay: 0.15s; }
+.floating-view-selector:hover .view-btn.day {
+  transition-delay: 0.05s;
+}
+.floating-view-selector:hover .view-btn.week {
+  transition-delay: 0.1s;
+}
+.floating-view-selector:hover .view-btn.month {
+  transition-delay: 0.15s;
+}
 
 /* Individual button hover effects */
 .floating-view-selector .view-btn:hover {
   background: rgba(100, 108, 255, 0.2);
   transform: translateY(-3px);
-  box-shadow: 
-    0 6px 15px rgba(0, 0, 0, 0.2),
-    0 0 10px rgba(100, 108, 255, 0.4);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2), 0 0 10px rgba(100, 108, 255, 0.4);
 }
 
 /* Active state */
@@ -1329,7 +1425,8 @@
 
 /* Add to appropriate CSS files */
 
-.refresh-data-btn, .day-refresh-btn {
+.refresh-data-btn,
+.day-refresh-btn {
   background-color: rgba(100, 108, 255, 0.1);
   color: rgba(100, 108, 255, 0.9);
   border: 1px solid rgba(100, 108, 255, 0.3);
@@ -1340,7 +1437,8 @@
   transition: all 0.2s;
 }
 
-.refresh-data-btn:hover, .day-refresh-btn:hover {
+.refresh-data-btn:hover,
+.day-refresh-btn:hover {
   background-color: rgba(100, 108, 255, 0.2);
   transform: translateY(-1px);
 }
@@ -1362,7 +1460,8 @@
 }
 
 /* Add to Calendar.css */
-.week-event-item-simple, .week-task-item-simple {
+.week-event-item-simple,
+.week-task-item-simple {
   padding: 4px 8px;
   margin-bottom: 3px;
   border-radius: 4px;
@@ -1379,7 +1478,7 @@
   background: rgba(40, 40, 60, 0.4);
 }
 
-.week-event-item-simple.meeting { 
+.week-event-item-simple.meeting {
   --event-color: #646cff;
   border-left-color: var(--event-color);
 }
@@ -1431,7 +1530,7 @@
 
 /* PERFORMANCE: Add will-change for elements that animate */
 .calendar-btn:hover,
-.week-event-item:hover, 
+.week-event-item:hover,
 .week-task-item:hover {
   will-change: transform;
 }
@@ -1486,7 +1585,8 @@
   border-radius: 6px;
 }
 
-.event-indicator, .task-indicator {
+.event-indicator,
+.task-indicator {
   display: flex;
   align-items: center;
   padding: 4px 8px;
@@ -1548,7 +1648,12 @@
 .hour-btn:hover {
   transform: translateY(-2px) rotate(2deg);
   box-shadow: 0 0 12px rgba(100, 108, 255, 0.6);
-  background: rgba(30, 30, 50, 0.7) !important; /* Force this to override globals */
+  background: rgba(
+    30,
+    30,
+    50,
+    0.7
+  ) !important; /* Force this to override globals */
   border-color: rgba(100, 108, 255, 0.4);
 }
 
@@ -1596,5 +1701,3 @@
   background: rgba(30, 30, 50, 0.7) !important;
   border-color: rgba(100, 108, 255, 0.4);
 }
-
-

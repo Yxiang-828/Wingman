@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 import MiniCalendar from "./MiniCalendar";
 import NavSection from "./NavSection";
 import type { MenuItem } from "./NavSection";
+import WingmanAvatar from "../Common/WingmanAvatar";
+import { useTheme } from "../../context/ThemeContext";
 import "../../main.css";
-import productiveIcon from "../../assets/productive.png";
-import moodyIcon from "../../assets/moody.png";
 import "./Sidebar.css";
 
 const DashboardIcon = () => <span className="icon-rotate">📊</span>;
@@ -14,22 +13,27 @@ const CalendarIcon = () => <span className="icon-rotate">📅</span>;
 const DiaryIcon = () => <span className="icon-rotate">📝</span>;
 const ProfileIcon = () => <span className="icon-rotate">👤</span>;
 
-const moodIcons: Record<string, string> = {
-  productive: productiveIcon,
-  moody: moodyIcon,
-};
-
 const Sidebar: React.FC = () => {
-  const [wingmanMood, setWingmanMood] =
-    useState<keyof typeof moodIcons>("productive");
+  const [wingmanMood, setWingmanMood] = useState<"productive" | "moody">(
+    "productive"
+  );
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
+  const { actualTheme, setTheme } = useTheme();
 
+  // Toggle theme function
+  const toggleTheme = () => {
+    setTheme(actualTheme === "dark" ? "light" : "dark");
+  };
+  // Map wingman mood to avatar mood
+  const getAvatarMood = (wingmanMood: "productive" | "moody") => {
+    return wingmanMood === "productive" ? "happy" : "neutral";
+  };
   useEffect(() => {
     if (window.electronAPI?.onMoodChange) {
       window.electronAPI.onMoodChange((mood: string) => {
         if (mood === "productive" || mood === "moody") {
-          setWingmanMood(mood as keyof typeof moodIcons);
+          setWingmanMood(mood as "productive" | "moody");
         }
       });
     }
@@ -92,11 +96,11 @@ const Sidebar: React.FC = () => {
       title: "Wingman",
       path: "/chatbot",
       icon: (
-        <img
-          src={moodIcons[wingmanMood] || productiveIcon}
-          alt={wingmanMood}
-          className="icon-rotate"
-          style={{ width: 28, height: 28, borderRadius: "50%" }}
+        <WingmanAvatar
+          size="small"
+          mood={getAvatarMood(wingmanMood)}
+          context="sidebar"
+          showMessage={false}
         />
       ),
       badge: 1,
@@ -119,37 +123,50 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
+      {" "}
       {/* Toggle button that's always visible */}
       <button
         className={`sidebar-toggle ${isVisible ? "open" : ""}`}
         onClick={toggleSidebar}
         aria-label="Toggle sidebar"
-      >
-        <img
-          src={
-            isVisible
-              ? moodIcons[wingmanMood === "productive" ? "moody" : "productive"]
-              : moodIcons[wingmanMood]
-          }
-          alt="Toggle sidebar"
-          className="sidebar-toggle-icon"
-        />
-      </button>
-
+      >        <div className="sidebar-toggle-avatar">
+          <WingmanAvatar
+            size="toggle"
+            mood={getAvatarMood(wingmanMood)}
+            context="sidebar"
+            showMessage={false}
+            onClick={() => navigate("/chatbot")}
+          />
+        </div>
+      </button>{" "}
       {/* Sidebar that slides in/out */}
       <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
-        {/* Logo Header */}
+        {" "}
+        {/* Logo Header with Avatar */}
         <div className="sidebar-header">
-          <h1 className="sidebar-title">Wingman</h1>
-        </div>
-
+          <WingmanAvatar
+            size="medium"
+            mood={getAvatarMood(wingmanMood)}
+            context="sidebar"
+            showMessage={isVisible && Math.random() > 0.7} // Show message occasionally when sidebar opens
+            onClick={() => navigate("/chatbot")}
+            className="wingman-avatar--sidebar"
+          />
+          <div className="sidebar-header-content">
+            <h1 className="sidebar-title">Wingman</h1>
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={`Switch to ${
+                actualTheme === "dark" ? "light" : "dark"
+              } theme`}
+            >
+              {actualTheme === "dark" ? "☀️" : "🌙"}
+            </button>
+          </div>
+        </div>{" "}
         {/* Mini Calendar */}
-        <MiniCalendar
-          onDateSelect={(date) => {
-            navigate(`/calendar/day?date=${format(date, "yyyy-MM-dd")}`);
-          }}
-        />
-
+        <MiniCalendar />
         {/* Navigation Section */}
         <NavSection items={menuItems} />
       </aside>

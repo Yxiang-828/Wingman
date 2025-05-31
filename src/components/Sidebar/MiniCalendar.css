@@ -7,20 +7,20 @@
   overflow: visible;
   background: transparent; /* Transparent background */
   border-radius: 12px;
-  box-shadow: 0 2px 12px 0 rgba(196, 70, 70, 0.3); /* Red box shadow */
+  box-shadow: 0 2px 12px 0 var(--shadow-red, rgba(196, 70, 70, 0.3)); /* Red box shadow */
   padding: 10px 0 12px 0;
   transition: transform 0.15s;
 }
 
 .react-calendar--small:hover {
-  box-shadow: 0 4px 16px 0 rgba(196, 70, 70, 0.4); /* Enhanced red shadow on hover */
+  box-shadow: 0 4px 16px 0 var(--shadow-red-hover, rgba(196, 70, 70, 0.4)); /* Enhanced red shadow on hover */
 }
 
 /* Optional: adjust tile padding for compactness */
 .react-calendar--small .react-calendar__tile {
   padding: 8px 6px; /* more space for shadow */
   position: relative; /* ensure stacking context */
-  overflow: visible;  /* allow shadow to show */
+  overflow: visible; /* allow shadow to show */
   box-sizing: border-box;
   background: transparent; /* Transparent background for tiles */
 }
@@ -29,7 +29,8 @@
 .react-calendar--small .react-calendar__tile:hover,
 .react-calendar--small .react-calendar__tile:active,
 .react-calendar--small .react-calendar__tile:focus {
-  box-shadow: 0 0 12px 2px var(--accent-primary, #646cff), 0 0 2px 1px var(--accent-secondary, #535bf2);
+  box-shadow: 0 0 12px 2px var(--accent-primary, #646cff),
+    0 0 2px 1px var(--accent-secondary, #535bf2);
   animation: tremble 0.25s ease-in-out;
   cursor: pointer;
   z-index: 2; /* ensure it's above others */
@@ -43,10 +44,10 @@
 
 /* Navigation styles */
 .react-calendar--small .react-calendar__navigation {
-  background: var(--bg-card, #1e1e1e); /* or your sidebar bg */
+  background: var(--color-bg-card, #1e1e1e); /* Theme-aware background */
   z-index: 3;
   position: relative;
-  overflow: visible;  /* allow shadow to show */
+  overflow: visible; /* allow shadow to show */
 }
 
 /* Navigation label styles */
@@ -64,18 +65,20 @@
   justify-content: center;
   align-items: center;
   text-align: center;
+  color: var(--color-text) !important;
 }
 
 /* Today highlight */
 .today-highlight {
-  color: #23232b !important;
+  color: var(--color-text-inverse, #23232b) !important;
   border-radius: 4px !important;
   font-weight: bold;
-  box-shadow: 0 0 0 1px #ffd966aa, 0 0 1px 0.5px #ffd96655;
+  box-shadow: 0 0 0 1px var(--color-warning-light, #ffd966aa),
+    0 0 1px 0.5px var(--color-warning-fade, #ffd96655);
   box-sizing: border-box;
   position: relative;
   z-index: 1;
-  overflow: visible;  /* allow shadow to show */
+  overflow: visible; /* allow shadow to show */
 }
 
 /* Event styles */
@@ -96,8 +99,8 @@
 
 .event-count {
   font-size: 9px;
-  background: rgba(100, 108, 255, 0.3);
-  color: white;
+  background: var(--accent-primary-fade, rgba(100, 108, 255, 0.3));
+  color: var(--color-text-inverse, white);
   border-radius: 50%;
   height: 14px;
   width: 14px;
@@ -108,9 +111,19 @@
 
 /* Tremble keyframes */
 @keyframes tremble {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-1px); }
-  50% { transform: translateX(1px); }
-  75% { transform: translateX(-1px); }
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-1px);
+  }
+  50% {
+    transform: translateX(1px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
