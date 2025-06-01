@@ -10,6 +10,9 @@ export interface CalendarEvent {
   type: string;         // ✅ Based on schema - calendar_events.type is "text" type
   description: string;  // ✅ Based on schema - calendar_events.description is "text" type
   user_id: string;      // ✅ Based on schema - calendar_events.user_id is "uuid" type
+  // ✅ OPTIONAL - Database handles automatically
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ✅ DEPRECATED NOTICE: All data operations moved to DataContext + SQLite
@@ -30,7 +33,7 @@ AFTER:  const { fetchDayData } = useDataContext();
   throw new Error('fetchEvents() moved to DataContext.fetchDayData() - check console for migration guide');
 };
 
-export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> => {
+export const addEvent = async (_event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> => {
   const errorMsg = `🚨 addEvent() is DEPRECATED. Use DataContext.createEvent() instead.
   
 BEFORE: addEvent(eventData)
@@ -38,10 +41,10 @@ AFTER:  const { createEvent } = useDataContext();
         const newEvent = await createEvent(eventData);`;
         
   console.error(errorMsg);
-  throw new Error('addEvent() moved to DataContext.createEvent() - check console for migration guide');
+  throw new Error('addEvent() moved to DataContext.createEvent()');
 };
 
-export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
+export const updateEvent = async (_event: CalendarEvent): Promise<CalendarEvent> => {
   const errorMsg = `🚨 updateEvent() is DEPRECATED. Use DataContext.updateEvent() instead.
   
 BEFORE: updateEvent(eventData)
@@ -49,7 +52,7 @@ AFTER:  const { updateEvent } = useDataContext();
         const updatedEvent = await updateEvent(eventData);`;
         
   console.error(errorMsg);
-  throw new Error('updateEvent() moved to DataContext.updateEvent() - check console for migration guide');
+  throw new Error('updateEvent() moved to DataContext.updateEvent()');
 };
 
 export const deleteEvent = async (id: number): Promise<void> => {
@@ -63,7 +66,7 @@ AFTER:  const { deleteEvent } = useDataContext();
   throw new Error('deleteEvent() moved to DataContext.deleteEvent() - check console for migration guide');
 };
 
-export const fetchMultipleDaysData = async (dates: string[]): Promise<Record<string, any>> => {
+export const fetchMultipleDaysData = async (_dates: string[]): Promise<Record<string, any>> => {
   const errorMsg = `🚨 fetchMultipleDaysData() is DEPRECATED. Use DataContext.fetchDayData() for each date instead.
   
 BEFORE: fetchMultipleDaysData(['2025-06-01', '2025-06-02'])
@@ -72,7 +75,7 @@ AFTER:  const { fetchDayData } = useDataContext();
         const results = await Promise.all(promises);`;
         
   console.error(errorMsg);
-  throw new Error('fetchMultipleDaysData() moved to DataContext.fetchDayData() - check console for migration guide');
+  throw new Error('fetchMultipleDaysData() moved to DataContext.fetchDayData()');
 };
 
 // ✅ UTILITY FUNCTIONS - Still useful for type checking and validation
@@ -150,9 +153,8 @@ export const formatEventTime = (event: CalendarEvent): string => {
 /**
  * Get event duration if end time is available (future enhancement)
  */
-export const getEventDuration = (event: CalendarEvent): string => {
-  // Placeholder for future enhancement when we add end_time field
-  return 'Duration not set';
+export const getEventDuration = (_event: CalendarEvent): string => {
+  return '';
 };
 
 /**

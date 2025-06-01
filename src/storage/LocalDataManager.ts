@@ -38,7 +38,7 @@ export interface ChatSession {
 }
 
 export class LocalDataManager {
-  private db: Database.Database;
+  private db!: Database.Database; // Use definite assignment assertion
   private dbPath: string;
 
   constructor() {
@@ -52,13 +52,13 @@ export class LocalDataManager {
     }
 
     this.dbPath = path.join(dataDir, 'wingman.db');
-    this.initializeDatabase();
+    this.initializeDatabase(); // This sets this.db
     
     console.log(`📦 LocalDataManager initialized: ${this.dbPath}`);
   }
 
   private initializeDatabase(): void {
-    this.db = new Database(this.dbPath);
+    this.db = new Database(this.dbPath); // Initialize here
     
     // Enable foreign keys
     this.db.pragma('foreign_keys = ON');

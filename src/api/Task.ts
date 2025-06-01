@@ -39,7 +39,7 @@ AFTER:  const { fetchDayData } = useDataContext();
   throw new Error('fetchTasks() moved to DataContext.fetchDayData() - check console for migration guide');
 };
 
-export const addTask = async (task: Omit<Task, "id">): Promise<Task> => {
+export const addTask = async (_task: Omit<Task, "id">): Promise<Task> => {
   const errorMsg = `🚨 addTask() is DEPRECATED. Use DataContext.createTask() instead.
   
 BEFORE: addTask(taskData)
@@ -47,10 +47,10 @@ AFTER:  const { createTask } = useDataContext();
         const newTask = await createTask(taskData);`;
         
   console.error(errorMsg);
-  throw new Error('addTask() moved to DataContext.createTask() - check console for migration guide');
+  throw new Error('addTask() moved to DataContext.createTask()');
 };
 
-export const updateTask = async (task: Task): Promise<Task> => {
+export const updateTask = async (_task: Task): Promise<Task> => {
   const errorMsg = `🚨 updateTask() is DEPRECATED. Use DataContext.updateTask() instead.
   
 BEFORE: updateTask(taskData)
@@ -58,7 +58,7 @@ AFTER:  const { updateTask } = useDataContext();
         const updatedTask = await updateTask(taskData);`;
         
   console.error(errorMsg);
-  throw new Error('updateTask() moved to DataContext.updateTask() - check console for migration guide');
+  throw new Error('updateTask() moved to DataContext.updateTask()');
 };
 
 export const deleteTask = async (id: number): Promise<void> => {
@@ -72,7 +72,7 @@ AFTER:  const { deleteTask } = useDataContext();
   throw new Error('deleteTask() moved to DataContext.deleteTask() - check console for migration guide');
 };
 
-export const toggleTaskCompletion = async (task: Task): Promise<Task> => {
+export const toggleTaskCompletion = async (_task: Task): Promise<Task> => {
   const errorMsg = `🚨 toggleTaskCompletion() is DEPRECATED. Use DataContext.toggleTask() instead.
   
 BEFORE: toggleTaskCompletion(task)
@@ -80,7 +80,7 @@ AFTER:  const { toggleTask } = useDataContext();
         const toggledTask = await toggleTask(task);`;
         
   console.error(errorMsg);
-  throw new Error('toggleTaskCompletion() moved to DataContext.toggleTask() - check console for migration guide');
+  throw new Error('toggleTaskCompletion() moved to DataContext.toggleTask()');
 };
 
 // ✅ UTILITY FUNCTIONS - Still useful for type checking and validation

@@ -244,40 +244,139 @@ export const useCalendarCache = (componentId: string) => {
   const { fetchDayData, subscribeToCacheUpdates, unsubscribeFromCacheUpdates } = useData();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
   const mountedRef = useRef(true);
 
   // Subscribe to CRUD broadcasts
   useEffect(() => {
     subscribeToCacheUpdates(componentId, (operation) => {
+      console.log(`📡 ${componentId}: Received cache update:`, operation);
+      
       const { type, entity, data, affectedDate } = operation;
       
-      if (!affectedDate) return;
-      
-      const itemType = entity === 'TASK' ? 'task' : 'event';
-      const cache = sharedCache.get(affectedDate);
-      
-      if (!cache) return;
-      
-      // Update cache with deduplication
-      switch (type) {
-        case 'CREATE':
-          if (itemType === 'task') {
-            // Only add if not already in cache
-            if (!cache.data.tasks.some(t => t.id === data.id)) {
-              cache.data.tasks.push(data);
-            }
-          } else if (itemType === 'event') {
-            if (!cache.data.events.some(e => e.id === data.id)) {
-              cache.data.events.push(data);
-            }
-          }
-          break;
-        
-        // Handle other cases...
+      if (!affectedDate) {
+        console.log(`⚠️ ${componentId}: No affected date in operation, skipping`);
+        return;
       }
       
-      // Update component state to trigger re-render
-      setLastUpdated(Date.now());
+      // Get existing cache or create new one
+      let cache = sharedCache.get(affectedDate);
+      
+      // ✅ CRITICAL FIX: Always ensure cache exists with correct structure
+      if (!cache) {
+        console.log(`📝 ${componentId}: Creating empty cache for ${affectedDate}`);
+        const emptyCache = {
+          tasks: [],
+          events: [],
+          lastFetched: Date.now(),
+          hasMore: { tasks: false, events: false },
+          totalAvailable: { tasks: 0, events: 0 }
+        };
+        sharedCache.set(affectedDate, emptyCache);
+        cache = emptyCache;
+      }
+      
+      // ✅ CRITICAL FIX: Ensure cache has all required properties
+      if (!cache.tasks) cache.tasks = [];
+      if (!cache.events) cache.events = [];
+      if (!cache.hasMore) cache.hasMore = { tasks: false, events: false };
+      if (!cache.totalAvailable) cache.totalAvailable = { tasks: 0, events: 0 };
+      
+      // Process the cache update
+      const itemType = entity === 'TASK' ? 'task' : 'event';
+      
+      try {
+        switch (type) {
+          case 'CREATE':
+            if (itemType === 'task') {
+              // Check for duplicates before adding
+              if (!cache.tasks.some(t => t.id === data.id)) {
+                cache.tasks.push(data);
+                cache.totalAvailable.tasks = cache.tasks.length;
+                console.log(`✅ ${componentId}: Added task ${data.id} to cache for ${affectedDate}`);
+              } else {
+                console.log(`⚠️ ${componentId}: Task ${data.id} already exists in cache for ${affectedDate}`);
+              }
+            } else if (itemType === 'event') {
+              if (!cache.events.some(e => e.id === data.id)) {
+                cache.events.push(data);
+                cache.totalAvailable.events = cache.events.length;
+                console.log(`✅ ${componentId}: Added event ${data.id} to cache for ${affectedDate}`);
+              } else {
+                console.log(`⚠️ ${componentId}: Event ${data.id} already exists in cache for ${affectedDate}`);
+              }
+            }
+            break;
+          
+          case 'UPDATE':
+            if (itemType === 'task') {
+              const taskIndex = cache.tasks.findIndex(t => t.id === data.id);
+              if (taskIndex !== -1) {
+                cache.tasks[taskIndex] = { ...cache.tasks[taskIndex], ...data };
+                console.log(`✅ ${componentId}: Updated task ${data.id} in cache for ${affectedDate}`);
+              } else {
+                // Task not found, add it (handles date changes)
+                cache.tasks.push(data);
+                cache.totalAvailable.tasks = cache.tasks.length;
+                console.log(`✅ ${componentId}: Added task ${data.id} during update to cache for ${affectedDate}`);
+              }
+            } else if (itemType === 'event') {
+              const eventIndex = cache.events.findIndex(e => e.id === data.id);
+              if (eventIndex !== -1) {
+                cache.events[eventIndex] = { ...cache.events[eventIndex], ...data };
+                console.log(`✅ ${componentId}: Updated event ${data.id} in cache for ${affectedDate}`);
+              } else {
+                // Event not found, add it (handles date changes)
+                cache.events.push(data);
+                cache.totalAvailable.events = cache.events.length;
+                console.log(`✅ ${componentId}: Added event ${data.id} during update to cache for ${affectedDate}`);
+              }
+            }
+            break;
+          
+          case 'DELETE':
+            if (itemType === 'task') {
+              const originalLength = cache.tasks.length;
+              cache.tasks = cache.tasks.filter(t => t.id !== data.id);
+              if (cache.tasks.length !== originalLength) {
+                cache.totalAvailable.tasks = cache.tasks.length;
+                console.log(`✅ ${componentId}: Removed task ${data.id} from cache for ${affectedDate}`);
+              }
+            } else if (itemType === 'event') {
+              const originalLength = cache.events.length;
+              cache.events = cache.events.filter(e => e.id !== data.id);
+              if (cache.events.length !== originalLength) {
+                cache.totalAvailable.events = cache.events.length;
+                console.log(`✅ ${componentId}: Removed event ${data.id} from cache for ${affectedDate}`);
+              }
+            }
+            break;
+          
+          case 'TOGGLE':
+            if (itemType === 'task') {
+              const taskIndex = cache.tasks.findIndex(t => t.id === data.id);
+              if (taskIndex !== -1) {
+                cache.tasks[taskIndex].completed = !cache.tasks[taskIndex].completed;
+                console.log(`✅ ${componentId}: Toggled task ${data.id} completion in cache for ${affectedDate}`);
+              }
+            }
+            break;
+          
+          default:
+            console.log(`⚠️ ${componentId}: Unknown operation type: ${type}`);
+        }
+        
+        // Update the cache with the modified data
+        sharedCache.set(affectedDate, cache);
+        
+        // Trigger component re-render
+        setLastUpdated(Date.now());
+        
+        console.log(`✅ ${componentId}: Cache update completed for ${affectedDate}`);
+        
+      } catch (cacheError) {
+        console.error(`❌ ${componentId}: Error updating cache for ${affectedDate}:`, cacheError);
+      }
     });
     
     return () => {
@@ -359,66 +458,32 @@ export const useCalendarCache = (componentId: string) => {
   }, [componentId, fetchDayData]);
 
   // Replace the getWeekData function with this implementation
-  const getWeekData = useCallback(async (dates: string[], forceRefresh = false): Promise<Record<string, DayData>> => {
-    const results: Record<string, DayData> = {};
-    const datesToFetch: string[] = [];
+  const getWeekData = useCallback(async (dates: string[]) => {
+    setLoading(true);
+    setError(null);
     
-    // First check which dates we already have in cache
-    dates.forEach(date => {
-      const cachedData = sharedCache.get(date);
-      if (!forceRefresh && cachedData && Date.now() - cachedData.lastFetched < CACHE_TTL) {
-        // Use cached data if it's fresh
-        results[date] = cachedData;
-      } else {
-        // Mark this date for fetching
-        datesToFetch.push(date);
-      }
-    });
-    
-    // If we have dates to fetch, make ONE batch API call
-    if (datesToFetch.length > 0) {
-      try {
-        console.log(`Batch fetching ${datesToFetch.length} days of data`);
-        const batchData = await fetchMultipleDaysData(datesToFetch);
-        
-        // Process and cache the batch results
-        Object.entries(batchData).forEach(([date, data]) => {
-          const processedData = {
-            tasks: data.tasks || [],
-            events: data.events || [],
-            lastFetched: Date.now(),
-            hasMore: data.hasMore || { tasks: false, events: false },
-            totalAvailable: data.totalAvailable || { tasks: 0, events: 0 }
-          };
-          
-          // Update cache
-          sharedCache.set(date, processedData);
-          
-          // Add to results
-          results[date] = processedData;
-        });
-      } catch (error) {
-        console.error('Error in batch fetching week data:', error);
-        
-        // Fall back to individual fetches if batch fails
-        const individualPromises = datesToFetch.map(async (date) => {
-          try {
-            const data = await getDayData(date, true);
-            return { date, data };
-          } catch (e) {
-            console.error(`Error fetching individual day ${date}:`, e);
-            return { date, data: createEmptyDayData() };
-          }
-        });
-        
-        const individualResults = await Promise.all(individualPromises);
-        individualResults.forEach(({ date, data }) => {
-          results[date] = data;
-        });
-      }
+    try {
+      console.log(`🗓️ Fetching data for ${dates.length} days: ${dates.join(', ')}`);
+      
+      // MIGRATION: Use DataContext instead of deprecated API
+      const fetchPromises = dates.map(date => getDayData(date));
+      const results = await Promise.all(fetchPromises);
+      
+      // Merge results into a single object keyed by date
+      const mergedData = dates.reduce((acc, date, index) => {
+        acc[date] = results[index];
+        return acc;
+      }, {} as Record<string, DayData>);
+      
+      console.log(`✅ Successfully fetched data for ${dates.length} days`);
+      return mergedData;
+    } catch (error) {
+      console.error('Error in batch fetching week data:', error);
+      setError('Failed to fetch week data');
+      return {};
+    } finally {
+      setLoading(false);
     }
-    
-    return results;
   }, [getDayData]);
 
   // Helper function to create empty day data

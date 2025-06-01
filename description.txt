@@ -228,3 +228,147 @@ Users can delete their own chat messages
 Action: DELETE
 Definition: This policy allows authenticated users to delete their own chat messages in the chat_messages table, specifically where the session_id corresponds to sessions owned by the user.
 **
+
+Tasks
+--------------------
+create table public.tasks (
+  id bigint generated always as identity not null,
+  user_id uuid null,
+  title text not null,
+  task_date date not null,
+  task_time time without time zone not null,
+  completed boolean null default false,
+  created_at timestamp with time zone not null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  task_type text null default 'one-time'::text,
+  due_date date null,
+  last_reset_date date null,
+  urgency_level text null default 'normal'::text,
+  status text null default 'active'::text,
+  constraint tasks_pkey primary key (id),
+  constraint tasks_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE,
+  constraint tasks_status_check check (
+    (
+      status = any (
+        array[
+          'active'::text,
+          'completed'::text,
+          'expired'::text
+        ]
+      )
+    )
+  ),
+  constraint tasks_task_type_check check (
+    (
+      task_type = any (array['recurring'::text, 'one-time'::text])
+    )
+  ),
+  constraint tasks_urgency_level_check check (
+    (
+      urgency_level = any (
+        array[
+          'danger'::text,
+          'okay'::text,
+          'green'::text,
+          'normal'::text
+        ]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists idx_tasks_user_date on public.tasks using btree (user_id, task_date) TABLESPACE pg_default;
+
+create index IF not exists idx_tasks_user_id on public.tasks using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_tasks_task_date on public.tasks using btree (task_date) TABLESPACE pg_default;
+
+create trigger update_tasks_timestamp BEFORE
+update on tasks for EACH row
+execute FUNCTION update_timestamp ();
+
+
+Events
+-----------------------------
+create table public.calendar_events (
+  id bigint generated always as identity not null,
+  user_id uuid null,
+  title text not null,
+  event_date date not null,
+  event_time time without time zone not null,
+  type text null,
+  description text null,
+  created_at timestamp with time zone not null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint calendar_events_pkey primary key (id),
+  constraint calendar_events_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE,
+  constraint calendar_events_type_check check (
+    (
+      type = any (
+        array[
+          'meeting'::text,
+          'personal'::text,
+          'reminder'::text
+        ]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists idx_calendar_events_user_date on public.calendar_events using btree (user_id, event_date) TABLESPACE pg_default;
+
+create index IF not exists idx_calendar_events_user_id on public.calendar_events using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_calendar_events_event_date on public.calendar_events using btree (event_date) TABLESPACE pg_default;
+
+create trigger update_calendar_events_timestamp BEFORE
+update on calendar_events for EACH row
+execute FUNCTION update_timestamp ();
+
+
+
+DIARY Entries
+---------------------------
+create table public.diary_entries (
+  id bigint generated always as identity not null,
+  user_id uuid null,
+  entry_date date not null,
+  title text not null,
+  content text not null,
+  mood public.mood_scale null,
+  created_at timestamp with time zone not null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  constraint diary_entries_pkey primary key (id),
+  constraint diary_entries_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
+
+create index IF not exists idx_diary_entries_user_id on public.diary_entries using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_diary_entries_entry_date on public.diary_entries using btree (entry_date) TABLESPACE pg_default;
+
+create trigger update_diary_entries_timestamp BEFORE
+update on diary_entries for EACH row
+execute FUNCTION update_timestamp ();
+
+
+
+
+
+Users
+----------------------
+create table public.users (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  name text null,
+  email text not null,
+  password text not null,
+  created_at timestamp with time zone not null default CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone null default CURRENT_TIMESTAMP,
+  username text not null,
+  constraint users_pkey primary key (id),
+  constraint users_email_key unique (email),
+  constraint users_username_key unique (username)
+) TABLESPACE pg_default;
+
+create trigger update_users_timestamp BEFORE
+update on users for EACH row
+execute FUNCTION update_timestamp ();

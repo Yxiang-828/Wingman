@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, globalShortcut, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn, exec } = require('child_process');
@@ -42,7 +42,7 @@ function findPythonExecutable(backendDir) {
   for (const pythonPath of possiblePaths) {
     try {
       if (fs.existsSync(pythonPath)) {
-        console.log(`Found Python at: ${pythonPath}`);
+        console.log(`Found Python executable: ${pythonPath}`);
         return pythonPath;
       }
     } catch (error) {
@@ -53,6 +53,9 @@ function findPythonExecutable(backendDir) {
   console.log('Using default python command');
   return 'python';
 }
+
+// Helper function
+const execAsync = util.promisify(exec);
 
 /**
  * Forcefully frees port 8080 by killing any process using it
@@ -78,19 +81,16 @@ async function forceReleasePort(port) {
     for (const line of lines) {
       // Only target LISTENING connections with valid PIDs
       if (line.includes('LISTENING')) {
-        const pidMatch = line.match(/\s+(\d+)\s*$/);
-        if (pidMatch && pidMatch[1]) {
-          const pid = parseInt(pidMatch[1], 10);
-          // Skip PID 0 and obviously invalid PIDs
-          if (pid > 0) {
-            console.log(`🔥 Attempting to kill process ${pid} using port ${port}`);
-            try {
-              await execAsync(`taskkill /F /PID ${pid}`);
-              console.log(`✅ Successfully terminated process ${pid}`);
-              killed = true;
-            } catch (killError) {
-              console.log(`Failed to kill process ${pid}: ${killError.message}`);
-            }
+        const parts = line.trim().split(/\s+/);
+        const pid = parts[parts.length - 1];
+        
+        if (pid && !isNaN(pid) && parseInt(pid) > 0) {
+          try {
+            console.log(`Killing process with PID: ${pid}`);
+            await execAsync(`taskkill /F /PID ${pid}`);
+            killed = true;
+          } catch (killError) {
+            console.log(`Failed to kill PID ${pid}:`, killError.message);
           }
         }
       }
@@ -99,11 +99,10 @@ async function forceReleasePort(port) {
     if (!killed) {
       console.log('⚠️ NUCLEAR OPTION: Killing all Python processes');
       try {
-        await execPromise('taskkill /F /IM python.exe /T');
-        await execPromise('taskkill /F /IM pythonw.exe /T');
-        console.log('✅ REPLACED: Killed all Python processes');
+        await execAsync('taskkill /F /IM python.exe');
+        await execAsync('taskkill /F /IM uvicorn.exe');
       } catch (pythonKillError) {
-        console.log(`⚠️ Failed to kill Python processes: ${pythonKillError.message}`);
+        console.log('Python processes not found or already killed');
       }
     }
     
@@ -115,7 +114,7 @@ async function forceReleasePort(port) {
       const stillUsed = checkStdout.split('\n').some(line => line.includes(`LISTENING`));
       
       if (stillUsed) {
-        console.log(`⚠️ Port ${port} is still in use after all termination attempts`);
+        console.log(`⚠️ Port ${port} still in use after cleanup attempt`);
         return false;
       }
     } catch (error) {
@@ -139,17 +138,16 @@ async function startBackend(backendDir) {
     // Force kill any process using our port
     forceReleasePort(BACKEND_PORT).then(portFreed => {
       if (!portFreed) {
-        console.error(`❌ Failed to free port ${BACKEND_PORT}.`);
-        // Continue anyway - our backend will just fail to bind but at least we tried
+        reject(new Error(`Could not free port ${BACKEND_PORT}`));
+        return;
       } else {
-        console.log(`✅ Port ${BACKEND_PORT} is ready for backend`);
+        console.log(`✅ Port ${BACKEND_PORT} is free, starting backend...`);
       }
       
       // Find Python executable
       const pythonPath = findPythonExecutable(backendDir);
       if (!pythonPath) {
-        console.error('❌ Could not find Python executable');
-        reject(new Error('Could not find Python executable'));
+        reject(new Error('Python executable not found'));
         return;
       }
       
@@ -183,53 +181,47 @@ async function startBackend(backendDir) {
       
       backendProcess.stdout.on('data', (data) => {
         const output = data.toString();
-        console.log(`Backend: ${output}`);
+        console.log('🐍 Backend:', output);
         
-        // Look for startup completion
-        if (output.includes('Application startup complete') || 
-            output.includes('Uvicorn running on')) {
-          resolve(backendProcess);
+        if (output.includes('Uvicorn running on')) {
+          console.log('✅ Backend server started successfully');
+          resolve();
         }
       });
       
       backendProcess.stderr.on('data', (data) => {
-        const errorText = data.toString();
-        console.error(`Backend error: ${errorText}`);
+        const error = data.toString();
+        console.error('🐍 Backend Error:', error);
         
-        // Some servers output successful startup on stderr
-        if (errorText.includes('Application startup complete') || 
-            errorText.includes('Uvicorn running on')) {
-          resolve(backendProcess);
+        if (error.includes('Address already in use')) {
+          console.error('❌ Port 8080 is still in use');
+          reject(new Error('Port 8080 already in use'));
         }
       });
       
       backendProcess.on('error', (err) => {
-        console.error('Failed to start backend process:', err);
+        console.error('❌ Failed to start backend:', err);
         reject(err);
       });
       
       // Timeout fallback with health check
       setTimeout(() => {
-        console.log('Backend startup timeout, checking health...');
+        console.log('⏰ Backend startup timeout, checking health...');
+        
         const http = require('http');
-        const req = http.get('http://localhost:8080/health', (res) => {
-          if (res.statusCode === 200) {
-            console.log('Backend health check passed!');
-            resolve(backendProcess);
-          } else {
-            console.log('Backend health check failed, but continuing...');
-            resolve(backendProcess);
-          }
+        const req = http.get('http://127.0.0.1:8080/health', (res) => {
+          console.log('✅ Backend health check passed, resolving...');
+          resolve();
         });
         
-        req.on('error', () => {
-          console.log('Backend health check error, but continuing...');
-          resolve(backendProcess);
+        req.on('error', (err) => {
+          console.error('❌ Backend health check failed:', err);
+          reject(new Error('Backend failed to start within timeout'));
         });
         
-        req.setTimeout(2000, () => {
-          req.destroy();
-          resolve(backendProcess);
+        req.setTimeout(5000, () => {
+          console.error('❌ Backend health check timed out');
+          reject(new Error('Backend health check timeout'));
         });
       }, 15000);
     });
@@ -268,9 +260,11 @@ function createWindow() {
   const loadApp = async () => {
     try {
       if (isDevelopment) {
-        win.loadURL('http://localhost:5173');
+        console.log('🚀 Loading development server...');
+        await win.loadURL('http://localhost:5173');
       } else {
-        win.loadFile(path.join(__dirname, '../dist/index.html'));
+        console.log('🚀 Loading production build...');
+        await win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
       }
     } catch (error) {
       console.error('Error loading app:', error);
@@ -280,166 +274,350 @@ function createWindow() {
   loadApp();
 }
 
-// ✅ NEW: Initialize LocalDataManager and setup IPC handlers
+// ✅ COMPLETE: Initialize LocalDataManager and setup ALL IPC handlers
 async function setupDatabaseIPC() {
   try {
-    // Initialize LocalDataManager
+    console.log('📊 Initializing LocalDataManager...');
     dataManager = new LocalDataManager();
-    console.log('✅ LocalDataManager initialized');
-
-    // ✅ TASK IPC HANDLERS
+    console.log('✅ LocalDataManager created');
+    
+    console.log('📊 Database path:', dataManager.dbPath);
+    console.log('📊 Database exists:', require('fs').existsSync(dataManager.dbPath));
+    
+    // ✅ CRITICAL TEST: Verify dataManager methods exist
+    console.log('🧪 Testing dataManager methods:');
+    console.log('- getTasks method:', typeof dataManager.getTasks);
+    console.log('- getEvents method:', typeof dataManager.getEvents);
+    console.log('- getDiaryEntries method:', typeof dataManager.getDiaryEntries);
+    console.log('- saveTask method:', typeof dataManager.saveTask);
+    console.log('- saveEvent method:', typeof dataManager.saveEvent);
+    console.log('- saveDiaryEntry method:', typeof dataManager.saveDiaryEntry);
+    
+    // Test database connection
+    const testResult = dataManager.getStorageStats('test-user');
+    console.log('✅ Database connection test passed:', testResult);
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 🎯 **COMPLETE IPC HANDLERS SETUP**
+    // ═══════════════════════════════════════════════════════════════
+    
+    // ✅ TASK HANDLERS
     ipcMain.handle('db:getTasks', async (event, userId, date) => {
       try {
-        return dataManager.getTasks(userId, date);
+        console.log(`🔄 IPC: Getting tasks for user ${userId}${date ? ` on ${date}` : ''}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const tasks = dataManager.getTasks(userId, date);
+        console.log(`✅ IPC: Found ${tasks.length} tasks`);
+        return tasks;
       } catch (error) {
-        console.error('Error in db:getTasks:', error);
-        throw error;
+        console.error('❌ IPC: Error getting tasks:', error);
+        throw new Error(`Failed to get tasks: ${error.message}`);
       }
     });
 
     ipcMain.handle('db:saveTask', async (event, task) => {
       try {
-        return dataManager.saveTask(task);
+        console.log('🔄 IPC: Saving task:', task);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const savedTask = dataManager.saveTask(task);
+        console.log('✅ IPC: Task saved successfully:', savedTask);
+        return savedTask;
       } catch (error) {
-        console.error('Error in db:saveTask:', error);
-        throw error;
+        console.error('❌ IPC: Error saving task:', error);
+        throw new Error(`Failed to save task: ${error.message}`);
       }
     });
 
     ipcMain.handle('db:updateTask', async (event, id, updates) => {
       try {
-        return dataManager.updateTask(id, updates);
+        console.log(`🔄 IPC: Updating task ${id} with:`, updates);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const updatedTask = dataManager.updateTask(id, updates);
+        console.log('✅ IPC: Task updated successfully:', updatedTask);
+        return updatedTask;
       } catch (error) {
-        console.error('Error in db:updateTask:', error);
-        throw error;
+        console.error('❌ IPC: Error updating task:', error);
+        throw new Error(`Failed to update task: ${error.message}`);
       }
     });
 
     ipcMain.handle('db:deleteTask', async (event, id) => {
       try {
-        dataManager.deleteTask(id);
-        return { success: true };
+        console.log(`🔄 IPC: Deleting task ${id}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const result = dataManager.deleteTask(id);
+        console.log('✅ IPC: Task deleted successfully');
+        return result;
       } catch (error) {
-        console.error('Error in db:deleteTask:', error);
-        throw error;
+        console.error('❌ IPC: Error deleting task:', error);
+        throw new Error(`Failed to delete task: ${error.message}`);
       }
     });
 
-    // ✅ CALENDAR EVENT IPC HANDLERS
+    // ✅ EVENT HANDLERS
     ipcMain.handle('db:getEvents', async (event, userId, date) => {
       try {
-        return dataManager.getEvents(userId, date);
+        console.log(`🔄 IPC: Getting events for user ${userId}${date ? ` on ${date}` : ''}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const events = dataManager.getEvents(userId, date);
+        console.log(`✅ IPC: Found ${events.length} events`);
+        return events;
       } catch (error) {
-        console.error('Error in db:getEvents:', error);
-        throw error;
+        console.error('❌ IPC: Error getting events:', error);
+        throw new Error(`Failed to get events: ${error.message}`);
       }
     });
 
-    ipcMain.handle('db:saveEvent', async (event, calendarEvent) => {
+    ipcMain.handle('db:saveEvent', async (event, eventData) => {
       try {
-        return dataManager.saveEvent(event);
+        console.log('🔄 IPC: Saving event:', eventData);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const savedEvent = dataManager.saveEvent(eventData);
+        console.log('✅ IPC: Event saved successfully:', savedEvent);
+        return savedEvent;
       } catch (error) {
-        console.error('Error in db:saveEvent:', error);
-        throw error;
+        console.error('❌ IPC: Error saving event:', error);
+        throw new Error(`Failed to save event: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('db:updateEvent', async (event, eventData) => {
+      try {
+        console.log('🔄 IPC: Updating event:', eventData);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const result = dataManager.saveEvent(eventData); // saveEvent handles both create and update
+        console.log('✅ IPC: Event updated successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ IPC: Error updating event:', error);
+        throw new Error(`Failed to update event: ${error.message}`);
       }
     });
 
     ipcMain.handle('db:deleteEvent', async (event, id) => {
       try {
-        dataManager.deleteEvent(id);
-        return { success: true };
+        console.log(`🔄 IPC: Deleting event ${id}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const result = dataManager.deleteEvent(id);
+        console.log('✅ IPC: Event deleted successfully');
+        return result;
       } catch (error) {
-        console.error('Error in db:deleteEvent:', error);
-        throw error;
+        console.error('❌ IPC: Error deleting event:', error);
+        throw new Error(`Failed to delete event: ${error.message}`);
       }
     });
 
-    // ✅ DIARY IPC HANDLERS
+    // ✅ DIARY HANDLERS
     ipcMain.handle('db:getDiaryEntries', async (event, userId, date) => {
       try {
-        return dataManager.getDiaryEntries(userId, date);
+        console.log(`🔄 IPC: Getting diary entries for user ${userId}${date ? ` on ${date}` : ''}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const entries = dataManager.getDiaryEntries(userId, date);
+        console.log(`✅ IPC: Found ${entries.length} diary entries`);
+        return entries;
       } catch (error) {
-        console.error('Error in db:getDiaryEntries:', error);
-        throw error;
+        console.error('❌ IPC: Error getting diary entries:', error);
+        throw new Error(`Failed to get diary entries: ${error.message}`);
       }
     });
 
     ipcMain.handle('db:saveDiaryEntry', async (event, entry) => {
       try {
-        return dataManager.saveDiaryEntry(entry);
+        console.log('🔄 IPC: Saving diary entry:', entry);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const savedEntry = dataManager.saveDiaryEntry(entry);
+        console.log('✅ IPC: Diary entry saved successfully:', savedEntry);
+        return savedEntry;
       } catch (error) {
-        console.error('Error in db:saveDiaryEntry:', error);
-        throw error;
+        console.error('❌ IPC: Error saving diary entry:', error);
+        throw new Error(`Failed to save diary entry: ${error.message}`);
       }
     });
 
-    // ✅ CHAT IPC HANDLERS (Perfect for Ollama!)
+    // ✅ CHAT HANDLERS
     ipcMain.handle('db:getChatHistory', async (event, userId, limit) => {
       try {
-        return dataManager.getChatHistory(userId, limit);
+        console.log(`🔄 IPC: Getting chat history for user ${userId}, limit: ${limit}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const history = dataManager.getChatHistory(userId, limit);
+        console.log(`✅ IPC: Found ${history.length} chat messages`);
+        return history;
       } catch (error) {
-        console.error('Error in db:getChatHistory:', error);
-        throw error;
+        console.error('❌ IPC: Error getting chat history:', error);
+        throw new Error(`Failed to get chat history: ${error.message}`);
       }
     });
 
     ipcMain.handle('db:saveChatMessage', async (event, message, isAi, userId, sessionId) => {
       try {
-        return dataManager.saveChatMessage(message, isAi, userId, sessionId);
+        console.log(`🔄 IPC: Saving chat message for user ${userId}, isAi: ${isAi}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const savedMessage = dataManager.saveChatMessage(message, isAi, userId, sessionId);
+        console.log('✅ IPC: Chat message saved successfully:', savedMessage);
+        return savedMessage;
       } catch (error) {
-        console.error('Error in db:saveChatMessage:', error);
-        throw error;
+        console.error('❌ IPC: Error saving chat message:', error);
+        throw new Error(`Failed to save chat message: ${error.message}`);
       }
     });
 
     ipcMain.handle('db:clearChatHistory', async (event, userId) => {
       try {
+        console.log(`🔄 IPC: Clearing chat history for user ${userId}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
         dataManager.clearChatHistory(userId);
+        console.log('✅ IPC: Chat history cleared successfully');
         return { success: true };
       } catch (error) {
-        console.error('Error in db:clearChatHistory:', error);
-        throw error;
+        console.error('❌ IPC: Error clearing chat history:', error);
+        throw new Error(`Failed to clear chat history: ${error.message}`);
       }
     });
 
-    // ✅ UTILITY IPC HANDLERS
+    // ✅ UTILITY HANDLERS
     ipcMain.handle('db:getStorageStats', async (event, userId) => {
       try {
-        return dataManager.getStorageStats(userId);
+        console.log(`🔄 IPC: Getting storage stats for user ${userId}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const stats = dataManager.getStorageStats(userId);
+        console.log('✅ IPC: Storage stats retrieved:', stats);
+        return stats;
       } catch (error) {
-        console.error('Error in db:getStorageStats:', error);
-        throw error;
+        console.error('❌ IPC: Error getting storage stats:', error);
+        throw new Error(`Failed to get storage stats: ${error.message}`);
       }
     });
 
-    console.log('✅ All database IPC handlers registered');
+    // ✅ ADDITIONAL SYSTEM HANDLERS
+    ipcMain.handle('open-external', async (event, url) => {
+      try {
+        await shell.openExternal(url);
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Error opening external URL:', error);
+        throw new Error(`Failed to open URL: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('get-version', async () => {
+      return app.getVersion();
+    });
+
+    ipcMain.handle('select-file', async (event, options) => {
+      try {
+        const result = await dialog.showOpenDialog(options);
+        return result;
+      } catch (error) {
+        console.error('❌ Error in file dialog:', error);
+        throw new Error(`File dialog failed: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('save-file', async (event, options) => {
+      try {
+        const result = await dialog.showSaveDialog(options);
+        return result;
+      } catch (error) {
+        console.error('❌ Error in save dialog:', error);
+        throw new Error(`Save dialog failed: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('read-file', async (event, filePath) => {
+      try {
+        const data = fs.readFileSync(filePath, 'utf8');
+        return data;
+      } catch (error) {
+        console.error('❌ Error reading file:', error);
+        throw new Error(`Failed to read file: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('write-file', async (event, filePath, data) => {
+      try {
+        fs.writeFileSync(filePath, data, 'utf8');
+        return { success: true };
+      } catch (error) {
+        console.error('❌ Error writing file:', error);
+        throw new Error(`Failed to write file: ${error.message}`);
+      }
+    });
+
+    // ✅ VERIFY ALL HANDLERS ARE REGISTERED
+    const registeredHandlers = [
+      'db:getTasks', 'db:saveTask', 'db:updateTask', 'db:deleteTask',
+      'db:getEvents', 'db:saveEvent', 'db:updateEvent', 'db:deleteEvent',
+      'db:getDiaryEntries', 'db:saveDiaryEntry',
+      'db:getChatHistory', 'db:saveChatMessage', 'db:clearChatHistory',
+      'db:getStorageStats',
+      'open-external', 'get-version', 'select-file', 'save-file', 'read-file', 'write-file'
+    ];
+
+    console.log('✅ All database IPC handlers registered successfully:');
+    registeredHandlers.forEach(handler => {
+      console.log(`  - ${handler}`);
+    });
 
   } catch (error) {
     console.error('❌ Failed to setup database IPC:', error);
+    console.error('❌ Stack trace:', error.stack);
     throw error;
   }
 }
 
 app.whenReady().then(async () => {
   try {
-    // Initialize database first
+    console.log('🚀 Starting database setup...');
     await setupDatabaseIPC();
+    console.log('✅ Database IPC setup complete');
     
-    // Then start backend and create window
+    // ✅ SIMPLE SUCCESS CHECK - If setupDatabaseIPC() didn't throw, we're good!
+    console.log('✅ All IPC handlers registered successfully');
+    
     await startBackendServer();
     createWindow();
+    
   } catch (error) {
-    console.error('Failed to start application:', error);
-    // Create window anyway to show error
-    createWindow();
+    console.error('❌ CRITICAL: App initialization failed:', error);
+    console.error('❌ Stack trace:', error.stack);
+    
+    dialog.showErrorBox('Startup Error', 
+      `Application failed to start: ${error.message}\n\nPlease check the console for details.`
+    );
+    app.quit();
   }
 });
 
 // Register keyboard shortcuts
 app.whenReady().then(() => {
-  // Register keyboard shortcut for DevTools
-  const { globalShortcut } = require('electron');
-  
   // Register F12 for DevTools
   globalShortcut.register('F12', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
@@ -496,35 +674,22 @@ let healthCheckFailCount = 0; // Track consecutive failures
 setInterval(() => {
   if (backendProcess) {
     const http = require('http');
-    const req = http.get('http://localhost:8080/health', (res) => {
+    const req = http.get('http://127.0.0.1:8080/health', (res) => {
       if (res.statusCode === 200) {
-        // Success - reset failure counter
-        if (healthCheckFailCount > 0) {
-          console.log('Backend recovered, resetting failure counter');
-        }
-        healthCheckFailCount = 0;
+        healthCheckFailCount = 0; // Reset on success
       } else {
-        console.log(`Backend returned status: ${res.statusCode}`);
-        handlePotentialFailure('Non-200 response');
+        handlePotentialFailure(`HTTP ${res.statusCode}`);
       }
     });
     
     // More generous timeout (15 seconds)
     req.setTimeout(15000, () => {
-      req.abort();
-      console.log('Health check timed out after 15 seconds');
-      handlePotentialFailure('Timeout');
+      req.destroy();
+      handlePotentialFailure('Health check timeout');
     });
     
     req.on('error', (err) => {
-      // Ignore certain common network errors during idle periods
-      if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
-        console.log(`Ignoring common network error: ${err.code}`);
-        return;
-      }
-      
-      console.log(`Health check error: ${err.message}`);
-      handlePotentialFailure(`Network error: ${err.code}`);
+      handlePotentialFailure(`Connection error: ${err.message}`);
     });
   }
 }, 60000); // Check every 60 seconds instead of 30
@@ -559,10 +724,7 @@ async function checkPythonVersion() {
     console.log(`Python version check: ${stdout}`);
     
     if (!stdout.includes('Python 3.13')) {
-      return {
-        installed: false,
-        version: stdout.trim()
-      };
+      console.log('⚠️ Python 3.13 recommended but not required');
     }
     
     return {

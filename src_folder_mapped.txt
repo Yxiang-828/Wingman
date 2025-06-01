@@ -1,10 +1,8 @@
-Folder map of c:\Users\xiang\final\Wingman\src
+Folder map of c:\Users\xiang\checker\Wingman\src
 ==================================================
 
 ├── api/
 │   ├── apiClient.ts
-│   ├── auth.ts
-│   ├── axios.ts
 │   ├── Calendar.ts
 │   ├── chat.ts
 │   ├── Diary.ts
@@ -24,6 +22,7 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   │   ├── DayView.tsx
 │   │   ├── EventModal.tsx
 │   │   ├── index.tsx
+│   │   ├── MonthSelector.css
 │   │   ├── MonthView.tsx
 │   │   ├── TimeBlockVisualizer.tsx
 │   │   ├── TimeInput.css
@@ -38,6 +37,7 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   │   ├── MessageBubble.tsx
 │   │   └── QuickReplies.tsx
 │   ├── Common/
+│   │   ├── CommonButtons.css
 │   │   ├── DetailPopup.css
 │   │   ├── DetailPopup.tsx
 │   │   ├── FontSizeInitializer.tsx
@@ -49,16 +49,23 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   │   ├── Modal.tsx
 │   │   ├── Portal.tsx
 │   │   ├── TimeInput.css
-│   │   └── TimeInput.tsx
+│   │   ├── TimeInput.tsx
+│   │   ├── WingmanAvatar.css
+│   │   └── WingmanAvatar.tsx
 │   ├── Dashboard/
 │   │   ├── ChatCard.tsx
+│   │   ├── CompletedTasksCard.css
 │   │   ├── CompletedTasksCard.tsx
 │   │   ├── Dashboard.css
+│   │   ├── DiaryCard.css
 │   │   ├── DiaryCard.tsx
+│   │   ├── EventsCard.css
 │   │   ├── EventsCard.tsx
 │   │   ├── index.tsx
 │   │   ├── MoodGraph.tsx
+│   │   ├── SummaryCard.css
 │   │   ├── SummaryCard.tsx
+│   │   ├── TasksCard.css
 │   │   ├── TasksCard.tsx
 │   │   └── TimeTracker.tsx
 │   ├── Diary/
@@ -108,6 +115,7 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   └── llmConfig.ts
 ├── context/
 │   ├── AuthContext.tsx
+│   ├── BackgroundContext.tsx
 │   ├── ChatContext.tsx
 │   ├── DataContext.tsx
 │   ├── DiaryContext.tsx
@@ -118,7 +126,8 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   ├── useCalendar.ts
 │   ├── useChat.ts
 │   ├── useDiary.ts
-│   └── useMood.ts
+│   ├── useMood.ts
+│   └── useNavigationRefresh.ts
 ├── Pages/
 │   ├── Auth/
 │   │   ├── Login.tsx
@@ -139,6 +148,9 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   ├── NavigationService.ts
 │   ├── NotificationCleanupService.ts
 │   └── NotificationService.ts
+├── storage/
+│   ├── LocalDataManager.ts
+│   └── schema.sql
 ├── styles/
 │   └── scrollbars.css
 ├── types/
@@ -146,7 +158,6 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   ├── chat.d.ts
 │   ├── database.ts
 │   ├── diary.d.ts
-│   ├── electron.d.ts
 │   ├── global.d.ts
 │   ├── index.d.ts
 │   ├── react-calendar.d.ts
@@ -157,8 +168,11 @@ Folder map of c:\Users\xiang\final\Wingman\src
 │   ├── AuthStateManager.ts
 │   ├── dateUtils.ts
 │   ├── debounce.ts
+│   ├── debug.ts
 │   ├── helpers.ts
-│   └── moodAlgorithm.ts
+│   ├── logout.ts
+│   ├── moodAlgorithm.ts
+│   └── timeUtils.ts
 ├── App.css
 ├── App.tsx
 ├── config.ts
@@ -166,5 +180,4 @@ Folder map of c:\Users\xiang\final\Wingman\src
 ├── main.css
 ├── main.tsx
 ├── scroll_top.tsx
-├── vite-env.d.ts
 └── WelcomePopup.tsx
