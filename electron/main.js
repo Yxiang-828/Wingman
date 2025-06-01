@@ -6,7 +6,7 @@ const util = require('util');
 const execPromise = util.promisify(exec);
 
 // Import LocalDataManager
-const { LocalDataManager } = require('../src/storage/LocalDataManager');
+const { LocalDataManager } = require('./localDataBridge');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -335,7 +335,7 @@ async function setupDatabaseIPC() {
       }
     });
 
-    ipcMain.handle('db:saveEvent', async (event, event) => {
+    ipcMain.handle('db:saveEvent', async (event, calendarEvent) => {
       try {
         return dataManager.saveEvent(event);
       } catch (error) {
