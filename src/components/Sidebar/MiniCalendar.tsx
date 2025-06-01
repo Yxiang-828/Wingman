@@ -14,12 +14,12 @@ const MiniCalendar: React.FC = () => {
   const navigate = useNavigate();
   const { getDayData } = useCalendarCache("MiniCalendar");
   const [currentDate] = useState(new Date());
-  const [eventsMap, setEventsMap] = useState<Record<string, number>>({});
+  const [eventsMap, setEventsMap] = useState<Record<string, { tasks: number; events: number }>>({});
   const loadingRef = useRef(false);
 
   // OPTIMIZATION: Throttle updates
   const throttledSetEventsMap = useCallback(
-    (newMap: Record<string, number>) => {
+    (newMap: Record<string, { tasks: number; events: number }>) => {
       requestAnimationFrame(() => {
         setEventsMap(newMap);
       });
@@ -33,7 +33,7 @@ const MiniCalendar: React.FC = () => {
 
     const loadEventCounts = async () => {
       loadingRef.current = true;
-      const newEventsMap: Record<string, number> = {};
+      const newEventsMap: Record<string, { tasks: number, events: number }> = {};
 
       // Get current month's date range
       const year = currentDate.getFullYear();
@@ -54,14 +54,15 @@ const MiniCalendar: React.FC = () => {
           const promises = chunk.map((dateStr) =>
             getDayData(dateStr).then((dayData) => ({
               date: dateStr,
-              count: (dayData.tasks?.length || 0) + (dayData.events?.length || 0),
+              tasks: dayData.tasks?.length || 0,
+              events: dayData.events?.length || 0,
             }))
           );
 
           const results = await Promise.all(promises);
-          results.forEach(({ date, count }) => {
-            if (count > 0) {
-              newEventsMap[date] = count;
+          results.forEach(({ date, tasks, events }) => {
+            if (tasks > 0 || events > 0) {
+              newEventsMap[date] = { tasks, events };
             }
           });
 
@@ -92,7 +93,10 @@ const MiniCalendar: React.FC = () => {
   // OPTIMIZATION: Memoize tile class function
   const getTileClass = useCallback(
     (date: Date) => {
-      const hasEvent = eventsMap[formatDateKey(date)] > 0;
+      const dateKey = formatDateKey(date);
+      const dayData = eventsMap[dateKey];
+      const hasEvent = dayData && (dayData.tasks > 0 || dayData.events > 0);
+      
       const today = new Date();
       const isToday =
         date.getFullYear() === today.getFullYear() &&
@@ -107,16 +111,36 @@ const MiniCalendar: React.FC = () => {
     [eventsMap]
   );
 
-  // OPTIMIZATION: Memoize tile content function
+  // ✅ FIXED: Smart corner positioning with proper data attributes
   const getTileContent = useCallback(
     (date: Date) => {
       const dateKey = formatDateKey(date);
-      const eventCount = eventsMap[dateKey];
-      return eventCount ? (
-        <div className="event-indicator">
-          <span className="event-count">{eventCount}</span>
+      const dayData = eventsMap[dateKey];
+      
+      if (!dayData || (dayData.tasks === 0 && dayData.events === 0)) return null;
+      
+      return (
+        <div className="day-indicators">
+          {dayData.tasks > 0 && (
+            <div className="task-indicator">
+              <span 
+                className="task-count"
+                data-count={dayData.tasks > 99 ? '99+' : dayData.tasks.toString()}
+                title={`${dayData.tasks} task${dayData.tasks > 1 ? 's' : ''}`}
+              />
+            </div>
+          )}
+          {dayData.events > 0 && (
+            <div className="event-indicator">
+              <span 
+                className="event-count"
+                data-count={dayData.events > 99 ? '99+' : dayData.events.toString()}
+                title={`${dayData.events} event${dayData.events > 1 ? 's' : ''}`}
+              />
+            </div>
+          )}
         </div>
-      ) : null;
+      );
     },
     [eventsMap]
   );

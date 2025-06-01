@@ -86,27 +86,140 @@
   position: relative;
 }
 
-.event-indicator {
+/* ✅ FIXED: Smart corner positioning that doesn't overlap text */
+.day-indicators {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  height: 16px;
-  width: 16px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: space-between;
+  padding: 2px;
+}
+
+/* ✅ NEW: Individual indicator positioning */
+.indicator-wrapper {
+  width: 8px;
+  height: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* ✅ Tasks go top-left */
+.task-indicator {
+  order: 1;
+  align-self: flex-start;
+}
+
+/* ✅ Events go top-right */
+.event-indicator {
+  order: 2;
+  align-self: flex-start;
+  margin-left: auto;
+}
+
+/* ✅ IMPROVED: Smaller, corner-positioned dots */
+.task-count,
 .event-count {
-  font-size: 9px;
-  background: var(--accent-primary-fade, rgba(100, 108, 255, 0.3));
-  color: var(--color-text-inverse, white);
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  height: 14px;
-  width: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  font-size: 0; /* Hide text by default */
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Task styling - Green */
+.task-count {
+  background: #4ade80;
+  box-shadow: 
+    0 0 4px rgba(74, 222, 128, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Event styling - Blue */
+.event-count {
+  background: #646cff;
+  box-shadow: 
+    0 0 4px rgba(100, 108, 255, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* ✅ HOVER: Expand and show numbers on tile hover */
+.react-calendar--small .react-calendar__tile:hover .task-count,
+.react-calendar--small .react-calendar__tile:hover .event-count {
+  width: 14px;
+  height: 14px;
+  font-size: 7px;
+  color: white;
+  transform: scale(1.1);
+  z-index: 10;
+}
+
+/* ✅ HOVER: Show actual count on hover */
+.react-calendar--small .react-calendar__tile:hover .task-count::after {
+  content: attr(data-count);
+}
+
+.react-calendar--small .react-calendar__tile:hover .event-count::after {
+  content: attr(data-count);
+}
+
+/* ✅ PULSE: Subtle animation for active days */
+.has-event .task-count {
+  animation: taskPulse 3s ease-in-out infinite;
+}
+
+.has-event .event-count {
+  animation: eventPulse 3s ease-in-out infinite;
+}
+
+@keyframes taskPulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 
+      0 0 4px rgba(74, 222, 128, 0.6),
+      0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+  50% { 
+    transform: scale(1.2);
+    box-shadow: 
+      0 0 8px rgba(74, 222, 128, 0.8),
+      0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes eventPulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 
+      0 0 4px rgba(100, 108, 255, 0.6),
+      0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+  50% { 
+    transform: scale(1.2);
+    box-shadow: 
+      0 0 8px rgba(100, 108, 255, 0.8),
+      0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Stop animation on hover */
+.react-calendar--small .react-calendar__tile:hover .task-count,
+.react-calendar--small .react-calendar__tile:hover .event-count {
+  animation: none;
 }
 
 /* Tremble keyframes */
