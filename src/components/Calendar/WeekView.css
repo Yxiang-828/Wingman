@@ -246,10 +246,6 @@
   background: rgba(40, 40, 60, 0.3); /* ✅ SLIGHTLY DIMMED */
 }
 
-
-
-
-
 /* Empty day state */
 .day-empty {
   color: rgba(255, 255, 255, 0.4);
@@ -319,4 +315,145 @@
   .week-days-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* ✅ ADD: Proper scrollable container for virtualized lists */
+.virtualized-scroll-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px; /* Space for scrollbar */
+  
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
+}
+
+.virtualized-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.virtualized-scroll-container::-webkit-scrollbar-track {
+  background: rgba(30, 30, 50, 0.3);
+  border-radius: 3px;
+}
+
+.virtualized-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.4);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.virtualized-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 108, 255, 0.6);
+}
+
+/* ✅ ENSURE: Week task/event items have proper spacing */
+.week-task-item,
+.week-event-item {
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  flex-shrink: 0; /* ✅ PREVENT COMPRESSION */
+  min-height: 50px; /* ✅ MINIMUM HEIGHT */
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(40, 40, 60, 0.5);
+}
+
+.week-task-item:hover,
+.week-event-item:hover {
+  transform: translateX(4px);
+  background: rgba(25, 25, 40, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ✅ TASK-SPECIFIC STYLING */
+.week-task-item {
+  gap: 0.75rem;
+}
+
+.week-task-status {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(100, 108, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(20, 20, 35, 0.5);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.week-task-status:hover {
+  transform: scale(1.1);
+  border-color: rgba(100, 108, 255, 0.8);
+  box-shadow: 0 0 8px rgba(100, 108, 255, 0.3);
+}
+
+.week-task-item.completed .week-task-status {
+  border-color: rgba(74, 222, 128, 0.7);
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.week-task-text {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.week-task-item.completed .week-task-text {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.week-task-time {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+/* ✅ EVENT-SPECIFIC STYLING */
+.week-event-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.week-event-time {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+.week-event-title {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+/* ✅ EVENT TYPE COLORS */
+.week-event-item.meeting {
+  border-left: 3px solid #ff6b6b;
+}
+
+.week-event-item.personal {
+  border-left: 3px solid #4ecdc4;
+}
+
+.week-event-item.reminder {
+  border-left: 3px solid #ffe66d;
+}
+
+.week-event-item.work {
+  border-left: 3px solid #646cff;
 }

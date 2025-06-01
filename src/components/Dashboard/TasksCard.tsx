@@ -4,7 +4,7 @@ import type { Task } from "../../api/Task";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
-import { VirtualizedTaskList } from "../Calendar/VirtualizedList"; // ✅ REUSE EXISTING
+import { VirtualizedTaskList } from "../Calendar/VirtualizedList";
 import "./Dashboard.css";
 import "./TasksCard.css";
 
@@ -40,9 +40,8 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     }
   }, [onToggleTask, toggleTask]);
   
-  // Handle deletion
+  // Handle deletion - removed since we removed delete buttons
   const handleDeleteTask = useCallback(async (task: Task) => {
-    // Implementation for delete if needed
     console.log("Delete task:", task.id);
   }, []);
   
@@ -68,7 +67,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       </div>
 
       {pendingTasks.length > 0 ? (
-        <div className="tasks-virtualized-container" style={{ height: '250px' }}>
+        <div className="tasks-virtualized-container">
           <VirtualizedTaskList
             tasks={pendingTasks}
             onTaskClick={handleTaskClick}

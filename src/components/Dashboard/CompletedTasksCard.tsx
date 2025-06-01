@@ -34,7 +34,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
     showPopupFor(task);
   };
 
-  // Handle clicking on the task status circle specifically - toggle completion
+  // ✅ FIXED: Handle clicking on the task status circle specifically - toggle completion
   const handleStatusClick = async (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
     e.preventDefault();
@@ -42,15 +42,21 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
     if (task.isProcessing) return;
 
     try {
-      // ✅ KEEP: Only call API, let broadcasts handle UI updates
-      const updatedTask = await toggleTask(task);
-      console.log("CompletedTasksCard: Task toggled successfully:", updatedTask);
+      console.log("🔄 CompletedTasksCard: Toggling task completion for:", task.id);
 
+      // Call the API through DataContext to toggle the task
+      const updatedTask = await toggleTask(task);
+      console.log("✅ CompletedTasksCard: Task toggled successfully:", updatedTask);
+
+      // Close popup if it's open for this task
       if (currentPopupItem && currentPopupItem.id === task.id) {
         closePopup();
       }
+
+      // Note: No need to update local state here since DataContext broadcasts the change
+      // and the Dashboard component will re-fetch and update the tasks prop
     } catch (error) {
-      console.error("Error toggling task status:", error);
+      console.error("❌ Error toggling task status:", error);
     }
   };
 
@@ -84,7 +90,6 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
     <div className="dashboard-card completed-tasks-card">
       <div className="dashboard-card-header">
         <h2>Completed Tasks</h2>
-        {/* Changed to navigate to day view with tasks tab */}
         <button
           className="card-action-btn"
           onClick={() => navigate("/calendar/day?tab=tasks")}
@@ -95,19 +100,27 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
 
       {completedTasks.length > 0 ? (
         <ul className="tasks-list">
-          {completedTasks.slice(0, 3).map((task) => (
+          {/* ✅ FIXED: Show more items, not limited to 3 */}
+          {completedTasks.map((task) => (
             <li
               key={`task-${task.id}`}
               className="task-item completed"
               onClick={() => handleTaskClick(task)}
             >
+              {/* ✅ FIXED: Make sure the status button is properly clickable */}
               <div
                 className="task-status"
                 onClick={(e) => handleStatusClick(e, task)}
+                style={{
+                  cursor: "pointer",
+                  userSelect: "none",
+                  zIndex: 10,
+                  position: "relative",
+                }}
+                title="Click to mark as incomplete"
               >
                 ✓
               </div>
-              {/* ✅ FIXED: Use consistent task-details structure */}
               <div className="task-details">
                 <div className="task-title">{task.title}</div>
                 <div className="task-meta">

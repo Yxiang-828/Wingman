@@ -24,14 +24,21 @@
   background: linear-gradient(135deg, rgba(22, 22, 30, 0.85) 0%, rgba(18, 18, 28, 0.9) 100%);
   border-radius: 16px;
   padding: 1.5rem;
-  height: 350px;
-  overflow-y: auto;
+  height: 350px; /* ✅ FIXED HEIGHT */
+  overflow: hidden; /* ✅ HIDE OVERFLOW ON PARENT */
   position: relative;
   border: 1px solid rgba(100, 108, 255, 0.15);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   display: flex;
   flex-direction: column;
+}
+
+/* ✅ NEW: Ensure content area is scrollable */
+.dashboard-card > *:last-child {
+  flex: 1;
+  min-height: 0; /* ✅ ALLOW FLEX SHRINKING */
+  overflow: hidden; /* ✅ PARENT MANAGES OVERFLOW */
 }
 
 .dashboard-card:hover {
@@ -161,6 +168,7 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
+  min-height: 0; /* ✅ CRITICAL */
 }
 
 .task-item {
@@ -177,22 +185,49 @@
   position: relative;
 }
 
-/* ✅ ADD: Virtualized container styling for dashboard cards */
+/* ✅ FIXED: Virtualized container styling for dashboard cards */
 .tasks-virtualized-container,
 .events-virtualized-container {
   flex: 1;
-  min-height: 0;
+  min-height: 0; /* ✅ CRITICAL: Allow flex shrinking */
   border-radius: 8px;
-  overflow: hidden;
+  overflow: hidden; /* ✅ Hide parent overflow */
+  display: flex;
+  flex-direction: column;
+  position: relative; /* ✅ FOR PROPER POSITIONING */
 }
 
-/* ✅ ENSURE: Week view items work in dashboard context */
+/* ✅ ENSURE: Dashboard cards can scroll properly */
+.dashboard-card {
+  background: linear-gradient(135deg, rgba(22, 22, 30, 0.85) 0%, rgba(18, 18, 28, 0.9) 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  height: 350px; /* ✅ FIXED HEIGHT */
+  overflow: hidden; /* ✅ HIDE OVERFLOW ON PARENT */
+  position: relative;
+  border: 1px solid rgba(100, 108, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ✅ NEW: Ensure content area is scrollable */
+.dashboard-card > *:last-child {
+  flex: 1;
+  min-height: 0; /* ✅ ALLOW FLEX SHRINKING */
+  overflow: hidden; /* ✅ PARENT MANAGES OVERFLOW */
+}
+
+/* ✅ WEEK VIEW ITEMS: Override for dashboard context */
 .tasks-virtualized-container .week-task-item,
 .events-virtualized-container .week-event-item {
   margin-bottom: 0.5rem;
   border-radius: 8px;
   transition: all 0.2s ease;
   cursor: pointer;
+  min-height: 50px; /* ✅ CONSISTENT HEIGHT */
+  max-height: none; /* ✅ ALLOW CONTENT HEIGHT */
 }
 
 .tasks-virtualized-container .week-task-item:hover,
@@ -200,6 +235,21 @@
   transform: translateX(4px);
   background: rgba(25, 25, 40, 0.7);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ✅ FALLBACK: Ensure regular task lists also scroll */
+.tasks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
+  min-height: 0; /* ✅ CRITICAL */
 }
 
 .task-item:hover {

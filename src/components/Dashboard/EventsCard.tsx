@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { CalendarEvent } from "../../api/Calendar";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
-import { VirtualizedEventList } from "../Calendar/VirtualizedList"; // ✅ REUSE EXISTING
+import { VirtualizedEventList } from "../Calendar/VirtualizedList";
 import "./Dashboard.css";
 import "./EventsCard.css";
 
@@ -37,7 +37,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
       </div>
 
       {events.length > 0 ? (
-        <div className="events-virtualized-container" style={{ height: '250px' }}>
+        <div className="events-virtualized-container">
           <VirtualizedEventList
             events={events}
             onEventClick={handleEventClick}

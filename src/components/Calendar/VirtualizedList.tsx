@@ -13,14 +13,21 @@ const truncateTitle = (title: string, maxWords: number = 10): string => {
   return words.slice(0, maxWords).join(" ") + "...";
 };
 
+// ✅ FIXED: Add scrollable wrapper for virtualized lists
+const ScrollableContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="virtualized-scroll-container">
+    {children}
+  </div>
+);
+
 // Virtualized Event List Component
 export const VirtualizedEventList: React.FC<{
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
   onDeleteEvent: (event: CalendarEvent) => void;
-}> = React.memo(({ events, onEventClick, onDeleteEvent }) => {
+}> = React.memo(({ events, onEventClick }) => {
   return (
-    <>
+    <ScrollableContainer>
       {events.map((event) => (
         <div
           key={event.id}
@@ -31,18 +38,9 @@ export const VirtualizedEventList: React.FC<{
           <div className="week-event-title" title={event.title}>
             {truncateTitle(event.title)}
           </div>
-          <button
-            className="week-item-delete"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteEvent(event);
-            }}
-          >
-            ×
-          </button>
         </div>
       ))}
-    </>
+    </ScrollableContainer>
   );
 });
 
@@ -52,9 +50,9 @@ export const VirtualizedTaskList: React.FC<{
   onTaskClick: (task: Task) => void;
   onCompleteTask: (task: Task) => void;
   onDeleteTask: (task: Task) => void;
-}> = React.memo(({ tasks, onTaskClick, onCompleteTask, onDeleteTask }) => {
+}> = React.memo(({ tasks, onTaskClick, onCompleteTask }) => {
   return (
-    <>
+    <ScrollableContainer>
       {tasks.map((task) => (
         <div
           key={task.id}
@@ -74,17 +72,8 @@ export const VirtualizedTaskList: React.FC<{
             {truncateTitle(task.title)}
           </div>
           {task.task_time && <div className="week-task-time">{task.task_time}</div>}
-          <button
-            className="week-item-delete"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteTask(task);
-            }}
-          >
-            ×
-          </button>
         </div>
       ))}
-    </>
+    </ScrollableContainer>
   );
 });
