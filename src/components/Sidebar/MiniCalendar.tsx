@@ -14,12 +14,12 @@ const MiniCalendar: React.FC = () => {
   const navigate = useNavigate();
   const { getDayData } = useCalendarCache("MiniCalendar");
   const [currentDate] = useState(new Date());
-  const [eventsMap, setEventsMap] = useState<Record<string, { tasks: number; events: number }>>({});
+  const [eventsMap, setEventsMap] = useState<Record<string, number>>({});
   const loadingRef = useRef(false);
 
   // OPTIMIZATION: Throttle updates
   const throttledSetEventsMap = useCallback(
-    (newMap: Record<string, { tasks: number; events: number }>) => {
+    (newMap: Record<string, number>) => {
       requestAnimationFrame(() => {
         setEventsMap(newMap);
       });
@@ -33,7 +33,7 @@ const MiniCalendar: React.FC = () => {
 
     const loadEventCounts = async () => {
       loadingRef.current = true;
-      const newEventsMap: Record<string, { tasks: number, events: number }> = {};
+      const newEventsMap: Record<string, number> = {};
 
       // Get current month's date range
       const year = currentDate.getFullYear();
@@ -54,15 +54,15 @@ const MiniCalendar: React.FC = () => {
           const promises = chunk.map((dateStr) =>
             getDayData(dateStr).then((dayData) => ({
               date: dateStr,
-              tasks: dayData.tasks?.length || 0,
-              events: dayData.events?.length || 0,
+              // ✅ SIMPLIFIED: Single count (tasks + events)
+              total: (dayData.tasks?.length || 0) + (dayData.events?.length || 0),
             }))
           );
 
           const results = await Promise.all(promises);
-          results.forEach(({ date, tasks, events }) => {
-            if (tasks > 0 || events > 0) {
-              newEventsMap[date] = { tasks, events };
+          results.forEach(({ date, total }) => {
+            if (total > 0) {
+              newEventsMap[date] = total;
             }
           });
 
@@ -94,8 +94,8 @@ const MiniCalendar: React.FC = () => {
   const getTileClass = useCallback(
     (date: Date) => {
       const dateKey = formatDateKey(date);
-      const dayData = eventsMap[dateKey];
-      const hasEvent = dayData && (dayData.tasks > 0 || dayData.events > 0);
+      const count = eventsMap[dateKey];
+      const hasItems = count && count > 0;
       
       const today = new Date();
       const isToday =
@@ -104,41 +104,28 @@ const MiniCalendar: React.FC = () => {
         date.getDate() === today.getDate();
 
       let classes = "";
-      if (hasEvent) classes += " has-event";
+      if (hasItems) classes += " has-items";
       if (isToday) classes += " today-highlight";
       return classes.trim();
     },
     [eventsMap]
   );
 
-  // ✅ FIXED: Smart corner positioning with proper data attributes
+  // ✅ SIMPLIFIED: Single ping indicator
   const getTileContent = useCallback(
     (date: Date) => {
       const dateKey = formatDateKey(date);
-      const dayData = eventsMap[dateKey];
+      const count = eventsMap[dateKey];
       
-      if (!dayData || (dayData.tasks === 0 && dayData.events === 0)) return null;
+      if (!count || count === 0) return null;
       
       return (
-        <div className="day-indicators">
-          {dayData.tasks > 0 && (
-            <div className="task-indicator">
-              <span 
-                className="task-count"
-                data-count={dayData.tasks > 99 ? '99+' : dayData.tasks.toString()}
-                title={`${dayData.tasks} task${dayData.tasks > 1 ? 's' : ''}`}
-              />
-            </div>
-          )}
-          {dayData.events > 0 && (
-            <div className="event-indicator">
-              <span 
-                className="event-count"
-                data-count={dayData.events > 99 ? '99+' : dayData.events.toString()}
-                title={`${dayData.events} event${dayData.events > 1 ? 's' : ''}`}
-              />
-            </div>
-          )}
+        <div className="day-ping">
+          <span 
+            className="activity-ping"
+            data-count={count > 99 ? '99+' : count.toString()}
+            title={`${count} item${count > 1 ? 's' : ''}`}
+          />
         </div>
       );
     },

@@ -1,27 +1,33 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CalendarEvent } from "../../api/Calendar";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
+import { VirtualizedEventList } from "../Calendar/VirtualizedList"; // ✅ REUSE EXISTING
 import "./Dashboard.css";
-import "./EventsCard.css"; // Add this import
+import "./EventsCard.css";
 
 interface EventsCardProps {
-  events: CalendarEvent[]; // Today's events only
+  events: CalendarEvent[];
 }
 
 const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
 
-  const handleEventClick = (event: CalendarEvent) => {
+  const handleEventClick = useCallback((event: CalendarEvent) => {
     showPopupFor(event);
-  };
+  }, [showPopupFor]);
+
+  const handleDeleteEvent = useCallback(async (event: CalendarEvent) => {
+    // Implementation for delete if needed
+    console.log("Delete event:", event.id);
+  }, []);
 
   return (
     <div className="dashboard-card events-card">
       <div className="dashboard-card-header">
-        <h2>Today's Events</h2>
+        <h2>Today's Events ({events.length})</h2>
         <button
           className="card-action-btn"
           onClick={() => navigate("/calendar/day")}
@@ -31,27 +37,13 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
       </div>
 
       {events.length > 0 ? (
-        <ul className="events-list">
-          {events.map((event) => (
-            <li
-              key={`event-${event.id}`}
-              className={`event-item ${event.type.toLowerCase()}`}
-              onClick={() => handleEventClick(event)}
-            >
-              <div className={`event-type ${event.type.toLowerCase()}`}>
-                {event.type}
-              </div>
-              <div className="event-details">
-                <div className="event-title">{event.title}</div>
-                <div className="event-meta">
-                  {event.event_time && (
-                    <span className="event-time">{event.event_time}</span>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="events-virtualized-container" style={{ height: '250px' }}>
+          <VirtualizedEventList
+            events={events}
+            onEventClick={handleEventClick}
+            onDeleteEvent={handleDeleteEvent}
+          />
+        </div>
       ) : (
         <div className="empty-list-message">
           <p>No events for today</p>

@@ -3,26 +3,26 @@
 /* Shrink size */
 .react-calendar--small {
   font-size: 10px;
-  max-width: 220px; /* adjust as needed */
+  max-width: 220px;
   overflow: visible;
-  background: transparent; /* Transparent background */
+  background: transparent;
   border-radius: 12px;
-  box-shadow: 0 2px 12px 0 var(--shadow-red, rgba(196, 70, 70, 0.3)); /* Red box shadow */
+  box-shadow: 0 2px 12px 0 var(--shadow-red, rgba(196, 70, 70, 0.3));
   padding: 10px 0 12px 0;
   transition: transform 0.15s;
 }
 
 .react-calendar--small:hover {
-  box-shadow: 0 4px 16px 0 var(--shadow-red-hover, rgba(196, 70, 70, 0.4)); /* Enhanced red shadow on hover */
+  box-shadow: 0 4px 16px 0 var(--shadow-red-hover, rgba(196, 70, 70, 0.4));
 }
 
 /* Optional: adjust tile padding for compactness */
 .react-calendar--small .react-calendar__tile {
-  padding: 8px 6px; /* more space for shadow */
-  position: relative; /* ensure stacking context */
-  overflow: visible; /* allow shadow to show */
+  padding: 8px 6px;
+  position: relative;
+  overflow: visible;
   box-sizing: border-box;
-  background: transparent; /* Transparent background for tiles */
+  background: transparent;
 }
 
 /* Tremble animation on hover */
@@ -33,8 +33,8 @@
     0 0 2px 1px var(--accent-secondary, #535bf2);
   animation: tremble 0.25s ease-in-out;
   cursor: pointer;
-  z-index: 2; /* ensure it's above others */
-  position: relative; /* needed for z-index to work */
+  z-index: 2;
+  position: relative;
 }
 
 /* Ensure days are visible */
@@ -44,10 +44,10 @@
 
 /* Navigation styles */
 .react-calendar--small .react-calendar__navigation {
-  background: var(--color-bg-card, #1e1e1e); /* Theme-aware background */
+  background: var(--color-bg-card, #1e1e1e);
   z-index: 3;
   position: relative;
-  overflow: visible; /* allow shadow to show */
+  overflow: visible;
 }
 
 /* Navigation label styles */
@@ -78,165 +78,74 @@
   box-sizing: border-box;
   position: relative;
   z-index: 1;
-  overflow: visible; /* allow shadow to show */
+  overflow: visible;
 }
 
-/* Event styles */
-.has-event {
-  position: relative;
-}
-
-/* ✅ FIXED: Smart corner positioning that doesn't overlap text */
-.day-indicators {
+/* ✅ SIMPLIFIED: Single ping indicator */
+.day-ping {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 2px;
+  right: 2px;
   pointer-events: none;
   z-index: 3;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-content: space-between;
-  padding: 2px;
 }
 
-/* ✅ NEW: Individual indicator positioning */
-.indicator-wrapper {
+.activity-ping {
   width: 8px;
   height: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ✅ Tasks go top-left */
-.task-indicator {
-  order: 1;
-  align-self: flex-start;
-}
-
-/* ✅ Events go top-right */
-.event-indicator {
-  order: 2;
-  align-self: flex-start;
-  margin-left: auto;
-}
-
-/* ✅ IMPROVED: Smaller, corner-positioned dots */
-.task-count,
-.event-count {
-  width: 6px;
-  height: 6px;
   border-radius: 50%;
+  background: linear-gradient(45deg, #646cff, #4ade80);
   border: 1px solid rgba(255, 255, 255, 0.9);
-  font-size: 0; /* Hide text by default */
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  font-size: 0; /* Hide text by default */
   font-weight: 600;
   line-height: 1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-/* Task styling - Green */
-.task-count {
-  background: #4ade80;
   box-shadow: 
-    0 0 4px rgba(74, 222, 128, 0.6),
+    0 0 6px rgba(100, 108, 255, 0.6),
     0 1px 3px rgba(0, 0, 0, 0.4);
+  animation: activityPulse 2s ease-in-out infinite;
+  transition: all 0.2s ease;
 }
 
-/* Event styling - Blue */
-.event-count {
-  background: #646cff;
-  box-shadow: 
-    0 0 4px rgba(100, 108, 255, 0.6),
-    0 1px 3px rgba(0, 0, 0, 0.4);
-}
-
-/* ✅ HOVER: Expand and show numbers on tile hover */
-.react-calendar--small .react-calendar__tile:hover .task-count,
-.react-calendar--small .react-calendar__tile:hover .event-count {
-  width: 14px;
-  height: 14px;
-  font-size: 7px;
+/* ✅ HOVER: Expand and show count on tile hover */
+.react-calendar--small .react-calendar__tile:hover .activity-ping {
+  width: 16px;
+  height: 16px;
+  font-size: 8px;
   color: white;
   transform: scale(1.1);
   z-index: 10;
+  animation: none; /* Stop pulsing on hover */
 }
 
 /* ✅ HOVER: Show actual count on hover */
-.react-calendar--small .react-calendar__tile:hover .task-count::after {
+.react-calendar--small .react-calendar__tile:hover .activity-ping::after {
   content: attr(data-count);
 }
 
-.react-calendar--small .react-calendar__tile:hover .event-count::after {
-  content: attr(data-count);
-}
-
-/* ✅ PULSE: Subtle animation for active days */
-.has-event .task-count {
-  animation: taskPulse 3s ease-in-out infinite;
-}
-
-.has-event .event-count {
-  animation: eventPulse 3s ease-in-out infinite;
-}
-
-@keyframes taskPulse {
+/* ✅ PULSE: Gentle animation for active days */
+@keyframes activityPulse {
   0%, 100% { 
     transform: scale(1);
     box-shadow: 
-      0 0 4px rgba(74, 222, 128, 0.6),
+      0 0 6px rgba(100, 108, 255, 0.6),
       0 1px 3px rgba(0, 0, 0, 0.4);
   }
   50% { 
-    transform: scale(1.2);
+    transform: scale(1.15);
     box-shadow: 
-      0 0 8px rgba(74, 222, 128, 0.8),
+      0 0 10px rgba(100, 108, 255, 0.8),
       0 1px 3px rgba(0, 0, 0, 0.4);
   }
-}
-
-@keyframes eventPulse {
-  0%, 100% { 
-    transform: scale(1);
-    box-shadow: 
-      0 0 4px rgba(100, 108, 255, 0.6),
-      0 1px 3px rgba(0, 0, 0, 0.4);
-  }
-  50% { 
-    transform: scale(1.2);
-    box-shadow: 
-      0 0 8px rgba(100, 108, 255, 0.8),
-      0 1px 3px rgba(0, 0, 0, 0.4);
-  }
-}
-
-/* Stop animation on hover */
-.react-calendar--small .react-calendar__tile:hover .task-count,
-.react-calendar--small .react-calendar__tile:hover .event-count {
-  animation: none;
 }
 
 /* Tremble keyframes */
 @keyframes tremble {
-  0% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-1px);
-  }
-  50% {
-    transform: translateX(1px);
-  }
-  75% {
-    transform: translateX(-1px);
-  }
-  100% {
-    transform: translateX(0);
-  }
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-1px); }
+  50% { transform: translateX(1px); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
 }

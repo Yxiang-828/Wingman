@@ -177,6 +177,31 @@
   position: relative;
 }
 
+/* ✅ ADD: Virtualized container styling for dashboard cards */
+.tasks-virtualized-container,
+.events-virtualized-container {
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ✅ ENSURE: Week view items work in dashboard context */
+.tasks-virtualized-container .week-task-item,
+.events-virtualized-container .week-event-item {
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.tasks-virtualized-container .week-task-item:hover,
+.events-virtualized-container .week-event-item:hover {
+  transform: translateX(4px);
+  background: rgba(25, 25, 40, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .task-item:hover {
   transform: translateX(6px);
   background: rgba(25, 25, 40, 0.7);
