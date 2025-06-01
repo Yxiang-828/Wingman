@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-// Update MenuItem interface to include badge property
+import { useCalendarCache } from "../../Hooks/useCalendar";
+import { getTodayDateString } from "../../utils/timeUtils";
+
+// Update MenuItem interface to include onClick handler
 export interface MenuItem {
   title: string;
   path?: string;
   icon?: React.ReactNode;
   badge?: number;
+  onClick?: () => Promise<void>; // ✅ ADD: Custom async click handler
   submenu?: Array<{
     title: string;
     path: string;
@@ -20,9 +24,8 @@ export interface NavSectionProps {
 const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({}); // ✅ ADD: Loading state
 
   const toggleSubmenu = (title: string) => {
     setExpandedItems((prev) => ({
@@ -34,6 +37,34 @@ const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => 
   // Handle potential undefined path
   const handleSubmenuItemClick = (item: MenuItem) => {
     if (item.path) {
+      navigate(item.path);
+    }
+  };
+
+  // ✅ ADD: Handle nav item click with custom onClick support
+  const handleNavItemClick = async (item: MenuItem, e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (item.onClick) {
+      // Set loading state for this item
+      setLoadingItems(prev => ({ ...prev, [item.title]: true }));
+      
+      try {
+        // Use custom click handler if provided
+        await item.onClick();
+        
+        // Navigate after successful onClick
+        if (item.path) {
+          navigate(item.path);
+        }
+      } catch (error) {
+        console.error(`Error in ${item.title} onClick:`, error);
+      } finally {
+        // Clear loading state
+        setLoadingItems(prev => ({ ...prev, [item.title]: false }));
+      }
+    } else if (item.path) {
+      // Default navigation
       navigate(item.path);
     }
   };
@@ -62,22 +93,49 @@ const NavSection: React.FC<NavSectionProps> = ({ items, collapsed = false }) => 
               )}
             </div>
           ) : (
-            <Link
-              to={item.path!}
-              className={`sidebar-link ${
-                location.pathname === item.path ? "active" : ""
-              }`}
-              title={collapsed ? item.title : ""}
-            >
-              <div className="sidebar-link-content">
-                <span className="sidebar-icon">{item.icon}</span>
-                {!collapsed && <span className="sidebar-text">{item.title}</span>}
-                {/* Render the badge if it exists */}
-                {item.badge !== undefined && (
-                  <span className="badge">{item.badge}</span>
-                )}
+            // ✅ MODIFIED: Support both Link and custom onClick
+            item.onClick ? (
+              <div
+                className={`sidebar-link ${
+                  location.pathname === item.path ? "active" : ""
+                } ${loadingItems[item.title] ? "loading" : ""}`}
+                onClick={(e) => handleNavItemClick(item, e)}
+                style={{ cursor: "pointer" }}
+                title={collapsed ? item.title : ""}
+              >
+                <div className="sidebar-link-content">
+                  <span className="sidebar-icon">
+                    {loadingItems[item.title] ? "🔄" : item.icon}
+                  </span>
+                  {!collapsed && (
+                    <span className="sidebar-text">
+                      {loadingItems[item.title] ? "Refreshing..." : item.title}
+                    </span>
+                  )}
+                  {/* Render the badge if it exists */}
+                  {item.badge !== undefined && (
+                    <span className="badge">{item.badge}</span>
+                  )}
+                </div>
               </div>
-            </Link>
+            ) : (
+              <Link
+                to={item.path!}
+                className={`sidebar-link ${
+                  location.pathname === item.path ? "active" : ""
+                }`}
+                title={collapsed ? item.title : ""}
+              >
+                <div className="sidebar-link-content">
+                  <span className="sidebar-icon">{item.icon}</span>
+                  {!collapsed && <span className="sidebar-text">{item.title}</span>}
+                  {/* Render the badge if it exists */}
+                  {item.badge !== undefined && (
+                    <span className="badge">{item.badge}</span>
+                  )}
+                </div>
+              </Link>
+            )
           )}
 
           {item.submenu && !collapsed && (

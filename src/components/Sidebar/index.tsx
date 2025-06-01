@@ -5,6 +5,8 @@ import NavSection from "./NavSection";
 import type { MenuItem } from "./NavSection";
 import WingmanAvatar from "../Common/WingmanAvatar";
 import { useTheme } from "../../context/ThemeContext";
+import { useCalendarCache } from "../../Hooks/useCalendar";
+import { getTodayDateString } from "../../utils/timeUtils";
 import "../../main.css";
 import "./Sidebar.css";
 
@@ -20,15 +22,38 @@ const Sidebar: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   const { actualTheme, setTheme } = useTheme();
+  const { getDayData, clearCache } = useCalendarCache("Sidebar");
 
   // Toggle theme function
   const toggleTheme = () => {
     setTheme(actualTheme === "dark" ? "light" : "dark");
   };
+
+  // ✅ ADD: Dashboard force reload function
+  const handleDashboardRefresh = async () => {
+    console.log("🔄 DASHBOARD REFRESH: Starting...");
+
+    try {
+      const today = getTodayDateString();
+      console.log(`🔄 DASHBOARD REFRESH: Clearing cache and fetching ${today}`);
+
+      // Clear cache for today
+      clearCache();
+
+      // Force fetch today's data with fresh request
+      await getDayData(today, true); // forceRefresh = true
+
+      console.log("✅ DASHBOARD REFRESH: Cache updated successfully");
+    } catch (error) {
+      console.error("❌ DASHBOARD REFRESH: Error updating cache:", error);
+    }
+  };
+
   // Map wingman mood to avatar mood
   const getAvatarMood = (wingmanMood: "productive" | "moody") => {
     return wingmanMood === "productive" ? "happy" : "neutral";
   };
+
   useEffect(() => {
     if (window.electronAPI?.onMoodChange) {
       window.electronAPI.onMoodChange((mood: string) => {
@@ -66,11 +91,13 @@ const Sidebar: React.FC = () => {
     window.dispatchEvent(event);
   };
 
+  // ✅ MODIFIED: Add onClick handler to Dashboard menu item
   const menuItems: MenuItem[] = [
     {
       title: "Dashboard",
       path: "/",
       icon: <DashboardIcon />,
+      onClick: handleDashboardRefresh, // ✅ ADD REFRESH HANDLER
     },
     {
       title: "Calendar",
@@ -123,13 +150,13 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
-      {" "}
       {/* Toggle button that's always visible */}
       <button
         className={`sidebar-toggle ${isVisible ? "open" : ""}`}
         onClick={toggleSidebar}
         aria-label="Toggle sidebar"
-      >        <div className="sidebar-toggle-avatar">
+      >
+        <div className="sidebar-toggle-avatar">
           <WingmanAvatar
             size="toggle"
             mood={getAvatarMood(wingmanMood)}
@@ -138,10 +165,10 @@ const Sidebar: React.FC = () => {
             onClick={() => navigate("/chatbot")}
           />
         </div>
-      </button>{" "}
+      </button>
+
       {/* Sidebar that slides in/out */}
       <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
-        {" "}
         {/* Logo Header with Avatar */}
         <div className="sidebar-header">
           <WingmanAvatar
@@ -164,7 +191,8 @@ const Sidebar: React.FC = () => {
               {actualTheme === "dark" ? "☀️" : "🌙"}
             </button>
           </div>
-        </div>{" "}
+        </div>
+
         {/* Mini Calendar */}
         <MiniCalendar />
         {/* Navigation Section */}

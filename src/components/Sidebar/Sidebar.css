@@ -514,3 +514,23 @@
     box-shadow: 3px 0 15px rgba(0, 0, 0, 0.3);
   }
 }
+
+/* ✅ ADD: Loading state for sidebar links */
+.sidebar-link.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.sidebar-link.loading .sidebar-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ✅ ADD: Visual feedback for refresh action */
+.sidebar-link:active {
+  transform: scale(0.98);
+}
