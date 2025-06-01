@@ -157,38 +157,30 @@ class SmartCache {
 
     if (type === 'task' && 'title' in item) {
       const task = item as Task;
-      
-      // Check for duplicate before adding
       const existingIndex = cached.tasks.findIndex(t => t.id === task.id);
       
       switch (operation) {
         case 'add':
-          // Only add if not already present
+          // ✅ CRITICAL FIX: Prevent duplicate additions
           if (existingIndex === -1) {
-            cached.tasks.push(task);
+            cached.tasks.unshift(task);
             console.log(`📦 Cache ADD: Task ${task.id} added to ${date}`);
           } else {
-            console.log(`📦 Cache SKIP: Task ${task.id} already exists in ${date}`);
+            console.log(`🚫 Cache SKIP: Task ${task.id} already exists in ${date}`);
           }
           break;
-          
         case 'update':
-          // Only update if found
           if (existingIndex !== -1) {
             cached.tasks[existingIndex] = task;
             console.log(`📦 Cache UPDATE: Task ${task.id} updated in ${date}`);
           } else {
-            // If task not found but this is an update operation, add it
-            // This handles the case when tasks are moved between dates
-            cached.tasks.push(task);
             console.log(`📦 Cache ADD-UPDATE: Task ${task.id} added during update to ${date}`);
+            cached.tasks.unshift(task);
           }
           break;
-          
         case 'delete':
-          // Only filter if found
           if (existingIndex !== -1) {
-            cached.tasks = cached.tasks.filter(t => t.id !== task.id);
+            cached.tasks.splice(existingIndex, 1);
             console.log(`📦 Cache DELETE: Task ${task.id} removed from ${date}`);
           }
           break;
@@ -199,39 +191,29 @@ class SmartCache {
       
       switch (operation) {
         case 'add':
-          // Only add if not already present
+          // ✅ EVENTS: Same duplicate prevention (they already work, but for consistency)
           if (existingIndex === -1) {
-            cached.events.push(event);
+            cached.events.unshift(event);
             console.log(`📦 Cache ADD: Event ${event.id} added to ${date}`);
           } else {
-            console.log(`📦 Cache SKIP: Event ${event.id} already exists in ${date}`);
+            console.log(`🚫 Cache SKIP: Event ${event.id} already exists in ${date}`);
           }
           break;
-          
         case 'update':
-          // Only update if found
           if (existingIndex !== -1) {
             cached.events[existingIndex] = event;
-            console.log(`📦 Cache UPDATE: Event ${event.id} updated in ${date}`);
           } else {
-            // If event not found but this is an update operation, add it
-            // This handles the case when events are moved between dates
-            cached.events.push(event);
-            console.log(`📦 Cache ADD-UPDATE: Event ${event.id} added during update to ${date}`);
+            cached.events.unshift(event);
           }
           break;
-          
         case 'delete':
-          // Only filter if found
           if (existingIndex !== -1) {
-            cached.events = cached.events.filter(e => e.id !== event.id);
-            console.log(`📦 Cache DELETE: Event ${event.id} removed from ${date}`);
+            cached.events.splice(existingIndex, 1);
           }
           break;
       }
     }
     
-    // Set the updated cache
     this.set(date, cached);
   }
 }

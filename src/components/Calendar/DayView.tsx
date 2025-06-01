@@ -241,28 +241,16 @@ const DayView: React.FC = () => {
   // ✅ UPDATED: Toggle task handler with optimistic updates
   const handleToggleTask = async (task: Task) => {
     try {
-      // Create a local copy with processing state for UI
-      const processingTask = { ...task, isProcessing: true };
+      // ❌ REMOVE: Manual optimistic updates
+      // const processingTask = { ...task, isProcessing: true };
+      // setCurrentDateTasks((prev) =>
+      //   prev.map((t) => (t.id === task.id ? processingTask : t))
+      // );
 
-      // Update local state immediately to show processing
-      setCurrentDateTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? processingTask : t))
-      );
-
-      // Perform the actual toggle - broadcasts will update cache
-      const updatedTask = await toggleTask(task);
-
-      // Update local state with the returned task
-      setCurrentDateTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? updatedTask : t))
-      );
+      // ✅ KEEP: Only call API, let broadcasts handle UI updates
+      await toggleTask(task);
     } catch (error) {
-      console.error("Failed to toggle task:", error);
-
-      // Revert to original state on error
-      setCurrentDateTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? task : t))
-      );
+      console.error("Error toggling task:", error);
     }
   };
 
@@ -275,14 +263,17 @@ const DayView: React.FC = () => {
 
       // Use the context method for deletion - broadcasts will update cache
       await deleteTask(id);
-
-      // Update local state immediately
-      setCurrentDateTasks((prev) => prev.filter((task) => task.id !== id));
-
-      console.log("Task deleted successfully");
+      
+      // Close popup if open
+      if (currentPopupItem && currentPopupItem.id === id) {
+        closePopup();
+      }
     } catch (error) {
-      console.error("Failed to delete task:", error);
-      alert("Could not delete task. Please try again.");
+      console.error("Error deleting task:", error);
+      // ❌ REMOVE: Manual rollback - broadcasts will handle consistency
+      // const today = date.toISOString().split("T")[0];
+      // const dayData = await getDayData(today, true);
+      // setCurrentDateTasks(dayData.tasks);
     }
   };
 
@@ -297,40 +288,41 @@ const DayView: React.FC = () => {
     const task_date = date.toISOString().split("T")[0];
     const taskData = isEditing ? editTaskForm : newTask;
 
-    // Validation
     if (!taskData.title.trim()) {
-      alert("Please fill all required fields");
+      alert("Please enter a task title");
       return;
     }
 
     try {
       if (isEditing && editingTask) {
-        const updatedTask = await updateTask({
+        const taskToUpdate = {
           ...editingTask,
-          title: taskData.title.trim(),
+          title: taskData.title,
           task_time: taskData.task_time,
-        });
-
-        // Update local state
-        setCurrentDateTasks((prev) =>
-          prev.map((t) => (t.id === editingTask.id ? updatedTask : t))
-        );
-        setEditingTask(null);
-      } else {
-        const newTaskData = {
-          title: taskData.title.trim(),
-          task_date: task_date,
-          task_time: taskData.task_time,
-          completed: false,
-          user_id: getCurrentUserId(),
+          task_date,
         };
 
-        const addedTask = await createTask(newTaskData);
-        setCurrentDateTasks((prev) => [...prev, addedTask]);
+        // ✅ FIXED: Only call API, let broadcasts handle UI updates
+        await updateTask(taskToUpdate);
+        
+        setEditingTask(null);
+        setEditTaskForm({ title: "", task_time: "" });
+      } else {
+        const newTaskData = {
+          title: taskData.title,
+          task_date,
+          task_time: taskData.task_time,
+          completed: false,
+        };
+
+        // ✅ FIXED: Only call API, let broadcasts handle UI updates
+        await createTask(newTaskData);
+        
         setNewTask({ title: "", task_time: "" });
       }
     } catch (error) {
-      console.error("Task operation failed:", error);
+      console.error("Error submitting task:", error);
+      alert("Failed to save task. Please try again.");
     }
   };
 

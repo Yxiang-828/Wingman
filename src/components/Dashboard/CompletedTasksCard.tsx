@@ -39,46 +39,15 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
     e.stopPropagation();
     e.preventDefault();
 
-    // Store the current scroll position
-    const container = e.currentTarget.closest(".tasks-list");
-    const scrollPosition = container ? container.scrollTop : 0;
-
-    console.log(
-      "CompletedTasksCard: Click on status circle for task ID:",
-      task.id
-    );
-
-    // Prevent multiple simultaneous toggle operations
     if (task.isProcessing) return;
 
     try {
-      // Create a working copy with processing state and correct field names
-      const taskToToggle = {
-        ...task,
-        isProcessing: true,
-        completed: !task.completed,
-        // Ensure field name consistency
-        task_date: task.task_date || (task as any).date,
-        task_time: task.task_time || (task as any).time || "",
-      };
+      // ✅ KEEP: Only call API, let broadcasts handle UI updates
+      const updatedTask = await toggleTask(task);
+      console.log("CompletedTasksCard: Task toggled successfully:", updatedTask);
 
-      // Use the DataProvider to toggle task back to incomplete
-      const updatedTask = await toggleTask(taskToToggle);
-      console.log(
-        "CompletedTasksCard: Task toggled successfully:",
-        updatedTask
-      );
-
-      // Close popup if it's open for this task
       if (currentPopupItem && currentPopupItem.id === task.id) {
         closePopup();
-      }
-
-      // Restore scroll position
-      if (container) {
-        setTimeout(() => {
-          container.scrollTop = scrollPosition;
-        }, 0);
       }
     } catch (error) {
       console.error("Error toggling task status:", error);

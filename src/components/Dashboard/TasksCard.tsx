@@ -29,33 +29,18 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   
   // UNIFIED: Single task completion handler for all scenarios
   const handleTaskCompletion = useCallback(async (task: Task, fromPopup: boolean = false): Promise<void> => {
-    // Prevent multiple simultaneous operations
     if (task.isProcessing) {
       console.log("Task already being processed, ignoring request");
       return;
     }
     
     try {
-      // 1. Apply optimistic update with processing flag
-      const processingTask = {
-        ...task,
-        isProcessing: true,
-        completed: !task.completed,
-        // FIXED: Ensure consistent field names (was using inconsistent field names)
-        task_date: task.task_date,
-        task_time: task.task_time || ''
-      };
-      
-      // 2. Update local state immediately for responsive UI
-      onToggleTask(processingTask);
-      
-      // 3. Call DataContext to persist the change in SQLite
+      // ✅ KEEP: Only call API, let broadcasts handle UI updates
       const updatedTask = await toggleTask(task);
       
-      // 4. Update with final state from SQLite
+      // ✅ KEEP: Update parent state once with final result
       onToggleTask(updatedTask);
       
-      // 5. Close popup if this was triggered from popup
       if (fromPopup) {
         closePopup();
       }
@@ -63,12 +48,6 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       console.log(`✅ Task ${task.id} completion toggled successfully`);
     } catch (error) {
       console.error(`❌ Error toggling task ${task.id}:`, error);
-      
-      // 6. Revert optimistic update on error
-      onToggleTask({
-        ...task,
-        isProcessing: false
-      });
     }
   }, [onToggleTask, toggleTask, closePopup]);
   
