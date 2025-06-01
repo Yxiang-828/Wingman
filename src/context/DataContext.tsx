@@ -1,36 +1,46 @@
+// Data command center - pure CRUD operations for your digital realm
 import React, {
   createContext,
   useContext,
   useState,
-  ReactNode,
   useCallback,
+  ReactNode,
+  useEffect,
 } from "react";
-import { api } from "../api/apiClient";
-import { getCurrentUserId } from "../utils/auth";
-import type { Task } from "../api/Task";
+import type { Task, RecurringTask } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
+import { getCurrentUserId } from "../utils/auth";
+import { systemNotificationService } from "../services/SystemNotificationService";
 
-interface CrudOperation {
-  type: "CREATE" | "UPDATE" | "DELETE" | "TOGGLE" | "ROLLBACK";
-  entity: "TASK" | "EVENT";
-  data: any;
-  affectedDate?: string;
-}
-
-type CacheUpdateCallback = (operation: CrudOperation) => void;
-
+// Simplified: Pure CRUD interface - no cache, no subscriptions
 interface DataContextType {
-  // CRUD Operations (sends to FastAPI + broadcasts)
-  createTask: (task: Partial<Task>) => Promise<Task>;
+  // CRUD Operations (direct SQLite calls)
+  createTask: (task: Omit<Task, "id">) => Promise<Task>;
   updateTask: (task: Task) => Promise<Task>;
   deleteTask: (taskId: number) => Promise<void>;
   toggleTask: (task: Task) => Promise<Task>;
+  // Recurring Task Operations
+  createRecurringTask: (
+    recurringTask: Omit<RecurringTask, "id">
+  ) => Promise<RecurringTask>;
+  getRecurringTasks: () => Promise<RecurringTask[]>;
+  updateRecurringTask: (
+    id: number,
+    updates: Partial<RecurringTask>
+  ) => Promise<RecurringTask>;
+  deleteRecurringTask: (id: number) => Promise<void>;
+  generateTodaysRecurringTasks: (
+    targetDate?: string
+  ) => Promise<{ success: boolean; createdTasks: number }>;
+  handleRecurringTaskCompletion: (
+    taskId: number
+  ) => Promise<{ success: boolean; task?: any; message: string }>;
 
-  createEvent: (event: Partial<CalendarEvent>) => Promise<CalendarEvent>;
+  createEvent: (event: Omit<CalendarEvent, "id">) => Promise<CalendarEvent>;
   updateEvent: (event: CalendarEvent) => Promise<CalendarEvent>;
   deleteEvent: (eventId: number) => Promise<void>;
 
-  // Data Fetching (for primary cache owners only)
+  // Data Fetching (for components that need it)
   fetchDayData: (
     date: string,
     page?: number
@@ -40,48 +50,10 @@ interface DataContextType {
     hasMore: { tasks: boolean; events: boolean };
   }>;
 
-  // Cache Update Broadcasting
-  subscribeToCacheUpdates: (
-    componentId: string,
-    callback: CacheUpdateCallback
-  ) => void;
-  unsubscribeFromCacheUpdates: (componentId: string) => void;
-
   // Loading state
   loading: boolean;
   error: string | null;
 }
-
-class CacheUpdateBroadcaster {
-  private subscribers = new Map<string, CacheUpdateCallback>();
-
-  subscribe(componentId: string, callback: CacheUpdateCallback): void {
-    this.subscribers.set(componentId, callback);
-    console.log(`📡 ${componentId} subscribed to cache updates`);
-  }
-
-  unsubscribe(componentId: string): void {
-    this.subscribers.delete(componentId);
-    console.log(`📡 ${componentId} unsubscribed from cache updates`);
-  }
-
-  broadcast(operation: CrudOperation): void {
-    console.log(
-      `📡 Broadcasting ${operation.type} for ${operation.entity}:`,
-      operation.data
-    );
-
-    this.subscribers.forEach((callback, componentId) => {
-      try {
-        callback(operation);
-      } catch (error) {
-        console.error(`📡 Error in ${componentId} cache update:`, error);
-      }
-    });
-  }
-}
-
-const broadcaster = new CacheUpdateBroadcaster();
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
@@ -91,249 +63,195 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Create Task: Cache first → API → Broadcast
-  const createTask = useCallback(async (task: Partial<Task>): Promise<Task> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Get user ID
-      const userId = getCurrentUserId();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
-
-      // Create optimistic task with temporary ID
-      const optimisticTask: Task = {
-        id: Date.now(),
-        title: task.title || "",
-        task_date: task.task_date || "",
-        task_time: task.task_time || "",
-        completed: task.completed || false,
-        user_id: userId,
-      };
-
-      // Broadcast optimistic update immediately
-      broadcaster.broadcast({
-        type: "CREATE",
-        entity: "TASK",
-        data: optimisticTask,
-        affectedDate: optimisticTask.task_date,
-      });
-
-      // Send to API with user_id
-      const taskWithUserId = { ...task, user_id: userId };
-      const createdTask = await api.post("/v1/tasks", taskWithUserId);
-
-      // Update with real ID and broadcast correction
-      const finalTask = { ...optimisticTask, id: createdTask.id };
-      broadcaster.broadcast({
-        type: "UPDATE",
-        entity: "TASK",
-        data: finalTask,
-        affectedDate: finalTask.task_date,
-      });
-
-      return finalTask;
-    } catch (error) {
-      setError("Failed to create task");
-      // Broadcast rollback
-      broadcaster.broadcast({
-        type: "DELETE",
-        entity: "TASK",
-        data: { id: Date.now() },
-        affectedDate: task.task_date,
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Update Task: Cache first → API → Broadcast
-  const updateTask = useCallback(async (task: Task): Promise<Task> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // ONLY broadcast optimistic update with special flag
-      broadcaster.broadcast({
-        type: "UPDATE",
-        entity: "TASK",
-        data: { ...task, _isOptimistic: true }, // Add flag
-        affectedDate: task.task_date,
-      });
-
-      // Send to API - remove id from body, keep in URL
-      const { id, ...taskData } = task;
-      const updatedTask = await api.put(`/v1/tasks/${task.id}`, taskData);
-
-      // Don't broadcast again, just return the result
-      const finalTask = { ...task, ...updatedTask };
-      return finalTask;
-    } catch (error) {
-      setError("Failed to update task");
-
-      // Broadcast rollback on error
-      broadcaster.broadcast({
-        type: "ROLLBACK",
-        entity: "TASK",
-        data: task,
-        affectedDate: task.task_date,
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Delete Task: Cache first → API → Broadcast
-  const deleteTask = useCallback(async (taskId: number): Promise<void> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Broadcast optimistic delete immediately
-      broadcaster.broadcast({
-        type: "DELETE",
-        entity: "TASK",
-        data: { id: taskId },
-      });
-
-      // Send to API
-      await api.delete(`/v1/tasks/${taskId}`);
-
-      console.log(`✅ Task ${taskId} successfully deleted from API`);
-    } catch (error) {
-      setError("Failed to delete task");
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Toggle Task: Special case of update
-  const toggleTask = useCallback(
-    async (task: Task): Promise<Task> => {
-      setLoading(true);
-      setError(null);
-      
+  // Define generateTodaysRecurringTasks before useEffect that uses it
+  const generateTodaysRecurringTasks = useCallback(
+    async (
+      targetDate?: string
+    ): Promise<{ success: boolean; createdTasks: number }> => {
       try {
-        // Create a copy with toggled status
-        const toggledTask = { 
-          ...task, 
-          completed: !task.completed,
-          // Ensure consistent field names
-          task_date: task.task_date,
-          task_time: task.task_time || ''
-        };
-        
-        // Broadcast optimistic update immediately with special flag
-        broadcaster.broadcast({
-          type: "UPDATE",
-          entity: "TASK",
-          data: {...toggledTask, _isOptimistic: true},
-          affectedDate: toggledTask.task_date 
-        });
-        
-        // Send to API - remove id from body, keep in URL
-        const { id, isProcessing, _isOptimistic, ...taskData } = toggledTask;
-        const updatedTask = await api.put(`/v1/tasks/${toggledTask.id}`, taskData);
-        
-        // Create final version with server data
-        const finalTask = { 
-          ...toggledTask, 
-          ...updatedTask,
-          // Remove temporary flags
-          isProcessing: undefined,
-          _isOptimistic: undefined
-        };
-        
-        // Broadcast update to all components with correct field name
-        broadcaster.broadcast({
-          type: "UPDATE",
-          entity: "TASK",
-          data: finalTask,
-          affectedDate: finalTask.task_date
-        });
-        
-        // Return final task
-        return finalTask;
-      } catch (error) {
-        console.error("Error toggling task:", error);
-        setError("Failed to update task");
-        
-        // Broadcast rollback with correct field name
-        broadcaster.broadcast({
-          type: "ROLLBACK",
-          entity: "TASK",
-          data: task,
-          affectedDate: task.task_date
-        });
-        
-        // Return original state
-        return task;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  // Create Event
-  const createEvent = useCallback(
-    async (event: Partial<CalendarEvent>): Promise<CalendarEvent> => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Get user ID
         const userId = getCurrentUserId();
         if (!userId) {
           throw new Error("User not authenticated");
         }
 
-        // Create optimistic event with temporary ID
-        const optimisticEvent: CalendarEvent = {
-          id: Date.now(),
-          title: event.title || "",
-          event_date: event.event_date || "",
-          event_time: event.event_time || "",
-          type: event.type || "Personal",
-          description: event.description || "",
-          user_id: userId,
+        const date = targetDate || new Date().toISOString().split("T")[0];
+        console.log(`DataContext: Generating recurring tasks for ${date}`);
+
+        const result = await window.electronAPI.db.generateRecurringTasks(
+          userId,
+          date
+        );
+        console.log(
+          `DataContext: Generated ${result.createdTasks} recurring tasks for ${date}`
+        );
+
+        return {
+          success: result.success,
+          createdTasks: result.createdTasks,
         };
-
-        // Broadcast optimistic update with flag
-        broadcaster.broadcast({
-          type: "CREATE",
-          entity: "EVENT",
-          data: { ...optimisticEvent, _isOptimistic: true }, // Add flag to identify optimistic updates
-          affectedDate: optimisticEvent.event_date,
-        });
-
-        // Send to API
-        const eventWithUserId = { ...event, user_id: userId };
-        const createdEvent = await api.post("/v1/calendar", eventWithUserId);
-
-        // Return without broadcasting again - let the cache handle API response separately
-        const finalEvent = {
-          ...optimisticEvent,
-          id: createdEvent.id,
-          // Copy any other fields returned from API
-          ...createdEvent,
-        };
-
-        return finalEvent;
       } catch (error) {
-        setError("Failed to create event");
-        // Broadcast rollback
-        broadcaster.broadcast({
-          type: "DELETE",
-          entity: "EVENT",
-          data: { id: Date.now() },
-          affectedDate: event.event_date,
+        console.error("DataContext: Error generating recurring tasks:", error);
+        return { success: false, createdTasks: 0 };
+      }
+    },
+    []
+  );
+
+  // Auto-generate recurring tasks on app startup/authentication
+  useEffect(() => {
+    const autoGenerateRecurringTasks = async () => {
+      try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+          console.log(
+            "DataContext: No authenticated user, skipping auto-generation"
+          );
+          return;
+        }
+
+        console.log(
+          "DataContext: Auto-generating recurring tasks on startup for user:",
+          userId
+        );
+
+        // Generate recurring tasks for today
+        const result = await generateTodaysRecurringTasks();
+
+        if (result.success && result.createdTasks > 0) {
+          console.log(
+            `DataContext: Auto-generated ${result.createdTasks} recurring tasks on startup`
+          );
+
+          // Dispatch refresh event for dashboard and other components
+          window.dispatchEvent(new CustomEvent("dashboard-refresh"));
+          window.dispatchEvent(new CustomEvent("tasks-updated"));
+        } else {
+          console.log("DataContext: No new recurring tasks needed for today");
+        }
+      } catch (error) {
+        console.error(
+          "DataContext: Error auto-generating recurring tasks:",
+          error
+        );
+        // Don't set error state as this is not critical to app functionality
+      }
+    };
+
+    // Small delay to ensure authentication is properly established
+    const timeoutId = setTimeout(autoGenerateRecurringTasks, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, []); // Empty dependency array - only run once on mount
+
+  // Auto-generate recurring tasks when date changes (for users who keep app open overnight)
+  useEffect(() => {
+    let lastCheckedDate = new Date().toISOString().split("T")[0];
+
+    const checkDateChange = async () => {
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      if (currentDate !== lastCheckedDate) {
+        console.log(
+          `DataContext: Date changed from ${lastCheckedDate} to ${currentDate}`
+        );
+
+        const userId = getCurrentUserId();
+        if (userId) {
+          try {
+            const result = await generateTodaysRecurringTasks(currentDate);
+            if (result.success && result.createdTasks > 0) {
+              console.log(
+                `DataContext: Auto-generated ${result.createdTasks} recurring tasks for new date`
+              );
+
+              // Refresh all relevant components
+              window.dispatchEvent(new CustomEvent("dashboard-refresh"));
+              window.dispatchEvent(new CustomEvent("tasks-updated"));
+              window.dispatchEvent(
+                new CustomEvent("date-changed", {
+                  detail: { newDate: currentDate },
+                })
+              );
+            }
+          } catch (error) {
+            console.error(
+              "DataContext: Error generating tasks for date change:",
+              error
+            );
+          }
+        }
+
+        lastCheckedDate = currentDate;
+      }
+    };
+
+    // Check for date changes every minute
+    const intervalId = setInterval(checkDateChange, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [generateTodaysRecurringTasks]);
+
+  // Simplified: Create Task using direct SQLite
+  const createTask = useCallback(
+    async (task: Omit<Task, "id">): Promise<Task> => {
+      setLoading(true);
+      try {
+        console.log("DataContext: Creating task with data:", task);
+
+        // Get user ID
+        const userId = getCurrentUserId();
+        if (!userId) {
+          throw new Error("User not authenticated");
+        } // Complete data sanitization for SQLite
+        const sanitizedTask = {
+          title: String(task.title || ""),
+          task_date: String(task.task_date || ""),
+          task_time: String(task.task_time || ""),
+          completed: Boolean(task.completed || false),
+          user_id: String(userId),
+          task_type: task.task_type ? String(task.task_type) : undefined,
+          due_date: task.due_date ? String(task.due_date) : undefined,
+          urgency_level: task.urgency_level
+            ? Number(task.urgency_level)
+            : undefined,
+          status: task.status ? String(task.status) : undefined,
+          last_reset_date: task.last_reset_date
+            ? String(task.last_reset_date)
+            : undefined,
+          recurring_id: task.recurring_id
+            ? Number(task.recurring_id)
+            : undefined,
+        }; // Remove any React/IPC artifacts that might be present
+        Object.keys(sanitizedTask).forEach((key) => {
+          if (sanitizedTask[key as keyof typeof sanitizedTask] === undefined) {
+            delete sanitizedTask[key as keyof typeof sanitizedTask];
+          }
         });
+
+        console.log(
+          "DataContext: Sending sanitized task to SQLite:",
+          sanitizedTask
+        );
+
+        // Create via SQLite with sanitized data
+        const newTask = await window.electronAPI.db.saveTask(sanitizedTask);
+
+        console.log(`DataContext: Task ${newTask.id} created successfully`);
+
+        // Dispatch event for OSNotificationManager
+        window.dispatchEvent(
+          new CustomEvent("task-created", {
+            detail: newTask,
+          })
+        );
+
+        return newTask;
+      } catch (error) {
+        console.error("DataContext: Error creating task:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to create task";
+        setError(errorMessage);
+
         throw error;
       } finally {
         setLoading(false);
@@ -342,36 +260,204 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
+  // Simplified: Update Task using direct SQLite
+  const updateTask = useCallback(async (task: Task): Promise<Task> => {
+    setLoading(true);
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
+
+      console.log(`DataContext: Updating task ${task.id}`); // Ensure all values are proper SQLite types with undefined instead of null for TypeScript compatibility
+      const updates = {
+        title: String(task.title || ""),
+        task_date: String(task.task_date || ""),
+        task_time: task.task_time ? String(task.task_time) : undefined,
+        completed: Boolean(task.completed),
+        failed: Boolean(task.failed),
+        task_type: task.task_type ? String(task.task_type) : undefined,
+        due_date: task.due_date ? String(task.due_date) : undefined,
+        urgency_level: task.urgency_level
+          ? Number(task.urgency_level)
+          : undefined,
+        status: task.status ? String(task.status) : undefined,
+        updated_at: String(new Date().toISOString()),
+      };
+
+      const updatedTask = await window.electronAPI.db.updateTask(
+        Number(task.id),
+        updates
+      );
+
+      if (!updatedTask) {
+        throw new Error("Failed to update task");
+      }
+      console.log(`DataContext: Task ${task.id} updated successfully`);
+
+      // Send congratulation notification if task was just completed
+      if (updatedTask.completed && !task.completed) {
+        try {
+          await systemNotificationService.showTaskCompletion(updatedTask.title);
+          console.log(
+            `WINGMAN SUCCESS: Congratulation notification sent for updated task: ${updatedTask.title}`
+          );
+        } catch (error) {
+          console.error(
+            "WINGMAN ERROR: Failed to send congratulation notification:",
+            error
+          );
+        }
+      }
+
+      // Dispatch event for OSNotificationManager
+      window.dispatchEvent(
+        new CustomEvent("task-updated", {
+          detail: updatedTask,
+        })
+      );
+
+      return updatedTask;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update task";
+      console.error("Error updating task:", error);
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Simplified: Delete Task using direct SQLite
+  const deleteTask = useCallback(async (id: number): Promise<void> => {
+    setLoading(true);
+    try {
+      // Delete from SQLite
+      await window.electronAPI.db.deleteTask(id);
+
+      console.log(`DataContext: Task ${id} deleted successfully`);
+
+      // Dispatch event for OSNotificationManager
+      window.dispatchEvent(
+        new CustomEvent("task-deleted", {
+          detail: { taskId: id },
+        })
+      );
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      setError("Failed to delete task");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Simplified: Toggle Task using direct SQLite
+  const toggleTask = useCallback(
+    async (task: Task): Promise<Task> => {
+      try {
+        const updatedTask = await updateTask({
+          ...task,
+          completed: !task.completed,
+          updated_at: new Date().toISOString(),
+        }); // If task was completed, dispatch completion event
+        if (updatedTask.completed) {
+          // Send immediate congratulation notification
+          try {
+            await systemNotificationService.showTaskCompletion(
+              updatedTask.title
+            );
+            console.log(
+              `WINGMAN SUCCESS: Congratulation notification sent for task: ${updatedTask.title}`
+            );
+          } catch (error) {
+            console.error(
+              "WINGMAN ERROR: Failed to send congratulation notification:",
+              error
+            );
+          }
+
+          window.dispatchEvent(
+            new CustomEvent("task-completed", {
+              detail: { taskId: updatedTask.id, title: updatedTask.title },
+            })
+          );
+        }
+
+        return updatedTask;
+      } catch (error) {
+        console.error("Error toggling task:", error);
+        throw error;
+      }
+    },
+    [updateTask]
+  );
+
+  // Simplified: Create Event using direct SQLite
+  const createEvent = useCallback(
+    async (event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> => {
+      setLoading(true);
+      try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+          throw new Error("User not authenticated");
+        }
+
+        // Match your actual SQLite schema
+        const eventData = {
+          title: event.title || "",
+          event_date: event.event_date || "",
+          event_time: event.event_time || "",
+          type: event.type || "Personal",
+          description: event.description || "",
+          user_id: userId,
+        };
+
+        // Check window.electronAPI is available
+        if (!window.electronAPI?.db) {
+          throw new Error("Database connection not available");
+        }
+
+        const newEvent = await window.electronAPI.db.saveEvent(eventData);
+        console.log(`DataContext: Event ${newEvent.id} created successfully`);
+
+        // Dispatch event for OSNotificationManager
+        window.dispatchEvent(
+          new CustomEvent("event-created", {
+            detail: newEvent,
+          })
+        );
+
+        return newEvent;
+      } catch (error) {
+        console.error("Error creating event:", error);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  // Simplified: Update Event using direct SQLite
   const updateEvent = useCallback(
     async (event: CalendarEvent): Promise<CalendarEvent> => {
       setLoading(true);
-      setError(null);
-
       try {
-        broadcaster.broadcast({
-          type: "UPDATE",
-          entity: "EVENT",
-          data: event,
-          affectedDate: event.event_date,
-        });
+        // Update in SQLite
+        const updatedEvent = await window.electronAPI.db.updateEvent(event);
 
-        // Send to API - remove id from body, keep in URL
-        const { id, ...eventData } = event;
-        const updatedEvent = await api.put(
-          `/v1/calendar/${event.id}`,
-          eventData
+        console.log(`DataContext: Event ${event.id} updated successfully`);
+
+        // Dispatch event for OSNotificationManager
+        window.dispatchEvent(
+          new CustomEvent("event-updated", {
+            detail: updatedEvent,
+          })
         );
 
-        const finalEvent = { ...event, ...updatedEvent };
-        broadcaster.broadcast({
-          type: "UPDATE",
-          entity: "EVENT",
-          data: finalEvent,
-          affectedDate: finalEvent.event_date,
-        });
-
-        return finalEvent;
+        return updatedEvent;
       } catch (error) {
+        console.error("Error updating event:", error);
         setError("Failed to update event");
         throw error;
       } finally {
@@ -381,74 +467,66 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
-  const deleteEvent = useCallback(async (eventId: number): Promise<void> => {
+  // Simplified: Delete Event using direct SQLite
+  const deleteEvent = useCallback(async (id: number): Promise<void> => {
     setLoading(true);
-    setError(null);
-
     try {
-      broadcaster.broadcast({
-        type: "DELETE",
-        entity: "EVENT",
-        data: { id: eventId },
-      });
+      // Delete from SQLite
+      await window.electronAPI.db.deleteEvent(id);
 
-      await api.delete(`/v1/calendar/${eventId}`);
+      console.log(`DataContext: Event ${id} deleted successfully`);
 
-      console.log(`✅ Event ${eventId} successfully deleted from API`);
+      // Dispatch event for OSNotificationManager
+      window.dispatchEvent(
+        new CustomEvent("event-deleted", {
+          detail: { eventId: id },
+        })
+      );
     } catch (error) {
+      console.error("Error deleting event:", error);
       setError("Failed to delete event");
       throw error;
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  
-  const fetchDayData = useCallback(async (date: string, page: number = 1) => {
+  }, []); // Fetch Day Data using SQLite (unchanged - works perfectly)
+  const fetchDayData = useCallback(async (date: string) => {
     try {
       // Get user ID - CRITICAL
       const userId = getCurrentUserId();
       if (!userId) {
-        console.warn("fetchDayData: No user ID available");
-        return {
-          tasks: [],
-          events: [],
-          hasMore: { tasks: false, events: false },
-        };
+        throw new Error("User not authenticated");
       }
 
       console.log(
-        `🌐 DataContext: Fetching data for ${date} with user_id: ${userId}`
+        `DataContext: Fetching data for ${date} with user_id: ${userId} (SQLite)`
       );
 
-      // Make sure API calls include user_id and handle errors properly
-      const [tasksResponse, eventsResponse] = await Promise.all([
-        api
-          .get(`/v1/tasks?date=${date}&user_id=${userId}&page=${page}&limit=7`)
-          .catch((err) => {
-            console.error("Tasks fetch failed:", err);
-            return { data: [] }; // Return empty data structure instead of empty array
-          }),
-        api
-          .get(
-            `/v1/calendar?date=${date}&user_id=${userId}&page=${page}&limit=7`
-          )
-          .catch((err) => {
-            console.error("Events fetch failed:", err);
-            return { data: [] }; // Return empty data structure instead of empty array
-          }),
+      // Auto-generate recurring tasks for this date (runs silently)
+      try {
+        await window.electronAPI.db.generateRecurringTasks(userId, date);
+      } catch (recurringError) {
+        console.error(
+          "DataContext: Error generating recurring tasks:",
+          recurringError
+        );
+        // Don't throw - continue with normal data fetch
+      }
+
+      // Get data from SQLite
+      const [tasks, events] = await Promise.all([
+        window.electronAPI.db.getTasks(userId, date).catch((err) => {
+          console.error("Error fetching tasks:", err);
+          return [];
+        }),
+        window.electronAPI.db.getEvents(userId, date).catch((err) => {
+          console.error("Error fetching events:", err);
+          return [];
+        }),
       ]);
 
-      // Handle different response formats safely
-      const tasks = Array.isArray(tasksResponse)
-        ? tasksResponse
-        : tasksResponse?.data || [];
-      const events = Array.isArray(eventsResponse)
-        ? eventsResponse
-        : eventsResponse?.data || [];
-
       console.log(
-        `DataContext: Fetched ${tasks.length} tasks, ${events.length} events for ${date}`
+        `DataContext: Fetched ${tasks.length} tasks, ${events.length} events for ${date} (SQLite)`
       );
 
       return {
@@ -460,7 +538,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         },
       };
     } catch (error) {
-      console.error(`❌ DataContext: Error fetching data for ${date}:`, error);
+      console.error(`DataContext: Error fetching data for ${date}:`, error);
       return {
         tasks: [],
         events: [],
@@ -469,6 +547,236 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
+  // Recurring Task Operations
+  const createRecurringTask = useCallback(
+    async (
+      recurringTask: Omit<RecurringTask, "id">
+    ): Promise<RecurringTask> => {
+      setLoading(true);
+      try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+          throw new Error("User not authenticated");
+        }
+
+        console.log("DataContext: Creating recurring task:", recurringTask);
+
+        const sanitizedRecurringTask = {
+          user_id: String(userId),
+          task_title: String(recurringTask.task_title || ""),
+          task_time: recurringTask.task_time
+            ? String(recurringTask.task_time)
+            : undefined,
+          weekdays: Array.isArray(recurringTask.weekdays)
+            ? recurringTask.weekdays
+            : [],
+          is_active: Boolean(recurringTask.is_active !== false), // Default to true
+        };
+
+        const newRecurringTask = await window.electronAPI.db.saveRecurringTask(
+          sanitizedRecurringTask
+        );
+        console.log(
+          `DataContext: Recurring task ${newRecurringTask.id} created successfully`
+        );
+
+        return newRecurringTask;
+      } catch (error) {
+        console.error("DataContext: Error creating recurring task:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to create recurring task";
+        setError(errorMessage);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const getRecurringTasks = useCallback(async (): Promise<RecurringTask[]> => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      console.log("DataContext: Fetching recurring tasks for user:", userId);
+      const recurringTasks = await window.electronAPI.db.getRecurringTasks(
+        userId
+      );
+      console.log(
+        `DataContext: Fetched ${recurringTasks.length} recurring tasks`
+      );
+
+      return recurringTasks || [];
+    } catch (error) {
+      console.error("DataContext: Error fetching recurring tasks:", error);
+      return [];
+    }
+  }, []);
+
+  const updateRecurringTask = useCallback(
+    async (
+      id: number,
+      updates: Partial<RecurringTask>
+    ): Promise<RecurringTask> => {
+      setLoading(true);
+      try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+          throw new Error("User not authenticated");
+        }
+
+        console.log(`DataContext: Updating recurring task ${id}:`, updates);
+
+        const sanitizedUpdates = {
+          task_title: updates.task_title
+            ? String(updates.task_title)
+            : undefined,
+          task_time: updates.task_time ? String(updates.task_time) : undefined,
+          weekdays: Array.isArray(updates.weekdays)
+            ? updates.weekdays
+            : undefined,
+          is_active:
+            updates.is_active !== undefined
+              ? Boolean(updates.is_active)
+              : undefined,
+        };
+
+        // Remove undefined values
+        Object.keys(sanitizedUpdates).forEach((key) => {
+          if (
+            sanitizedUpdates[key as keyof typeof sanitizedUpdates] === undefined
+          ) {
+            delete sanitizedUpdates[key as keyof typeof sanitizedUpdates];
+          }
+        });
+
+        const updatedRecurringTask =
+          await window.electronAPI.db.updateRecurringTask(id, sanitizedUpdates);
+        console.log(`DataContext: Recurring task ${id} updated successfully`);
+
+        return updatedRecurringTask;
+      } catch (error) {
+        console.error("DataContext: Error updating recurring task:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to update recurring task";
+        setError(errorMessage);
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+  const deleteRecurringTask = useCallback(async (id: number): Promise<void> => {
+    setLoading(true);
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      console.log(
+        `DataContext: Deleting recurring task ${id} - this may take a moment for templates with many generated tasks`
+      );
+
+      const result = await window.electronAPI.db.deleteRecurringTask(id);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete recurring task");
+      }
+
+      console.log(
+        `DataContext: Recurring task ${id} deleted successfully. Removed ${
+          result.deletedTasks || 0
+        } generated tasks.`
+      );
+    } catch (error) {
+      console.error("DataContext: Error deleting recurring task:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to delete recurring task";
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleRecurringTaskCompletion = useCallback(
+    async (
+      taskId: number
+    ): Promise<{ success: boolean; task?: any; message: string }> => {
+      try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+          throw new Error("User not authenticated");
+        }
+
+        console.log(
+          `DataContext: Handling completion for recurring task ${taskId}`
+        );
+        const result =
+          await window.electronAPI.db.handleRecurringTaskCompletion(taskId);
+        console.log(
+          `DataContext: Recurring task completion handled for ${taskId}:`,
+          result
+        );
+
+        // Enhanced: Check if we need to generate tomorrow's recurring tasks
+        if (result.success && result.task?.recurring_id) {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const tomorrowDate = tomorrow.toISOString().split("T")[0];
+
+          console.log(
+            `DataContext: Checking if recurring task needs generation for ${tomorrowDate}`
+          );
+
+          // Generate recurring tasks for tomorrow to ensure continuity
+          try {
+            const generateResult = await generateTodaysRecurringTasks(
+              tomorrowDate
+            );
+            if (generateResult.success && generateResult.createdTasks > 0) {
+              console.log(
+                `DataContext: Pre-generated ${generateResult.createdTasks} recurring tasks for tomorrow`
+              );
+            }
+          } catch (genError) {
+            console.warn(
+              "DataContext: Could not pre-generate tomorrow's recurring tasks:",
+              genError
+            );
+            // Non-critical error, continue normally
+          }
+        }
+
+        return result;
+      } catch (error) {
+        console.error(
+          "DataContext: Error handling recurring task completion:",
+          error
+        );
+        return {
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to handle recurring task completion",
+        };
+      }
+    },
+    [generateTodaysRecurringTasks]
+  );
+  // Simplified: Clean value object - removed all cache-related properties
   const value: DataContextType = {
     createTask,
     updateTask,
@@ -478,10 +786,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     updateEvent,
     deleteEvent,
     fetchDayData,
-    subscribeToCacheUpdates: broadcaster.subscribe.bind(broadcaster),
-    unsubscribeFromCacheUpdates: broadcaster.unsubscribe.bind(broadcaster),
     loading,
     error,
+    createRecurringTask,
+    getRecurringTasks,
+    updateRecurringTask,
+    deleteRecurringTask,
+    generateTodaysRecurringTasks,
+    handleRecurringTaskCompletion,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

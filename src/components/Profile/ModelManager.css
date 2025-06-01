@@ -1,0 +1,392 @@
+/* AI Model Management Interface Styling */
+/* Provides visual hierarchy for model selection and system status */
+
+.model-manager {
+  background: var(--color-bg-card, #232323);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Downloaded models list with clean spacing */
+.downloaded-models-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.model-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--color-bg-main, #1a1a1a);
+  border-radius: 8px;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+}
+
+.model-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.model-name {
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.model-size, .model-date {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #a0a0a0);
+}
+
+/* Subtle delete button that becomes dangerous on hover */
+.delete-model-btn {
+  padding: 0.5rem 1rem;
+  background: var(--color-bg-main);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.delete-model-btn:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+/* System information banner with subtle animation */
+.system-info-banner {
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.12), rgba(139, 92, 246, 0.08));
+  color: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(100, 108, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer effect for system banner */
+.system-info-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(100, 108, 255, 0.05), transparent);
+  animation: subtle-shimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes subtle-shimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.system-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+/* Content sections with clear hierarchy */
+.section {
+  margin-bottom: 3rem;
+}
+
+.section h3 {
+  color: var(--color-text-primary, #ffffff);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-accent-primary, #646cff);
+}
+
+/* Model cards grid layout with responsive behavior */
+.available-models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* MERGED: Combined all model-card states for better maintainability */
+.model-card {
+  background: var(--color-bg-main, #1a1a1a);
+  border: 2px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.model-card:hover:not(.disabled) {
+  border-color: var(--color-accent-primary, #646cff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(100, 108, 255, 0.2);
+}
+
+.model-card.recommended {
+  border-color: var(--color-success, #4ade80);
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.model-card.downloaded {
+  border-color: var(--color-success, #4ade80);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.model-card.selected {
+  border: 2px solid #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.model-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.model-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.model-title h4 {
+  margin: 0 0 0.25rem 0;
+  color: var(--color-text-primary, #ffffff);
+  font-size: 1.1rem;
+}
+
+.model-provider {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #a0a0a0);
+}
+
+.model-description {
+  color: var(--color-text-secondary, #a0a0a0);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.model-specs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.spec {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #a0a0a0);
+  background: var(--color-bg-card, #232323);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Warning message for incompatible models */
+.model-warning {
+  color: var(--color-warning, #fbbf24);
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: rgba(251, 191, 36, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid var(--color-warning, #fbbf24);
+}
+
+.model-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Action buttons with contextual styling */
+.action-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.download {
+  background: var(--color-accent-primary, #646cff);
+  color: white;
+}
+
+.action-btn.download:hover:not(:disabled) {
+  background: var(--color-accent-dark, #535bf2);
+  transform: translateY(-1px);
+}
+
+.action-btn.downloaded {
+  background: var(--color-success, #4ade80);
+  color: white;
+  cursor: default;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty state with encouraging message */
+.empty-state {
+  text-align: center;
+  color: var(--color-text-secondary, #a0a0a0);
+  font-style: italic;
+  padding: 2rem;
+  background: var(--color-bg-main, #1a1a1a);
+  border-radius: 8px;
+  border: 1px dashed var(--color-border, rgba(255, 255, 255, 0.1));
+}
+
+/* Download progress with pulsing animation for active downloads */
+.download-progress {
+  margin: 1rem 0;
+  padding: 1.5rem;
+  background: var(--color-bg-main, #1a1a1a);
+  border-radius: 12px;
+  border: 2px solid var(--color-accent-primary, #646cff);
+  box-shadow: 0 0 20px rgba(100, 108, 255, 0.2);
+  animation: pulse 1.5s infinite;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.progress-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #a0a0a0);
+}
+
+/* Selection feedback with success styling */
+.selection-feedback {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(22, 163, 74, 0.12));
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.06);
+}
+
+/* Current active model display with prominent styling */
+.current-model-display {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.08), rgba(34, 197, 94, 0.12));
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(74, 222, 128, 0.08);
+}
+
+.current-model-card {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.current-model-card .model-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: rgba(74, 222, 128, 0.9);
+  margin-bottom: 0.5rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.current-model-card .model-status {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+/* LIGHT THEME OVERRIDES: Softer light theme versions */
+.light-theme .current-model-display {
+  background: linear-gradient(135deg, rgba(34, 139, 34, 0.08), rgba(46, 125, 50, 0.12)) !important;
+  border: 1px solid rgba(34, 139, 34, 0.25) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .current-model-card .model-name {
+  color: rgba(34, 139, 34, 0.9) !important;
+}
+
+.light-theme .current-model-card .model-status {
+  color: rgba(96, 10, 10, 0.7) !important;
+}
+
+.light-theme .system-info-banner {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(218, 165, 32, 0.06)) !important;
+  border: 1px solid rgba(184, 134, 11, 0.25) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .system-stats .stat-label {
+  color: rgba(96, 10, 10, 0.6) !important;
+}
+
+.light-theme .system-stats .stat-value {
+  color: rgba(96, 10, 10, 0.9) !important;
+}
+
+.light-theme .selection-feedback {
+  background: linear-gradient(135deg, rgba(34, 139, 34, 0.06), rgba(46, 125, 50, 0.08)) !important;
+  border: 1px solid rgba(34, 139, 34, 0.25) !important;
+}
+
+.light-theme .selection-feedback .feedback-text {
+  color: rgba(34, 139, 34, 0.9) !important;
+}
+
+.light-theme .selection-feedback .feedback-model {
+  color: rgba(96, 10, 10, 0.8) !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .system-stats {
+    gap: 1rem;
+    flex-direction: column;
+  }
+  
+  .current-model-display,
+  .system-info-banner,
+  .selection-feedback {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .current-model-card .model-name {
+    font-size: 1.1rem;
+  }
+}

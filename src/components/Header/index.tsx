@@ -1,25 +1,30 @@
+// Header component that displays the main navigation bar with user greeting and quick actions
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../main.css";
-import { Auth } from "../../utils/AuthStateManager"; // if using AuthStateManager
+import { Auth } from "../../utils/AuthStateManager";
+import { getCurrentTimeString } from "../../utils/timeUtils";
 import WingmanAvatar from "../Common/WingmanAvatar";
+import ConnectionStatus from "../Common/ConnectionStatus";
+import "./Header.css";
 
 const Header: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const navigate = useNavigate();
 
-  // Update the date time every minute
+  // Keep the clock updated every minute to show current time accurately
   React.useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDateTime(new Date());
     }, 60000);
 
+    // Clean up the timer when component unmounts to prevent memory leaks
     return () => {
       clearInterval(timer);
     };
   }, []);
 
-  // Format date for display
+  // Convert date object to user-friendly display format
   const formatDate = (date: Date): string => {
     const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
@@ -29,58 +34,85 @@ const Header: React.FC = () => {
     };
     return date.toLocaleDateString(undefined, options);
   };
+
+  // Handle user logout by delegating to authentication manager
   const handleLogout = () => {
     Auth.handleLogout();
   };
-  // Format time for display
-  const formatTime = (date: Date): string => {
-    const options: Intl.DateTimeFormatOptions = {
-      hour: "2-digit",
-      minute: "2-digit",
-    };
-    return date.toLocaleTimeString(undefined, options);
+  // Convert time object to readable format for display using standardized format
+  const formatTime = (): string => {
+    return getCurrentTimeString();
   };
+
   return (
-    <header className="header p-4 flex items-center justify-between bg-card text-light">
-      <div className="flex items-center gap-3">
+    <header className="header">
+      {/* Left section contains avatar and welcome message */}
+      <div className="header-left">
         <WingmanAvatar
           size="small"
           mood="happy"
           context="dashboard"
           onClick={() => navigate("/profile")}
-          className="hover:scale-110 transition-transform duration-300"
+          className="header-avatar"
         />
-        <span className="text-xl font-bold">Welcome back, Leader! </span>
+        <div className="welcome-section">
+          {/* Personalized greeting that establishes the loyal assistant relationship */}
+          <h1 className="welcome-title">
+            <span className="welcome-text">Welcome back,</span>
+            <span className="leader-text">Leader!</span>
+          </h1>
+        </div>
       </div>
 
-      <div className="ml-auto flex items-center gap-6 px-4">
-        <div className="text-right">
-          <div className="text-md font-medium">
-            {formatDate(currentDateTime)}
-          </div>
-          <div className="text-sm opacity-70">
-            {formatTime(currentDateTime)}
-          </div>
+      {/* Center section displays current date and time */}
+      <div className="header-center">
+        <div className="datetime-display">
+          <div className="date-text">{formatDate(currentDateTime)}</div>
+          <div className="time-text">{formatTime()}</div>
         </div>
-        <button
-          className="rounded-full bg-card p-2 hover-glow-tile"
-          onClick={() => navigate("/notifications")}
-        >
-          <span className="icon-rotate">🔔</span>
-        </button>
-        <button
-          className="rounded-full bg-card p-2 hover-glow-tile"
-          onClick={() => navigate("/profile/settings")}
-        >
-          <span className="icon-rotate">⚙️</span>
-        </button>
-        <button
-          className="rounded-full bg-card p-2 hover-glow-tile logout-btn-red"
-          onClick={handleLogout}
-          title="Logout"
-        >
-          <span className="icon-rotate">🚪 Logout </span>
-        </button>
+      </div>
+
+      {/* Right section contains action buttons and logout */}
+      <div className="header-right">
+        <ConnectionStatus className="header-connection-status" />
+        <div className="header-actions">
+          {/* Quick access to notifications with Wingman personality */}
+          <button
+            className="header-btn notifications-btn"
+            onClick={() => navigate("/notifications")}
+            title="View your alerts and updates, boss"
+          >
+            <span className="btn-icon">🔔</span>
+            <span className="btn-label">Alerts</span>
+          </button>
+
+          {/* Access to user preferences and configuration */}
+          <button
+            className="header-btn settings-btn"
+            onClick={() => navigate("/profile/settings")}
+            title="Adjust your preferences, leader"
+          >
+            <span className="btn-icon">⚙️</span>
+            <span className="btn-label">Settings</span>
+          </button>
+
+          {/* Logout button with animated door effect */}
+          <button
+            className="logout-btn"
+            onClick={handleLogout}
+            title="Sign out when you're ready, boss"
+          >
+            <div className="logout-content">
+              {/* Animated door graphic that opens on hover */}
+              <div className="door-frame">
+                <div className="door-left"></div>
+                <div className="door-right"></div>
+                <div className="door-handle"></div>
+              </div>
+              <span className="logout-text">Exit</span>
+            </div>
+          </button>
+        </div>
       </div>
     </header>
   );

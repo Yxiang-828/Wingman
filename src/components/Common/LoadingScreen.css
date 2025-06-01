@@ -1,3 +1,10 @@
+/**
+ * LoadingScreen Component Styles
+ * Full-viewport loading overlay with animated progress indicators
+ * Provides visual feedback during application initialization
+ */
+
+/* Main loading overlay covering entire viewport */
 .loading-screen {
   height: 100vh;
   width: 100vw;
@@ -5,31 +12,42 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #12121f 0%, #1e1e38 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
 }
 
+/* Content container with organized layout */
 .loading-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
+  text-align: center;
 }
 
+/* Large spinner for primary loading indication */
 .loading-spinner-large {
   width: 80px;
   height: 80px;
   border: 6px solid rgba(100, 108, 255, 0.2);
   border-radius: 50%;
   border-top-color: rgba(100, 108, 255, 0.8);
-  animation: spin 1.5s linear infinite;
+  animation: spin-smooth 1.5s linear infinite;
 }
 
+/* Loading message with enhanced typography */
 .loading-message {
   font-size: 1.5rem;
   color: white;
   font-weight: 600;
   letter-spacing: 0.5px;
+  margin: 0;
+  max-width: 80%;
 }
 
+/* Progress bar container with subtle styling */
 .loading-progress {
   width: 250px;
   height: 6px;
@@ -37,8 +55,10 @@
   border-radius: 4px;
   overflow: hidden;
   position: relative;
+  border: 1px solid rgba(100, 108, 255, 0.1);
 }
 
+/* Animated progress indicator */
 .loading-bar {
   position: absolute;
   left: 0;
@@ -50,15 +70,45 @@
   width: 30%;
 }
 
-@keyframes spin {
+/* Unified spinner animation matching other components */
+@keyframes spin-smooth {
   to { transform: rotate(360deg); }
 }
 
+/* Progress bar sliding animation */
 @keyframes loading-progress {
   0% {
     left: -30%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
   }
   100% {
     left: 100%;
+    opacity: 0.8;
+  }
+}
+
+/* Responsive adjustments for mobile devices */
+@media (max-width: 768px) {
+  .loading-content {
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .loading-spinner-large {
+    width: 60px;
+    height: 60px;
+    border-width: 4px;
+  }
+  
+  .loading-message {
+    font-size: 1.2rem;
+  }
+  
+  .loading-progress {
+    width: 200px;
+    height: 4px;
   }
 }

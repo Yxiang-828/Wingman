@@ -1,72 +1,157 @@
-/* Action button styles */
+/**
+ * CommonButtons Component Styles
+ * Unified button and status indicator system for consistent UI
+ * Provides reusable components across your Wingman interface
+ */
+
+/* Primary action buttons with enhanced theming */
 .action-btn {
-  background-color: var(--accent-primary);
-  color: white;
+  background-color: var(--color-accent-primary, #646cff);
+  color: #ffffff;
   border: none;
   padding: 0.8rem 1.5rem;
-  border-radius: 50px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  font-size: 0.9rem;
+  min-height: 44px;
 }
 
-.action-btn:hover {
-  background-color: var(--accent-tertiary);
-  box-shadow: 0 0 15px var(--glow-primary);
+.action-btn:hover:not(:disabled) {
+  background-color: var(--color-accent-secondary, #535bf2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Standard button foundation with size variants */
 .btn {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Primary button variant with theme integration */
 .btn-primary {
-  background-color: var(--accent-primary);
-  color: white;
+  background-color: var(--color-accent-primary, #646cff);
+  color: #ffffff;
+  border: 1px solid transparent;
 }
 
-.btn-primary:hover {
-  background-color: var(--accent-secondary);
-  box-shadow: 0 0 10px var(--glow-primary);
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-secondary, #535bf2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
 }
 
+/* Secondary button variant with subtle styling */
 .btn-secondary {
-  background-color: var(--accent-tertiary);
-  color: white;
+  background-color: var(--color-bg-card, #232323);
+  color: var(--color-text-primary, #ffffff);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
 }
 
-.btn-secondary:hover {
-  background-color: var(--accent-secondary);
-  box-shadow: 0 0 10px var(--glow-secondary);
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-bg-card-hover, #2a2a2a);
+  border-color: var(--color-accent-primary, #646cff);
+  transform: translateY(-1px);
 }
 
-/* Status indicators */
+/* Disabled state for all button variants */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Status badge system with semantic colors */
 .status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
+/* Active status with success theming */
 .status-active {
-  background-color: #2ecc71;
-  color: white;
+  background-color: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
+/* Pending status with warning theming */
 .status-pending {
-  background-color: #f39c12;
-  color: white;
+  background-color: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
+/* Inactive status with neutral theming */
 .status-inactive {
-  background-color: #95a5a6;
-  color: white;
+  background-color: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+  border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+/* Button size variants for different contexts */
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  min-height: 32px;
+}
+
+.btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  min-height: 48px;
+}
+
+/* Icon button variant for minimal interfaces */
+.btn-icon {
+  padding: 0.5rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+/* Responsive adjustments for mobile devices */
+@media (max-width: 768px) {
+  .action-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .btn-lg {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+  }
 }

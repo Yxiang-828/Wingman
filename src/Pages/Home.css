@@ -1,48 +1,5 @@
-.home-hero {
-  max-width: 600px;
+/* This file has been removed - Home page styles deprecated */
+/* All home functionality moved to Dashboard component */
 
-  padding: 2.5rem 2rem;
-  background: var(--color-bg-card, #232323);
-  border-radius: 16px;
-  box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.1));
-  text-align: center;
-}
 
-.home-hero h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
 
-.home-hero p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-  color: var(--color-text-secondary, #fff);
-}
-
-.home-list {
-  text-align: left;
-  margin: 0 auto 2rem auto;
-  padding: 0;
-  list-style: none;
-  max-width: 420px;
-}
-
-.home-list li {
-  margin-bottom: 1.1rem;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  position: relative;
-  padding-left: 1.5rem;
-}
-
-.home-list li::before {
-  content: "💡";
-  position: absolute;
-  left: 0;
-}
-
-.home-footer {
-  font-size: 1.1rem;
-  color: var(--color-accent-primary, #646cff);
-  margin-top: 2rem;
-}

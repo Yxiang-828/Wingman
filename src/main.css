@@ -1,155 +1,719 @@
-/* Global CSS Variables and Base Styles Only */
-
+/* ═══════════════════════════════════════════════════════════════
+   🎯 OPTIMIZED BASE VARIABLES - No lag, smooth performance
+   ═══════════════════════════════════════════════════════════════ */
 :root {
-  /* Default: Dark Theme */
-  --color-bg-body: #121212;
-  --color-bg-card: #1e1e1e;
-  --color-bg-hover: #2a2a2a;
-  --color-bg-secondary: #252525;
-  --color-bg-main-secondary: rgba(20, 20, 35, 0.95);
-  --color-bg-main-secondary-fade: rgba(20, 20, 35, 0.7);
-  --color-bg-card-secondary: rgba(25, 25, 45, 0.7);
-  --color-text-primary: #fff;
-  --color-text-secondary: #e0e0e0; /* For less prominent text */
-  --color-text: #fff; /* General text color */
-  --color-text-contrast: #fff;
-  --color-accent-primary: #646cff;
-  --color-accent-secondary: #535bf2;
-  --color-accent-tertiary: #7c7fff;
-  --color-accent-primary-border: rgba(100, 108, 255, 0.2);
-  --color-accent-primary-glow: rgba(100, 108, 255, 0.2);
-  --color-glow-primary: rgba(100, 108, 255, 0.5);
-  --color-glow-secondary: rgba(83, 91, 242, 0.3);
-  --color-glow-tertiary: rgba(124, 127, 255, 0.7);
-  --color-shadow: rgba(0, 0, 0, 0.25);
-  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.15);
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-light: rgba(255, 255, 255, 0.05);
-  --color-button-text: #fff;
-  --color-text-on-accent: #ffffff;
+  /* Performance optimizations */
+  --transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 0.1s ease;
+  --will-change: transform, opacity, background-color;
+  
+  /* Layout & Spacing */
+  --border-radius: 8px;
+  --border-radius-large: 16px;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Typography */
+  --font-family-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+
+  /* Base Shadows - Optimized for performance */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-large: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🌙 DARK THEME (Default) - Enhanced
+   ═══════════════════════════════════════════════════════════════ */
+:root,
+.dark-theme {
+  /* Deep space backgrounds */
+  --color-bg-body: transparent; /* Let PNG show through */
+  --color-bg-main: rgba(22, 22, 30, 0.85); /* Semi-transparent overlays */
+  --color-bg-card: rgba(30, 30, 45, 0.9);
+
+  /* Crisp text hierarchy */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b8b8d1;
+  --color-text-muted: #8888aa;
+  --color-text-inverse: #0a0a0f;
+
+  /* Tech blue accents */
+  --color-accent-primary: #5865f2;
+  --color-accent-secondary: #4752c4;
+  --color-accent-hover: #6c7ae0;
+  --color-accent-glow: rgba(88, 101, 242, 0.3);
+
+  /* Status colors */
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
+  --color-info: #3b82f6;
 
-  /* Warning/Today highlight colors */
-  --color-warning-light: #ffd966aa;
-  --color-warning-fade: #ffd96655;
-  --color-warning-dark: #23232b;
+  /* Borders with subtle glow */
+  --color-border: rgba(136, 136, 170, 0.2);
+  --color-border-focus: rgba(88, 101, 242, 0.5);
+  --color-border-hover: rgba(136, 136, 170, 0.3);
 
-  /* Shadow effects */
-  --shadow-red: rgba(196, 70, 70, 0.3);
-  --shadow-red-hover: rgba(196, 70, 70, 0.4);
-  --accent-primary-fade: rgba(100, 108, 255, 0.3);
-  --color-text-inverse: white;
-
-  /* Profile-specific colors */
-  --color-profile-accent-primary: #8a2be2;
-  --color-profile-accent-secondary: #9b59b6;
-  --color-profile-accent-shadow: rgba(138, 43, 226, 0.3);
-  --color-profile-accent-bg: rgba(138, 43, 226, 0.1);
-  /* Sidebar-specific colors */
-  --color-bg-sidebar: linear-gradient(
-    165deg,
-    rgba(26, 26, 46, 1) 0%,
-    rgba(18, 18, 32, 1) 100%
-  );
-  --color-bg-sidebar-toggle: linear-gradient(
-    135deg,
-    rgba(53, 53, 99, 1) 0%,
-    rgba(30, 30, 56, 1) 100%
-  );
-  --color-accent-gradient: linear-gradient(
-    135deg,
-    rgba(157, 158, 255, 1),
-    rgba(100, 108, 255, 1)
-  );
-
-  /* Notification-specific colors */
-  --color-text-muted: rgba(255, 255, 255, 0.6);
-  --color-danger: rgba(255, 150, 150, 0.8);
-  --color-success-bg: rgba(74, 222, 128, 0.15);
-  --color-success-light: #a7f3c1;
-  --color-success-hover: rgba(74, 222, 128, 0.3);
-  --color-accent-bg: rgba(100, 108, 255, 0.15);
-  --color-accent-light: #c4c6ff;
+  /* Add theme-specific variables for notifications */
+  --theme-scan-animation: mission-scan;
+  --color-mission-primary: #87ceeb;
+  --color-mission-glow: rgba(135, 206, 235, 0.4);
 }
 
-.light-theme {
-  --color-bg-body: #f4f6f8;
-  --color-bg-card: #ffffff;
-  --color-bg-hover: #e9ecef;
-  --color-bg-secondary: #f8f9fa;
-  --color-bg-main-secondary: rgba(248, 249, 250, 0.95);
-  --color-bg-main-secondary-fade: rgba(248, 249, 250, 0.7);
-  --color-bg-card-secondary: rgba(255, 255, 255, 0.9);
-  --color-text-primary: #212529;
-  --color-text-secondary: #495057;
-  --color-text: #212529; /* General text color for light theme */
-  --color-text-contrast: #ffffff;
-  --color-accent-primary: #007bff;
-  --color-accent-secondary: #0056b3;
-  --color-accent-tertiary: #58a6ff;
-  --color-accent-primary-border: rgba(0, 123, 255, 0.2);
-  --color-accent-primary-glow: rgba(0, 123, 255, 0.2);
-  --color-glow-primary: rgba(0, 123, 255, 0.4);
-  --color-glow-secondary: rgba(0, 86, 179, 0.25);
-  --color-glow-tertiary: rgba(88, 166, 255, 0.6);
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --color-border: rgba(0, 0, 0, 0.15);
-  --color-border-light: rgba(0, 0, 0, 0.08);
-  --color-button-text: #ffffff; /* Text on primary accent buttons, can be #212529 for light buttons */
-  --color-text-on-accent: #ffffff;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT THEME - COMPLETE INVERSION
+   ═══════════════════════════════════════════════════════════════ */
 
-  /* Warning/Today highlight colors (light theme) */
-  --color-warning-light: #f59e0b;
-  --color-warning-fade: rgba(245, 158, 11, 0.3);
-  --color-warning-dark: #374151;
 
-  /* Shadow effects (light theme) */
-  --shadow-red: rgba(220, 38, 38, 0.2);
-  --shadow-red-hover: rgba(220, 38, 38, 0.3);
-  --accent-primary-fade: rgba(0, 123, 255, 0.2);
-  --color-text-inverse: #212529;
+  /* ═══════════════════════════════════════════════════════════════
+     ZONE 1: CORE VARIABLES & BASE STYLING
+     ═══════════════════════════════════════════════════════════════ */
+  .light-theme {
+  /* Core Variables */
+  --color-bg-body: transparent;
+  --color-bg-main: rgba(248, 248, 240, 0.95);
+  --color-bg-card: rgba(255, 255, 250, 0.95);
+  --color-bg-secondary: rgba(250, 250, 245, 0.9);
+  --color-bg-tertiary: rgba(245, 245, 240, 0.85);
+  --color-bg-input: rgba(255, 255, 255, 0.9);
+  --color-bg-input-focus: rgba(255, 255, 255, 0.95);
+  --color-bg-hover: rgba(240, 240, 235, 0.9);
+  --color-bg-sidebar: rgba(255, 255, 250, 0.98);
 
-  /* Profile-specific colors */
-  --color-profile-accent-primary: #6366f1;
-  --color-profile-accent-secondary: #4f46e5;
-  --color-profile-accent-shadow: rgba(99, 102, 241, 0.2);
-  --color-profile-accent-bg: rgba(99, 102, 241, 0.05);
-  /* Sidebar-specific colors */
-  --color-bg-sidebar: linear-gradient(
-    165deg,
-    rgba(248, 249, 250, 1) 0%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  --color-bg-sidebar-toggle: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.1) 0%,
-    rgba(67, 56, 202, 0.05) 100%
-  );
-  --color-accent-gradient: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 1),
-    rgba(67, 56, 202, 1)
-  );
+  /* Text Colors */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #2d2d2d;
+  --color-text-tertiary: #4a4a4a;
+  --color-text-muted: #666666;
+  --color-text-inverse: #ffffff;
 
-  /* Notification-specific colors for light theme */
-  --color-text-muted: rgba(73, 80, 87, 0.6);
-  --color-danger: rgba(220, 38, 38, 0.8);
-  --color-success-bg: rgba(34, 197, 94, 0.1);
-  --color-success-light: #059669;
-  --color-success-hover: rgba(34, 197, 94, 0.2);
-  --color-accent-bg: rgba(99, 102, 241, 0.1);
-  --color-accent-light: #6366f1;
+  /* Accent Colors */
+  --color-accent-primary: #b8860b;
+  --color-accent-secondary: #daa520;
+  --color-accent-hover: #cd853f;
+  --color-accent-glow: rgba(184, 134, 11, 0.3);
+
+  /* Status Colors */
+  --color-success: #228b22;
+  --color-warning: #ff8c00;
+  --color-error: #dc143c;
+  --color-info: #4169e1;
+
+  /* Borders */
+  --color-border: rgba(200, 180, 160, 0.4);
+  --color-border-focus: rgba(184, 134, 11, 0.6);
+  --color-border-hover: rgba(200, 180, 160, 0.6);
+  --color-border-subtle: rgba(220, 200, 180, 0.3);
+  --color-border-normal: rgba(200, 180, 160, 0.5);
+  --color-border-strong: rgba(180, 160, 140, 0.7);
+
+  /* Shadows */
+  --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.16);
+
+  /* Mission Control */
+  --color-mission-primary: var(--color-accent-primary);
+  --color-mission-glow: var(--color-accent-glow);
+  --theme-scan-animation: light-golden-scan;
 }
 
-/* Global styles */
+/* Body & Main Containers */
+.light-theme body {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* All Cards & Major Containers - ORIGINAL GOLDEN GRADIENT */
+.light-theme .summary-card,
+.light-theme .diary-card,
+.light-theme .calendar-card,
+.light-theme .profile-card,
+.light-theme .task-card,
+.light-theme .event-card,
+.light-theme .stats-card,
+.light-theme .notification-card,
+.light-theme .chat-card,
+.light-theme .settings-card,
+.light-theme .mission-card,
+.light-theme .home-card,
+.light-theme .week-card,
+.light-theme .day-view-header,
+.light-theme .day-stat-card,
+.light-theme .main-content-wrapper,
+.light-theme .app-container,
+.light-theme .day-form,
+.light-theme .task-item,
+.light-theme .event-item,
+.light-theme .page-container,
+.light-theme .notification-item,
+.light-theme .mission-control-header,
+.light-theme .day-card,
+.light-theme .settings-container,
+.light-theme .mission-control-container,
+.light-theme .chatbot-container,
+.light-theme .diary-search-container,
+.light-theme .view-entries-container,
+.light-theme .diary-entry-container,
+.light-theme .diary-main,
+.light-theme .notifications-container,
+.light-theme .profile-container,
+.light-theme .avatar-page-container,
+.light-theme .calendar-week-view,
+.light-theme .calendar-week-view-compact,
+.light-theme .week-day,
+.light-theme .month-cell,
+.light-theme .compact-event-item,
+.light-theme .compact-task-item,
+.light-theme .model-manager,
+.light-theme .sidebar,
+.light-theme .sidebar-container,
+.light-theme .header,
+.light-theme .header-container,
+.light-theme .week-day-compact,
+.light-theme .week-header-compact,
+.light-theme .month-entries,
+.light-theme .dashboard-card,
+.light-theme .navbar,
+.light-theme .nav-container,
+.light-theme .login-card,
+.light-theme .settings-section,
+.light-theme .mission-category-empty,
+.light-theme .recent-records-container,
+.light-theme .compact-record-item,
+.light-theme .search-form,
+.light-theme .detail-popup,
+.light-theme .chatbot-bubble.wingman,
+.light-theme .datetime-display,
+.light-theme .wingman-avatar-container,
+.light-theme .avatar-message,
+.light-theme .sidebar-toggle-avatar,
+.light-theme .mission-tab,
+.light-theme .profile-settings-container,
+.light-theme .home-stat-card,
+.light-theme .loading-screen,
+.light-theme .error-boundary,
+.light-theme .modal-overlay,
+.light-theme .modal-content,
+.light-theme .popup-container,
+.light-theme .dropdown-menu,
+.light-theme .tooltip-container,
+.light-theme .floating-panel,
+.light-theme .floating-view-selector,
+.light-theme .mission-standby,
+.light-theme .sidebar-toggle::before,
+.light-theme .diary-tools,
+.light-theme .writing-prompt,
+.light-theme .detail-popup-overlay,
+.light-theme .diary-popup-overlay,
+.light-theme .diary-popup-content {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6), rgba(0, 0, 0, 0.1)) !important;
+}
+
+.light-theme .mission-category-header,
+.light-theme .mission-item {
+  background: rgba(193, 191, 162, 0.6) !important;
+}
+.light-theme .day-stat-label,
+.light-theme .diary-date{
+  color: #600a0a !important;
+}
+
+/* Dashboard Elements - INCREASED OPACITY */
+.light-theme .quote-box {
+  background: rgba(255, 255, 250, 0.95) !important;
+  color: #600a0a !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  box-shadow: var(--shadow-card) !important;
+}
+.light-theme .day-view-container{
+  background: none !important;
+}
+.light-theme .dashboard-item {
+  background: rgba(255, 255, 250, 0.9) !important;
+  color: #600a0a !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .diary-entry-preview {
+  background: rgba(255, 255, 250, 0.9) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .month-header {
+  background: linear-gradient(270deg, rgba(185, 102, 7, 0.15), rgba(193, 191, 162, 0.6)) !important;
+}
+
+/* Text Elements - EXCLUDE welcome popup elements */
+.light-theme h1:not(.welcome-title):not(.welcome-subtitle), 
+.light-theme h2:not(.welcome-title):not(.welcome-subtitle), 
+.light-theme h3:not(.welcome-title):not(.welcome-subtitle), 
+.light-theme h4:not(.welcome-title):not(.welcome-subtitle), 
+.light-theme h5:not(.welcome-title):not(.welcome-subtitle), 
+.light-theme h6:not(.welcome-title):not(.welcome-subtitle),
+.light-theme .sidebar-submenu-item,
+.light-theme .day-stat-value,
+.light-theme .event-title,
+.light-theme .task-title,
+.light-theme .mission-title,
+.light-theme .diary-title,
+.light-theme .page-title,
+.light-theme .section-title,
+.light-theme .card-title,
+.light-theme .modal-title,
+.light-theme .sidebar-title,
+.light-theme .nav-title,
+.light-theme .header-title,
+.light-theme .leader-text,
+.light-theme .week-day-header-compact,
+.light-theme .settings-title,
+.light-theme .profile-title,
+.light-theme .chat-title,
+.light-theme .notification-title,
+.light-theme .calendar-title,
+.light-theme .week-title,
+.light-theme .day-title,
+.light-theme .entry-title,
+.light-theme .result-title,
+.light-theme .compact-record-title,
+.light-theme .search-title,
+.light-theme .category-title,
+.light-theme .mission-category-title,
+.light-theme .day-view-date,
+.light-theme .settings-main-title,
+.light-theme .settings-card-title,
+.light-theme .mission-objective,
+.light-theme .model-provider-title,
+.light-theme .theme-option-title,
+.light-theme .item-title{
+  color: #600a0a !important;
+  -webkit-text-fill-color: #600a0a !important;
+  background: none !important;
+}
+
+/* Input Elements - INCREASED OPACITY */
+.light-theme input,
+.light-theme textarea,
+.light-theme select,
+.light-theme .diary-textarea,
+.light-theme .login-input,
+.light-theme .password-input,
+.light-theme .username-input,
+.light-theme .search-input,
+.light-theme .diary-search-input,
+.light-theme .message-input,
+.light-theme .chatbot-input,
+.light-theme .time-input,
+.light-theme .date-input,
+.light-theme .ms-btn,
+.light-theme .day-form-input,
+.light-theme .day-form-select,
+.light-theme .model-select,
+.light-theme .detail-action-btn.retry,
+.light-theme .detail-action-btn.view,
+.light-theme .theme-select,
+.light-theme .mission-timer,
+.light-theme .diary-entry-input,
+.light-theme .mood-select,
+.light-theme .today-btn-compact,
+.light-theme .date-separator,
+.light-theme .settings-btn.primary,
+.light-theme .clear-filters-btn,
+.light-theme .search-button,
+.light-theme .event-time,
+.light-theme .mission-category-content,
+.light-theme .day-view-tab,
+.light-theme .task-time,
+.light-theme .mission-deadline {
+  color: #600a0a !important;
+  -webkit-text-fill-color: #600a0a !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .chatbot-messages{
+  background: none !important;
+}
+
+.light-theme input:focus,
+.light-theme textarea:focus,
+.light-theme select:focus {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.15) !important;
+  background: var(--color-bg-input-focus) !important;
+  outline: none !important;
+}
+
+
+/* Buttons */
+.light-theme .btn-primary,
+.light-theme .action-btn,
+.light-theme .search-entries-btn,
+.light-theme .write-entry-btn,
+.light-theme .view-more-btn,
+.light-theme .header-btn,
+.light-theme .save-settings-btn,
+.light-theme .card-action-btn,
+.light-theme .diary-save-btn,
+.light-theme .search-button,
+.light-theme .login-action-btn,
+.light-theme .calendar-btn,
+.light-theme .day-form-btn,
+.light-theme .day-nav-btn,
+.light-theme .hour-btn,
+.light-theme .task-btn,
+.light-theme .event-btn,
+.light-theme .view-btn,
+.light-theme .theme-toggle-btn,
+.light-theme .refresh-data-btn,
+.light-theme .day-refresh-btn,
+.light-theme .load-more-btn,
+.light-theme .chatbot-quick-reply.custom-prompt {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: rgba(139, 69, 19, 0.9) !important;
+  border: 1px solid rgba(184, 134, 11, 0.25) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 500 !important;
+  box-shadow: 
+    0 2px 8px rgba(184, 134, 11, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Labels and Secondary Text */
+.light-theme label,
+.light-theme .form-label,
+.light-theme .input-label,
+.light-theme .field-label,
+.light-theme .setting-label,
+.light-theme .mission-label,
+.light-theme .task-label,
+.light-theme .event-label,
+.light-theme span,
+.light-theme .date-text,
+.light-theme .time-text,
+.light-theme .detail-text,
+.light-theme .detail-date,
+.light-theme .compact-record-date,
+.light-theme .compact-event-time,
+.light-theme .event-time,
+.light-theme .task-time,
+.light-theme .stat-label,
+.light-theme .item-title-compact
+  {
+  color: #600a0a !important;
+  font-weight: 500 !important;
+}
+
+.light-theme .detail-type,
+.light-theme .detail-status {
+  color: #600a0a !important;
+  background-color: rgba(142, 122, 122, 0.5) !important;
+}
+
+.light-theme .item-time {
+  background: rgba(180, 186, 132, 0.4) !important;
+}
+.light-theme .login-subtitle,
+.light-theme .login-switch-text{
+  color: #600a0a !important;
+}
+/* Stat Numbers */
+.light-theme .day-view-date,
+.light-theme .stat-number,
+.light-theme .mission-count,
+.light-theme .record-count,
+.light-theme .usage-count,
+.light-theme .notification-count {
+  -webkit-text-fill-color: #600a0a !important;
+  background: none !important;
+  color: #600a0a !important;
+}
+
+/* Interactive Elements */
+.light-theme .sidebar-link,
+.light-theme .nav-link,
+.light-theme .menu-item,
+.light-theme .dropdown-item {
+  color: var(--color-text-secondary) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+.light-theme .sidebar-link:hover,
+.light-theme .nav-link:hover {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-accent-primary) !important;
+}
+
+/* Calendar Elements */
+.light-theme .week-day:hover {
+  background: var(--color-bg-hover) !important;
+  border-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .week-day.today {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 10px var(--color-accent-glow) !important;
+}
+
+/* Mission Elements */
+.light-theme .mission-tab {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-secondary) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+}
+.light-theme .mission-btn{
+  color:black !important;
+}
+.light-theme .mission-tab.active {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-accent-secondary) !important;
+}
+
+/* Profile Elements */
+.light-theme .avatar-option {
+  border: 2px solid var(--color-border-normal) !important;
+}
+
+.light-theme .avatar-option:hover {
+  border-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .avatar-option.selected {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 15px var(--color-accent-glow) !important;
+}
+
+/* WeekView Components */
+.light-theme .week-header,
+.light-theme .week-header-compact {
+  background: rgba(245, 245, 235, 0.6) !important;
+  border-bottom: 1px solid rgba(184, 134, 11, 0.15) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .week-day-header,
+.light-theme .week-day-header-compact {
+  background: rgba(250, 250, 245, 0.5) !important;
+  border-bottom: 1px solid rgba(184, 134, 11, 0.15) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .week-task-item,
+.light-theme .week-event-item {
+  background: rgba(245, 245, 235, 0.4) !important;
+  color: #600a0a !important;
+  border: 1px solid rgba(184, 134, 11, 0.15) !important;
+}
+
+.light-theme .week-item-compact {
+  background: rgba(245, 245, 235, 0.4) !important;
+  color: #600a0a !important;
+  border-left: 2px solid rgba(184, 134, 11, 0.25) !important;
+}
+
+/* Calendar Widget */
+.light-theme .react-calendar--small {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6), rgba(0, 0, 0, 0.1)) !important;
+  border: 1px solid rgba(184, 134, 11, 0.25) !important;
+  box-shadow: 0 2px 12px rgba(184, 134, 11, 0.1) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .react-calendar--small .react-calendar__tile {
+  color: rgba(96, 10, 10, 0.7) !important;
+}
+
+.light-theme .react-calendar--small .react-calendar__tile:hover {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: #600a0a !important;
+}
+
+/* Animations */
+@keyframes light-golden-scan {
+  0% { background-position: -100% 0; }
+  100% { background-position: 100% 0; }
+}
+
+.light-theme .mission-scan {
+  background: linear-gradient(90deg, transparent, rgba(184, 134, 11, 0.25), transparent);
+  animation: light-golden-scan 2s infinite;
+}
+
+
+
+.light-theme .home-title {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: #600a0a !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+/* ═══════════════════════════════════════════════════════════════
+   ZONE 2: COMPONENT CONTAINERS & LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* Cards with theme-appropriate glows */
+.dashboard-card,
+.settings-card,
+.diary-card,
+.calendar-card,
+.profile-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-card), 0 0 20px var(--color-accent-glow);
+  will-change: var(--will-change);
+}
+
+/* Enhanced buttons */
+.btn-primary,
+.save-settings-btn,
+.diary-save-btn,
+.theme-toggle-btn {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1.5rem;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 2px 8px var(--color-accent-glow);
+  will-change: var(--will-change);
+}
+
+.btn-primary:hover,
+.save-settings-btn:hover,
+.diary-save-btn:hover,
+.theme-toggle-btn:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover), var(--color-accent-primary));
+  box-shadow: 0 4px 12px var(--color-accent-glow);
+  transform: translateY(-1px);
+}
+
+/* Enhanced inputs */
+input,
+textarea,
+select {
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  font-family: var(--font-family-primary);
+  transition: var(--transition-smooth);
+  will-change: var(--will-change);
+  cursor: text !important;
+  caret-color: var(--color-text-primary) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  background: var(--color-bg-input-focus);
+  border-color: var(--color-border-focus);
+  outline: none;
+  box-shadow: 0 0 10px var(--color-accent-glow);
+  cursor: text !important;
+  caret-color: var(--color-text-primary) !important;
+}
+
+/* Enhanced sidebar */
+.sidebar {
+  background: var(--color-bg-sidebar);
+  backdrop-filter: blur(10px);
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3), 0 0 20px var(--color-accent-glow);
+}
+
+/* Enhanced sidebar toggle */
+.sidebar-toggle {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  box-shadow: 0 0 15px var(--color-accent-glow);
+  border-radius: 0 25px 25px 0;
+}
+
+.sidebar-toggle:hover {
+  box-shadow: 0 0 20px var(--color-accent-glow);
+}
+
+/* Enhanced text hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+p, span, label {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PERFORMANCE OPTIMIZATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📱 RESPONSIVE LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+/* Always 100% of available space */
+.main-content-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  will-change: width, max-width;
+  transform: translateZ(0);
+}
+
+.main-content-wrapper.sidebar-visible {
+  width: calc(100% - 280px);
+  max-width: calc(100vw - 280px);
+}
+
+
+.main-content-wrapper > * {
+  transition: none;
+  max-width: 100%;
+  overflow-x: hidden; 
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎨 GLOBAL BASE STYLES
+   ═══════════════════════════════════════════════════════════════ */
 * {
   margin: 0;
   padding: 0;
@@ -157,57 +721,88 @@
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: var(--color-bg-body);
+  font-family: var(--font-family-primary);
+  background: #0a0a0f; /* Fallback color */
+  background-image: url('./assets/backgrounds/dark-theme.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--color-text-primary);
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  transition: background-image 0.5s ease-in-out;
+  overflow-x: hidden;
+  font-weight: var(--font-weight-normal);
 }
 
-/* Basic Typography */
-h1 {
-  font-size: 2.5rem;
-  line-height: 1.1;
-  margin-bottom: 1rem;
-  color: var(--color-text-primary); /* Ensure headers use theme color */
+/* Theme-specific backgrounds */
+body.light-theme {
+  background-image: url('./assets/backgrounds/light-theme.png');
+  background-color: #fefdf8; /* Fallback */
 }
 
-h2 {
-  font-size: 1.8rem;
-  margin-bottom: 0.8rem;
-  color: var(--color-text-primary); /* Ensure headers use theme color */
+body.yandere-theme {
+  background-image: url('./assets/backgrounds/yandere-theme.png');
+  background-color: #0e0a0d; /* Fallback */
 }
 
-h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.6rem;
-  color: var(--color-text-primary); /* Ensure headers use theme color */
+body.kuudere-theme {
+  background-image: url('./assets/backgrounds/kuudere-theme.png');
+  background-color: #0a0d12; /* Fallback */
 }
 
-a {
-  font-weight: 500;
-  color: var(--color-accent-primary);
-  text-decoration: inherit;
-  transition: color 0.2s ease;
+body.tsundere-theme {
+  background-image: url('./assets/backgrounds/tsundere-theme.png');
+  background-color: #1a0f0a; /* Fallback */
 }
 
-a:hover {
-  color: var(--color-accent-secondary);
+body.dandere-theme {
+  background-image: url('./assets/backgrounds/dandere-theme.png');
+  background-color: #0f0a12; /* Fallback */
 }
 
-/* Base Button Styles */
+/* EXCLUDE LOGIN: Don't apply PNG backgrounds to login pages */
+body:not(.login-page) {
+  background: url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
+}
+
+/* THEME BACKGROUNDS: Only for non-login pages */
+body.light-theme:not(.login-page) {
+  background: url('./assets/backgrounds/light-theme.png') center center / cover no-repeat fixed;
+}
+
+body.yandere-theme:not(.login-page) {
+  background: url('./assets/backgrounds/yandere-theme.png') center center / cover no-repeat fixed;
+}
+
+body.kuudere-theme:not(.login-page) {
+  background: url('./assets/backgrounds/kuudere-theme.png') center center / cover no-repeat fixed;
+}
+
+body.tsundere-theme:not(.login-page) {
+  background: url('./assets/backgrounds/tsundere-theme.png') center center / cover no-repeat fixed;
+}
+
+body.dandere-theme:not(.login-page) {
+  background: url('./assets/backgrounds/dandere-theme.png') center center / cover no-repeat fixed;
+}
+
+/* LOGIN PAGES: Transparent backgrounds only */
+body.login-page {
+  background: transparent !important;
+}
+
+/* Base Button Styles - PRESERVED as requested */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--color-bg-card); /* Default button background */
-  cursor: pointer;
-  transition: all 0.25s ease;
-  color: var(--color-text-primary); /* Default button text color */
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: #763333;
 }
 
 button:hover {
@@ -220,491 +815,780 @@ button:focus-visible {
   outline: 2px solid var(--color-accent-primary);
 }
 
-/* Form element base styles */
-input,
-textarea,
-select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: var(--color-bg-card);
-  color: var(--color-text-primary);
+/* Add theme-specific variables for notifications */
+:root,
+.dark-theme {
+  --theme-scan-animation: mission-scan;
+  --color-mission-primary: #87ceeb;
+  --color-mission-glow: rgba(135, 206, 235, 0.4);
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 5px var(--color-glow-secondary);
+.yandere-theme {
+  --theme-scan-animation: yandere-heart-scan;
+  --color-mission-primary: var(--yandere-heart);
+  --color-mission-glow: var(--yandere-blush);
 }
 
-/* Basic container */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
+.tsundere-theme {
+  --theme-scan-animation: tsundere-fire-sweep;
+  --color-mission-primary: #ff6b35;
+  --color-mission-glow: rgba(255, 107, 53, 0.4);
 }
 
-/* Utility classes */
-/* Margin utilities */
-.mt-1 {
-  margin-top: 0.25rem;
-}
-.mt-2 {
-  margin-top: 0.5rem;
-}
-.mt-4 {
-  margin-top: 1rem;
-}
-.mb-1 {
-  margin-bottom: 0.25rem;
-}
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-.mb-4 {
-  margin-bottom: 1rem;
-}
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-.m-0 {
-  margin: 0;
+.kuudere-theme {
+  --theme-scan-animation: kuudere-ice-formation;
+  --color-mission-primary: #7dd3fc;
+  --color-mission-glow: rgba(125, 211, 252, 0.4);
 }
 
-/* Padding utilities */
-.p-3 {
-  padding: 0.75rem;
-}
-.p-4 {
-  padding: 1rem;
-}
-.p-6 {
-  padding: 1.5rem;
-}
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
+/* ═══════════════════════════════════════════════════════════════
+   ZONE 3: CONSOLIDATED COMPONENT-SPECIFIC LIGHT THEME RULES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Home Page Components */
+.light-theme .home-stat-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Flex utilities */
-.flex {
+.light-theme .home-stat-card:hover {
+  background: rgba(255, 255, 255, 1.0) !important;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.light-theme .feature-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .feature-card:hover {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .home-guide {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .architecture-item {
+  background: rgba(248, 248, 240, 0.8) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+}
+
+.light-theme .action-btn.secondary {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .action-btn.tertiary {
+  background: rgba(34, 139, 34, 0.1) !important;
+  color: rgba(34, 139, 34, 0.9) !important;
+  border: 1px solid rgba(34, 139, 34, 0.3) !important;
+}
+
+/* Calendar Edit Form Components */
+.light-theme .edit-overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+.light-theme .edit-form {
+  background: rgba(255, 255, 250, 0.95) !important;
+  border-color: rgba(184, 134, 11, 0.2) !important;
+}
+
+.light-theme .edit-form h3 {
+  color: #600a0a !important;
+  border-bottom-color: rgba(184, 134, 11, 0.15) !important;
+}
+
+.light-theme .edit-form input,
+.light-theme .edit-form select {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(184, 134, 11, 0.2) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .edit-form input:focus,
+.light-theme .edit-form select:focus {
+  border-color: rgba(184, 134, 11, 0.4) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  outline-color: rgba(184, 134, 11, 0.5) !important;
+}
+
+.light-theme .edit-form input::placeholder {
+  color: rgba(96, 10, 10, 0.4) !important;
+}
+
+.light-theme .edit-form select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23600a0a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+}
+
+.light-theme .edit-form .day-form-actions {
+  border-top-color: rgba(184, 134, 11, 0.1) !important;
+}
+
+.light-theme .edit-form .day-form-actions button[type="submit"] {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: #600a0a !important;
+  border-color: rgba(184, 134, 11, 0.25) !important;
+}
+
+.light-theme .edit-form .day-form-actions button[type="submit"]:hover {
+  background: rgba(184, 134, 11, 0.2) !important;
+}
+
+.light-theme .edit-form .day-form-actions button[type="button"] {
+  background: rgba(220, 38, 38, 0.1) !important;
+  color: rgba(139, 69, 19, 0.9) !important;
+  border-color: rgba(220, 38, 38, 0.2) !important;
+}
+
+.light-theme .edit-form .day-form-actions button[type="button"]:hover {
+  background: rgba(220, 38, 38, 0.2) !important;
+}
+
+.light-theme .edit-form input:focus,
+.light-theme .edit-form select:focus,
+.light-theme .edit-form button:focus {
+  outline-color: rgba(184, 134, 11, 0.5) !important;
+}
+
+/* Sidebar Theme Variables */
+.light-theme {
+  --streak-primary: rgba(184, 134, 11, 0.9);
+  --streak-secondary: rgba(146, 91, 7, 0.7);
+  --streak-glow: rgba(184, 134, 11, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   END CONSOLIDATED COMPONENT RULES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTIFICATIONS/MISSION CONTROL LIGHT THEME STANDARDIZATION
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Mission Control Container - Higher Opacity */
+.light-theme .mission-control-container {
+  background: linear-gradient(145deg, rgba(255, 255, 250, 0.98), rgba(248, 248, 240, 0.95)) !important;
+}
+
+/* Mission Control Header - Golden Brown Theme */
+.light-theme .mission-control-header {
+  background: linear-gradient(135deg, rgba(255, 255, 250, 0.95), rgba(248, 248, 240, 0.9)) !important;
+  border: 2px solid var(--color-accent-primary) !important;
+  box-shadow: 0 8px 32px rgba(184, 134, 11, 0.15), 0 0 20px var(--color-accent-glow) !important;
+}
+
+.light-theme .mission-control-header::before {
+  background: linear-gradient(45deg, transparent, var(--color-accent-glow), transparent) !important;
+}
+
+/* Mission Title */
+.light-theme .mission-title {
+  color: var(--color-accent-primary) !important;
+  text-shadow: 0 0 30px var(--color-accent-glow) !important;
+}
+
+/* Mission Summary */
+.light-theme .mission-summary {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Mission Summary Stats */
+.light-theme .mission-summary-stats {
+  background: rgba(248, 248, 240, 0.9) !important;
+}
+
+.light-theme .summary-stat {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+}
+
+.light-theme .summary-stat h3 {
+  color: var(--color-accent-primary) !important;
+}
+
+.light-theme .summary-stat p {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Mission Tabs */
+.light-theme .mission-tabs {
+  background: rgba(248, 248, 240, 0.8) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .mission-tab {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .mission-tab.active {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-accent-secondary) !important;
+  box-shadow: 0 4px 12px var(--color-accent-glow) !important;
+}
+
+/* Mission Categories */
+.light-theme .mission-category {
+  background: rgba(255, 255, 250, 0.9) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .mission-category-header {
+  background: rgba(248, 248, 240, 0.95) !important;
+  border-bottom: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .mission-category-title {
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .mission-category-count {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+/* Mission Items - Higher Opacity */
+.light-theme .mission-item {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-left: 3px solid var(--color-accent-primary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 12px !important;
+}
+
+.light-theme .mission-item::before {
+  background: linear-gradient(90deg, transparent, var(--color-accent-glow), transparent) !important;
+}
+
+.light-theme .mission-item:hover {
+  background: rgba(255, 255, 255, 1.0) !important;
+  border-left-color: var(--color-accent-secondary) !important;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 4px 20px rgba(184, 134, 11, 0.2), 0 0 15px var(--color-accent-glow) !important;
+}
+
+.light-theme .mission-item.active-mission {
+  background: linear-gradient(135deg, rgba(255, 255, 250, 0.95), rgba(248, 248, 240, 0.9)) !important;
+  border-left-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .mission-item.event {
+  border-left: 4px solid var(--color-info) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 250, 0.9), rgba(248, 248, 240, 0.85)) !important;
+}
+
+.light-theme .mission-item.event.over {
+  opacity: 0.6 !important;
+  border-left-color: var(--color-text-muted) !important;
+  background: linear-gradient(135deg, rgba(245, 245, 240, 0.8), rgba(240, 240, 235, 0.7)) !important;
+}
+
+/* Mission Icons */
+.light-theme .mission-icon {
+  background: rgba(184, 134, 11, 0.15) !important;
+  border: 2px solid var(--color-accent-primary) !important;
+  color: var(--color-accent-primary) !important;
+}
+
+.light-theme .mission-icon.completed {
+  background: rgba(34, 139, 34, 0.15) !important;
+  border-color: var(--color-success) !important;
+  color: var(--color-success) !important;
+}
+
+.light-theme .mission-icon.failed {
+  background: rgba(220, 20, 60, 0.15) !important;
+  border-color: var(--color-error) !important;
+  color: var(--color-error) !important;
+}
+
+/* Mission Details */
+.light-theme .mission-details {
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .mission-objective {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .mission-deadline,
+.light-theme .mission-timer {
+  color: var(--color-text-secondary) !important;
+  background: rgba(248, 248, 240, 0.8) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+}
+
+.light-theme .mission-status {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .mission-status.active {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: var(--color-accent-primary) !important;
+  border-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .mission-status.completed {
+  background: rgba(34, 139, 34, 0.1) !important;
+  color: var(--color-success) !important;
+  border-color: var(--color-success) !important;
+}
+
+.light-theme .mission-status.failed {
+  background: rgba(220, 20, 60, 0.1) !important;
+  color: var(--color-error) !important;
+  border-color: var(--color-error) !important;
+}
+
+/* Mission Badges */
+.light-theme .mission-badge {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.light-theme .mission-badge.completed {
+  background: linear-gradient(135deg, var(--color-success), rgba(34, 139, 34, 0.8)) !important;
+}
+
+.light-theme .mission-badge.failed {
+  background: linear-gradient(135deg, var(--color-error), rgba(220, 20, 60, 0.8)) !important;
+}
+
+/* Mission Operations List */
+.light-theme .mission-operations-list {
+  background: rgba(255, 255, 250, 0.8) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+}
+
+/* Mission Empty State */
+.light-theme .mission-category-empty {
+  background: rgba(248, 248, 240, 0.9) !important;
+  border: 2px dashed var(--color-border-normal) !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* Mission Actions */
+.light-theme .mission-actions button {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: var(--color-accent-primary) !important;
+  border: 1px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .mission-actions button:hover {
+  background: rgba(184, 134, 11, 0.2) !important;
+  box-shadow: 0 4px 12px var(--color-accent-glow) !important;
+}
+
+/* Notification Specific Elements */
+.light-theme .notification-item {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-left: 4px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .notification-item:hover {
+  background: rgba(255, 255, 255, 1.0) !important;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.15) !important;
+}
+
+.light-theme .notification-title {
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .notification-content {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .notification-time {
+  color: var(--color-text-muted) !important;
+  background: rgba(248, 248, 240, 0.8) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   END NOTIFICATIONS LIGHT THEME
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   RETRY MISSION POPUP LIGHT THEME
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Retry Popup Overlay */
+.light-theme .retry-popup-overlay {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Retry Popup Container - OPAQUE */
+.light-theme .retry-popup {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 2px solid var(--color-accent-primary) !important;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: none !important;
+}
+
+/* Retry Popup Close Button */
+.light-theme .retry-popup-close {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .retry-popup-close:hover {
+  background: rgba(220, 38, 38, 0.2) !important;
+  color: var(--color-error) !important;
+  border-color: var(--color-error) !important;
+}
+
+/* Retry Popup Header */
+.light-theme .retry-popup-header h2 {
+  color: var(--color-accent-primary) !important;
+}
+
+.light-theme .retry-popup-header p {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Mission Info */
+.light-theme .mission-info {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+.light-theme .mission-info h3 {
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .mission-info p {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Retry Form Group */
+.light-theme .retry-form-group label {
+  color: var(--color-text-primary) !important;
+}
+
+/* Retry Time Input */
+.light-theme .retry-time-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 2px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .retry-time-input:focus {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-glow) !important;
+  background: rgba(255, 255, 255, 1.0) !important;
+}
+
+/* Retry Buttons */
+.light-theme .retry-btn.cancel {
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: var(--color-text-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .retry-btn.cancel:hover {
+  background: rgba(248, 248, 240, 0.9) !important;
+  border-color: var(--color-border-hover) !important;
+}
+
+.light-theme .retry-btn.confirm {
+  background: rgba(184, 134, 11, 0.15) !important;
+  color: var(--color-accent-primary) !important;
+  border: 1px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .retry-btn.confirm:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.25) !important;
+  box-shadow: 0 4px 12px var(--color-accent-glow) !important;
+}
+
+.light-theme .retry-btn:disabled {
+  opacity: 0.6 !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* Retry Error */
+.light-theme .retry-error {
+  background: rgba(220, 38, 38, 0.1) !important;
+  border: 1px solid var(--color-error) !important;
+  color: var(--color-error) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   END RETRY MISSION POPUP LIGHT THEME
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   POPUP OVERRIDES - OPAQUE BACKGROUNDS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Detail Popup - OPAQUE */
+.light-theme .detail-popup,
+.light-theme .detail-popup-overlay,
+.light-theme .diary-popup-overlay,
+.light-theme .diary-popup-content,
+.light-theme .modal-content,
+.light-theme .popup-container {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 2px solid var(--color-accent-primary) !important;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: none !important;
+}
+
+/* TEXT CURSOR FIX - Make cursor visible on white backgrounds */
+.light-theme input,
+.light-theme textarea,
+.light-theme .diary-textarea,
+.light-theme .retry-time-input,
+.light-theme .search-input,
+.light-theme .message-input,
+.light-theme .chatbot-input {
+  caret-color: #600a0a !important;
+}
+
+/* MOOD SELECTOR LIGHT THEME */
+.light-theme .mood-selector {
+  background: rgba(255, 255, 250, 0.9) !important;
+  border: 2px solid rgba(184, 134, 11, 0.3) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(184, 134, 11, 0.2) !important;
+}
+
+.light-theme .mood-selector::before {
+  background: linear-gradient(
+    135deg,
+    rgba(184, 134, 11, 0.1) 0%,
+    rgba(218, 165, 32, 0.05) 50%,
+    rgba(122, 77, 42, 0.1) 100%
+  ) !important;
+}
+
+.light-theme .mood-selector:hover {
+  border-color: rgba(184, 134, 11, 0.5) !important;
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(184, 134, 11, 0.4),
+    0 0 20px rgba(184, 134, 11, 0.2) !important;
+}
+
+.light-theme .mood-option {
+  background: rgba(248, 248, 240, 0.6) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .mood-option:hover {
+  background: rgba(184, 134, 11, 0.15) !important;
+}
+
+.light-theme .mood-option.selected {
+  background: rgba(184, 134, 11, 0.25) !important;
+  border: 1px solid rgba(184, 134, 11, 0.4) !important;
+}
+
+.light-theme .mood-selector-label {
+  color: rgba(96, 10, 10, 0.7) !important;
+}
+
+/* DATETIME DISPLAY LIGHT THEME - Remove Purple Outline */
+.light-theme .datetime-display {
+  border: 1px solid rgba(184, 134, 11, 0.25) !important;
+  background: rgba(255, 255, 250, 0.95) !important;
+}
+
+/* MONTH VIEW HEADER STYLING (ALL THEMES) */
+.month-view-header {
   display: flex;
-}
-.flex-col {
-  flex-direction: column;
-}
-.flex-1 {
-  flex: 1 1 0%;
-}
-.items-center {
+  justify-content: center;
   align-items: center;
+  gap: 1rem;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border);
 }
-.justify-between {
-  justify-content: space-between;
+
+.month-view-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  text-align: center;
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-.justify-center {
+
+.light-theme .month-view-header {
+  border-bottom-color: rgba(184, 134, 11, 0.25) !important;
+}
+
+.light-theme .month-view-title {
+  color: #600a0a !important;
+  -webkit-text-fill-color: #600a0a !important;
+}
+
+/* WEEK SUBTITLE LIGHT THEME */
+.light-theme .week-subtitle-compact {
+  color: #600a0a !important;
+}
+
+/* Year Navigation Buttons */
+.month-nav-btn {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
-.gap-2 {
-  gap: 0.5rem;
-}
-.gap-4 {
-  gap: 1rem;
+
+.month-nav-btn:hover {
+  color: var(--color-accent-primary);
+  background: rgba(100, 108, 255, 0.1);
+  transform: scale(1.1);
 }
 
-/* Common layout utilities */
-.text-center {
-  text-align: center;
-}
-.h-screen {
-  height: 100vh;
-}
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-.rounded-full {
-  border-radius: 9999px;
-}
-.shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-.overflow-auto {
-  overflow: auto;
-}
-.overflow-hidden {
-  overflow: hidden;
+.light-theme .month-nav-btn {
+  color: rgba(96, 10, 10, 0.7) !important;
 }
 
-/* main.css or a global stylesheet */
-.logout-btn-red {
-  background: #dc2626 !important; /* Kept as is, can be themed if needed */
+.light-theme .month-nav-btn:hover {
+  color: #b8860b !important;
+  background: rgba(184, 134, 11, 0.1) !important;
+}
+
+/* MODEL CARDS - Light Theme White */
+.light-theme .model-card {
+  background: white !important;
+  border: 2px solid #ccc !important;
+  color: var(--color-text-primary) !important;
+  opacity: 1 !important;
+}
+
+.light-theme .model-card:hover:not(.disabled) {
+  border-color: #999 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .model-card.recommended {
+  border-color: #4ade80 !important;
+  background: white !important;
+}
+
+.light-theme .model-card.downloaded {
+  border-color: #4ade80 !important;
+  background: white !important;
+}
+
+.light-theme .model-card.selected {
+  border: 2px solid #4CAF50 !important;
+  background: white !important;
+}
+
+.light-theme .model-card .model-title h4 {
+  color: rgba(96, 10, 10, 0.9) !important;
+}
+
+.light-theme .model-card .model-provider {
+  color: rgba(96, 10, 10, 0.7) !important;
+}
+
+.light-theme .model-card .model-description {
+  color: rgba(96, 10, 10, 0.8) !important;
+}
+
+.light-theme .model-card .spec {
+  background: rgba(139, 126, 102, 0.2) !important;
+  color: rgba(96, 10, 10, 0.8) !important;
+  border: 1px solid rgba(139, 126, 102, 0.3);
+}
+
+/* RECOMMENDED BADGE - Light Theme Golden Brown System */
+.light-theme .recommended-badge {
+  background: linear-gradient(135deg, rgba(139, 126, 102, 0.9), rgba(184, 134, 11, 0.8)) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(139, 126, 102, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.light-theme .model-option [title="Best Value"] {
+  background: linear-gradient(135deg, rgba(139, 126, 102, 0.9), rgba(184, 134, 11, 0.8)) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(139, 126, 102, 0.4) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* MODEL OPTIONS - Light Theme Golden Brown System */
+.light-theme .model-option {
+  background: linear-gradient(145deg, rgb(193, 191, 162), rgba(0, 0, 0, 0.2)) !important;
+  border: 2px solid rgb(139, 126, 102) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .model-option.selected {
+  border-color: rgb(139, 126, 102) !important;
+  background: linear-gradient(145deg, rgb(193, 191, 162), rgba(139, 126, 102, 0.3)) !important;
+  box-shadow: 0 2px 10px rgba(139, 126, 102, 0.4) !important;
+}
+
+.light-theme .model-option.disabled {
+  opacity: 0.5;
+  background: rgba(193, 191, 162, 0.3) !important;
+  border-color: rgba(139, 126, 102, 0.2) !important;
+}
+
+.light-theme .model-option:hover:not(.disabled):not(.selected) {
+  border-color: rgba(139, 126, 102, 0.6) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(139, 126, 102, 0.2);
+}
+
+.light-theme .model-name {
+  color: rgba(96, 10, 10, 0.9) !important;
+}
+
+.light-theme .model-description {
+  color: rgba(96, 10, 10, 0.8) !important;
+}
+
+
+.light-theme .welcome-subtitle,
+.light-theme .info-text,
+.light-theme .tip-text,
+.light-theme .popup-message,
+.light-theme .feature-list,
+.light-theme .feature-list li,
+.light-theme .popup-card .action-btn {
   color: white !important;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.logout-btn-red:hover {
-  background: #b91c1c !important;
-}
-/* Global animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  -webkit-text-fill-color: white !important;
 }
 
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
 
-/* Background Feature Styles - Enhanced MVP */
-.bg-default {
-  background: var(--color-bg-body);
-  transition: background 0.3s ease;
-}
 
-.bg-mountain {
-  background: 
-    /* Mountain Range Layer 1 (Far) */ linear-gradient(
-      to bottom,
-      transparent 0%,
-      transparent 35%,
-      #2d3748 35%,
-      #1a202c 70%,
-      transparent 70%
-    ),
-    /* Mountain Range Layer 2 (Mid) */
-      linear-gradient(
-        105deg,
-        transparent 0%,
-        transparent 40%,
-        #4a5568 40%,
-        #2d3748 65%,
-        transparent 65%
-      ),
-    /* Mountain Range Layer 3 (Near) */
-      linear-gradient(
-        95deg,
-        transparent 0%,
-        transparent 50%,
-        #1a202c 50%,
-        #0f1419 80%,
-        transparent 80%
-      ),
-    /* Sky gradient */
-      linear-gradient(to bottom, #1a365d 0%, #2d3748 50%, #1a202c 100%);
-  background-size: 100% 100%, 120% 100%, 110% 100%, 100% 100%;
-  background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
-  background-attachment: fixed;
-  animation: mountainShift 25s ease-in-out infinite;
-}
 
-@keyframes mountainShift {
-  0% {
-    background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
-  }
-  50% {
-    background-position: 2% 0%, -8% 0%, 7% 0%, 0% 0%;
-  }
-  100% {
-    background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
-  }
-}
-
-.bg-city {
-  background: 
-    /* City Skyline Buildings */ linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 60%,
-      #2d3748 60%,
-      #2d3748 90%,
-      transparent 90%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 65%,
-      #1a202c 65%,
-      #1a202c 85%,
-      transparent 85%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 55%,
-      #4a5568 55%,
-      #4a5568 95%,
-      transparent 95%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 70%,
-      #2d3748 70%,
-      #2d3748 80%,
-      transparent 80%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 50%,
-      #1a202c 50%,
-      #1a202c 88%,
-      transparent 88%
-    ),
-    /* Building Windows (lights) */
-      repeating-linear-gradient(
-        90deg,
-        transparent 0px,
-        transparent 8px,
-        rgba(255, 215, 0, 0.3) 8px,
-        rgba(255, 215, 0, 0.3) 10px
-      ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 12px,
-      rgba(0, 191, 255, 0.2) 12px,
-      rgba(0, 191, 255, 0.2) 14px
-    ),
-    /* Night Sky */
-      linear-gradient(to bottom, #0f172a 0%, #1e293b 30%, #334155 100%);
-  background-size: 15% 100%, 25% 100%, 20% 100%, 18% 100%, 22% 100%, 100% 100%,
-    100% 100%, 100% 100%;
-  background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-    80% bottom, 0% 60%, 0% 50%, 0% 0%;
-  background-attachment: fixed;
-  animation: cityLights 20s ease-in-out infinite;
-}
-
-@keyframes cityLights {
-  0%,
-  100% {
-    filter: brightness(1) contrast(1);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, 0% 60%, 0% 50%, 0% 0%;
-  }
-  25% {
-    filter: brightness(1.1) contrast(1.05);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, -2% 60%, -1% 50%, 0% 0%;
-  }
-  50% {
-    filter: brightness(0.95) contrast(1.1);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, 1% 60%, 2% 50%, 0% 0%;
-  }
-  75% {
-    filter: brightness(1.05) contrast(0.95);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, -1% 60%, 1% 50%, 0% 0%;
-  }
-}
-
-.bg-space {
-  background: 
-    /* Stars - Small */ radial-gradient(
-      circle at 20% 20%,
-      rgba(255, 255, 255, 0.8) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 80% 30%,
-      rgba(255, 255, 255, 0.6) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 40% 70%,
-      rgba(255, 255, 255, 0.9) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 90% 80%,
-      rgba(255, 255, 255, 0.7) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 10% 90%,
-      rgba(255, 255, 255, 0.5) 1px,
-      transparent 1px
-    ),
-    /* Stars - Medium */
-      radial-gradient(
-        circle at 60% 10%,
-        rgba(255, 255, 255, 0.8) 2px,
-        transparent 2px
-      ),
-    radial-gradient(
-      circle at 30% 60%,
-      rgba(255, 255, 255, 0.6) 2px,
-      transparent 2px
-    ),
-    radial-gradient(
-      circle at 85% 50%,
-      rgba(255, 255, 255, 0.7) 2px,
-      transparent 2px
-    ),
-    /* Nebula Effects */
-      radial-gradient(
-        ellipse at 75% 25%,
-        rgba(138, 43, 226, 0.3) 0%,
-        transparent 50%
-      ),
-    radial-gradient(
-      ellipse at 25% 75%,
-      rgba(30, 144, 255, 0.2) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
-      rgba(255, 20, 147, 0.15) 0%,
-      transparent 70%
-    ),
-    /* Deep Space Background */
-      linear-gradient(
-        135deg,
-        #0a0a0f 0%,
-        #1a0a1f 25%,
-        #0f0a1a 50%,
-        #1f0a0f 75%,
-        #0a0f1a 100%
-      );
-  background-size: 300px 300px, 400px 400px, 250px 250px, 350px 350px,
-    200px 200px, 500px 500px, 450px 450px, 380px 380px, 800px 800px, 700px 700px,
-    900px 900px, 100% 100%;
-  background-position: 0% 0%, 50% 20%, 80% 60%, 20% 80%, 70% 40%, 30% 70%,
-    90% 10%, 10% 30%, 0% 0%, 100% 100%, 50% 50%, 0% 0%;
-  background-attachment: fixed;
-  animation: spaceTwinkle 15s ease-in-out infinite;
-}
-
-@keyframes spaceTwinkle {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: brightness(1) hue-rotate(0deg);
-  }
-  25% {
-    opacity: 0.8;
-    transform: scale(1.02);
-    filter: brightness(1.1) hue-rotate(5deg);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(0.98);
-    filter: brightness(0.9) hue-rotate(-5deg);
-  }
-  75% {
-    opacity: 1.1;
-    transform: scale(1.01);
-    filter: brightness(1.05) hue-rotate(3deg);
-  }
-}
-
-/* Light theme background variants */
-.light-theme.bg-mountain {
-  background: linear-gradient(
-      135deg,
-      rgba(248, 249, 250, 0.9) 0%,
-      rgba(255, 255, 255, 0.95) 100%
-    ),
-    linear-gradient(
-      45deg,
-      #ecf0f1 0%,
-      #bdc3c7 25%,
-      #ecf0f1 50%,
-      #bdc3c7 75%,
-      #ecf0f1 100%
-    );
-  background-attachment: fixed;
-}
-
-.light-theme.bg-city {
-  background: linear-gradient(
-      135deg,
-      rgba(248, 249, 250, 0.9) 0%,
-      rgba(255, 255, 255, 0.95) 100%
-    ),
-    linear-gradient(
-      90deg,
-      #f8f9fa 0%,
-      #e9ecef 25%,
-      #dee2e6 50%,
-      #e9ecef 75%,
-      #f8f9fa 100%
-    );
-  background-attachment: fixed;
-}
-
-.light-theme.bg-space {
-  background: linear-gradient(
-      135deg,
-      rgba(248, 249, 250, 0.9) 0%,
-      rgba(255, 255, 255, 0.95) 100%
-    ),
-    radial-gradient(
-      circle at 20% 80%,
-      rgba(99, 102, 241, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 20%,
-      rgba(79, 70, 229, 0.1) 0%,
-      transparent 50%
-    );
-  background-attachment: fixed;
-}
-
-/* Content overlay for background readability */
-.bg-mountain .main-content,
-.bg-city .main-content,
-.bg-space .main-content {
-  position: relative;
-}
-
-.bg-mountain .main-content::before,
-.bg-city .main-content::before,
-.bg-space .main-content::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Enhanced background visibility */
-.bg-mountain,
-.bg-city,
-.bg-space {
-  min-height: 100vh;
-  position: relative;
-}
-
-/* Ensure background covers full viewport */
-body.bg-mountain,
-body.bg-city,
-body.bg-space {
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
-}

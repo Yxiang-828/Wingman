@@ -1,9 +1,21 @@
+// User Authentication Hub - Gateway to your digital realm
+// Handles both login and registration with theme-aware background videos
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import productiveIcon from "../../assets/productive.png";
-import moodyIcon from "../../assets/moody.png";
+import productiveIcon from "../../assets/icons/productive.png";
+import moodyIcon from "../../assets/icons/moody.png";
 import { Auth } from "../../utils/AuthStateManager";
-import "./Login.css";
+import { loginUser, registerUser, getCurrentUser } from "../../services/hybridAuth";
+import ConnectionStatus from "../Common/ConnectionStatus";
+import UsernameConflictModal from "../Common/UsernameConflictModal";
+import "./login.css";
+import darkVideo from "../../assets/backgrounds/videos/dark-theme.mp4";
+import lightVideo from "../../assets/backgrounds/videos/light-theme.mp4";
+import yandereVideo from "../../assets/backgrounds/videos/yandere-theme.mp4";
+import kuudereVideo from "../../assets/backgrounds/videos/kuudere-theme.mp4";
+import tsundereVideo from "../../assets/backgrounds/videos/tsundere-theme.mp4";
+import dandereVideo from "../../assets/backgrounds/videos/dandere-theme.mp4";
+import WelcomePopup from "./WelcomePopup";
 
 const moodIcons: Record<string, string> = {
   productive: productiveIcon,
@@ -19,15 +31,24 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mood, setMood] = useState<"productive" | "moody">("productive");
+  const [currentTheme, setCurrentTheme] = useState<string>("dark");
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [autoTilt, setAutoTilt] = useState(false);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  
+  // Username conflict handling states
+  const [showUsernameConflict, setShowUsernameConflict] = useState(false);
+  const [conflictError, setConflictError] = useState<string>('');
+  const [conflictUsername, setConflictUsername] = useState<string>('');
   const navigate = useNavigate();
 
+  // Listen for mood changes from external sources
   useEffect(() => {
-    // Maintain a reference to the callback function
     const handleMoodChange = (mood: string) => {
       if (mood === "productive" || mood === "moody") setMood(mood);
     };
 
-    // Register listener and store the cleanup function
     let cleanup: (() => void) | undefined;
     if (window.electronAPI?.onMoodChange) {
       const result = window.electronAPI.onMoodChange(handleMoodChange);
@@ -36,99 +57,132 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       }
     }
 
-    // Return the cleanup function for useEffect
     return () => {
       if (cleanup) cleanup();
     };
-  }, []); // Empty dependency array is fine here
+  }, []);
 
-  // Password change handler with length validation
+  // Apply saved theme from localStorage to maintain visual consistency
+  useEffect(() => {
+    const loadSavedTheme = () => {
+      try {
+        const savedSettings = localStorage.getItem("userSettings");
+        if (savedSettings) {
+          const settings = JSON.parse(savedSettings);
+          if (settings.theme) {
+            console.log(`Applying saved theme: ${settings.theme}`);
+            setCurrentTheme(settings.theme);
+
+            // Apply theme class to body for global styling
+            const body = document.body;
+            body.classList.remove(
+              "dark-theme",
+              "light-theme",
+              "yandere-theme",
+              "kuudere-theme",
+              "tsundere-theme",
+              "dandere-theme"
+            );
+
+            if (settings.theme !== "dark") {
+              body.classList.add(`${settings.theme}-theme`);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load saved theme:", e);
+      }
+    };
+
+    loadSavedTheme();
+    setTimeout(loadSavedTheme, 100);
+  }, []);
+
+  // Theme-specific video backgrounds for immersive experience
+  const themeVideos: Record<string, string> = {
+    dark: darkVideo,
+    light: lightVideo,
+    yandere: yandereVideo,
+    kuudere: kuudereVideo,
+    tsundere: tsundereVideo,
+    dandere: dandereVideo,
+  };
+
+  // Password validation with character limit enforcement
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
 
-    // Limit password to max 6 characters
     if (newPassword.length <= 6) {
       setPassword(newPassword);
     }
   };
 
+  // User authentication with hybrid online/offline support
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Try up to 3 times with increasing delays
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const userData = {
-          username: username,
-          password: password,
-        };
+    try {
+      console.log('Attempting hybrid login...');
+      
+      const result = await loginUser(username, password);
 
-        // Use absolute URL for all fetch calls
-        const apiUrl = "http://localhost:8080/api/v1/user/login";
-        console.log(`Login attempt ${attempt + 1} to: ${apiUrl}`);
-
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(userData),
-          // Add timeout
-          signal: AbortSignal.timeout(10000),
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error("Invalid username or password");
-          } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-        }
-
-        const result = await response.json();
-
-        if (!result || !result.id) {
-          throw new Error("Invalid login response");
-        }
-
-        // Store the user in localStorage
-        localStorage.setItem("user", JSON.stringify(result));
-
-        // Update Auth state manager explicitly
-        Auth.setAuthenticated(true, result.id);
-
-        // Call the onLogin callback
-        onLogin(result);
-
-        // Navigate to the dashboard
-        navigate("/", { state: { showGreeting: true } });
-        return; // Exit the function on success
-      } catch (err: any) {
-        console.error(`Login attempt ${attempt + 1} failed:`, err);
-
-        // Only set error and stop trying on final attempt
-        if (attempt === 2) {
-          setError(
-            err.message ||
-              "Connection to server failed. Please restart the application."
-          );
-        } else {
-          // Wait before retrying (1s, 3s)
-          await new Promise((r) => setTimeout(r, attempt * 2000 + 1000));
-        }
+      // Check for sync conflicts first (regardless of success flag)
+      if (result.syncConflict) {
+        console.log('Sync conflict detected during login - showing conflict modal');
+        setConflictError(result.conflictError || 'Username conflict detected');
+        setConflictUsername(result.conflictUsername || username);
+        setShowUsernameConflict(true);
+        setLoading(false);
+        
+        // DO NOT authenticate user yet - wait for conflict resolution
+        // Don't call Auth.setAuthenticated() or onLogin() until conflict is resolved
+        
+        // Don't navigate yet - let user resolve conflict first
+        return;
       }
+
+      if (result.success && result.user) {
+
+        // Update authentication state manager
+        Auth.setAuthenticated(true, result.user.id);
+
+        // Notify ThemeContext that user is authenticated
+        const authEvent = new CustomEvent('user-authenticated', { 
+          detail: { userId: result.user.id } 
+        });
+        window.dispatchEvent(authEvent);
+
+        onLogin(result.user);
+
+        // Show connection status
+        const connectionStatus = navigator.onLine ? 'online' : 'offline';
+        console.log(`Login successful (${connectionStatus}):`, result.user.email);
+
+        // Navigate to dashboard with greeting flag
+        navigate("/", { state: { showGreeting: true } });
+      } else {
+        setError(result.error || "Login failed. Please check your credentials.");
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError(
+        error.message || 
+        "Login failed. Please check your internet connection and try again."
+      );
     }
 
     setLoading(false);
   };
 
+  // New user registration with hybrid online/offline support
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    // Validation
     if (!email.includes("@")) {
       setError("Please enter a valid email address.");
       setLoading(false);
@@ -141,158 +195,290 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       return;
     }
 
+    // Check if offline and inform user
+    if (!navigator.onLine) {
+      setError(
+        "Registration is only available offline for testing. Your account will sync when you connect to the internet."
+      );
+    }
+
     try {
-      const userData = {
-        name: name || undefined, // optional
-        email,
+      console.log('Attempting hybrid registration...');
+      
+      const user = await registerUser(
+        name || username || "User", 
+        email, 
         password,
-        username, // required
-      };
-      // Use absolute URL for all fetch calls
-      const apiUrl = "http://localhost:8080/api/v1/user/register";
+        username  // Pass the actual username from the form
+      );
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
+      // Update authentication state manager
+      Auth.setAuthenticated(true, user.id);
+
+      // Notify ThemeContext that user is authenticated
+      const authEvent = new CustomEvent('user-authenticated', { 
+        detail: { userId: user.id } 
       });
+      window.dispatchEvent(authEvent);
 
-      if (!response.ok) {
-        throw new Error("Registration failed");
+      onLogin(user);
+
+      // Show connection status
+      const connectionStatus = navigator.onLine ? 'online' : 'offline';
+      console.log(`Registration successful (${connectionStatus}):`, user.email);
+
+      // Show welcome popup with appropriate message
+      const mode = navigator.onLine ? 'online' : 'offline';
+      setWelcomeMessage(
+        `Welcome! Your account has been created ${mode}. ${
+          !navigator.onLine ? 'It will sync to the cloud when you connect to the internet.' : ''
+        }`
+      );
+      setShowWelcomePopup(true);
+
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      // Handle username conflict
+      if (error.type === 'username_conflict') {
+        setError(error.message);
+      } else if (error.message.includes('409') || error.message.includes('already exists')) {
+        setError(
+          "An account with this email already exists. Please try logging in or use a different email."
+        );
+      } else {
+        setError(
+          error.message || 
+          "Registration failed. Please check your information and try again."
+        );
       }
+    }
 
-      const result = await response.json();
+    setLoading(false);
+  };
 
-      if (!result || !result.id) {
-        throw new Error("Invalid registration response");
-      }
+  // Handle welcome popup completion and proceed to profile setup
+  const handleWelcomeClose = () => {
+    setShowWelcomePopup(false);
 
-      // Store user data
-      localStorage.setItem("user", JSON.stringify(result));
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    onLogin(userData);
 
-      // Call the onLogin callback
-      onLogin(result);
+    navigate("/profile", { state: { showSetup: true } });
+  };
 
-      // Navigate to profile setup
-      navigate("/profile", { state: { showSetup: true } });
-    } catch (err: any) {
-      console.error("Registration error:", err);
-      setError("Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+  // Handle username conflict resolution
+  const handleConflictResolved = () => {
+    setShowUsernameConflict(false);
+    setConflictError('');
+    setConflictUsername('');
+    
+    // Get updated user data and proceed to app
+    const userData = getCurrentUser();
+    if (userData) {
+      // Now authenticate the user properly
+      Auth.setAuthenticated(true, userData.id);
+      
+      // Notify ThemeContext that user is authenticated
+      const authEvent = new CustomEvent('user-authenticated', { 
+        detail: { userId: userData.id } 
+      });
+      window.dispatchEvent(authEvent);
+      
+      onLogin(userData);
+      navigate("/", { state: { showGreeting: true } });
     }
   };
 
+  const handleConflictClosed = () => {
+    setShowUsernameConflict(false);
+    setConflictError('');
+    setConflictUsername('');
+    
+    // User chose to close without resolving - clear any session data and redirect back to login
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    navigate("/login");
+  };
+
+  // Video loading event handlers
+  const handleVideoLoad = () => {
+    setVideoLoaded(true);
+    console.log(`Video loaded for ${currentTheme}`);
+  };
+
+  const handleVideoError = () => {
+    setVideoLoaded(false);
+    console.log(`Video failed for ${currentTheme}, using fallback`);
+  };
+
+  // Auto-tilt animation trigger after video sequence
+  useEffect(() => {
+    const tiltTimer = setTimeout(() => {
+      setAutoTilt(true);
+      console.log("Video ended - triggering auto-tilt");
+    }, 5000);
+
+    return () => clearTimeout(tiltTimer);
+  }, [currentTheme]);
+
   return (
-    <div className="login-bg">
+    <div className={`login-bg ${videoLoaded ? "has-video" : ""}`}>
+      {/* Connection Status - positioned relative to the main container */}
+      <div className="login-connection-status">
+        <ConnectionStatus className="connection-indicator" compact={true} />
+      </div>
+      
+      {themeVideos[currentTheme] && (
+        <video
+          className="login-bg-video"
+          autoPlay
+          muted
+          playsInline
+          onLoadedData={handleVideoLoad}
+          onError={handleVideoError}
+          key={currentTheme}
+        >
+          <source src={themeVideos[currentTheme]} type="video/mp4" />
+        </video>
+      )}
       <div className="blob"></div>
-      <div className="login-card animate-fade-in">
-        <div className="mb-6 flex flex-col items-center">
+      <div
+        className={`login-card animate-fade-in ${autoTilt ? "auto-tilt" : ""}`}
+      >
+        <div className="login-header">
           <img src={moodIcons[mood]} alt="Logo" className="logo-img" />
-          <h1 className="text-3xl font-bold mb-1">Wingman</h1>
-          <p className="text-accent-primary font-medium mb-2">
-            {step === "login" ? "Welcome back, Leader!" : "Join the Crew!"}
+          <h1 className="login-title">Wingman</h1>
+          <p className="login-subtitle">
+            Your advanced digital companion with AI integration
           </p>
         </div>
+
         {step === "login" ? (
-          <form onSubmit={handleLogin} className="w-72 flex flex-col gap-4">
+          <form onSubmit={handleLogin} className="login-form">
             <input
               type="text"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="p-3 rounded ... "
+              className="login-input"
             />
+
             <div className="password-field">
               <input
                 type="password"
-                placeholder="Password (6 chars max)"
+                placeholder="Password (4-6 chars)"
                 value={password}
                 onChange={handlePasswordChange}
                 required
+                className="login-input"
                 maxLength={6}
-                className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition w-full"
               />
-              <div className="password-count">{password.length}/6</div>
+              <span className="password-count">{password.length}/6</span>
             </div>
+
+            {error && <div className="login-error">{error}</div>}
+
             <button
               type="submit"
-              className="login-action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-2 rounded transition-all"
               disabled={loading}
+              className="login-action-btn"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
-            <button
-              type="button"
-              className="login-action-btn text-accent-primary hover:underline mt-2"
-              onClick={() => setStep("register")}
-            >
-              New user? Register
-            </button>
-            {error && (
-              <div className="error text-red-400 text-center">{error}</div>
-            )}
           </form>
         ) : (
-          <form onSubmit={handleRegister} className="w-72 flex flex-col gap-4">
+          <form onSubmit={handleRegister} className="login-form">
             <input
               type="text"
-              placeholder="Your Name (optional)"
+              placeholder="Full Name (optional)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+              className="login-input"
             />
+
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="login-input"
+            />
+
             <input
               type="email"
-              placeholder="Email"
+              placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+              className="login-input"
             />
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
-            />
+
             <div className="password-field">
               <input
                 type="password"
-                placeholder="Password (6 chars max)"
+                placeholder="Password (4-6 chars)"
                 value={password}
                 onChange={handlePasswordChange}
                 required
+                className="login-input"
                 maxLength={6}
-                className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition w-full"
               />
-              <div className="password-count">{password.length}/6</div>
+              <span className="password-count">{password.length}/6</span>
             </div>
+
+            {error && <div className="login-error">{error}</div>}
+
             <button
               type="submit"
-              className="login-action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-2 rounded transition-all"
               disabled={loading}
+              className="login-action-btn"
             >
-              {loading ? "Registering..." : "Register"}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
-            <button
-              type="button"
-              className="login-action-btn text-accent-primary hover:underline mt-2"
-              onClick={() => setStep("login")}
-            >
-              Back to Login
-            </button>
-            {error && (
-              <div className="error text-red-400 text-center">{error}</div>
-            )}
           </form>
         )}
+
+        <div className="login-switch">
+          <p className="login-switch-text">
+            {step === "login"
+              ? "Don't have an account?"
+              : "Already have an account?"}
+          </p>
+          <button
+            type="button"
+            onClick={() => setStep(step === "login" ? "register" : "login")}
+            className="text-accent-primary"
+          >
+            {step === "login" ? "Create Account" : "Sign In"}
+          </button>
+        </div>
+
+        <div className="login-theme-indicator">
+          <span>Theme:</span>
+          <span className="theme-name">{currentTheme}</span>
+        </div>
       </div>
+
+      {showWelcomePopup && (
+        <WelcomePopup
+          message={welcomeMessage}
+          onClose={handleWelcomeClose}
+          icon="🎉"
+          type="registration"
+          username={name || username}
+        />
+      )}
+
+      <UsernameConflictModal
+        isOpen={showUsernameConflict}
+        currentUsername={conflictUsername}
+        errorMessage={conflictError}
+        onSuccess={handleConflictResolved}
+        onClose={handleConflictClosed}
+      />
     </div>
   );
 };

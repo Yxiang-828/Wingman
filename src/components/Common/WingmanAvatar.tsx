@@ -34,7 +34,10 @@ interface WingmanAvatarProps {
   className?: string;
 }
 
-// Helper function to map personality types from ProfileAvatar to WingmanPersonality
+/**
+ * Maps personality configurations to Wingman response patterns
+ * Your Wingman adapts its communication style based on your preferences
+ */
 const getPersonalityFromConfig = (
   personalityId: string
 ): WingmanPersonality => {
@@ -44,24 +47,24 @@ const getPersonalityFromConfig = (
       traits: ["Motivational", "Empathetic", "Patient"],
       responses: {
         encouragement: [
-          "You got this!",
+          "You got this, boss!",
           "One step at a time!",
           "Believe in yourself!",
         ],
         celebration: [
-          "Amazing work! So proud of you! 🎉",
-          "You absolutely crushed it! 🏆",
-          "That's what I call success! 🌟",
+          "Amazing work! So proud of you!",
+          "You absolutely crushed it!",
+          "That's what I call success!",
         ],
         support: [
-          "I'm here for you, always. 💙",
-          "It's okay to have tough days. 🤗",
-          "Take your time. I'll be right here. 💫",
+          "I'm here for you, always.",
+          "It's okay to have tough days.",
+          "Take your time. I'll be right here.",
         ],
         motivation: [
-          "Ready to tackle today's goals? 🚀",
-          "Your potential is limitless! 💎",
-          "Time to show the world what you're made of! ⚡",
+          "Ready to tackle today's goals, boss?",
+          "Your potential is limitless!",
+          "Time to show the world what you're made of!",
         ],
       },
     },
@@ -70,24 +73,24 @@ const getPersonalityFromConfig = (
       traits: ["Analytical", "Organized", "Efficient"],
       responses: {
         encouragement: [
-          "Let's analyze this step by step",
+          "Let's analyze this step by step, boss",
           "Based on your data, you're improving!",
           "Optimize for success!",
         ],
         celebration: [
-          "Excellent performance metrics! 📊",
-          "Your efficiency is outstanding! 🎯",
-          "Data shows you're crushing it! 📈",
+          "Excellent performance metrics!",
+          "Your efficiency is outstanding!",
+          "Data shows you're crushing it!",
         ],
         support: [
-          "Let's break this down logically 🧠",
-          "Based on patterns, this too shall pass 📊",
-          "I'm here to help you strategize 📋",
+          "Let's break this down logically",
+          "Based on patterns, this too shall pass",
+          "I'm here to help you strategize",
         ],
         motivation: [
-          "Time to optimize your performance! ⚡",
-          "Let's achieve maximum efficiency! 🎯",
-          "Data-driven success awaits! 📈",
+          "Time to optimize your performance, boss!",
+          "Let's achieve maximum efficiency!",
+          "Data-driven success awaits!",
         ],
       },
     },
@@ -96,24 +99,24 @@ const getPersonalityFromConfig = (
       traits: ["Creative", "Inspiring", "Innovative"],
       responses: {
         encouragement: [
-          "Think outside the box!",
+          "Think outside the box, boss!",
           "What if we tried something new?",
           "Inspiration strikes when you least expect it!",
         ],
         celebration: [
-          "Your creativity is absolutely brilliant! 🎨",
-          "What an innovative approach! ✨",
-          "Pure creative genius at work! 🌟",
+          "Your creativity is absolutely brilliant!",
+          "What an innovative approach!",
+          "Pure creative genius at work!",
         ],
         support: [
-          "Let's explore new possibilities 🎨",
-          "Sometimes the best ideas come from challenges ✨",
-          "I'm here to spark your imagination 💫",
+          "Let's explore new possibilities",
+          "Sometimes the best ideas come from challenges",
+          "I'm here to spark your imagination",
         ],
         motivation: [
-          "Time to unleash your creativity! 🎨",
-          "Let your imagination run wild! ✨",
-          "Innovation is your superpower! 🚀",
+          "Time to unleash your creativity, boss!",
+          "Let your imagination run wild!",
+          "Innovation is your superpower!",
         ],
       },
     },
@@ -122,24 +125,24 @@ const getPersonalityFromConfig = (
       traits: ["Disciplined", "Goal-oriented", "Direct"],
       responses: {
         encouragement: [
-          "Stay focused on your goals!",
+          "Stay focused on your goals, boss!",
           "Eyes on the prize!",
           "Discipline leads to success!",
         ],
         celebration: [
-          "Perfect execution! Goal achieved! 🎯",
-          "Your focus paid off brilliantly! 🏆",
-          "Laser-focused success! 🎯",
+          "Perfect execution! Goal achieved!",
+          "Your focus paid off brilliantly!",
+          "Laser-focused success!",
         ],
         support: [
-          "Let's refocus and tackle this 🎯",
-          "Discipline builds strength 💪",
-          "I'll help you stay on track 🎯",
+          "Let's refocus and tackle this",
+          "Discipline builds strength",
+          "I'll help you stay on track",
         ],
         motivation: [
-          "Time to focus and conquer! 🎯",
-          "Channel your discipline! 💪",
-          "Goal-crushing mode activated! 🚀",
+          "Time to focus and conquer, boss!",
+          "Channel your discipline!",
+          "Goal-crushing mode activated!",
         ],
       },
     },
@@ -148,6 +151,11 @@ const getPersonalityFromConfig = (
   return personalityMap[personalityId] || personalityMap.supportive;
 };
 
+/**
+ * WingmanAvatar Component - Your Loyal Digital Companion
+ * Displays customizable avatar with mood-based responses and personality traits
+ * Adapts communication style based on context and user preferences
+ */
 const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
   size = "medium",
   mood = "neutral",
@@ -159,14 +167,20 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
 }) => {
   const [avatarData, setAvatarData] = useState<WingmanAvatarData | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [currentMessage, setCurrentMessage] = useState(message); // Load avatar data from localStorage
+  const [currentMessage, setCurrentMessage] = useState(message);
+
+  /**
+   * Loads avatar configuration from persistent storage
+   * Your Wingman remembers all customization preferences
+   */
   useEffect(() => {
     const loadAvatarData = () => {
-      // First try to load from wingmanConfig (user's customized Wingman)
+      // Load from wingmanConfig (user's customized Wingman)
       const savedWingmanConfig = localStorage.getItem("wingmanConfig");
       if (savedWingmanConfig) {
         try {
-          const config = JSON.parse(savedWingmanConfig); // Convert wingmanConfig format to WingmanAvatarData format
+          const config = JSON.parse(savedWingmanConfig);
+
           const avatarFromConfig: WingmanAvatarData = {
             id: "user-customized",
             name: config.name || "Wingman",
@@ -181,17 +195,17 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
           setAvatarData(avatarFromConfig);
           return;
         } catch (e) {
-          console.error("Failed to load wingman config:", e);
+          console.error("Wingman: Failed to load configuration:", e);
         }
       }
 
-      // Fallback: try legacy wingmanAvatar format
+      // Fallback to legacy wingmanAvatar format
       const savedAvatar = localStorage.getItem("wingmanAvatar");
       if (savedAvatar) {
         try {
           setAvatarData(JSON.parse(savedAvatar));
         } catch (e) {
-          console.error("Failed to load avatar data:", e);
+          console.error("Wingman: Failed to load avatar data:", e);
           setDefaultAvatar();
         }
       } else {
@@ -199,23 +213,20 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
       }
     };
 
-    // Load on mount
     loadAvatarData();
 
-    // Listen for wingman updates
+    /**
+     * Event listeners for cross-component avatar updates
+     * Ensures avatar stays synchronized across your interface
+     */
     const handleWingmanUpdate = () => {
-      console.log(
-        "WingmanAvatar: Received wingman-updated event, reloading..."
-      );
+      console.log("Wingman: Configuration updated, reloading avatar...");
       loadAvatarData();
     };
 
-    // Listen for storage changes (from other tabs/windows)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "wingmanConfig") {
-        console.log(
-          "WingmanAvatar: Detected wingmanConfig storage change, reloading..."
-        );
+        console.log("Wingman: Detected configuration change, reloading...");
         loadAvatarData();
       }
     };
@@ -229,7 +240,10 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
     };
   }, []);
 
-  // Set default avatar if none exists
+  /**
+   * Sets default avatar configuration when none exists
+   * Your Wingman always has a fallback personality ready
+   */
   const setDefaultAvatar = () => {
     const defaultAvatar: WingmanAvatarData = {
       id: "default",
@@ -240,24 +254,24 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
         traits: ["Encouraging", "Wise", "Caring", "Motivational"],
         responses: {
           encouragement: [
-            "You're doing great! Keep it up! 💪",
-            "I believe in you! You've got this! ✨",
-            "Every step forward is progress! 🌟",
+            "You're doing great! Keep it up!",
+            "I believe in you! You've got this!",
+            "Every step forward is progress!",
           ],
           celebration: [
-            "Amazing work! I'm so proud of you! 🎉",
-            "You absolutely crushed it! 🏆",
-            "That's what I call success! 🌟",
+            "Amazing work! I'm so proud of you, boss!",
+            "You absolutely crushed it!",
+            "That's what I call success!",
           ],
           support: [
-            "I'm here for you, always. 💙",
-            "It's okay to have tough days. You're not alone. 🤗",
-            "Take your time. I'll be right here. 💫",
+            "I'm here for you, always.",
+            "It's okay to have tough days. You're not alone.",
+            "Take your time. I'll be right here.",
           ],
           motivation: [
-            "Ready to tackle today's goals? Let's do this! 🚀",
-            "Your potential is limitless! 💎",
-            "Time to show the world what you're made of! ⚡",
+            "Ready to tackle today's goals? Let's do this!",
+            "Your potential is limitless!",
+            "Time to show the world what you're made of!",
           ],
         },
       },
@@ -270,7 +284,10 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
     setAvatarData(defaultAvatar);
   };
 
-  // Generate contextual message based on mood and context
+  /**
+   * Generates contextual messages based on mood and current interface context
+   * Your Wingman provides relevant responses for different situations
+   */
   useEffect(() => {
     if (!showMessage || message || !avatarData) return;
 
@@ -297,7 +314,7 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
             Math.floor(Math.random() * responses.motivation.length)
           ];
         case "chat":
-          return "I'm here to help! What's on your mind? 💭";
+          return "I'm here to help! What's on your mind, boss?";
         default:
           return responses.encouragement[
             Math.floor(Math.random() * responses.encouragement.length)
@@ -308,7 +325,10 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
     setCurrentMessage(getContextualMessage());
   }, [mood, context, showMessage, message, avatarData]);
 
-  // Trigger animation on mood change
+  /**
+   * Triggers visual animation on mood changes
+   * Your Wingman shows emotional responsiveness
+   */
   useEffect(() => {
     setIsAnimating(true);
     const timer = setTimeout(() => setIsAnimating(false), 600);
@@ -316,11 +336,12 @@ const WingmanAvatar: React.FC<WingmanAvatarProps> = ({
   }, [mood]);
 
   if (!avatarData) return null;
+
   const sizeClasses = {
     small: "wingman-avatar--small",
     medium: "wingman-avatar--medium",
     large: "wingman-avatar--large",
-    toggle: "", // No size class for toggle, rely on parent styling
+    toggle: "",
   };
 
   const moodClasses = {

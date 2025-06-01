@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import type { ReactNode } from "react"; // Change to type-only import
+import type { ReactNode } from "react";
 import "./Modal.css";
 
 interface ModalProps {
@@ -10,6 +10,11 @@ interface ModalProps {
   size?: "small" | "medium" | "large";
 }
 
+/**
+ * Modal Component - Your Wingman's Command Overlay System
+ * Provides full-screen modal dialogs with keyboard and click-outside handling
+ * Features smooth animations and consistent theming across your interface
+ */
 const Modal: React.FC<ModalProps> = ({
   title,
   children,
@@ -19,7 +24,10 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Handle escape key press
+  /**
+   * Keyboard event handling for modal interactions
+   * Your Wingman responds to escape commands instantly
+   */
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -29,7 +37,10 @@ const Modal: React.FC<ModalProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  // Handle click outside
+  /**
+   * Click-outside detection for intuitive modal dismissal
+   * Allows closing modals by clicking the backdrop area
+   */
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -46,7 +57,11 @@ const Modal: React.FC<ModalProps> = ({
       <div ref={modalRef} className={`modal-content modal-${size}`}>
         <div className="modal-header">
           <h2>{title}</h2>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button
+            className="modal-close-btn"
+            onClick={onClose}
+            aria-label="Close modal"
+          >
             ×
           </button>
         </div>

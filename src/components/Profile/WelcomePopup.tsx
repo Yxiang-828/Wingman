@@ -1,8 +1,10 @@
+// Welcome popup that greets the boss with style and provides app orientation
 import React, { useState, useEffect } from "react";
-import productiveIcon from "../../assets/productive.png";
-import moodyIcon from "../../assets/moody.png";
+import productiveIcon from "../../assets/icons/productive.png";
+import moodyIcon from "../../assets/icons/moody.png";
 import "./WelcomePopup.css";
 
+// Icon mapping for different moods - your Wingman adapts to your vibe
 const moodIcons: Record<string, string> = {
   productive: productiveIcon,
   moody: moodyIcon,
@@ -12,44 +14,133 @@ interface WelcomePopupProps {
   message: string;
   onClose: () => void;
   icon?: string;
+  type?: "registration" | "login" | "general";
+  username?: string;
 }
 
 const WelcomePopup: React.FC<WelcomePopupProps> = ({
   message,
   onClose,
   icon,
+  type = "general",
+  username,
 }) => {
   const [mood, setMood] = useState<"productive" | "moody">("productive");
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Listen for mood changes from the main process
     if (window.electronAPI?.onMoodChange) {
       window.electronAPI.onMoodChange((mood: string) => {
         if (mood === "productive" || mood === "moody") setMood(mood);
       });
-    }
+    }    // Optimized entrance animation with shorter delay
+    setTimeout(() => setIsVisible(true), 50); // Reduced from 100ms
   }, []);
+  // Graceful exit with optimized fade animation
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(onClose, 200); // Reduced from 300ms to match CSS transition
+  };
+  // Auto-dismiss for non-critical popups with reduced timer
+  useEffect(() => {
+    if (type !== "registration") {
+      const timer = setTimeout(handleClose, 5000); // Reduced from 6000ms
+      return () => clearTimeout(timer);
+    }
+  }, [type]);
+
+  // Context-aware button text that matches the situation
+  const getButtonText = () => {
+    switch (type) {
+      case "registration":
+        return "Let's Get Started!";
+      case "login":
+        return "Continue";
+      default:
+        return "Got it!";
+    }
+  };
+
+  // Dynamic styling based on popup importance
+  const getAnimationClass = () => {
+    switch (type) {
+      case "registration":
+        return "registration-popup";
+      case "login":
+        return "login-popup";
+      default:
+        return "";
+    }
+  };
 
   return (
-    <div className="popup-overlay">
-      <div className="popup-card">
+    <div className={`popup-overlay ${isVisible ? "visible" : ""}`}>
+      <div className={`popup-card ${getAnimationClass()}`}>
         {icon ? (
-          <span className="text-5xl mb-2">{icon}</span>
+          <span className="popup-icon text-5xl mb-2">{icon}</span>
         ) : (
           <img
             src={moodIcons[mood]}
-            alt="Logo"
+            alt="Wingman Logo"
             className="logo-img mb-3"
-            style={{ width: "48px", height: "48px" }}
+            style={{ width: "64px", height: "64px" }}
           />
         )}
-        <div className="text-xl font-bold mb-2 text-accent-primary text-center">
-          {message}
+
+        {/* Special welcome treatment for new commanders */}
+        {type === "registration" && (
+          <div className="welcome-header">
+            <h2 className="welcome-title">Welcome to Wingman!</h2>
+            <p className="welcome-subtitle">
+              {username
+                ? `Hey ${username}, you're all set!`
+                : "Your productivity companion is ready!"}
+            </p>
+          </div>
+        )}
+
+        <div className="popup-message text-xl font-bold mb-2 text-accent-primary text-center">
+          {message.split("\n").map((line, index) => (
+            <React.Fragment key={index}>
+              {line}
+              {index < message.split("\n").length - 1 && <br />}
+            </React.Fragment>
+          ))}
         </div>
+
+        {/* Feature showcase for new users */}
+        {type === "registration" && (
+          <div className="registration-info">
+            <p className="info-text">
+              Your Wingman is armed with advanced productivity tools:
+            </p>
+            <ul className="feature-list">
+              <li>Smart diary with mood tracking</li>
+              <li>Intelligent calendar with time blocking</li>
+              <li>AI assistant powered by Ollama</li>
+              <li>
+                6 beautiful themes (Dark, Light, Yandere, Kuudere, Tsundere,
+                Dandere)
+              </li>
+              <li>Hybrid architecture: Local data with cloud auth</li>
+              <li>Complete offline functionality</li>
+            </ul>
+
+            <div className="pro-tip">
+              <p className="tip-text">
+                <strong>Pro Tip:</strong> Press <kbd>'Ctrl' + '-'</kbd> to make the
+                app smaller if it looks too big!
+              </p>
+            </div>
+          </div>
+        )}
+
         <button
-          className="action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-2 px-6 rounded mt-4 transition-all"
-          onClick={onClose}
+          className="action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-3 px-8 rounded mt-4 transition-all"
+          onClick={handleClose}
         >
-          Got it!
+          {getButtonText()}
         </button>
       </div>
     </div>

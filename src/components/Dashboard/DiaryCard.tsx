@@ -1,116 +1,53 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiary } from "../../context/DiaryContext";
 import { format } from "date-fns";
 import DiaryDetailPopup from "../Diary/DiaryDetailPopup";
+import type { DiaryEntry } from "../../api/Diary";
 import "./Dashboard.css";
-import "./DiaryCard.css";
 
 interface DiaryCardProps {
-  entries?: any[]; // Optional prop entries
+  entries?: DiaryEntry[];
 }
 
-const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
+/**
+ * DiaryCard Component - Your Wingman's Memory Palace
+ * Displays recent diary entries with popup details and smooth navigation
+ * Your thoughts organized and ready for review, boss
+ */
+const DiaryCard: React.FC<DiaryCardProps> = () => {
   const navigate = useNavigate();
-  const {
-    entries: contextEntries,
-    loading,
-    deleteEntry,
-    refreshEntries,
-  } = useDiary();
-  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
-  const dashboardRef = useRef<HTMLElement | null>(null);
-  const [displayEntries, setDisplayEntries] = useState<any[]>([]);
+  const { entries: contextEntries, loading, deleteEntry } = useDiary();
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
 
-  // Set container for modal
+  const dashboardRef = useRef<HTMLElement | null>(null);
+  const displayEntries = contextEntries.slice(0, 5);
+
+  /**
+   * Sets up container reference for modal positioning
+   * Your Wingman ensures popups appear in the right place
+   */
   useEffect(() => {
     dashboardRef.current =
-      document.querySelector(".dashboard") ||
-      document.querySelector(".dashboard-container") ||
-      document.getElementById("dashboard");
+      document.querySelector(".dashboard") || document.body;
   }, []);
 
-  // Sort helper
-  const sortByCreatedAtDesc = (entryList: any[]) => {
-    const validEntries = entryList.filter((e) => e.created_at); // Skip undefined dates
-    const sorted = [...validEntries].sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
-      return dateB - dateA;
-    });
-    return sorted;
-  };
-
-  // Handle sorting + logging
-  useEffect(() => {
-    console.log("DiaryCard useEffect triggered");
-    console.log("propEntries:", propEntries);
-    console.log("context entries:", contextEntries);
-    console.log("🔎 Checking for May 30 entries...");
-    contextEntries.forEach((entry) => {
-      const d = new Date(entry.created_at);
-      if (d.toISOString().startsWith("2025-05-30")) {
-        console.log(
-          `🎯 Found May 30 entry: ID ${entry.id}, title: ${entry.title}, created_at: ${entry.created_at}`
-        );
-      }
-    });
-
-    // const sourceEntries =
-    //   propEntries && propEntries.length > 0 ? propEntries : contextEntries;
-    const hasValidPropEntries = propEntries?.some((e) => e.created_at);
-    const sourceEntries =
-      propEntries && propEntries.length > 0
-        ? [
-            ...propEntries,
-            ...contextEntries.filter(
-              (e) => !propEntries.some((p) => p.id === e.id)
-            ),
-          ]
-        : contextEntries;
-    const selectedDate = new Date("2025-05-30"); // Hardcoded for testing — replace with your actual selectedDate
-
-    console.log("📅 selectedDate:", selectedDate?.toISOString().slice(0, 10));
-    console.log("🔍 Filtering entries...");
-    sourceEntries.forEach((entry) => {
-      const createdDate = new Date(entry.created_at);
-      const match =
-        createdDate.toISOString().slice(0, 10) ===
-        selectedDate?.toISOString().slice(0, 10);
-      console.log(
-        `📝 ID ${entry.id}: created=${createdDate
-          .toISOString()
-          .slice(0, 10)}, match=${match}`
-      );
-    });
-
-    console.log("🚨 Raw created_at values:");
-    sourceEntries.forEach((e) => {
-      console.log(`ID ${e.id} | created_at: ${e.created_at}`);
-    });
-
-    const sorted = sortByCreatedAtDesc(sourceEntries);
-
-    console.log("✅ Sorted by created_at:");
-    sorted.forEach((e) => {
-      console.log(`ID ${e.id} | created_at: ${e.created_at}`);
-    });
-
-    setDisplayEntries(sorted.slice(0, 3)); // Only show top 3
-  }, [propEntries, contextEntries]);
-
-  // Refresh entries on mount
-  useEffect(() => {
-    refreshEntries();
+  /**
+   * Handles entry click - simplified without position tracking
+   * Your Wingman opens the memory portal perfectly centered
+   */ const handleEntryClick = useCallback((entry: DiaryEntry) => {
+    console.log("Wingman: Opening diary entry from dashboard:", entry.title);
+    setSelectedEntry(entry);
   }, []);
 
-  const handleEntryClick = (entry: any) => setSelectedEntry(entry);
-  const handleDelete = (id: number) => {
-    deleteEntry(id);
+  const handleClosePopup = useCallback(() => {
     setSelectedEntry(null);
-  };
-  const handleEdit = (id: number) => navigate(`/diary/edit?id=${id}`);
+  }, []);
 
+  /**
+   * Formats date for display with fallback handling
+   * Your Wingman ensures dates always look proper
+   */
   const formatDateDisplay = (dateStr: string) => {
     try {
       return format(new Date(dateStr), "MMM d, yyyy");
@@ -119,85 +56,106 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
     }
   };
 
-  const truncateTextDisplay = (text: string, maxLength = 40) =>
-    text?.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-
+  /**
+   * Maps mood strings to appropriate emoji representations
+   * Your Wingman understands your emotional expressions
+   */
   const getMoodEmoji = (mood: string) => {
-    switch (mood) {
-      case "happy":
-        return "😊";
-      case "sad":
-        return "😢";
-      case "excited":
-        return "😃";
-      case "angry":
-        return "😡";
-      case "relaxed":
-        return "😌";
-      default:
-        return "😐";
-    }
+    const moods: Record<string, string> = {
+      happy: "😊",
+      sad: "😔",
+      neutral: "😐",
+      excited: "🤩",
+      anxious: "😰",
+    };
+    return moods[mood] || "😐";
   };
 
-  return (
-    <div className="dashboard-card diary-card">
-      <div className="dashboard-card-header">
-        <h2>Recent Diary</h2>
-        <button
-          className="card-action-btn"
-          onClick={() => navigate("/diary/view")}
-        >
-          View All
-        </button>
+  if (loading) {
+    return (
+      <div className="dashboard-card">
+        <div className="dashboard-card-header">
+          <h2>Your Thoughts</h2>
+        </div>
+        <div className="dashboard-card-content">
+          <div className="diary-loading">
+            Your Wingman is gathering your thoughts...
+          </div>
+        </div>
       </div>
+    );
+  }
 
-      {loading ? (
-        <div className="card-loading">Loading entries...</div>
-      ) : displayEntries && displayEntries.length > 0 ? (
-        <ul className="entries-list">
-          {displayEntries.map((entry) => (
-            <li
-              key={entry.id}
-              className="entry-item"
-              onClick={() => handleEntryClick(entry)}
-            >
-              <div className="entry-header">
-                <h3>{entry.title}</h3>
-                <div className="entry-date">
-                  <span className="entry-mood">{getMoodEmoji(entry.mood)}</span>
-                  {formatDateDisplay(
-                    entry.created_at || entry.entry_date || entry.date
-                  )}
-                </div>
-              </div>
-              <div className="entry-preview">
-                {truncateTextDisplay(entry.content)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="empty-list-message">
-          <p>No diary entries yet</p>
+  return (
+    <>
+      <div className="dashboard-card">
+        <div className="dashboard-card-header">
+          <h2>Your Thoughts</h2>
           <button
-            className="action-btn small"
+            className="card-action-btn"
             onClick={() => navigate("/diary/write")}
           >
-            Write First Entry
+            Write
           </button>
         </div>
-      )}
+
+        <div className="dashboard-card-content">
+          <div className="dashboard-list">
+            {displayEntries.length > 0 ? (
+              displayEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="diary-entry-preview"
+                  onClick={() => handleEntryClick(entry)}
+                >
+                  <div className="diary-entry-meta">
+                    <h4 className="diary-entry-title">
+                      {entry.title || "Untitled"}
+                    </h4>
+                    <span className="diary-entry-mood">
+                      {getMoodEmoji(entry.mood)}
+                    </span>
+                  </div>
+                  <p className="diary-entry-content">{entry.content}</p>
+                  <div className="diary-entry-date">
+                    {formatDateDisplay(entry.created_at || entry.entry_date)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="dashboard-empty">
+                <div className="dashboard-empty-icon">📝</div>
+                <p>No thoughts captured yet, boss</p>
+                <button
+                  className="action-btn"
+                  onClick={() => navigate("/diary/write")}
+                >
+                  Start Writing
+                </button>
+              </div>
+            )}
+          </div>
+
+          {displayEntries.length > 0 && (
+            <button
+              className="view-more-btn"
+              onClick={() => navigate("/diary/view")}
+            >
+              View All Entries
+            </button>
+          )}
+        </div>
+      </div>
 
       {selectedEntry && (
         <DiaryDetailPopup
           entry={selectedEntry}
-          onClose={() => setSelectedEntry(null)}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          container={dashboardRef.current || undefined}
+          onClose={handleClosePopup}
+          onEdit={(id) => navigate(`/diary/edit?id=${id}`)}
+          onDelete={deleteEntry}
         />
       )}
-    </div>
+    </>
   );
 };
 

@@ -1,3 +1,5 @@
+/* Performance-optimized WelcomePopup styles with hardware acceleration and reduced effects */
+
 .welcome-popup-card {
   background: #1a1d23;
   border: 1px solid #2f343a;
@@ -20,32 +22,22 @@
 }
 
 .welcome-popup-text {
-  color: #646cff;
+  color: white;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s;
-}
+/* Remove animate fade class */
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
+/* Remove all text animations */
 
 .logo-icon {
-  transition: transform 0.3s;
+  transition: none;
 }
 
 .logo-icon:hover {
-  transform: scale(1.05);
+  transform: none;
 }
 
+/* Main popup overlay with optimized glassmorphism effect */
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -55,40 +47,276 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px); /* Reduced from 8px for better performance */
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Optimized transition */
+  /* Performance optimizations */
+  will-change: opacity;
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
+.popup-overlay.visible {
+  opacity: 1;
+}
+
+/* Main popup card with optimized gradient background and smooth animations */
 .popup-card {
-  background: var(--bg-card, #1e1e1e);
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 16px rgba(100, 108, 255, 0.15);
-  padding: 2rem;
-  min-width: 320px;
+  background: linear-gradient(135deg, rgba(25, 25, 45, 0.95), rgba(35, 35, 60, 0.98));
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(100, 108, 255, 0.2);
+  padding: 2.5rem;
+  min-width: 400px;
   max-width: 90%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform: translateY(0);
-  animation: popup-appear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Enhanced styling for registration welcome with optimized effects */
+.popup-card.registration-popup {
+  min-width: 500px;
+  background: linear-gradient(135deg, rgba(20, 35, 50, 0.95), rgba(30, 45, 65, 0.98));
+  border: 2px solid rgba(100, 108, 255, 0.4);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px rgba(100, 108, 255, 0.3);
+}
+
+/* Remove shimmer effect completely */
+
+/* Welcome header section for new users */
+.welcome-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  color: white;
+}
+
+.welcome-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+/* Registration information panel */
+.registration-info {
+  background: rgba(15, 25, 40, 0.6);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.info-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Feature list with optimized hover effects */
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.feature-list li {
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1); /* Faster transition */
+  font-size: 0.9rem;
+  /* Performance optimization */
+  will-change: color;
+  contain: layout style;
+}
+
+.feature-list li:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.feature-list li:last-child {
+  border-bottom: none;
+}
+
+/* Enhanced popup icon with glow effect */
+.popup-icon {
+  filter: drop-shadow(0 4px 12px rgba(100, 108, 255, 0.4));
+}
+
+/* Message text with proper line spacing */
+.popup-message {
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+/* Action button with optimized sweep animation */
+.action-btn {
+  position: relative;
+  z-index: 1;
+  font-size: 1.1rem;
+  min-width: 200px;
+  overflow: hidden;
+  /* Performance optimizations */
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+  contain: layout style;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent); /* Reduced opacity */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Optimized transition */
+  will-change: transform;
+}
+
+.action-btn:hover::before {
+  transform: translateX(200%); /* Use transform instead of left property */
+}
+
+/* Smooth popup entrance animation - optimized for performance */
 @keyframes popup-appear {
   0% {
     opacity: 0;
-    transform: translateY(20px) scale(0.96);
+    transform: translate3d(0, 30px, 0) scale(0.9);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
+/* Optimized shimmer animation with reduced intensity */
+@keyframes shimmer-slide {
+  0% { 
+    transform: translateX(-100%);
+  }
+  100% { 
+    transform: translateX(100%);
+  }
+}
+
+/* Logo with optimized hover effect */
 .logo-img {
-  transition: transform 0.3s;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Faster, smoother transition */
+  filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3));
+  will-change: transform; /* Performance hint */
+  transform: translateZ(0); /* Hardware acceleration */
 }
 
 .logo-img:hover {
-  transform: rotate(15deg) scale(1.1);
+  transform: translate3d(0, 0, 0) rotate(3deg) scale(1.03); /* Reduced rotation and scale */
+}
+
+/* Remove all theme-specific styling - welcome popup stays dark theme only */
+
+/* Pro tip section with keyboard shortcut styling */
+.pro-tip {
+  background: rgba(100, 108, 255, 0.1);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.tip-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  margin: 0;
+  text-align: center;
+}
+
+.tip-text kbd {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile responsiveness with performance optimizations */
+@media (max-width: 768px) {
+  .popup-card {
+    min-width: 320px;
+    margin: 1rem;
+    padding: 2rem;
+    /* Simplified animations for better mobile performance */
+    animation-duration: 0.2s;
+  }
+  
+  .popup-card.registration-popup {
+    min-width: 350px;
+  }
+  
+  .welcome-title {
+    font-size: 1.6rem;
+  }
+  
+  .feature-list {
+    font-size: 0.9rem;
+  }
+  
+  /* Simplified hover effects for mobile */
+  .logo-img:hover {
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
+  
+  .action-btn::before {
+    display: none; /* Disable sweep animation on mobile for better performance */
+  }
+  
+  .tip-text {
+    font-size: 0.8rem;
+  }
+  
+  .tip-text kbd {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
+  }
+}
+
+/* Performance: Reduce animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .popup-card,
+  .logo-img,
+  .action-btn,
+  .feature-list li {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .popup-card.registration-popup::before {
+    animation: none !important;
+  }
+  
+  .action-btn::before {
+    display: none !important;
+  }
 }

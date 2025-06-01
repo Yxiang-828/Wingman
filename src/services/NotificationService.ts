@@ -1,4 +1,5 @@
 import type { Task } from '../api/Task'; 
+import { isRecurringTask } from '../api/Task';
 import type { CalendarEvent } from '../api/Calendar';
 import { getCurrentUserId } from "../utils/auth";
 import { Auth } from '../utils/AuthStateManager';
@@ -26,8 +27,9 @@ const checkNotificationPermission = async (): Promise<boolean> => {
 export const showTaskNotification = (task: Task) => {
   checkNotificationPermission().then(granted => {
     if (granted) {
-      const notification = new Notification(`Task Reminder: ${task.title}`, {
-        body: `Due on ${formatDate(task.task_date)} ${task.task_time ? 'at ' + task.task_time : ''}`,
+      const recurringIndicator = isRecurringTask(task) ? '♻️ ' : '';
+      const notification = new Notification(`${recurringIndicator}Task Reminder: ${task.title}`, {
+        body: `Due on ${formatDate(task.task_date)} ${task.task_time ? 'at ' + task.task_time : ''}${isRecurringTask(task) ? ' (Recurring task)' : ''}`,
         icon: '/assets/icons/wingman-productive.ico',
         tag: `task-${task.id}` // Prevents duplicate notifications for the same task
       });

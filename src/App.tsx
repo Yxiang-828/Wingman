@@ -9,8 +9,7 @@ import { DataProvider } from "./context/DataContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import { DiaryProvider } from "./context/DiaryContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { BackgroundProvider } from "./context/BackgroundContext";
-import Sidebar from "./components/Sidebar/index";
+import Sidebar from "./components/Sidebar/Sidebar";
 import Header from "./components/Header/index";
 import Dashboard from "./components/Dashboard/index";
 import Calendar from "./components/Calendar/index";
@@ -21,11 +20,14 @@ import ProfileSettings from "./components/Profile/ProfileSettings";
 import ProfileAvatar from "./components/Profile/ProfileAvatar";
 import Notifications from "./Pages/Notifications";
 import ChatBot from "./components/ChatBot/index";
-import Home from "./Pages/Home";
 import ErrorBoundary from "./components/ErrorBoundary";
+
 import { Auth } from "./utils/AuthStateManager";
+import { professionalNotificationService } from "./services/ProfessionalNotificationService";
+import { getTaskFailureManager } from "./services/TaskFailureManager";
 import "./main.css";
 import "./styles/scrollbars.css";
+import LoadingScreen from "./components/Common/LoadingScreen";
 
 // Create an AppContent component that will be inside the Router
 const AppContent = ({
@@ -35,6 +37,8 @@ const AppContent = ({
 }) => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [notificationManagerReady, setNotificationManagerReady] =
+    useState(false); //  NEW: Track notification manager state
 
   // Modified useEffect to properly update auth state and call onAuthChange
   useEffect(() => {
@@ -73,10 +77,108 @@ const AppContent = ({
       );
     };
   }, []);
+  // **PROFESSIONAL: Notification System Integration**
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const isAuthenticated = authInitialized && !!storedUser;
 
-  // Ensure we only render content that needs authentication after auth is initialized
-  if (!authInitialized) {
-    return <div className="loading">Initializing...</div>;
+    if (isAuthenticated) {
+      console.log(
+        "🚀 AppContent: User authenticated, starting Professional Notification System"
+      );
+
+      // Set loading state
+      setNotificationManagerReady(false);
+
+      // Get user data
+      let userData;
+      try {
+        userData = JSON.parse(storedUser);
+      } catch (error) {
+        console.error("❌ AppContent: Error parsing user data:", error);
+        setNotificationManagerReady(true);
+        return;
+      }
+
+      // Initialize professional notification system
+      const initializeNotifications = async () => {
+        try {
+          // Store user ID for background service
+          if (userData.id && window.electronAPI?.user?.storeActiveUser) {
+            try {
+              const result = await window.electronAPI.user.storeActiveUser(
+                userData.id
+              );
+              if (result?.success) {
+                console.log(
+                  "✅ AppContent: User ID stored for background service"
+                );
+              } else {
+                console.error(
+                  "❌ AppContent: Failed to store user ID:",
+                  result?.error
+                );
+              }
+            } catch (error) {
+              console.error("❌ AppContent: Error storing user ID:", error);
+            }
+          } // Initialize professional notification service
+          await professionalNotificationService.initialize();
+
+          // Activate for this user
+          await professionalNotificationService.activate(userData.id);
+
+          // Initialize TaskFailureManager for automatic failure detection
+          const taskFailureManager = getTaskFailureManager({
+            checkIntervalMs: 60 * 1000, // Check every 60 seconds
+            enableLogging: true,
+          });
+          taskFailureManager.start();
+
+          console.log(
+            "✅ AppContent: Professional notification system and TaskFailureManager started"
+          );
+
+          // Mark as ready after successful initialization
+          setNotificationManagerReady(true);
+        } catch (error) {
+          console.error(
+            "❌ AppContent: Failed to start professional notification system:",
+            error
+          );
+          // Still mark as ready to prevent infinite loading
+          setNotificationManagerReady(true);
+        }
+      };
+
+      // Start initialization with small delay
+      setTimeout(initializeNotifications, 1000);
+    } else {
+      // User not authenticated, skip notification system
+      setNotificationManagerReady(true);
+    }
+    return () => {
+      if (isAuthenticated) {
+        console.log(
+          "⏹️ AppContent: Deactivating notification system and TaskFailureManager due to auth change"
+        );
+        professionalNotificationService.deactivate();
+
+        // Stop TaskFailureManager
+        const taskFailureManager = getTaskFailureManager();
+        taskFailureManager.stop();
+
+        setNotificationManagerReady(false);
+      }
+    };
+  }, [authInitialized]);
+  //  SHOW LOADING SCREEN WHILE NOTIFICATION SYSTEM INITIALIZES
+  if (!authInitialized || !notificationManagerReady) {
+    const loadingMessage = !authInitialized
+      ? "Initializing..."
+      : "V69 Wingman Engine roaring...";
+
+    return <LoadingScreen message={loadingMessage} />;
   }
 
   function setUser(_user: any): void {
@@ -97,18 +199,17 @@ const AppContent = ({
         <div className="flex-1 flex flex-col overflow-auto">
           <Header />
           <main className="flex-1 p-6 overflow-auto">
+            {" "}
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/calendar/*" element={<Calendar />} />
               <Route path="/diary/*" element={<Diary />} />
-              <Route path="/chatbot" element={<ChatBot />} />
-              <Route path="/profile/*" element={<Profile />}>
+              <Route path="/chatbot" element={<ChatBot />} />              <Route path="/profile/*" element={<Profile />}>
                 <Route index element={<ProfileSettings />} />
                 <Route path="settings" element={<ProfileSettings />} />
                 <Route path="avatar" element={<ProfileAvatar />} />
               </Route>
-              <Route path="/home" element={<Home />} />
               <Route path="/login" element={<Login onLogin={setUser} />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -225,15 +326,13 @@ const App = () => {
       {isAuthenticated ? (
         <ErrorBoundary>
           <ThemeProvider>
-            <BackgroundProvider>
-              <DiaryProvider>
-                <DataProvider>
-                  <NotificationsProvider>
-                    <AppContent onAuthChange={setIsAuthenticated} />
-                  </NotificationsProvider>
-                </DataProvider>
-              </DiaryProvider>
-            </BackgroundProvider>
+            <DiaryProvider>
+              <DataProvider>
+                <NotificationsProvider>
+                  <AppContent onAuthChange={setIsAuthenticated} />
+                </NotificationsProvider>
+              </DataProvider>
+            </DiaryProvider>
           </ThemeProvider>
         </ErrorBoundary>
       ) : (

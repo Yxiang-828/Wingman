@@ -46,12 +46,10 @@ export function formatTime(timeStr: string): string {
       time = new Date(`2000-01-01T${timeStr}`);
     }
     
-    // Use 24-hour format (no AM/PM)
-    return time.toLocaleTimeString(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false // Force 24-hour format
-    });
+    // Use standardized 24-hour format (HH:MM)
+    const hours = String(time.getHours()).padStart(2, '0');
+    const minutes = String(time.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   } catch (error) {
     console.error('Error formatting time:', error);
     return timeStr; // Return the original string if parsing fails

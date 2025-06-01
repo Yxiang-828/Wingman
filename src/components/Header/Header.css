@@ -1,127 +1,575 @@
-/* Header styles - move from main.css */
-header, .header {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  padding: 1rem 0;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-nav {
+/* Main header container with gradient background and modern visual effects */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.8rem 1.5rem;
+  /* Compact padding for efficient space usage */
+  background: linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  min-height: 60px;
+  /* Fixed height prevents layout shifts */
+  max-height: 60px;
+  /* Prevents unexpected growth */
 }
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-}
-
-.nav-links li {
-  margin-left: 1.5rem;
-}
-
-.nav-links a {
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.nav-links a:hover {
-  color: var(--accent-primary);
-}
-
-.app-header {
-  position: fixed;
+/* Subtle moving shimmer effect across the header background */
+.header::before {
+  content: '';
+  position: absolute;
   top: 0;
-  right: 0;
-  left: 0;
-  height: var(--header-height);
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(8px);
-  z-index: 10;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(138, 43, 226, 0.15);
-  transition: left 0.3s ease;
-  margin-left: var(--sidebar-width);
-}
-
-.sidebar-collapsed .app-header {
-  margin-left: var(--sidebar-collapsed-width);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  left: -100%;
+  width: 100%;
   height: 100%;
-  padding: 0 24px;
+  background: linear-gradient(90deg, transparent, rgba(100, 108, 255, 0.03), transparent);
+  animation: shimmer 8s ease-in-out infinite;
+  pointer-events: none;
+  /* Ensures shimmer doesn't interfere with clicks */
 }
 
+/* Keyframe animation for the subtle shimmer effect */
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+
+  50% {
+    left: 100%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+/* Left section layout containing avatar and greeting */
 .header-left {
   display: flex;
   align-items: center;
+  gap: 0.8rem;
+  /* Reduced gap for compact design */
+  flex: 0 0 auto;
+  /* Prevents section from growing unexpectedly */
+  max-width: 300px;
+  /* Limits width to prevent overflow on smaller screens */
 }
 
-.header-title {
-  font-size: var(--font-size-medium);
-  font-weight: 700;
-  color: white;
+/* Avatar styling with hover effects */
+.header-avatar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  /* Avatar maintains size regardless of space constraints */
+}
+
+/* Subtle hover animation for the avatar */
+.header-avatar:hover {
+  transform: scale(1.05) rotate(3deg);
+  /* Small scale increase with slight rotation */
+  filter: drop-shadow(0 0 8px rgba(100, 108, 255, 0.4));
+  /* Glowing effect on hover */
+}
+
+/* Container for the welcome message text */
+.welcome-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex-shrink: 1;
+  /* Allows text to shrink on smaller screens */
+}
+
+/* Main welcome title container */
+.welcome-title {
   margin: 0;
-  background: linear-gradient(90deg, #8a2be2, #6a0dad);
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+/* Smaller introductory text above the main greeting */
+.welcome-text {
+  font-size: 0.75rem;
+  /* Small size to not compete with main text */
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.3px;
+  margin-bottom: 1px;
+}
+
+/* Main "Leader" text with gradient and animation effects */
+.leader-text {
+  font-size: 1.4rem;
+  /* Balanced size that's prominent but not overwhelming */
+  font-weight: 700;
+  background: linear-gradient(135deg,
+      #646cff 0%,
+      #8b5cf6 25%,
+      #06b6d4 50%,
+      #10b981 75%,
+      #f59e0b 100%);
+  background-size: 300% 300%;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(100, 108, 255, 0.2);
+  /* Subtle glow effect */
+  position: relative;
+  /* Single welcome animation that plays when component loads */
+  animation: welcomeZoom 1.2s ease-out forwards;
+  transform-origin: left center;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* One-time zoom animation for the welcome text */
+@keyframes welcomeZoom {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 24px;
-  transition: all 0.2s ease;
-}
-
-.user-profile:hover {
-  background: rgba(138, 43, 226, 0.1);
-}
-
-.user-greeting {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.user-avatar {
-  width: 32px; /* Slightly smaller */
-  height: 32px; /* Slightly smaller */
-  border-radius: 50%;
-  background: rgba(138, 43, 226, 0.2);
+/* Center section for date and time display */
+.header-center {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
+  /* Prevents unexpected growth */
+}
+
+/* Styled container for the date and time information */
+.datetime-display {
+  text-align: center;
+  padding: 0.5rem 0.8rem;
+  /* Compact padding for efficient space usage */
+  background: rgba(20, 20, 35, 0.6);
+  border-radius: 8px;
+  /* Slightly rounded corners */
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  min-width: 180px;
+  /* Ensures consistent width across different dates */
+}
+
+/* Subtle hover effect for the datetime display */
+.datetime-display:hover {
+  transform: translateY(-1px);
+  /* Small upward movement */
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.15);
+  border-color: rgba(100, 108, 255, 0.4);
+}
+
+/* Date text styling within the datetime display */
+.date-text {
+  font-size: 0.8rem;
+  /* Readable but compact size */
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.1rem;
+  letter-spacing: 0.3px;
+}
+
+/* Time text styling, slightly subdued compared to date */
+.time-text {
+  font-size: 0.7rem;
+  /* Smaller than date to create hierarchy */
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+/* Right section containing action buttons */
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  /* Prevents unexpected growth */
+  max-width: 300px;
+  /* Limits width for responsive design */
+}
+
+/* Container for the action button group */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* Compact spacing between buttons */
+}
+
+/* Base styling for header action buttons */
+.header-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  /* Minimal gap between icon and label */
+  padding: 0.4rem 0.6rem;
+  /* Compact padding */
+  background: rgba(30, 30, 50, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 6px;
+  /* Subtle rounding */
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 50px;
+  /* Ensures consistent button width */
+}
+
+/* Animated shine effect for buttons */
+.header-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(100, 108, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+/* Trigger shine effect on hover */
+.header-btn:hover::before {
+  left: 100%;
+}
+
+/* Hover state for action buttons */
+.header-btn:hover {
+  transform: translateY(-2px);
+  /* Subtle upward movement */
+  background: rgba(40, 40, 65, 0.8);
+  border-color: rgba(100, 108, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Icon styling within buttons */
+.btn-icon {
   font-size: 1rem;
-  border: 2px solid rgba(138, 43, 226, 0.3);
+  /* Balanced icon size */
+  transition: transform 0.3s ease;
 }
 
-.user-avatar:hover {
-  box-shadow: 0 0 12px var(--glow-primary);
+/* Icon animation on button hover */
+.header-btn:hover .btn-icon {
+  transform: scale(1.1);
+  /* Slight scale increase */
 }
 
+/* Button label text styling */
+.btn-label {
+  font-size: 0.65rem;
+  /* Small, readable label text */
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Logout button with special styling and red accent */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  /* Compact spacing */
+  padding: 0.4rem 0.8rem;
+  /* Slightly more padding than other buttons */
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  /* Consistent with other buttons */
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  margin-left: 0.5rem;
+  /* Separates logout from other actions */
+}
+
+/* Overlay effect for logout button */
+.logout-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(185, 28, 28, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show overlay on hover */
+.logout-btn:hover::before {
+  opacity: 1;
+}
+
+/* Enhanced hover state for logout button */
+.logout-btn:hover {
+  transform: translateY(-2px);
+  /* Consistent with other buttons */
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.15) 100%);
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+
+/* Container for logout button content */
+.logout-content {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  /* Compact spacing between door and text */
+}
+
+/* Animated door frame for logout button */
+.door-frame {
+  position: relative;
+  width: 14px;
+  /* Compact door size */
+  height: 14px;
+  /* Square proportions */
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Door panels that animate on hover */
+.door-left,
+.door-right {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: center;
+}
+
+/* Left door panel */
+.door-left {
+  left: 0;
+  border-radius: 1px 0 0 1px;
+}
+
+/* Right door panel */
+.door-right {
+  right: 0;
+  border-radius: 0 1px 1px 0;
+}
+
+/* Small door handle detail */
+.door-handle {
+  position: absolute;
+  right: 1.5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+/* Left door opens outward on hover */
+.logout-btn:hover .door-left {
+  transform: rotateY(-45deg);
+  transform-origin: left center;
+}
+
+/* Right door opens outward on hover */
+.logout-btn:hover .door-right {
+  transform: rotateY(45deg);
+  transform-origin: right center;
+}
+
+/* Door handle disappears when doors open */
+.logout-btn:hover .door-handle {
+  opacity: 0;
+  transform: translateY(-50%) scale(0);
+}
+
+/* Door frame glows when doors are open */
+.logout-btn:hover .door-frame {
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
+}
+
+/* Logout button text */
+.logout-text {
+  font-size: 0.7rem;
+  /* Compact text size */
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+/* Enhanced text appearance on hover */
+.logout-btn:hover .logout-text {
+  color: #ffffff;
+  text-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+}
+
+/* Connection Status in Header */
+.header-connection-status {
+  margin-right: 1rem;
+  font-size: 0.85rem;
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.header-connection-status:hover {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.header-connection-status .status-text {
+  font-size: 0.8rem;
+}
+
+/* Responsive adjustments for header connection status */
 @media (max-width: 768px) {
-  .user-greeting {
+  .header-connection-status {
+    margin-right: 0.5rem;
+  }
+
+  .header-connection-status .status-text {
     display: none;
+  }
+}
+
+/* Performance optimization for smoother animations */
+.header *,
+.header *::before,
+.header *::after {
+  will-change: transform;
+}
+
+/* Accessibility: reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+
+  .header::before,
+  .leader-text::after,
+  .gradientShift,
+  .textShine,
+  .shimmer {
+    animation: none;
+  }
+
+  .header-btn:hover,
+  .logout-btn:hover,
+  .header-avatar:hover {
+    transform: none;
+  }
+}
+
+/* Tablet and smaller laptop responsiveness */
+@media (max-width: 1024px) {
+  .header {
+    padding: 0.6rem 1rem;
+    /* Even more compact on smaller screens */
+  }
+
+  .leader-text {
+    font-size: 1.2rem;
+    /* Reduced size for smaller screens */
+  }
+
+  .header-center {
+    display: none;
+    /* Hide datetime on medium screens to save space */
+  }
+
+  .header-actions {
+    gap: 0.3rem;
+    /* Tighter button spacing */
+  }
+}
+
+/* Mobile phone responsiveness */
+@media (max-width: 768px) {
+  .header {
+    padding: 0.5rem 0.8rem;
+    /* Very compact mobile padding */
+    min-height: 50px;
+    max-height: 50px;
+  }
+
+  .header-left {
+    gap: 0.5rem;
+    max-width: 200px;
+  }
+
+  .welcome-text {
+    display: none;
+    /* Hide secondary text on mobile */
+  }
+
+  .leader-text {
+    font-size: 1rem;
+    /* Mobile-appropriate size */
+  }
+
+  .btn-label {
+    display: none;
+    /* Hide button labels to save space */
+  }
+
+  .logout-text {
+    display: none;
+    /* Hide logout text, keep only icon */
+  }
+
+  .header-btn {
+    min-width: 35px;
+    /* Very compact buttons */
+    padding: 0.3rem;
+  }
+
+  .logout-btn {
+    padding: 0.3rem 0.5rem;
+    margin-left: 0.3rem;
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 480px) {
+  .header-actions {
+    gap: 0.2rem;
+    /* Minimal spacing between elements */
+  }
+
+  .header-btn {
+    padding: 0.25rem;
+    min-width: 30px;
+  }
+
+  .logout-btn {
+    padding: 0.25rem 0.4rem;
+    margin-left: 0.2rem;
+  }
+
+  .btn-icon {
+    font-size: 0.9rem;
+  }
+
+  .door-frame {
+    width: 12px;
+    height: 12px;
   }
 }

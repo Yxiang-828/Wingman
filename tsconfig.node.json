@@ -19,7 +19,7 @@
     "noUnusedParameters": false,         // Disable unused warnings
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": false, // Added comma here
+    "noUncheckedSideEffectImports": false, 
 
     "composite": true,
     "allowSyntheticDefaultImports": true,

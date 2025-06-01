@@ -32,7 +32,7 @@ def create_task_endpoint(task: dict):
         
         # Database expects 'title' field (not 'text')
         task_data = {
-            'title': task['title'],  
+            'title': task['title'], 
             'task_date': task.get('task_date', ''),
             'task_time': task.get('task_time', ''),
             'completed': task.get('completed', False),

@@ -1,79 +1,9 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-python-dist
-*.local
-
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
+# Node.js dependencies
 node_modules/
-jspm_packages/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Build outputs
 dist/
@@ -83,59 +13,38 @@ build/
 out/
 *.tsbuildinfo
 
-# Cache directories
-.cache/
-.parcel-cache/
-.next/
-.nuxt/
-.vuepress/dist
+# Development files
+*.local
+.eslintcache
 
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
+*.pyc
+*.pyo
 .Python
-env/
 venv/
-ENV/
-env.bak/
-venv.bak/
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
+env/
+ENV/
 
-# Editor directories and files
+# Editor files
 .vscode/*
 !.vscode/extensions.json
 .idea/
 *.swp
 *.swo
 *~
+
+# OS files
 .DS_Store
 .DS_Store?
 ._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS generated files
-.AppleDouble
-.LSOverride
-Icon?
+ehthumbs.db
 
 # Windows
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
 *.lnk
 
 # Temporary files
@@ -146,34 +55,21 @@ Icon?
 *.old
 *.orig
 
-# Package files
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# Local configuration
-*.local
-.eslintcache
-.stylelintcache
+# Logs
+logs/
+*.log
 
 # Testing
-.jest/
 coverage/
-*.coverage
-.coverage.*
-htmlcov/
+.nyc_output/
 
-# Documentation
+# Cache
+.cache/
+.parcel-cache/
+
+# Documentation builds
 docs/_build/
 
-# Misc
-*.tgz
-*.tar.gz
-.sass-cache/
-.connect.lock
-.typings/
+# Project-specific temporary files
+debug-wingman.bat
+*.txt
