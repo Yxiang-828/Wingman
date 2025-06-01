@@ -6,26 +6,35 @@
   contain: content; /* Performance optimization */
 }
 
-/* Task row layout for specific TasksCard styling */
+/* ✅ FIXED: Task row layout - better spacing and centering */
 .task-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   width: 100%;
+  gap: 1rem; /* ✅ CONSISTENT GAP */
+  padding: 0.5rem 0; /* ✅ ADD VERTICAL PADDING */
+}
+
+/* ✅ FIXED: Task content container - proper flex and centering */
+.task-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0; /* ✅ PREVENT OVERFLOW */
+  justify-content: center; /* ✅ CENTER VERTICALLY */
 }
 
 /* Task status circle - specific to TasksCard */
 .task-status-circle {
   width: 24px;
   height: 24px;
-  min-width: 24px;
+  min-width: 24px; /* ✅ PREVENT SHRINKING */
   border-radius: 50%;
-  border: 2px solid rgba(100, 108, 255, 0.5); /* Blue border for pending */
+  border: 2px solid rgba(100, 108, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
-  flex-shrink: 0;
+  flex-shrink: 0; /* ✅ NEVER SHRINK */
   cursor: pointer;
   transition: all 0.2s ease;
   background: rgba(20, 20, 35, 0.5);
@@ -38,13 +47,10 @@
 }
 
 .task-status-circle.completed {
-  border-color: rgba(74, 222, 128, 0.7); /* Green border for completed */
+  border-color: rgba(74, 222, 128, 0.7);
   background: rgba(74, 222, 128, 0.2);
   color: #4ade80;
 }
-
-/* Complete button - TasksCard specific */
-/* DELETE: .task-complete-btn styling */
 
 /* Processing state - specific to TasksCard */
 .task-item.processing {
@@ -52,4 +58,37 @@
   pointer-events: none;
 }
 
-/* Everything else is inherited from Dashboard.css */
+/* ✅ OVERRIDE: Fix task items from Dashboard.css */
+.tasks-card .task-item {
+  background: rgba(20, 20, 35, 0.5);
+  border-radius: 10px;
+  padding: 1rem; /* ✅ CONSISTENT PADDING */
+  display: flex;
+  align-items: center;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-left: 3px solid var(--accent-primary);
+  cursor: pointer;
+  min-height: 60px; /* ✅ CONSISTENT HEIGHT */
+}
+
+.tasks-card .task-item:hover {
+  transform: translateX(6px);
+  background: rgba(25, 25, 40, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tasks-card .task-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4; /* ✅ BETTER LINE HEIGHT */
+  margin-bottom: 0.25rem; /* ✅ SPACING TO META */
+}
+
+.tasks-card .task-meta {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}

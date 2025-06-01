@@ -107,6 +107,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
               >
                 ✓
               </div>
+              {/* ✅ FIXED: Use consistent task-details structure */}
               <div className="task-details">
                 <div className="task-title">{task.title}</div>
                 <div className="task-meta">

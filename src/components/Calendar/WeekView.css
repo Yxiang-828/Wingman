@@ -171,7 +171,8 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem; /* ✅ CONSISTENT PADDING */
+  min-height: 0; /* ✅ ALLOW PROPER FLEX SHRINKING */
 }
 
 .week-day-content::-webkit-scrollbar {
@@ -192,7 +193,8 @@
 .title-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px; /* ✅ CONSISTENT SPACING */
+  margin-bottom: 12px; /* ✅ SEPARATION BETWEEN SECTIONS */
 }
 
 .section-title {
@@ -202,6 +204,7 @@
   color: rgba(255, 255, 255, 0.6);
   margin: 0;
   padding: 0 4px;
+  font-weight: 600; /* ✅ SLIGHTLY BOLDER */
 }
 
 .title-list {
@@ -210,48 +213,58 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px; /* ✅ CONSISTENT GAP BETWEEN ITEMS */
 }
 
 .title-item {
   font-size: 0.9rem;
-  padding: 6px 10px;
+  padding: 12px 14px; /* ✅ INCREASED PADDING FOR BETTER SPACING */
   background: rgba(40, 40, 60, 0.5);
-  border-radius: 6px;
+  border-radius: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   transition: background 0.2s ease;
+  display: flex;
+  align-items: center; /* ✅ CENTER VERTICALLY */
+  min-height: 40px; /* ✅ CONSISTENT MINIMUM HEIGHT */
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.3; /* ✅ BETTER LINE HEIGHT */
+  cursor: pointer;
 }
 
 .title-item:hover {
   background: rgba(45, 45, 70, 0.7);
+  transform: translateX(2px); /* ✅ SUBTLE HOVER EFFECT */
 }
 
-/* .event-title {
-  border-left: 3px solid rgba(100, 108, 255, 0.8);
-} */
-
-/* .task-title {
-  border-left: 3px solid rgba(74, 222, 128, 0.8);
-} */
-
+/* ✅ FIXED: Task specific styling with better borders */
 .task-title.completed {
   text-decoration: line-through;
   opacity: 0.7;
-  border-left-color: rgba(74, 222, 128, 0.4);
+  border-left: 3px solid rgba(74, 222, 128, 0.4);
+  background: rgba(40, 40, 60, 0.3); /* ✅ SLIGHTLY DIMMED */
 }
+
+
+
+
 
 /* Empty day state */
 .day-empty {
   color: rgba(255, 255, 255, 0.4);
   font-style: italic;
   text-align: center;
-  padding: 12px;
+  padding: 20px 12px; /* ✅ INCREASED PADDING */
   background: rgba(30, 30, 50, 0.3);
   border-radius: 8px;
   margin: 10px 0;
+  border: 1px dashed rgba(100, 108, 255, 0.2);
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px; /* ✅ CONSISTENT HEIGHT */
 }
 
 /* New week view grid for time slots */
