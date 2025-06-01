@@ -1,127 +1,613 @@
-/* Header styles - move from main.css */
-header, .header {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  padding: 1rem 0;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-nav {
+/* Header Base Styles - Compact and efficient */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.8rem 1.5rem; /* ✅ REDUCED PADDING */
+  background: linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.95) 100%);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  min-height: 60px; /* ✅ FIXED HEIGHT */
+  max-height: 60px; /* ✅ PREVENT GROWTH */
 }
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-}
-
-.nav-links li {
-  margin-left: 1.5rem;
-}
-
-.nav-links a {
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-.nav-links a:hover {
-  color: var(--accent-primary);
-}
-
-.app-header {
-  position: fixed;
+/* Subtle animated background */
+.header::before {
+  content: '';
+  position: absolute;
   top: 0;
-  right: 0;
-  left: 0;
-  height: var(--header-height);
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(8px);
-  z-index: 10;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(138, 43, 226, 0.15);
-  transition: left 0.3s ease;
-  margin-left: var(--sidebar-width);
-}
-
-.sidebar-collapsed .app-header {
-  margin-left: var(--sidebar-collapsed-width);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  left: -100%;
+  width: 100%;
   height: 100%;
-  padding: 0 24px;
+  background: linear-gradient(90deg, transparent, rgba(100, 108, 255, 0.03), transparent);
+  animation: shimmer 8s ease-in-out infinite;
+  pointer-events: none;
 }
 
+@keyframes shimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Header Left Section - Compact */
 .header-left {
   display: flex;
   align-items: center;
+  gap: 0.8rem; /* ✅ REDUCED GAP */
+  flex: 0 0 auto; /* ✅ DON'T GROW */
+  max-width: 300px; /* ✅ LIMIT WIDTH */
 }
 
-.header-title {
-  font-size: var(--font-size-medium);
-  font-weight: 700;
-  color: white;
+.header-avatar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0; /* ✅ NEVER SHRINK */
+}
+
+.header-avatar:hover {
+  transform: scale(1.05) rotate(3deg); /* ✅ SMALLER SCALE */
+  filter: drop-shadow(0 0 8px rgba(100, 108, 255, 0.4)); /* ✅ REDUCED GLOW */
+}
+
+/* Welcome Section - Epic Styling */
+.welcome-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex-shrink: 1; /* ✅ ALLOW SHRINKING */
+}
+
+.welcome-title {
   margin: 0;
-  background: linear-gradient(90deg, #8a2be2, #6a0dad);
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.welcome-text {
+  font-size: 0.75rem; /* ✅ MUCH SMALLER */
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.3px;
+  margin-bottom: 1px;
+}
+
+.leader-text {
+  font-size: 1.4rem; /* ✅ MUCH SMALLER - was 2.8rem */
+  font-weight: 700;
+  background: linear-gradient(
+    135deg,
+    #646cff 0%,
+    #8b5cf6 25%,
+    #06b6d4 50%,
+    #10b981 75%,
+    #f59e0b 100%
+  );
+  background-size: 300% 300%;
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(100, 108, 255, 0.2); /* ✅ REDUCED SHADOW */
+  position: relative;
+  /* ✅ NEW: One-time zoom animation */
+  animation: welcomeZoom 1.2s ease-out forwards;
+  transform-origin: left center;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* ✅ NEW: One-time welcome zoom animation */
+@keyframes welcomeZoom {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 24px;
-  transition: all 0.2s ease;
-}
-
-.user-profile:hover {
-  background: rgba(138, 43, 226, 0.1);
-}
-
-.user-greeting {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.user-avatar {
-  width: 32px; /* Slightly smaller */
-  height: 32px; /* Slightly smaller */
-  border-radius: 50%;
-  background: rgba(138, 43, 226, 0.2);
+/* Header Center - Compact DateTime */
+.header-center {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  border: 2px solid rgba(138, 43, 226, 0.3);
+  flex: 0 0 auto; /* ✅ DON'T GROW */
 }
 
-.user-avatar:hover {
-  box-shadow: 0 0 12px var(--glow-primary);
+.datetime-display {
+  text-align: center;
+  padding: 0.5rem 0.8rem; /* ✅ MUCH SMALLER PADDING */
+  background: rgba(20, 20, 35, 0.6);
+  border-radius: 8px; /* ✅ SMALLER RADIUS */
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  min-width: 180px; /* ✅ COMPACT WIDTH */
+}
+
+.datetime-display:hover {
+  transform: translateY(-1px); /* ✅ SUBTLE MOVEMENT */
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.15);
+  border-color: rgba(100, 108, 255, 0.4);
+}
+
+.date-text {
+  font-size: 0.8rem; /* ✅ SMALLER */
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0.1rem;
+  letter-spacing: 0.3px;
+}
+
+.time-text {
+  font-size: 0.7rem; /* ✅ SMALLER */
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+/* Header Right Section - Compact actions */
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto; /* ✅ DON'T GROW */
+  max-width: 300px; /* ✅ LIMIT WIDTH */
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* ✅ COMPACT GAP */
+}
+
+/* Header Action Buttons - Much smaller */
+.header-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem; /* ✅ TINY GAP */
+  padding: 0.4rem 0.6rem; /* ✅ COMPACT PADDING */
+  background: rgba(30, 30, 50, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 6px; /* ✅ SMALLER RADIUS */
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-width: 50px; /* ✅ COMPACT WIDTH */
+}
+
+.header-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(100, 108, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.header-btn:hover::before {
+  left: 100%;
+}
+
+.header-btn:hover {
+  transform: translateY(-2px); /* ✅ SUBTLE MOVEMENT */
+  background: rgba(40, 40, 65, 0.8);
+  border-color: rgba(100, 108, 255, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 1);
+}
+
+.btn-icon {
+  font-size: 1rem; /* ✅ SMALLER ICON */
+  transition: transform 0.3s ease;
+}
+
+.header-btn:hover .btn-icon {
+  transform: scale(1.1); /* ✅ SMALLER SCALE */
+}
+
+.btn-label {
+  font-size: 0.65rem; /* ✅ TINY TEXT */
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Compact Logout Button */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem; /* ✅ COMPACT GAP */
+  padding: 0.4rem 0.8rem; /* ✅ COMPACT PADDING */
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(185, 28, 28, 0.1) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px; /* ✅ SMALLER RADIUS */
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  margin-left: 0.5rem; /* ✅ COMPACT MARGIN */
+}
+
+.logout-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(185, 28, 28, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.logout-btn:hover::before {
+  opacity: 1;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px); /* ✅ SUBTLE MOVEMENT */
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.15) 100%);
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+
+.logout-content {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem; /* ✅ COMPACT GAP */
+}
+
+/* Compact Door Animation */
+.door-frame {
+  position: relative;
+  width: 14px; /* ✅ SMALLER */
+  height: 14px; /* ✅ SMALLER */
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.door-left,
+.door-right {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: center;
+}
+
+.door-left {
+  left: 0;
+  border-radius: 1px 0 0 1px;
+}
+
+.door-right {
+  right: 0;
+  border-radius: 0 1px 1px 0;
+}
+
+.door-handle {
+  position: absolute;
+  right: 1.5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+/* Door Opening Animation */
+.logout-btn:hover .door-left {
+  transform: rotateY(-45deg);
+  transform-origin: left center;
+}
+
+.logout-btn:hover .door-right {
+  transform: rotateY(45deg);
+  transform-origin: right center;
+}
+
+.logout-btn:hover .door-handle {
+  opacity: 0;
+  transform: translateY(-50%) scale(0);
+}
+
+.logout-btn:hover .door-frame {
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.3);
+}
+
+.logout-text {
+  font-size: 0.7rem; /* ✅ SMALLER TEXT */
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover .logout-text {
+  color: #ffffff;
+  text-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+}
+
+/* MiniCalendar.css */
+
+/* Shrink size */
+.react-calendar--small {
+  font-size: 10px;
+  max-width: 220px; /* adjust as needed */
+  overflow: visible;
+  background: transparent; /* Transparent background */
+  border-radius: 12px;
+  box-shadow: 0 2px 12px 0 var(--shadow-red, rgba(196, 70, 70, 0.3)); /* Red box shadow */
+  padding: 10px 0 12px 0;
+  transition: transform 0.15s;
+}
+
+.react-calendar--small:hover {
+  box-shadow: 0 4px 16px 0 var(--shadow-red-hover, rgba(196, 70, 70, 0.4)); /* Enhanced red shadow on hover */
+}
+
+/* Optional: adjust tile padding for compactness */
+.react-calendar--small .react-calendar__tile {
+  padding: 8px 6px; /* more space for shadow */
+  position: relative; /* ensure stacking context */
+  overflow: visible; /* allow shadow to show */
+  box-sizing: border-box;
+  background: transparent; /* Transparent background for tiles */
+}
+
+/* Tremble animation on hover */
+.react-calendar--small .react-calendar__tile:hover,
+.react-calendar--small .react-calendar__tile:active,
+.react-calendar--small .react-calendar__tile:focus {
+  box-shadow: 0 0 12px 2px var(--accent-primary, #646cff),
+    0 0 2px 1px var(--accent-secondary, #535bf2);
+  animation: tremble 0.25s ease-in-out;
+  cursor: pointer;
+  z-index: 2; /* ensure it's above others */
+  position: relative; /* needed for z-index to work */
+}
+
+/* Ensure days are visible */
+.react-calendar--small .react-calendar__month-view__days {
+  overflow: visible;
+}
+
+/* Navigation styles */
+.react-calendar--small .react-calendar__navigation {
+  background: var(--color-bg-card, #1e1e1e); /* Theme-aware background */
+  z-index: 3;
+  position: relative;
+  overflow: visible; /* allow shadow to show */
+}
+
+/* Navigation label styles */
+.react-calendar--small .react-calendar__navigation__label {
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  font-size: 0.6rem;
+  font-weight: 500;
+  border-radius: 6px;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+  z-index: 2;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: var(--color-text) !important;
+}
+
+/* Today highlight */
+.today-highlight {
+  color: var(--color-text-inverse, #23232b) !important;
+  border-radius: 4px !important;
+  font-weight: bold;
+  box-shadow: 0 0 0 1px var(--color-warning-light, #ffd966aa),
+    0 0 1px 0.5px var(--color-warning-fade, #ffd96655);
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  overflow: visible; /* allow shadow to show */
+}
+
+/* Event styles */
+.has-event {
+  position: relative;
+}
+
+/* ✅ IMPROVED: Better event indicator positioning */
+.event-indicator {
+  position: absolute;
+  top: 2px; /* ✅ MOVED to top instead of bottom */
+  right: 2px;
+  height: 12px; /* ✅ SMALLER to not block numbers */
+  width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3; /* ✅ HIGHER z-index to stay above hover effects */
+  pointer-events: none; /* ✅ Don't interfere with day clicks */
+}
+
+/* ✅ IMPROVED: Smaller, less intrusive event count */
+.event-count {
+  font-size: 7px; /* ✅ SMALLER font */
+  background: var(--accent-primary, rgba(100, 108, 255, 0.8)); /* ✅ MORE OPAQUE */
+  color: white;
+  border-radius: 50%;
+  height: 10px; /* ✅ SMALLER size */
+  width: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2); /* ✅ SUBTLE border for definition */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); /* ✅ SHADOW for better visibility */
+  font-weight: 600; /* ✅ BOLD for readability */
+}
+
+/* ✅ NEW: Alternative dot style for minimal interference */
+.event-indicator.dot-style {
+  height: 6px;
+  width: 6px;
+  top: 4px;
+  right: 4px;
+}
+
+.event-indicator.dot-style .event-count {
+  height: 6px;
+  width: 6px;
+  font-size: 0; /* Hide number, just show dot */
+  background: var(--accent-primary, #646cff);
+  border-radius: 50%;
+}
+
+/* ✅ NEW: Hover effect shows count */
+.react-calendar--small .react-calendar__tile:hover .event-indicator.dot-style .event-count {
+  height: 14px;
+  width: 14px;
+  font-size: 8px;
+  transition: all 0.2s ease;
+}
+
+/* Tremble keyframes */
+@keyframes tremble {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-1px);
+  }
+  50% {
+    transform: translateX(1px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Performance optimizations */
+.header *,
+.header *::before,
+.header *::after {
+  will-change: transform;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .header::before,
+  .leader-text::after,
+  .gradientShift,
+  .textShine,
+  .shimmer {
+    animation: none;
+  }
+  
+  .header-btn:hover,
+  .logout-btn:hover,
+  .header-avatar:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .header {
+    padding: 0.6rem 1rem; /* ✅ EVEN SMALLER */
+  }
+  
+  .leader-text {
+    font-size: 1.2rem; /* ✅ SMALLER */
+  }
+  
+  .header-center {
+    display: none; /* ✅ HIDE ON MEDIUM SCREENS */
+  }
+  
+  .header-actions {
+    gap: 0.3rem; /* ✅ TIGHTER */
+  }
 }
 
 @media (max-width: 768px) {
-  .user-greeting {
-    display: none;
+  .header {
+    padding: 0.5rem 0.8rem; /* ✅ VERY COMPACT */
+    min-height: 50px;
+    max-height: 50px;
+  }
+  
+  .header-left {
+    gap: 0.5rem;
+    max-width: 200px;
+  }
+  
+  .welcome-text {
+    display: none; /* ✅ HIDE ON MOBILE */
+  }
+  
+  .leader-text {
+    font-size: 1rem; /* ✅ MOBILE SIZE */
+  }
+  
+  .btn-label {
+    display: none; /* ✅ HIDE LABELS */
+  }
+  
+  .logout-text {
+    display: none; /* ✅ HIDE TEXT */
+  }
+  
+  .header-btn {
+    min-width: 35px; /* ✅ VERY COMPACT */
+    padding: 0.3rem;
+  }
+  
+  .logout-btn {
+    padding: 0.3rem 0.5rem;
+    margin-left: 0.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    gap: 0.2rem; /* ✅ MINIMAL GAP */
+  }
+  
+  .header-btn {
+    padding: 0.25rem;
+    min-width: 30px;
+  }
+  
+  .logout-btn {
+    padding: 0.25rem 0.4rem;
+    margin-left: 0.2rem;
+  }
+  
+  .btn-icon {
+    font-size: 0.9rem;
+  }
+  
+  .door-frame {
+    width: 12px;
+    height: 12px;
   }
 }
