@@ -5,11 +5,15 @@ const { spawn, exec } = require('child_process');
 const util = require('util');
 const execPromise = util.promisify(exec);
 
+// Import LocalDataManager
+const { LocalDataManager } = require('../src/storage/LocalDataManager');
+
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 // FIXED: Check if backend is already running
 let backendProcess = null;
 let isBackendStarting = false;
+let dataManager = null; // Initialize LocalDataManager
 
 function getResourcePath(relPath) {
   if (isDevelopment) {
@@ -276,14 +280,159 @@ function createWindow() {
   loadApp();
 }
 
-app.whenReady().then(() => {
-  startBackendServer().then(() => {
+// ✅ NEW: Initialize LocalDataManager and setup IPC handlers
+async function setupDatabaseIPC() {
+  try {
+    // Initialize LocalDataManager
+    dataManager = new LocalDataManager();
+    console.log('✅ LocalDataManager initialized');
+
+    // ✅ TASK IPC HANDLERS
+    ipcMain.handle('db:getTasks', async (event, userId, date) => {
+      try {
+        return dataManager.getTasks(userId, date);
+      } catch (error) {
+        console.error('Error in db:getTasks:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:saveTask', async (event, task) => {
+      try {
+        return dataManager.saveTask(task);
+      } catch (error) {
+        console.error('Error in db:saveTask:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:updateTask', async (event, id, updates) => {
+      try {
+        return dataManager.updateTask(id, updates);
+      } catch (error) {
+        console.error('Error in db:updateTask:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:deleteTask', async (event, id) => {
+      try {
+        dataManager.deleteTask(id);
+        return { success: true };
+      } catch (error) {
+        console.error('Error in db:deleteTask:', error);
+        throw error;
+      }
+    });
+
+    // ✅ CALENDAR EVENT IPC HANDLERS
+    ipcMain.handle('db:getEvents', async (event, userId, date) => {
+      try {
+        return dataManager.getEvents(userId, date);
+      } catch (error) {
+        console.error('Error in db:getEvents:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:saveEvent', async (event, event) => {
+      try {
+        return dataManager.saveEvent(event);
+      } catch (error) {
+        console.error('Error in db:saveEvent:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:deleteEvent', async (event, id) => {
+      try {
+        dataManager.deleteEvent(id);
+        return { success: true };
+      } catch (error) {
+        console.error('Error in db:deleteEvent:', error);
+        throw error;
+      }
+    });
+
+    // ✅ DIARY IPC HANDLERS
+    ipcMain.handle('db:getDiaryEntries', async (event, userId, date) => {
+      try {
+        return dataManager.getDiaryEntries(userId, date);
+      } catch (error) {
+        console.error('Error in db:getDiaryEntries:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:saveDiaryEntry', async (event, entry) => {
+      try {
+        return dataManager.saveDiaryEntry(entry);
+      } catch (error) {
+        console.error('Error in db:saveDiaryEntry:', error);
+        throw error;
+      }
+    });
+
+    // ✅ CHAT IPC HANDLERS (Perfect for Ollama!)
+    ipcMain.handle('db:getChatHistory', async (event, userId, limit) => {
+      try {
+        return dataManager.getChatHistory(userId, limit);
+      } catch (error) {
+        console.error('Error in db:getChatHistory:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:saveChatMessage', async (event, message, isAi, userId, sessionId) => {
+      try {
+        return dataManager.saveChatMessage(message, isAi, userId, sessionId);
+      } catch (error) {
+        console.error('Error in db:saveChatMessage:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:clearChatHistory', async (event, userId) => {
+      try {
+        dataManager.clearChatHistory(userId);
+        return { success: true };
+      } catch (error) {
+        console.error('Error in db:clearChatHistory:', error);
+        throw error;
+      }
+    });
+
+    // ✅ UTILITY IPC HANDLERS
+    ipcMain.handle('db:getStorageStats', async (event, userId) => {
+      try {
+        return dataManager.getStorageStats(userId);
+      } catch (error) {
+        console.error('Error in db:getStorageStats:', error);
+        throw error;
+      }
+    });
+
+    console.log('✅ All database IPC handlers registered');
+
+  } catch (error) {
+    console.error('❌ Failed to setup database IPC:', error);
+    throw error;
+  }
+}
+
+app.whenReady().then(async () => {
+  try {
+    // Initialize database first
+    await setupDatabaseIPC();
+    
+    // Then start backend and create window
+    await startBackendServer();
     createWindow();
-  }).catch((error) => {
-    console.error('Failed to start backend:', error);
+  } catch (error) {
+    console.error('Failed to start application:', error);
     // Create window anyway to show error
     createWindow();
-  });
+  }
 });
 
 // Register keyboard shortcuts
@@ -314,6 +463,12 @@ app.on('will-quit', () => {
 });
 
 app.on('window-all-closed', () => {
+  // Clean up database connection
+  if (dataManager) {
+    dataManager.close();
+    dataManager = null;
+  }
+  
   if (backendProcess) {
     backendProcess.kill();
   }

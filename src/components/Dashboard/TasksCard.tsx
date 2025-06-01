@@ -27,83 +27,67 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     showPopupFor(task);
   }, [showPopupFor]);
   
-  // FIXED: Handle task completion with better state management
-  const handleCompleteTask = useCallback(async (e: React.MouseEvent, task: Task) => {
-    e.stopPropagation();
-    
-    // Prevent multiple clicks
-    if (task.isProcessing) return;
+  // UNIFIED: Single task completion handler for all scenarios
+  const handleTaskCompletion = useCallback(async (task: Task, fromPopup: boolean = false): Promise<void> => {
+    // Prevent multiple simultaneous operations
+    if (task.isProcessing) {
+      console.log("Task already being processed, ignoring request");
+      return;
+    }
     
     try {
       // 1. Apply optimistic update with processing flag
-      const optimisticTask = {
+      const processingTask = {
         ...task,
-        isProcessing: true, 
+        isProcessing: true,
         completed: !task.completed,
-        // ADDED: Ensure consistent field names
-        task_date: task.task_date, // FIXED! Was using 'date' inconsistently
-        task_time: task.task_time // FIXED! Was using 'time' inconsistently
+        // FIXED: Ensure consistent field names (was using inconsistent field names)
+        task_date: task.task_date,
+        task_time: task.task_time || ''
       };
       
-      // 2. Update local state immediately
-      onToggleTask(optimisticTask);
+      // 2. Update local state immediately for responsive UI
+      onToggleTask(processingTask);
       
-      // 3. Call API to persist the change
+      // 3. Call DataContext to persist the change in SQLite
       const updatedTask = await toggleTask(task);
       
-      // 4. Update with final state from server
+      // 4. Update with final state from SQLite
       onToggleTask(updatedTask);
-    } catch (error) {
-      console.error("Error completing task:", error);
       
-      // 5. Revert on error
+      // 5. Close popup if this was triggered from popup
+      if (fromPopup) {
+        closePopup();
+      }
+      
+      console.log(`✅ Task ${task.id} completion toggled successfully`);
+    } catch (error) {
+      console.error(`❌ Error toggling task ${task.id}:`, error);
+      
+      // 6. Revert optimistic update on error
       onToggleTask({
         ...task,
         isProcessing: false
       });
     }
-  }, [onToggleTask, toggleTask]);
+  }, [onToggleTask, toggleTask, closePopup]);
   
-  // Keep only ONE version of completeTask:
-  const completeTask = useCallback(async (taskId: number): Promise<void> => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    
-    try {
-      // Show processing state
-      onToggleTask({
-        ...task,
-        isProcessing: true,
-        completed: true
-      });
-      
-      // Call API
-      const updatedTask = await toggleTask(task);
-      
-      // Update UI with result
-      onToggleTask(updatedTask);
-      
-      // Close popup
-      closePopup();
-    } catch (error) {
-      console.error("Error completing task:", error);
-      
-      // Revert on error
-      onToggleTask({
-        ...task,
-        isProcessing: false,
-        completed: false
-      });
-    }
-  }, [tasks, onToggleTask, toggleTask, closePopup]);
-
-  // Update task status circle click handler:
+  // Handle status circle click (completion toggle)
   const handleStatusCircleClick = useCallback((e: React.MouseEvent, task: Task) => {
-    e.stopPropagation(); // Prevent item click
+    e.stopPropagation(); // Prevent triggering task item click
+    handleTaskCompletion(task, false);
+  }, [handleTaskCompletion]);
+  
+  // Handle completion from popup (used by DetailPopup)
+  const handleCompleteFromPopup = useCallback(async (taskId: number): Promise<void> => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) {
+      console.error(`Task with ID ${taskId} not found`);
+      return;
+    }
     
-    // Use the shared completeTask function
-    completeTask(task.id);
-  }, [completeTask]);
+    await handleTaskCompletion(task, true);
+  }, [tasks, handleTaskCompletion]);
 
   return (
     <div className="dashboard-card tasks-card">
@@ -122,28 +106,43 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           {pendingTasks.map((task) => (
             <li 
               key={`task-${task.id}`} 
-              className={`task-item ${task.isProcessing ? "processing" : ""}`}
+              className={`task-item ${task.isProcessing ? "processing" : ""} ${task.completed ? "completed" : ""}`}
               onClick={() => handleTaskClick(task)}
             >
               <div className="task-row">
-                {/* Keep only the circle, remove the Complete button */}
                 <div 
-                  className={`task-status-circle ${task.completed ? "completed" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleTask(task);
-                  }}
+                  className={`task-status-circle ${task.completed ? "completed" : ""} ${task.isProcessing ? "processing" : ""}`}
+                  onClick={(e) => handleStatusCircleClick(e, task)}
+                  title={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
-                  {task.completed && <span>✓</span>}
+                  {task.isProcessing ? (
+                    <span className="spinner">⟳</span>
+                  ) : task.completed ? (
+                    <span>✓</span>
+                  ) : null}
                 </div>
-                <span className="task-title">{task.title}</span>
-                <span className="task-meta">{task.due_time}</span>
+                
+                <div className="task-content">
+                  <span className="task-title">{task.title}</span>
+                  <div className="task-meta">
+                    {/* FIXED: Use task_time instead of due_time */}
+                    {task.task_time && (
+                      <span className="task-time">{task.task_time}</span>
+                    )}
+                    {task.urgency_level && task.urgency_level > 1 && (
+                      <span className={`task-priority priority-${task.urgency_level >= 4 ? 'urgent' : task.urgency_level >= 3 ? 'high' : 'medium'}`}>
+                        {task.urgency_level >= 4 ? '🔥' : task.urgency_level >= 3 ? '⚡' : '⭐'}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </li>
           ))}
         </ul>
       ) : (
         <div className="empty-list-message">
+          <div className="empty-icon">📝</div>
           <p>No pending tasks for today</p>
           <button
             className="action-btn small"
@@ -158,7 +157,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         <DetailPopup
           item={currentPopupItem}
           onClose={closePopup}
-          onComplete={completeTask}
+          onComplete={handleCompleteFromPopup}
           container={document.body}
         />
       )}

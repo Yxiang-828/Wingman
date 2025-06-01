@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import type { ErrorInfo } from "react";
 import { Routes, Route, useLocation, Navigate, useNavigate } from "react-router-dom";
 import DayView from "./DayView";
@@ -41,6 +41,8 @@ class ErrorBoundary extends Component<
 }
 
 const Calendar: React.FC = () => {
+  const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const location = useLocation();
   const navigate = useNavigate(); // Add this line to define navigate
 
@@ -58,14 +60,30 @@ const Calendar: React.FC = () => {
         <div className="calendar-main">
           {/* Routes for different views */}
           <Routes>
-            <Route path="/day" element={<DayView />} />
+            <Route path="/day" element={
+              <DayView 
+                onCreateEvent={() => setEventModalOpen(true)}
+                onEditEvent={(event) => {
+                  setSelectedEvent(event);
+                  setEventModalOpen(true);
+                }}
+              />
+            } />
             <Route path="/week" element={<WeekView />} />
             <Route path="/month" element={<MonthView />} />
             {/* Default route */}
             <Route path="*" element={<Navigate to="week" replace />} />
           </Routes>
         </div>
-        <EventModal />
+        {/* Fixed EventModal with proper props */}
+        <EventModal 
+          isOpen={eventModalOpen}
+          onClose={() => {
+            setEventModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          event={selectedEvent}
+        />
 
         {/* Add the persistent floating view selector here */}
         <div className="floating-view-selector">
