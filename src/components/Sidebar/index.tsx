@@ -162,7 +162,8 @@ const Sidebar: React.FC = () => {
             mood={getAvatarMood(wingmanMood)}
             context="sidebar"
             showMessage={false}
-            onClick={() => navigate("/chatbot")}
+            // ✅ REMOVED: onClick={() => navigate("/chatbot")}
+            // Now the avatar won't navigate anywhere when clicked
           />
         </div>
       </button>
@@ -175,8 +176,8 @@ const Sidebar: React.FC = () => {
             size="medium"
             mood={getAvatarMood(wingmanMood)}
             context="sidebar"
-            showMessage={isVisible && Math.random() > 0.7} // Show message occasionally when sidebar opens
-            onClick={() => navigate("/chatbot")}
+            showMessage={isVisible && Math.random() > 0.7}
+            onClick={() => navigate("/chatbot")} // ✅ KEEP: This one inside the sidebar still navigates
             className="wingman-avatar--sidebar"
           />
           <div className="sidebar-header-content">
