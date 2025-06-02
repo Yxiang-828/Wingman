@@ -57,7 +57,8 @@
 
 .dc-entry-item {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   padding: 0.8rem 1rem;
   min-height: 50px;
   max-height: 80px;
@@ -73,45 +74,82 @@
   transform: translateX(5px);
 }
 
-.dc-entry-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 0.3rem;
+/* ✅ SIMPLIFIED: DiaryCard specific styles only */
+
+.diary-card {
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-card-secondary, rgba(25, 25, 45, 0.85)) 0%,
+    var(--color-bg-dark, rgba(20, 20, 35, 0.9)) 100%
+  );
 }
 
-.dc-entry-header h3 {
+/* ✅ FIXED: Single row layout for diary entries */
+.dc-entry-content {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.dc-entry-title {
   font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text-primary, white);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 75%;
+  flex-shrink: 0;
+  min-width: 120px;
+  max-width: 180px;
+}
+
+.dc-entry-preview {
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.6));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.dc-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-width: 100px;
 }
 
 .dc-entry-date {
   font-size: 0.8rem;
   white-space: nowrap;
   color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  background: rgba(20, 20, 35, 0.4);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
 }
 
 .dc-entry-mood {
   margin-right: 6px;
+  font-size: 1.1rem;
 }
 
-.dc-entry-preview {
-  font-size: 0.85rem;
-  color: var(--color-text-tertiary, rgba(255, 255, 255, 0.6));
-  line-height: 1.4;
-  max-height: 3em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  word-break: break-word;
+/* ✅ INHERIT: Follow Dashboard.css hover patterns */
+.diary-card .dashboard-item:hover {
+  background: rgba(30, 30, 50, 0.6);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+/* Remove the old vertical layout styles */
+.dc-entry-header {
+  display: none;
 }
 
 .dc-empty-message {
@@ -142,17 +180,6 @@
   justify-content: center;
   height: 200px;
   color: var(--color-text-tertiary, rgba(255, 255, 255, 0.6));
-}
-
-/* DiaryCard-specific styles, inheriting shared styling from Dashboard.css */
-
-.diary-card {
-  /* Only override what's different from the base dashboard-card */
-  background: linear-gradient(
-    135deg,
-    var(--color-bg-card-secondary, rgba(25, 25, 45, 0.85)) 0%,
-    var(--color-bg-dark, rgba(20, 20, 35, 0.9)) 100%
-  );
 }
 
 /* Additional diary entry styling - specific elements not in Dashboard.css */

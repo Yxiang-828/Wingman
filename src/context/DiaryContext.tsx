@@ -3,7 +3,6 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useRef,
   useCallback,
   type ReactNode,
 } from "react";
@@ -22,85 +21,49 @@ interface DiaryContextProps {
 
 const DiaryContext = createContext<DiaryContextProps | null>(null);
 
-export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const DiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const lastFetchedRef = useRef<Record<string, number>>({});
 
-  useEffect(() => {
-    const fetchEntries = async () => {
-      setLoading(true);
-      try {
-        const userId = getCurrentUserId();
-        if (!userId) {
-          setEntries([]);
-          return;
-        }
-
-        // MIGRATION: Use SQLite instead of Supabase API
-        const data = await window.electronAPI.db.getDiaryEntries(userId);
-        setEntries(data);
-      } catch (error) {
-        console.error("Error fetching diary entries:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEntries();
-  }, []);
-
+  // ✅ SIMPLIFIED: Direct SQLite data fetching
   const refreshEntries = useCallback(async () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.log("DiaryContext: No user authenticated");
+      setEntries([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const userId = getCurrentUserId();
-      if (!userId) {
-        console.log("DiaryContext: User not authenticated, skipping fetch");
-        setLoading(false);
-        return;
-      }
-
-      // Only throttle if this is NOT the first fetch
-      const now = Date.now();
-      const lastFetched = lastFetchedRef.current["entries"] || 0;
-      const isFirstFetch = lastFetched === 0;
-
-      if (!isFirstFetch && now - lastFetched < 5000) {
-        console.log("Skipping diary fetch - recently fetched");
-        setLoading(false);
-        return;
-      }
-
-      lastFetchedRef.current["entries"] = now;
-      
-      // MIGRATION: Use SQLite instead of deprecated API
+      console.log("📖 DiaryContext: Fetching entries (direct SQLite)");
       const data = await window.electronAPI.db.getDiaryEntries(userId);
-      setEntries(data);
-      console.log(`DiaryContext: Successfully loaded ${data.length} entries`);
+      setEntries(data || []);
+      console.log(`✅ DiaryContext: Loaded ${data?.length || 0} entries`);
     } catch (error) {
-      console.error("Error fetching diary entries:", error);
+      console.error("❌ DiaryContext: Error fetching entries:", error);
+      setEntries([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // Initial load
+  useEffect(() => {
+    refreshEntries();
+  }, [refreshEntries]);
+
+  // ✅ SIMPLIFIED: Direct SQLite operations
   const getEntryById = async (id: number): Promise<DiaryEntry> => {
     try {
       const userId = getCurrentUserId();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
+      if (!userId) throw new Error("User not authenticated");
       
-      // MIGRATION: Use SQLite instead of deprecated API
       const allEntries = await window.electronAPI.db.getDiaryEntries(userId);
       const entry = allEntries.find((e: DiaryEntry) => e.id === id);
       
-      if (!entry) {
-        throw new Error(`Diary entry with ID ${id} not found`);
-      }
-      
+      if (!entry) throw new Error(`Diary entry with ID ${id} not found`);
       return entry;
     } catch (error) {
       console.error(`Error fetching diary entry ${id}:`, error);
@@ -111,11 +74,8 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
   const addEntry = async (entry: Omit<DiaryEntry, "id">): Promise<DiaryEntry> => {
     try {
       const userId = getCurrentUserId();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
+      if (!userId) throw new Error("User not authenticated");
       
-      // MIGRATION: Use SQLite instead of deprecated API
       const entryWithUserId = {
         ...entry,
         user_id: userId,
@@ -123,7 +83,7 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
       };
       
       const newEntry = await window.electronAPI.db.saveDiaryEntry(entryWithUserId);
-      await refreshEntries(); // Refresh the entries list
+      await refreshEntries();
       return newEntry;
     } catch (error) {
       console.error("Error adding diary entry:", error);
@@ -134,11 +94,8 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
   const updateEntry = async (id: number, entry: Partial<DiaryEntry>): Promise<DiaryEntry> => {
     try {
       const userId = getCurrentUserId();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
+      if (!userId) throw new Error("User not authenticated");
       
-      // MIGRATION: Use SQLite instead of deprecated API
       const entryWithIdAndUserId = {
         ...entry,
         id,
@@ -146,7 +103,7 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
       };
       
       const updatedEntry = await window.electronAPI.db.saveDiaryEntry(entryWithIdAndUserId);
-      await refreshEntries(); // Refresh the entries list
+      await refreshEntries();
       return updatedEntry;
     } catch (error) {
       console.error(`Error updating diary entry ${id}:`, error);
@@ -156,10 +113,7 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
 
   const deleteEntry = async (id: number): Promise<void> => {
     try {
-      // NOTE: No direct delete method in SQLite implementation
-      // This should be added to LocalDataManager if needed
       console.warn("Delete diary entry not implemented in SQLite version");
-      
       // Just update local state for now
       setEntries(entries.filter((entry) => entry.id !== id));
     } catch (error) {

@@ -1,288 +1,171 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiary } from "../../context/DiaryContext";
 import DiaryDetailPopup from "./DiaryDetailPopup";
-import type { DiaryEntry } from "../../api/Diary";
-import { formatSafeDate } from "../../utils/dateUtils";
-import type { MonthData } from "../../types/diary";
+import { format } from "date-fns";
 import "./ViewEntries.css";
 
 const ViewEntries: React.FC = () => {
   const navigate = useNavigate();
-  // Remove unused variables by not destructuring them
-  const { entries, loading } = useDiary();
-  const [groupedEntries, setGroupedEntries] = useState<
-    Record<string, MonthData>
-  >({});
+  const { entries, loading, deleteEntry } = useDiary();
+  
+  // ✅ SIMPLIFIED: Only 2 state variables needed
+  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
-  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
-  const [page, setPage] = useState(1);
-  const entriesPerPage = 5; // Reduced from 8 to show fewer entries initially
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  // Keep successMessage even if unused currently, but mark it as unused
-  const [successMessage, _setSuccessMessage] = useState("");
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  // More accurate calculation of displayed entries
-  const totalEntriesDisplayed = expandedMonth
-    ? groupedEntries[expandedMonth]?.entries.slice(0, page * entriesPerPage)
-        .length || 0
-    : 0;
-
-  // Make sure this condition is more explicit
-  const hasMoreEntries =
-    expandedMonth &&
-    groupedEntries[expandedMonth]?.entries.length > page * entriesPerPage;
-
-  // Group entries by month for better organization
-  useEffect(() => {
-    if (!loading && entries.length > 0) {
-      const grouped: Record<string, MonthData> = {};
-
-      entries.forEach((entry) => {
-        // Use entry_date if available, otherwise fallback to created_at with safe default
-        const dateValue =
-          entry.entry_date || entry.created_at || new Date().toISOString();
-        let date: Date;
-
-        try {
-          // Try to parse the date
-          date = new Date(dateValue);
-          if (isNaN(date.getTime())) {
-            console.warn(`Invalid date detected: ${dateValue}`, entry);
-            date = new Date(); // Fallback to current date
-          }
-        } catch (error) {
-          console.error(`Error parsing date: ${dateValue}`, error);
-          date = new Date(); // Fallback to current date
-        }
-
-        const monthKey = `${date.getFullYear()}-${String(
-          date.getMonth() + 1
-        ).padStart(2, "0")}`;
-        const monthName = date.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "long",
-        });
-
-        if (!grouped[monthKey]) {
-          grouped[monthKey] = {
-            name: monthName,
-            entries: [],
-            count: 0,
-          };
-        }
-
-        grouped[monthKey].entries.push(entry);
-        grouped[monthKey].count = grouped[monthKey].entries.length;
-      });
-
-      // Sort entries in each month by date (newest first)
-      Object.keys(grouped).forEach((key) => {
-        grouped[key].entries.sort((a: DiaryEntry, b: DiaryEntry) => {
-          // Fix TypeError: Add a fallback value for date creation
-          const dateA = new Date(a.entry_date || a.created_at || Date.now());
-          const dateB = new Date(b.entry_date || b.created_at || Date.now());
-          return dateB.getTime() - dateA.getTime();
-        });
-      });
-
-      // Set the most recent month as expanded by default
-      const sortedMonths = Object.keys(grouped).sort().reverse();
-      if (sortedMonths.length > 0 && !expandedMonth) {
-        setExpandedMonth(sortedMonths[0]);
+  // ✅ SIMPLIFIED: Pure computation - no state needed
+  const groupedEntries = useMemo(() => {
+    const grouped: Record<string, any[]> = {};
+    
+    entries.forEach((entry) => {
+      const date = new Date(entry.created_at || entry.entry_date || entry.date);
+      const monthKey = format(date, "yyyy-MM");
+      const monthName = format(date, "MMMM yyyy");
+      
+      if (!grouped[monthKey]) {
+        grouped[monthKey] = { monthName, entries: [] };
       }
+      grouped[monthKey].entries.push(entry);
+    });
 
-      setGroupedEntries(grouped);
+    // Sort entries within each month (newest first)
+    Object.keys(grouped).forEach(key => {
+      grouped[key].entries.sort((a: any, b: any) => 
+        new Date(b.created_at || b.entry_date || b.date).getTime() - 
+        new Date(a.created_at || a.entry_date || a.date).getTime()
+      );
+    });
+
+    return grouped;
+  }, [entries]);
+
+  // ✅ SIMPLIFIED: Auto-expand most recent month
+  const sortedMonths = useMemo(() => {
+    const months = Object.keys(groupedEntries).sort().reverse();
+    if (months.length > 0 && !expandedMonth) {
+      setExpandedMonth(months[0]);
     }
-  }, [entries, loading, expandedMonth]);
+    return months;
+  }, [groupedEntries, expandedMonth]);
 
-  // Toggle month expand/collapse
   const toggleMonth = (monthKey: string) => {
     setExpandedMonth(expandedMonth === monthKey ? null : monthKey);
   };
 
-  // View an entry in detail
-  const viewEntry = (entry: DiaryEntry) => {
-    setSelectedEntry(entry);
+  const handleEdit = (id: number) => {
+    navigate(`/diary/edit?id=${id}`);
   };
 
-  // Load more entries function with loading state
-  const handleLoadMore = () => {
-    if (loadingMore) return; // Prevent multiple simultaneous loads
-
-    setLoadingMore(true);
-    const nextPage = page + 1;
-
-    setPage(nextPage);
-    setLoadingMore(false);
+  const handleDelete = async (id: number) => {
+    await deleteEntry(id);
+    setSelectedEntry(null);
   };
 
-  // Scroll handler to detect when user is near the bottom
-  const handleScroll = useCallback(() => {
-    if (!containerRef.current || loadingMore || !hasMoreEntries) return;
-
-    const container = containerRef.current;
-    const scrollBottom = container.scrollTop + container.clientHeight;
-    const nearBottom = scrollBottom >= container.scrollHeight - 200; // 200px from bottom
-
-    if (nearBottom) {
-      handleLoadMore();
-    }
-  }, [loadingMore, hasMoreEntries, page]); // Now hasMoreEntries is defined before use
-
-  // Add scroll listener
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", handleScroll);
-      }
+  const getMoodEmoji = (mood: string) => {
+    const moods: Record<string, string> = {
+      happy: "😊", sad: "😢", excited: "😃", 
+      angry: "😡", relaxed: "😌", neutral: "😐"
     };
-  }, [handleScroll]);
-
-  // Helper function to get the mood emoji
-  const getMoodEmoji = (mood: string = "neutral") => {
-    const moodMap: Record<string, string> = {
-      happy: "😊",
-      sad: "😔",
-      neutral: "😐",
-      excited: "🤩",
-      anxious: "😰",
-    };
-    return moodMap[mood] || moodMap.neutral;
+    return moods[mood] || "😐";
   };
 
-  // Create a new entry
-  const createNewEntry = () => {
-    navigate("/diary/write");
+  const formatDateDisplay = (dateStr: string) => {
+    try {
+      return format(new Date(dateStr), "MMM d");
+    } catch {
+      return dateStr;
+    }
   };
 
-  // Go to search page
-  const goToSearch = () => {
-    navigate("/diary/search");
-  };
+  if (loading) {
+    return (
+      <div className="view-entries-container">
+        <div className="diary-loading">Loading entries...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="diary-card view-entries-container" ref={containerRef}>
+    <div className="view-entries-container">
+      {/* ✅ CLEAN: Simple header */}
       <div className="view-entries-header">
-        <h2>Your Diary</h2>
+        <h2>Diary Entries ({entries.length})</h2>
         <div className="view-entries-actions">
-          <button className="search-entries-btn" onClick={goToSearch}>
+          <button 
+            className="search-entries-btn"
+            onClick={() => navigate("/diary/search")}
+          >
             Search
           </button>
-          <button className="write-entry-btn" onClick={createNewEntry}>
-            Write New Entry
+          <button 
+            className="write-entry-btn"
+            onClick={() => navigate("/diary/write")}
+          >
+            Write Entry
           </button>
         </div>
       </div>
 
-      {loading ? (
-        <div className="diary-loading">Loading entries...</div>
-      ) : entries.length > 0 ? (
-        <>
-          <div className="entries-by-month">
-            {Object.keys(groupedEntries)
-              .sort((a, b) => b.localeCompare(a))
-              .map((monthKey) => {
-                const monthData = groupedEntries[monthKey];
-                const isExpanded = expandedMonth === monthKey;
-
-                return (
-                  <div key={monthKey} className="month-group">
-                    <div
-                      className={`month-header ${isExpanded ? "expanded" : ""}`}
-                      onClick={() => toggleMonth(monthKey)}
-                    >
-                      <h3>{monthData.name}</h3>
-                      <span className="entry-count">
-                        {monthData.entries.length}{" "}
-                        {monthData.entries.length === 1 ? "entry" : "entries"}
-                      </span>
-                      <span className="expand-indicator">
-                        {isExpanded ? "▼" : "►"}
-                      </span>
-                    </div>
-
-                    <div
-                      className={`month-entries ${
-                        isExpanded ? "expanded" : ""
-                      }`}
-                    >
-                      {isExpanded &&
-                        monthData.entries
-                          .slice(0, page * entriesPerPage)
-                          .map((entry: DiaryEntry) => (
-                            <div
-                              key={entry.id}
-                              className="diary-entry-preview"
-                              onClick={() => viewEntry(entry)}
-                            >
-                              <div className="entry-preview-header">
-                                <div className="entry-preview-date-mood">
-                                  <span className="entry-preview-date">
-                                    {formatSafeDate(
-                                      entry.entry_date || entry.created_at,
-                                      "date"
-                                    )}
-                                  </span>
-                                  <span className="entry-preview-mood">
-                                    {getMoodEmoji(entry.mood)}
-                                  </span>
-                                </div>
-                                <h4 className="entry-preview-title">
-                                  {entry.title || "Untitled Entry"}
-                                </h4>
-                              </div>
-                              <p className="entry-preview-content">
-                                {entry.content.substring(0, 150)}
-                                {entry.content.length > 150 ? "..." : ""}
-                              </p>
-                              <div className="entry-preview-footer">
-                                <span className="read-more">Read more →</span>
-                              </div>
-                            </div>
-                          ))}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-
-          {/* Load More Section - Always show when there are entries */}
-          {entries.length > 0 && (
-            <div className="load-more-container">
-              {loadingMore ? (
-                <>
-                  <div className="loading-spinner"></div>
-                  <span>Loading more entries...</span>
-                </>
-              ) : (
-                <button
-                  className="load-more-btn"
-                  onClick={handleLoadMore}
-                  disabled={!hasMoreEntries}
+      {/* ✅ SIMPLIFIED: Clean month grouping */}
+      {entries.length > 0 ? (
+        <div className="entries-by-month">
+          {sortedMonths.map((monthKey) => {
+            const monthData = groupedEntries[monthKey];
+            const isExpanded = expandedMonth === monthKey;
+            
+            return (
+              <div key={monthKey} className="month-group">
+                <div 
+                  className={`month-header ${isExpanded ? 'expanded' : ''}`}
+                  onClick={() => toggleMonth(monthKey)}
                 >
-                  {hasMoreEntries
-                    ? `Load More Entries (${
-                        entries.length - totalEntriesDisplayed
-                      } remaining)`
-                    : "All Entries Loaded"}
-                </button>
-              )}
-            </div>
-          )}
-        </>
+                  <h3>{monthData.monthName}</h3>
+                  <div className="month-info">
+                    <span className="entry-count">{monthData.entries.length}</span>
+                    <span className="expand-indicator">▼</span>
+                  </div>
+                </div>
+                
+                {isExpanded && (
+                  <div className="month-entries">
+                    {monthData.entries.map((entry: any) => (
+                      <div 
+                        key={entry.id}
+                        className="diary-entry-preview"
+                        onClick={() => setSelectedEntry(entry)}
+                      >
+                        <div className="entry-preview-header">
+                          <div className="entry-preview-date-mood">
+                            <span className="entry-preview-date">
+                              {formatDateDisplay(entry.created_at || entry.entry_date || entry.date)}
+                            </span>
+                            <span className="entry-preview-mood">
+                              {getMoodEmoji(entry.mood)}
+                            </span>
+                          </div>
+                          <h4 className="entry-preview-title">{entry.title}</h4>
+                        </div>
+                        
+                        <p className="entry-preview-content">
+                          {entry.content?.substring(0, 120)}
+                          {entry.content?.length > 120 && "..."}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       ) : (
         <div className="diary-empty-state">
-          <p>You haven't written any entries yet. Start writing today!</p>
-          <button className="write-entry-btn" onClick={createNewEntry}>
+          <div className="diary-empty-icon">📝</div>
+          <p>No diary entries yet</p>
+          <button 
+            className="write-entry-btn"
+            onClick={() => navigate("/diary/write")}
+          >
             Write Your First Entry
           </button>
         </div>
@@ -292,19 +175,9 @@ const ViewEntries: React.FC = () => {
         <DiaryDetailPopup
           entry={selectedEntry}
           onClose={() => setSelectedEntry(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         />
-      )}
-
-      {showSuccessMessage && (
-        <div className="success-message">
-          {successMessage}
-          <button
-            className="close-btn"
-            onClick={() => setShowSuccessMessage(false)}
-          >
-            ×
-          </button>
-        </div>
       )}
     </div>
   );

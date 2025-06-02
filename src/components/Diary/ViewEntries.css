@@ -1,48 +1,28 @@
 .view-entries-container {
   max-width: 800px;
   margin: 0 auto;
-  overflow: visible;
-}
-
-/* Base container - fixed height with scrolling */
-.diary-card.view-entries-container {
-  max-height: 80vh;
-  height: 80vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  padding: 0;
+  padding: 2rem;
+  background: rgba(25, 25, 45, 0.5);
   border-radius: 16px;
-  background: var(--color-bg-card);
-  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.25));
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-accent-primary) var(--color-bg-hover);
+  min-height: 80vh;
 }
 
-/* Fixed header that stays at the top */
 .view-entries-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--color-bg-secondary);
-  padding: 1.5rem 2rem;
-  margin: 0;
-  border-bottom: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(10px);
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
 }
 
 .view-entries-header h2 {
   font-size: 1.8rem;
   margin: 0;
-  color: var(--color-text);
+  color: white;
   font-weight: 600;
 }
 
-/* Action buttons */
 .view-entries-actions {
   display: flex;
   gap: 1rem;
@@ -51,58 +31,41 @@
 .search-entries-btn,
 .write-entry-btn {
   padding: 0.6rem 1.2rem;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s ease;
-  font-size: 0.95rem;
+  transition: all 0.2s ease;
 }
 
 .search-entries-btn {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-}
-
-.search-entries-btn:hover {
-  background: var(--color-bg-hover);
-  transform: translateY(-2px);
+  background: rgba(30, 30, 50, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  color: white;
 }
 
 .write-entry-btn {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-primary, #646cff) 0%,
-    var(--color-accent-primary-dark, #535bf2) 100%
-  );
-  border: none;
-  color: var(--color-text-contrast, white);
-  box-shadow: 0 2px 8px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
+  background: rgba(100, 108, 255, 0.2);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  color: #b8baff;
 }
 
+.search-entries-btn:hover,
 .write-entry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.3));
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.2);
 }
 
-/* Content area - separate from header with padding */
+/* ✅ CLEAN: Month grouping */
 .entries-by-month {
-  padding: 1rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  flex-grow: 1;
 }
 
-/* Month groups with better styling */
 .month-group {
+  background: rgba(30, 30, 50, 0.4);
   border-radius: 12px;
   overflow: hidden;
-  background: var(--color-bg-secondary);
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.1));
 }
 
 .month-header {
@@ -110,75 +73,64 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  background: var(--color-bg-card);
   cursor: pointer;
-  position: relative;
   transition: background 0.2s ease;
 }
 
 .month-header:hover {
-  background: var(--color-bg-hover);
+  background: rgba(30, 30, 50, 0.6);
 }
 
 .month-header h3 {
-  font-size: 1.2rem;
   margin: 0;
-  color: var(--color-text);
-  font-weight: 600;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.month-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .entry-count {
-  font-size: 0.85rem;
-  background: var(--color-bg-secondary);
+  background: rgba(100, 108, 255, 0.2);
+  color: #b8baff;
   padding: 0.3rem 0.6rem;
-  border-radius: 1rem;
-  color: var(--color-text-secondary);
+  border-radius: 12px;
+  font-size: 0.8rem;
 }
 
 .expand-indicator {
-  font-size: 0.9rem;
-  color: var(--color-accent-primary, rgba(100, 108, 255, 0.8));
+  color: rgba(255, 255, 255, 0.6);
   transition: transform 0.3s ease;
-  margin-left: 10px;
 }
 
 .month-header.expanded .expand-indicator {
   transform: rotate(180deg);
 }
 
-/* Month entries with smooth animation */
+/* ✅ CLEAN: Entry previews */
 .month-entries {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s ease;
+  padding: 0 1.5rem 1rem;
 }
 
-.month-entries.expanded {
-  max-height: 100%; /* Changed from fixed pixel value */
-  overflow-y: visible; /* Allow entries to be visible */
-}
-
-/* Entry preview cards */
 .diary-entry-preview {
-  padding: 1.2rem 1.5rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background: rgba(20, 20, 35, 0.5);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: var(--color-bg-card);
-  overflow: hidden; /* Prevent content overflow */
-}
-
-.diary-entry-preview:last-child {
-  border-bottom: none;
+  transition: all 0.2s ease;
 }
 
 .diary-entry-preview:hover {
-  background: var(--color-bg-hover, rgba(35, 35, 55, 0.5));
+  background: rgba(30, 30, 50, 0.6);
   transform: translateX(5px);
 }
 
 .entry-preview-header {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .entry-preview-date-mood {
@@ -189,11 +141,8 @@
 }
 
 .entry-preview-date {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
-  padding: 0.2rem 0.5rem;
-  background: var(--color-bg-card, rgba(30, 30, 50, 0.6));
-  border-radius: 4px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .entry-preview-mood {
@@ -201,38 +150,47 @@
 }
 
 .entry-preview-title {
-  font-size: 1.2rem;
   margin: 0;
-  color: var(--color-text, white);
+  font-size: 1rem;
+  color: white;
   font-weight: 600;
 }
 
 .entry-preview-content {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
-  margin: 0 0 0.75rem 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.entry-preview-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.read-more {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
   font-size: 0.9rem;
-  color: var(--color-accent-primary, rgba(100, 108, 255, 0.8));
-  font-weight: 500;
-  transition: all 0.2s ease;
 }
 
-.diary-entry-preview:hover .read-more {
-  color: var(--color-accent-primary-bright, rgba(100, 108, 255, 1));
-  transform: translateX(3px);
+/* ✅ CLEAN: Empty state */
+.diary-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.diary-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.diary-empty-state p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
+  margin: 0 0 2rem 0;
+}
+
+.diary-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* Success message */
