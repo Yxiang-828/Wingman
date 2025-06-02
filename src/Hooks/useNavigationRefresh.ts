@@ -1,55 +1,53 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useNotifications } from '../context/NotificationsContext';
-import { useCalendarCache } from '../Hooks/useCalendar';
+// ✅ REMOVED: import { useCalendarCache } from '../Hooks/useCalendar';
 
 /**
- * Hook that triggers data refresh when navigating to specific routes
+ * Hook that triggers data refresh when navigating between pages
+ * ✅ UPDATED: No longer uses cache system - just dispatches refresh events
  */
-export function useNavigationRefresh() {
+const useNavigationRefresh = () => {
   const location = useLocation();
-  const { getDayData } = useCalendarCache('Navigation');
-  const { refreshNotifications } = useNotifications();
-  
+  // ✅ REMOVED: const { getDayData } = useCalendarCache('Navigation');
+
   useEffect(() => {
-    // Get current date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
-    const query = new URLSearchParams(location.search);
-    
-    console.log(`🧭 Navigation to: ${location.pathname}${location.search}`);
-    
-    // Route-specific refresh logic
-    if (location.pathname === '/notifications') {
-      // Refresh notifications data when navigating to notifications page
-      console.log('📋 Refreshing notifications data due to navigation');
+    // ✅ SIMPLIFIED: Just dispatch refresh events for components to handle
+    const handlePageNavigation = () => {
+      console.log('🧭 Navigation: Page changed, dispatching refresh events');
       
-      // Force-refresh today's data in cache
-      getDayData(today, true).then(() => {
-        // Then refresh the notifications with the new data
-        refreshNotifications();
+      // Dispatch refresh event for any components that want to refresh
+      const refreshEvent = new CustomEvent('navigation-refresh', {
+        detail: { 
+          pathname: location.pathname,
+          search: location.search,
+          timestamp: Date.now()
+        }
       });
+      window.dispatchEvent(refreshEvent);
       
-      // Check if we need to switch tabs based on URL params
-      const tabParam = query.get('tab');
-      if (tabParam) {
-        console.log(`📋 Navigation specified tab: ${tabParam}`);
-        // The tab will be handled by the component using the URL parameter
+      // Also dispatch specific events based on path
+      if (location.pathname === '/') {
+        const dashboardEvent = new CustomEvent('dashboard-refresh', {
+          detail: { timestamp: Date.now() }
+        });
+        window.dispatchEvent(dashboardEvent);
       }
-    }
+      
+      if (location.pathname.startsWith('/notifications')) {
+        const notificationsEvent = new CustomEvent('notifications-refresh', {
+          detail: { timestamp: Date.now() }
+        });
+        window.dispatchEvent(notificationsEvent);
+      }
+    };
+
+    // Small delay to ensure components are mounted
+    const timeoutId = setTimeout(handlePageNavigation, 100);
     
-    else if (location.pathname === '/completed-tasks') {
-      // Refresh completed tasks data
-      console.log('📋 Refreshing completed tasks data due to navigation');
-      getDayData(today, true);
-    }
-    
-    else if (location.pathname === '/calendar/day') {
-      // Handle calendar day view navigation
-      const dateParam = query.get('date');
-      const date = dateParam || today;
-      console.log(`📋 Refreshing calendar data for ${date} due to navigation`);
-      getDayData(date, true);
-    }
-    
-  }, [location.pathname, location.search, getDayData, refreshNotifications]);
-}
+    return () => clearTimeout(timeoutId);
+  }, [location.pathname, location.search]);
+};
+
+// ✅ FIXED: Export as named export to match your import
+export { useNavigationRefresh };
+export default useNavigationRefresh;

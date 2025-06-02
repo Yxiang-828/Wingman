@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addDays, startOfWeek, format } from "date-fns";
-import { useCalendarCache } from "../../Hooks/useCalendar";
+// ✅ REMOVED: import { useCalendarCache } from "../../Hooks/useCalendar";
 import {
   formatDateToString,
   getTodayDateString,
   parseLocalDateString,
 } from "../../utils/timeUtils";
+import { getCurrentUserId } from "../../utils/auth";
 import WingmanAvatar from "../Common/WingmanAvatar";
 import "./WeekView.css";
 
@@ -85,29 +86,77 @@ const WeekView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [weekData, setWeekData] = useState<Record<string, any>>({});
 
-  const { getWeekData } = useCalendarCache("WeekView");
+  // ✅ REMOVED: const { getWeekData } = useCalendarCache("WeekView");
 
   // Generate week dates
   const weekDates = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   }, [weekStart]);
 
-  // Fetch week data in batch
+  // ✅ UPDATED: Direct SQLite calls instead of cache batch loading
   const fetchWeekData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Batch fetch for all dates in the week
-      const dates = weekDates.map((date) => formatDateToString(date));
-      const data = await getWeekData(dates);
+      // ✅ NEW: Get user ID for SQLite queries
+      const userId = getCurrentUserId();
+      if (!userId) {
+        console.log("📅 WeekView: No user ID, skipping week data loading");
+        setLoading(false);
+        return;
+      }
 
-      setWeekData(data);
+      console.log(`📅 WeekView: Loading week data for 7 days (direct SQLite)`);
+
+      // ✅ CHANGED: 7 parallel direct SQLite calls instead of cache batch
+      const weekDataPromises = weekDates.map(async (date) => {
+        const dateStr = formatDateToString(date);
+        
+        try {
+          // ✅ DIRECT SQLite calls - no cache layer
+          const [tasks, events] = await Promise.all([
+            window.electronAPI.db.getTasks(userId, dateStr),
+            window.electronAPI.db.getEvents(userId, dateStr),
+          ]);
+
+          return {
+            date: dateStr,
+            data: {
+              tasks: tasks || [],
+              events: events || [],
+            },
+          };
+        } catch (error) {
+          console.error(`📅 WeekView: Error loading data for ${dateStr}:`, error);
+          return {
+            date: dateStr,
+            data: {
+              tasks: [],
+              events: [],
+            },
+          };
+        }
+      });
+
+      // Wait for all 7 days to complete
+      const weekResults = await Promise.all(weekDataPromises);
+
+      // ✅ NEW: Build weekData object from direct SQLite results
+      const newWeekData: Record<string, any> = {};
+      weekResults.forEach(({ date, data }) => {
+        newWeekData[date] = data;
+      });
+
+      setWeekData(newWeekData);
+
+      console.log(`✅ WeekView: Loaded data for ${Object.keys(newWeekData).length} days`);
     } catch (error) {
-      console.error("Error fetching week data:", error);
+      console.error("📅 WeekView: Error fetching week data:", error);
+      setWeekData({});
     } finally {
       setLoading(false);
     }
-  }, [weekDates, getWeekData]);
+  }, [weekDates]); // ✅ REMOVED: getWeekData dependency
 
   // Initialize from URL
   useEffect(() => {
@@ -176,7 +225,6 @@ const WeekView: React.FC = () => {
         </div>
       ) : (
         <>
-          {" "}
           <div className="week-header">
             <div className="week-title-container">
               <div className="flex items-center gap-3 mb-2">

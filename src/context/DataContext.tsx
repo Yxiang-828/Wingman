@@ -2,26 +2,16 @@ import React, {
   createContext,
   useContext,
   useState,
-  ReactNode,
   useCallback,
+  ReactNode,
 } from "react";
-// Remove the api import - we're going direct to SQLite
-// import { api } from "../api/apiClient";
-import { getCurrentUserId } from "../utils/auth";
 import type { Task } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
+import { getCurrentUserId } from "../utils/auth";
 
-interface CrudOperation {
-  type: "CREATE" | "UPDATE" | "DELETE" | "TOGGLE" | "ROLLBACK" | "ERROR"; // ADD ERROR
-  entity: "TASK" | "EVENT";
-  data: any;
-  affectedDate?: string;
-}
-
-type CacheUpdateCallback = (operation: CrudOperation) => void;
-
+// ✅ SIMPLIFIED: Pure CRUD interface - no cache, no subscriptions
 interface DataContextType {
-  // CRUD Operations (now goes to SQLite + broadcasts)
+  // CRUD Operations (direct SQLite calls)
   createTask: (task: Partial<Task>) => Promise<Task>;
   updateTask: (task: Task) => Promise<Task>;
   deleteTask: (taskId: number) => Promise<void>;
@@ -31,7 +21,7 @@ interface DataContextType {
   updateEvent: (event: CalendarEvent) => Promise<CalendarEvent>;
   deleteEvent: (eventId: number) => Promise<void>;
 
-  // Data Fetching (for primary cache owners only)
+  // Data Fetching (for components that need it)
   fetchDayData: (
     date: string,
     page?: number
@@ -41,53 +31,12 @@ interface DataContextType {
     hasMore: { tasks: boolean; events: boolean };
   }>;
 
-  // Cache Update Broadcasting
-  subscribeToCacheUpdates: (
-    componentId: string,
-    callback: CacheUpdateCallback
-  ) => void;
-  unsubscribeFromCacheUpdates: (componentId: string) => void;
-
   // Loading state
   loading: boolean;
   error: string | null;
-
-  // ADD THESE MISSING PROPERTIES:
-  taskCache: Record<string, Task[]>;
-  currentWeekId: string | null;
-  fetchWeekData: (weekId: string) => Promise<void>;
 }
 
-class CacheUpdateBroadcaster {
-  private subscribers = new Map<string, CacheUpdateCallback>();
-
-  subscribe(componentId: string, callback: CacheUpdateCallback): void {
-    this.subscribers.set(componentId, callback);
-    console.log(`📡 ${componentId} subscribed to cache updates`);
-  }
-
-  unsubscribe(componentId: string): void {
-    this.subscribers.delete(componentId);
-    console.log(`📡 ${componentId} unsubscribed from cache updates`);
-  }
-
-  broadcast(operation: CrudOperation): void {
-    console.log(
-      `📡 Broadcasting ${operation.type} for ${operation.entity}:`,
-      operation.data
-    );
-
-    this.subscribers.forEach((callback, componentId) => {
-      try {
-        callback(operation);
-      } catch (error) {
-        console.error(`📡 Error in ${componentId} cache update:`, error);
-      }
-    });
-  }
-}
-
-const broadcaster = new CacheUpdateBroadcaster();
+// ✅ REMOVED: CacheUpdateBroadcaster class - no longer needed
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
@@ -97,7 +46,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ NEW: Create Task using SQLite with proper data sanitization
+  // ✅ SIMPLIFIED: Create Task using direct SQLite (removed broadcasting)
   const createTask = useCallback(async (task: Partial<Task>): Promise<Task> => {
     setLoading(true);
     setError(null);
@@ -129,13 +78,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
       // Remove any React/IPC artifacts that might be present
       Object.keys(sanitizedTask).forEach((key) => {
-        const value = (sanitizedTask as any)[key];
-        if (
-          key.startsWith("_") ||
-          typeof value === "function" ||
-          (typeof value === "object" && value !== null && !Array.isArray(value))
-        ) {
-          delete (sanitizedTask as any)[key];
+        if (sanitizedTask[key] === undefined) {
+          delete sanitizedTask[key];
         }
       });
 
@@ -149,13 +93,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
       console.log("✅ DataContext: Task created successfully:", savedTask);
 
-      // ✅ FIXED: Broadcast with proper structure
-      broadcaster.broadcast({
-        type: "CREATE",
-        entity: "TASK",
-        data: savedTask,
-        affectedDate: savedTask.task_date,
-      });
+      // ✅ REMOVED: broadcaster.broadcast() calls - components handle their own refresh
 
       return savedTask;
     } catch (error) {
@@ -164,13 +102,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         error instanceof Error ? error.message : "Failed to create task";
       setError(errorMessage);
 
-      // Broadcast failure for rollback
-      broadcaster.broadcast({
-        type: "ERROR",
-        entity: "TASK",
-        data: { error: errorMessage },
-        affectedDate: task.task_date,
-      });
+      // ✅ REMOVED: Error broadcasting - just throw error
 
       throw error;
     } finally {
@@ -178,24 +110,17 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // ✅ NEW: Update Task using SQLite
+  // ✅ SIMPLIFIED: Update Task using direct SQLite (removed optimistic updates)
   const updateTask = useCallback(async (task: Task): Promise<Task> => {
     setLoading(true);
     setError(null);
 
     try {
-      // ONLY broadcast optimistic update with special flag
-      broadcaster.broadcast({
-        type: "UPDATE",
-        entity: "TASK",
-        data: { ...task, _isOptimistic: true }, // Add flag
-        affectedDate: task.task_date,
-      });
+      // ✅ REMOVED: Optimistic update broadcasting
 
-      // ✅ CHANGED: Update in SQLite instead of API
+      // Update in SQLite
       const updatedTask = await window.electronAPI.db.updateTask(task.id, task);
 
-      // Don't broadcast again, just return the result
       const finalTask = updatedTask || task;
       console.log(`✅ Task updated in SQLite:`, finalTask);
       return finalTask;
@@ -203,33 +128,23 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       console.error("❌ Error updating task:", error);
       setError("Failed to update task");
 
-      // Broadcast rollback on error
-      broadcaster.broadcast({
-        type: "ROLLBACK",
-        entity: "TASK",
-        data: task,
-        affectedDate: task.task_date,
-      });
+      // ✅ REMOVED: Rollback broadcasting
+
       throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ✅ NEW: Delete Task using SQLite
+  // ✅ SIMPLIFIED: Delete Task using direct SQLite (removed broadcasting)
   const deleteTask = useCallback(async (taskId: number): Promise<void> => {
     setLoading(true);
     setError(null);
 
     try {
-      // Broadcast optimistic delete immediately
-      broadcaster.broadcast({
-        type: "DELETE",
-        entity: "TASK",
-        data: { id: taskId },
-      });
+      // ✅ REMOVED: Optimistic delete broadcasting
 
-      // ✅ CHANGED: Delete from SQLite instead of API
+      // Delete from SQLite
       await window.electronAPI.db.deleteTask(taskId);
 
       console.log(`✅ Task ${taskId} successfully deleted from SQLite`);
@@ -242,44 +157,26 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // ✅ NEW: Toggle Task using SQLite
+  // ✅ SIMPLIFIED: Toggle Task using direct SQLite (removed optimistic updates)
   const toggleTask = useCallback(async (task: Task): Promise<Task> => {
     setLoading(true);
     setError(null);
 
     try {
-      // Create a copy with toggled status
-      const toggledTask = {
-        ...task,
-        completed: !task.completed,
-        // Ensure consistent field names
-        task_date: task.task_date,
-        task_time: task.task_time || "",
-      };
+      // ✅ REMOVED: Optimistic update broadcasting
 
-      // Broadcast optimistic update immediately with special flag
-      broadcaster.broadcast({
-        type: "UPDATE",
-        entity: "TASK",
-        data: { ...toggledTask, _isOptimistic: true },
-        affectedDate: toggledTask.task_date,
-      });
-
-      // ✅ CHANGED: Update in SQLite instead of API
+      // Update in SQLite
       const updatedTask = await window.electronAPI.db.updateTask(task.id, {
         completed: !task.completed,
       });
 
       // Create final version
-      const finalTask = updatedTask || toggledTask;
+      const finalTask = updatedTask || {
+        ...task,
+        completed: !task.completed,
+      };
 
-      // Broadcast update to all components
-      broadcaster.broadcast({
-        type: "UPDATE",
-        entity: "TASK",
-        data: finalTask,
-        affectedDate: finalTask.task_date,
-      });
+      // ✅ REMOVED: Update broadcasting
 
       console.log(`✅ Task ${task.id} toggled in SQLite:`, finalTask);
       return finalTask;
@@ -287,22 +184,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       console.error("❌ Error toggling task:", error);
       setError("Failed to update task");
 
-      // Broadcast rollback
-      broadcaster.broadcast({
-        type: "ROLLBACK",
-        entity: "TASK",
-        data: task,
-        affectedDate: task.task_date,
-      });
+      // ✅ REMOVED: Rollback broadcasting
 
-      // Return original state
+      // Return original state on error
       return task;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ✅ NEW: Create Event using SQLite
+  // ✅ SIMPLIFIED: Create Event using direct SQLite (removed broadcasting)
   const createEvent = useCallback(
     async (event: Partial<CalendarEvent>): Promise<CalendarEvent> => {
       try {
@@ -311,7 +202,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
           throw new Error("User not authenticated");
         }
 
-        // ✅ MATCH YOUR ACTUAL SQLITE SCHEMA - Don't set created_at/updated_at
+        // ✅ MATCH YOUR ACTUAL SQLITE SCHEMA
         const eventData = {
           title: event.title || "",
           event_date: event.event_date || "",
@@ -319,12 +210,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
           type: event.type || "Personal",
           description: event.description || "",
           user_id: userId
-          // ✅ NO created_at/updated_at - SQLite handles with CURRENT_TIMESTAMP
         };
 
         // Check window.electronAPI is available
         if (!window.electronAPI?.db) {
-          throw new Error("ElectronAPI database not available");
+          throw new Error("Database connection not available");
         }
 
         const createdEvent = await window.electronAPI.db.saveEvent(eventData);
@@ -338,30 +228,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
-  // ✅ NEW: Update Event using SQLite
+  // ✅ SIMPLIFIED: Update Event using direct SQLite (removed broadcasting)
   const updateEvent = useCallback(
     async (event: CalendarEvent): Promise<CalendarEvent> => {
       setLoading(true);
       setError(null);
 
       try {
-        broadcaster.broadcast({
-          type: "UPDATE",
-          entity: "EVENT",
-          data: event,
-          affectedDate: event.event_date,
-        });
+        // ✅ REMOVED: Optimistic update broadcasting
 
-        // ✅ CHANGED: Update in SQLite instead of API
+        // Update in SQLite
         const updatedEvent = await window.electronAPI.db.saveEvent(event);
 
         const finalEvent = { ...event, ...updatedEvent };
-        broadcaster.broadcast({
-          type: "UPDATE",
-          entity: "EVENT",
-          data: finalEvent,
-          affectedDate: finalEvent.event_date,
-        });
+
+        // ✅ REMOVED: Update broadcasting
 
         console.log(`✅ Event updated in SQLite:`, finalEvent);
         return finalEvent;
@@ -376,19 +257,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     []
   );
 
-  // ✅ NEW: Delete Event using SQLite
+  // ✅ SIMPLIFIED: Delete Event using direct SQLite (removed broadcasting)
   const deleteEvent = useCallback(async (eventId: number): Promise<void> => {
     setLoading(true);
     setError(null);
 
     try {
-      broadcaster.broadcast({
-        type: "DELETE",
-        entity: "EVENT",
-        data: { id: eventId },
-      });
+      // ✅ REMOVED: Optimistic delete broadcasting
 
-      // ✅ CHANGED: Delete from SQLite instead of API
+      // Delete from SQLite
       await window.electronAPI.db.deleteEvent(eventId);
 
       console.log(`✅ Event ${eventId} successfully deleted from SQLite`);
@@ -401,32 +278,27 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // ✅ NEW: Fetch Day Data using SQLite
+  // ✅ KEEP: Fetch Day Data using SQLite (unchanged - works perfectly)
   const fetchDayData = useCallback(async (date: string, page: number = 1) => {
     try {
       // Get user ID - CRITICAL
       const userId = getCurrentUserId();
       if (!userId) {
-        console.warn("fetchDayData: No user ID available");
-        return {
-          tasks: [],
-          events: [],
-          hasMore: { tasks: false, events: false },
-        };
+        throw new Error("User not authenticated");
       }
 
       console.log(
         `🌐 DataContext: Fetching data for ${date} with user_id: ${userId} (SQLite)`
       );
 
-      // ✅ CHANGED: Get data from SQLite instead of API
+      // Get data from SQLite
       const [tasks, events] = await Promise.all([
         window.electronAPI.db.getTasks(userId, date).catch((err) => {
-          console.error("Tasks fetch failed:", err);
+          console.error("Error fetching tasks:", err);
           return [];
         }),
         window.electronAPI.db.getEvents(userId, date).catch((err) => {
-          console.error("Events fetch failed:", err);
+          console.error("Error fetching events:", err);
           return [];
         }),
       ]);
@@ -453,44 +325,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // Add to any component with button to debug:
-  const debugSQLite = async () => {
-    try {
-      const userId = getCurrentUserId();
-      console.log("Debugging SQLite with userId:", userId);
-
-      // Check database contents
-      console.group("📊 SQLite Database Contents");
-
-      // Tasks
-      const tasks = await window.electronAPI.db.getTasks(userId);
-      console.log("Tasks:", tasks);
-
-      // Events
-      const events = await window.electronAPI.db.getEvents(userId);
-      console.log("Events:", events);
-
-      // Diary entries
-      const diaryEntries = await window.electronAPI.db.getDiaryEntries(userId);
-      console.log("Diary entries:", diaryEntries);
-
-      // Chat messages
-      const chatHistory = await window.electronAPI.db.getChatHistory(
-        userId,
-        10
-      );
-      console.log("Recent chat messages:", chatHistory);
-
-      // Storage stats
-      const stats = await window.electronAPI.db.getStorageStats(userId);
-      console.log("Storage stats:", stats);
-
-      console.groupEnd();
-    } catch (error) {
-      console.error("SQLite debug error:", error);
-    }
-  };
-
+  // ✅ SIMPLIFIED: Clean value object - removed all cache-related properties
   const value: DataContextType = {
     createTask,
     updateTask,
@@ -500,15 +335,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     updateEvent,
     deleteEvent,
     fetchDayData,
-    subscribeToCacheUpdates: broadcaster.subscribe.bind(broadcaster),
-    unsubscribeFromCacheUpdates: broadcaster.unsubscribe.bind(broadcaster),
     loading,
     error,
-
-    // ADD THESE MISSING PROPERTIES:
-    taskCache: {} as Record<string, Task[]>,
-    currentWeekId: null,
-    fetchWeekData: async () => {},
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

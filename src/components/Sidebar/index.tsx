@@ -5,7 +5,7 @@ import NavSection from "./NavSection";
 import type { MenuItem } from "./NavSection";
 import WingmanAvatar from "../Common/WingmanAvatar";
 import { useTheme } from "../../context/ThemeContext";
-import { useCalendarCache } from "../../Hooks/useCalendar";
+// ✅ REMOVED: import { useCalendarCache } from "../../Hooks/useCalendar";
 import { getTodayDateString } from "../../utils/timeUtils";
 import "../../main.css";
 import "./Sidebar.css";
@@ -22,31 +22,27 @@ const Sidebar: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   const { actualTheme, setTheme } = useTheme();
-  const { getDayData, clearCache } = useCalendarCache("Sidebar");
+  // ✅ REMOVED: const { getDayData, clearCache } = useCalendarCache("Sidebar");
 
   // Toggle theme function
   const toggleTheme = () => {
     setTheme(actualTheme === "dark" ? "light" : "dark");
   };
 
-  // ✅ ADD: Dashboard force reload function
+  // ✅ SIMPLIFIED: Dashboard refresh without cache - just navigate and let components refresh themselves
   const handleDashboardRefresh = async () => {
-    console.log("🔄 DASHBOARD REFRESH: Starting...");
-
-    try {
-      const today = getTodayDateString();
-      console.log(`🔄 DASHBOARD REFRESH: Clearing cache and fetching ${today}`);
-
-      // Clear cache for today
-      clearCache();
-
-      // Force fetch today's data with fresh request
-      await getDayData(today, true); // forceRefresh = true
-
-      console.log("✅ DASHBOARD REFRESH: Cache updated successfully");
-    } catch (error) {
-      console.error("❌ DASHBOARD REFRESH: Error updating cache:", error);
-    }
+    console.log("🔄 DASHBOARD REFRESH: Navigating to dashboard");
+    
+    // Navigate to dashboard - components will fetch fresh data automatically
+    navigate("/");
+    
+    // Dispatch a custom event for any components that want to refresh
+    const refreshEvent = new CustomEvent("dashboard-refresh", {
+      detail: { timestamp: Date.now() }
+    });
+    window.dispatchEvent(refreshEvent);
+    
+    console.log("✅ DASHBOARD REFRESH: Completed");
   };
 
   // Map wingman mood to avatar mood
@@ -91,13 +87,13 @@ const Sidebar: React.FC = () => {
     window.dispatchEvent(event);
   };
 
-  // ✅ MODIFIED: Add onClick handler to Dashboard menu item
+  // ✅ KEEP: Dashboard menu item with refresh handler
   const menuItems: MenuItem[] = [
     {
       title: "Dashboard",
       path: "/",
       icon: <DashboardIcon />,
-      onClick: handleDashboardRefresh, // ✅ ADD REFRESH HANDLER
+      onClick: handleDashboardRefresh,
     },
     {
       title: "Calendar",
@@ -162,8 +158,6 @@ const Sidebar: React.FC = () => {
             mood={getAvatarMood(wingmanMood)}
             context="sidebar"
             showMessage={false}
-            // ✅ REMOVED: onClick={() => navigate("/chatbot")}
-            // Now the avatar won't navigate anywhere when clicked
           />
         </div>
       </button>
@@ -177,7 +171,7 @@ const Sidebar: React.FC = () => {
             mood={getAvatarMood(wingmanMood)}
             context="sidebar"
             showMessage={isVisible && Math.random() > 0.7}
-            onClick={() => navigate("/chatbot")} // ✅ KEEP: This one inside the sidebar still navigates
+            onClick={() => navigate("/chatbot")}
             className="wingman-avatar--sidebar"
           />
           <div className="sidebar-header-content">

@@ -2,8 +2,10 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import Calendar from "react-calendar";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { useCalendarCache } from "../../Hooks/useCalendar";
+import { getCurrentUserId } from "../../utils/auth";
 import "./MiniCalendar.css";
+
+// ✅ REMOVED: useCalendarCache import - going direct to SQLite
 
 // Memoize functions that don't change often
 const formatDateKey = (date: Date): string => {
@@ -12,7 +14,8 @@ const formatDateKey = (date: Date): string => {
 
 const MiniCalendar: React.FC = () => {
   const navigate = useNavigate();
-  const { getDayData } = useCalendarCache("MiniCalendar");
+  // ✅ REMOVED: const { getDayData } = useCalendarCache("MiniCalendar");
+
   const [currentDate] = useState(new Date());
   const [eventsMap, setEventsMap] = useState<Record<string, number>>({});
   const loadingRef = useRef(false);
@@ -27,7 +30,7 @@ const MiniCalendar: React.FC = () => {
     []
   );
 
-  // OPTIMIZATION: Only load data once per month
+  // ✅ UPDATED: Direct SQLite count queries instead of cache loading
   useEffect(() => {
     if (loadingRef.current) return;
 
@@ -40,8 +43,20 @@ const MiniCalendar: React.FC = () => {
       const month = currentDate.getMonth();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+      // ✅ NEW: Get user ID for SQLite queries
+      const userId = getCurrentUserId();
+      if (!userId) {
+        console.log("📅 MiniCalendar: No user ID, skipping count loading");
+        loadingRef.current = false;
+        return;
+      }
+
       try {
-        // OPTIMIZATION: Batch days in chunks of 7 to reduce concurrent requests
+        console.log(
+          `📅 MiniCalendar: Loading counts for ${daysInMonth} days (direct SQLite)`
+        );
+
+        // ✅ CHANGED: Batch days in chunks of 7 for direct SQLite count queries
         for (let day = 1; day <= daysInMonth; day += 7) {
           const chunk = [];
 
@@ -50,14 +65,33 @@ const MiniCalendar: React.FC = () => {
             chunk.push(formatDateKey(date));
           }
 
-          // Load chunk of days
-          const promises = chunk.map((dateStr) =>
-            getDayData(dateStr).then((dayData) => ({
-              date: dateStr,
-              // ✅ SIMPLIFIED: Single count (tasks + events)
-              total: (dayData.tasks?.length || 0) + (dayData.events?.length || 0),
-            }))
-          );
+          // ✅ NEW: Load chunk of days with direct SQLite calls for counts only
+          const promises = chunk.map(async (dateStr) => {
+            try {
+              // ✅ DIRECT SQLite calls - no cache layer
+              const [tasks, events] = await Promise.all([
+                window.electronAPI.db.getTasks(userId, dateStr),
+                window.electronAPI.db.getEvents(userId, dateStr),
+              ]);
+
+              // ✅ OPTIMIZED: Calculate count without storing full data
+              const totalCount = (tasks?.length || 0) + (events?.length || 0);
+
+              return {
+                date: dateStr,
+                total: totalCount,
+              };
+            } catch (error) {
+              console.error(
+                `📅 MiniCalendar: Error loading counts for ${dateStr}:`,
+                error
+              );
+              return {
+                date: dateStr,
+                total: 0,
+              };
+            }
+          });
 
           const results = await Promise.all(promises);
           results.forEach(({ date, total }) => {
@@ -72,15 +106,21 @@ const MiniCalendar: React.FC = () => {
           // Allow UI to breathe between chunks
           await new Promise((resolve) => setTimeout(resolve, 10));
         }
+
+        console.log(
+          `✅ MiniCalendar: Loaded counts for ${
+            Object.keys(newEventsMap).length
+          } days with data`
+        );
       } catch (error) {
-        console.error("Error loading calendar data:", error);
+        console.error("📅 MiniCalendar: Error loading calendar data:", error);
       } finally {
         loadingRef.current = false;
       }
     };
 
     loadEventCounts();
-  }, [currentDate, getDayData, throttledSetEventsMap]);
+  }, [currentDate, throttledSetEventsMap]); // ✅ REMOVED: getDayData dependency
 
   const handleDayClick = useCallback(
     (date: Date) => {
@@ -96,7 +136,7 @@ const MiniCalendar: React.FC = () => {
       const dateKey = formatDateKey(date);
       const count = eventsMap[dateKey];
       const hasItems = count && count > 0;
-      
+
       const today = new Date();
       const isToday =
         date.getFullYear() === today.getFullYear() &&
@@ -111,20 +151,20 @@ const MiniCalendar: React.FC = () => {
     [eventsMap]
   );
 
-  // ✅ SIMPLIFIED: Single ping indicator
+  // ✅ SIMPLIFIED: Single ping indicator (unchanged)
   const getTileContent = useCallback(
     (date: Date) => {
       const dateKey = formatDateKey(date);
       const count = eventsMap[dateKey];
-      
+
       if (!count || count === 0) return null;
-      
+
       return (
         <div className="day-ping">
-          <span 
+          <span
             className="activity-ping"
-            data-count={count > 99 ? '99+' : count.toString()}
-            title={`${count} item${count > 1 ? 's' : ''}`}
+            data-count={count > 99 ? "99+" : count.toString()}
+            title={`${count} item${count > 1 ? "s" : ""}`}
           />
         </div>
       );

@@ -1,0 +1,92 @@
+Looking at your codebase and the plan for virtualized lists with smart caching, here are the **exact files** I need to change:
+
+## 🎯 **FILES TO MODIFY FOR VIRTUALIZED LISTS**
+
+### **Phase 1: Enhanced Smart Cache (Remove Limits)**
+1. **useCalendar.ts** ✅ Already provided
+   - Remove `maxItemsPerDay = 7` limit 
+   - Add pagination support to `SmartCache` class
+   - Update `set()` method for infinite data appending
+
+### **Phase 2: True Virtualized List Component**
+2. **VirtualizedList.tsx** 🆕 NEW FILE
+   - Create generic virtualized list with infinite scroll
+   - Handle variable item heights
+   - Proper memory management
+
+### **Phase 3: Infinite Data Hook**
+3. **`src/hooks/useInfiniteData.ts`** 🆕 NEW FILE
+   - Pagination state management
+   - Load more functionality
+   - Error handling and refresh
+
+### **Phase 4: Update Existing Components**
+4. **VirtualizedList.tsx** ✅ Already exists
+   - Replace current limited implementation
+   - Use new generic VirtualizedList component
+   - Add infinite scroll support
+
+5. **CompactList.tsx** ✅ Already exists
+   - Update to use new VirtualizedList
+   - Remove current pagination limits
+   - Add infinite scroll
+
+### **Phase 5: Backend Pagination Support**
+6. **DataContext.tsx** ✅ Already exists
+   - Update `fetchDayData` to support `page` and `limit` parameters
+   - Add pagination to database queries
+
+7. **localDataBridge.js** ✅ Already exists
+   - Add `limit` and `offset` to `getTasks()` and `getEvents()`
+   - Add count functions: `getTaskCount()`, `getEventCount()`
+
+### **Phase 6: Update Dashboard Cards**
+8. **TasksCard.tsx** ✅ Already exists
+   - Replace current list with virtualized version
+   - Remove artificial limits
+
+9. **EventsCard.tsx** ✅ Already exists
+   - Replace current list with virtualized version
+   - Remove artificial limits
+
+10. **CompletedTasksCard.tsx** ✅ Already exists
+    - Update to use infinite loading
+    - Handle large completed task lists
+
+### **Phase 7: CSS Updates**
+11. **`src/components/Common/VirtualizedList.css`** 🆕 NEW FILE
+    - Styles for virtualized containers
+    - Loading states and infinite scroll indicators
+
+12. **Dashboard.css** ✅ Already exists
+    - Update container heights for virtualization
+    - Fix overflow handling
+
+## 📋 **SUMMARY: 7 NEW FILES + 7 MODIFIED FILES**
+
+### **New Files (7):**
+- VirtualizedList.tsx
+- `src/components/Common/VirtualizedList.css` 
+- `src/hooks/useInfiniteData.ts`
+- Plus 4 CSS files for styling
+
+### **Modified Files (7):**
+- useCalendar.ts - Remove limits, add pagination
+- DataContext.tsx - Add pagination params
+- localDataBridge.js - Add pagination to database
+- VirtualizedList.tsx - Use new generic component
+- CompactList.tsx - Add infinite scroll
+- TasksCard.tsx - Use virtualized lists
+- EventsCard.tsx - Use virtualized lists
+
+## 🎯 **IMPLEMENTATION ORDER**
+
+1. **Backend First**: Update localDataBridge.js and DataContext.tsx for pagination
+2. **Core Components**: Create generic VirtualizedList.tsx and `useInfiniteData.ts`
+3. **Update Existing**: Modify existing lists to use new virtualization
+4. **Dashboard Integration**: Update all dashboard cards
+5. **Styling**: Add CSS for proper virtualization display
+
+This gives you **unlimited items**, **smooth scrolling**, **memory efficiency**, and **load-more functionality** while keeping your existing architecture intact.
+
+Ready to implement this step by step?

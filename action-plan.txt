@@ -1,205 +1,35 @@
-# 🔍 **SUPABASE SCHEMA ANALYSIS vs LOCAL STORAGE PLAN**
+Looking at your folder structure and the cache system, here's EXACTLY what needs to be abolished:
 
-After reviewing your current Supabase schema from description.txt, here's the **VERIFIED DATA SEPARATION PLAN**:
+## **FILES TO DELETE COMPLETELY**
+1. useCalendar.ts - **ENTIRE CACHE SYSTEM**
+2. All cache-related code in DataContext.tsx (broadcaster, cache updates)
 
-## 📊 **CURRENT SUPABASE TABLES ANALYSIS**
+## **COMPONENTS TO MODIFY**
+1. **DayView.tsx** - Remove `useCalendarCache`, directly call SQLite
+2. **WeekView.tsx** - Remove cache logic, direct SQLite calls  
+3. **MiniCalendar.tsx** - Remove cache optimization, direct SQLite
+4. **Dashboard components** (TasksCard, EventsCard, SummaryCard) - Direct SQLite
+5. **VirtualizedList.tsx** - Remove cache-aware virtualization
 
-### **🌟 KEEP IN SUPABASE (Cloud)**
-✅ **Authentication & Core User Data**
-- `users` table - Core identity, email, password, auth tokens
-- `user_settings` table - Cross-device settings that need sync
+## **CONTEXT CHANGES**
+1. **DataContext.tsx** - Remove broadcaster, cache subscriptions, just keep CRUD + SQLite calls
+2. **NotificationsContext.tsx** - Direct SQLite for real-time counts
 
-**Why Keep**: Authentication, session management, cross-device consistency
+## **DATABASE CHANGES**
+1. **LocalDataManager.ts** - Add pagination (LIMIT/OFFSET)
+2. **preload.js** - Add count methods, pagination methods
+3. **main.js** - Add count IPC handlers
 
-### **🗄️ MOVE TO SQLITE (Local)**
-✅ **All User Data Tables**
-- `tasks` table - All task management and productivity data
-- `calendar_events` table - All scheduling and calendar data  
-- `diary_entries` table - All personal journal entries and mood data
-- `chat_sessions` table - AI chat session management
-- `chat_messages` table - All AI conversation history
-- `chat_history` table - Chat interaction logs
-
-**Why Move**: Privacy, speed, offline access, unlimited storage
-
-## 🎯 **VERIFIED MIGRATION STRATEGY**
-
-### **Phase 1: SQLite Schema Design**
-**Mirror these Supabase tables locally:**
-
-```sql
--- Tasks (from Supabase tasks table)
-tasks: id, user_id, title, task_date, task_time, completed, 
-       created_at, updated_at, task_type, due_date, 
-       last_reset_date, urgency_level, status
-
--- Calendar Events (from Supabase calendar_events table)  
-calendar_events: id, user_id, title, event_date, event_time,
-                type, description, created_at, updated_at
-
--- Diary Entries (from Supabase diary_entries table)
-diary_entries: id, user_id, entry_date, title, content,
-               mood, created_at, updated_at
-
--- Chat System (from Supabase chat_* tables)
-chat_sessions: id, user_id, title, started_at, updated_at
-chat_messages: id, session_id, is_ai, message, timestamp, updated_at
-chat_history: id, user_id, message, timestamp, is_ai
+## **NEW ARCHITECTURE**
+```
+OLD: Component -> useCalendarCache -> DataContext -> SQLite
+NEW: Component -> DataContext -> SQLite (direct)
 ```
 
-### **Phase 2: Data Flow Changes**
+## **CRITICAL POINTS**
+- **MiniCalendar**: Instead of loading 30 days into cache, make 30 individual SQLite calls for counts only
+- **DayView**: Direct `window.electronAPI.db.getTasks(userId, date)` calls
+- **WeekView**: 7 direct SQLite calls instead of cache layer
+- **Dashboard**: Direct SQLite calls with proper LIMIT clauses
 
-**BEFORE (Current)**
-```
-Component → DataContext → apiClient → Supabase (ALL data)
-```
-
-**AFTER (Hybrid)**
-```
-Component → DataContext → storageService → {
-  users, user_settings → Supabase (auth only)
-  tasks, events, diary, chat → SQLite (local data)
-}
-```
-
-### **Phase 3: API Routing Strategy**
-
-**Keep Using Supabase:**
-- `/auth/*` - Login, register, password reset
-- `/users/*` - User profile management  
-- `/user-settings/*` - Cross-device preferences
-
-**Redirect to SQLite:**
-- `/v1/tasks/*` → `LocalDataManager.tasks`
-- `/v1/calendar/*` → `LocalDataManager.calendar_events`
-- `/v1/diary/*` → `LocalDataManager.diary_entries`
-- `/v1/chat/*` → `LocalDataManager.chat_*`
-
-## ✅ **VERIFICATION CHECKLIST**
-
-### **Current Supabase Tables (7 total)**
-- [x] `users` → **KEEP in Supabase**
-- [x] `user_settings` → **KEEP in Supabase** 
-- [x] `tasks` → **MOVE to SQLite**
-- [x] `calendar_events` → **MOVE to SQLite**
-- [x] `diary_entries` → **MOVE to SQLite**
-- [x] `chat_sessions` → **MOVE to SQLite**
-- [x] `chat_messages` → **MOVE to SQLite**
-- [x] `chat_history` → **MOVE to SQLite**
-
-### **RLS Policies Impact**
-- **Supabase RLS**: Keep for `users` and `user_settings` tables
-- **Local Security**: SQLite queries filtered by `user_id` in application layer
-- **No Security Loss**: Same user isolation, just enforced locally
-
-## 🎯 **BENEFITS VERIFICATION**
-
-### **Performance Gains**
-- **Tasks**: From 200ms API → 5ms SQLite query
-- **Calendar**: From 150ms API → 3ms SQLite query  
-- **Diary**: From 180ms API → 4ms SQLite query
-- **Chat**: From 250ms API → 2ms SQLite query
-
-### **Privacy Gains**
-- Personal tasks stay on device
-- Diary entries never leave local storage
-- Chat history remains private
-- Only auth data in cloud
-
-### **Offline Capability**
-- Full app functionality without internet
-- All CRUD operations work offline
-- Only login requires connection
-
-## 🚀 **IMPLEMENTATION READINESS**
-
-**Schema Compatibility**: ✅ 100% compatible
-**Data Types**: ✅ All supported in SQLite
-**Foreign Keys**: ✅ `user_id` relationships preserved
-**Existing Code**: ✅ Minimal changes needed
-
-**This plan moves 6 out of 8 tables to local storage while keeping authentication secure in Supabase. Ready to proceed with implementation?**
-
--------------
-# 🔍 **COMPREHENSIVE PROJECT ANALYSIS COMPLETE**
-
-After thoroughly analyzing your entire codebase, I can see the **CRITICAL ISSUES** that need to be addressed for hybrid storage implementation. You're absolutely right - there are significant gaps!
-
-## 🚨 **MAJOR PROBLEMS IDENTIFIED**
-
-### **1. BACKEND ROUTING MISMATCH**
-Your backend is **100% Supabase-routed** right now. Every endpoint goes straight to Supabase:
-
-- task.py → Supabase tasks table
-- calendar.py → Supabase calendar_events table  
-- diary.py → Supabase diary_entries table
-- chat.py → Supabase chat tables
-- user.py → Supabase users table ✅ (KEEP THIS)
-
-**But we need:**
-- Auth endpoints → Supabase
-- Data endpoints → SQLite (via your storage service)
-
-### **2. TYPE MISMATCHES**
-- **Backend expects**: `text` field in tasks (your old schema)
-- **Frontend sends**: `title` field (corrected in Task.ts)
-- **Global.d.ts**: Defines `title` field
-- **Result**: Backend crashes on task creation
-
-### **3. MISSING STORAGE SERVICE INTEGRATION**
-- Your storageService.ts exists but isn't imported anywhere
-- LocalDataManager.ts exists but isn't implemented
-- No initialization in App.tsx
-
-### **4. API CLIENT CONFUSION**
-Your apiClient.ts doesn't know about hybrid routing - it sends everything to backend, which forwards everything to Supabase.
-
-## 🎯 **WHAT NEEDS TO BE DONE**
-
-### **Phase 1: Backend Hybrid Routing** ⚠️ **CRITICAL**
-
-I need to modify these backend files:
-
-1. **Create new storage routing middleware**
-2. **Update task.py** - route to SQLite instead of Supabase
-3. **Update calendar.py** - route to SQLite instead of Supabase  
-4. **Update diary.py** - route to SQLite instead of Supabase
-5. **Update chat.py** - route to SQLite instead of Supabase
-6. **Keep user.py** routing to Supabase (auth only)
-
-### **Phase 2: Frontend Integration** ⚠️ **CRITICAL**
-
-1. **Complete LocalDataManager.ts** implementation
-2. **Complete StorageService.ts** implementation  
-3. **Update App.tsx** to initialize storage
-4. **Fix type mismatches** between frontend/backend
-
-### **Phase 3: Missing Dependencies**
-
-Your package.json shows you have:
-- ✅ `better-sqlite3`
-- ✅ `electron-store`
-
-But I need to verify these are properly integrated.
-
-## 🤔 **CRITICAL QUESTIONS**
-
-1. **Do you want me to modify your backend Python files** to route data calls to SQLite while keeping auth in Supabase?
-
-2. **Should I create a backend SQLite service layer** that mirrors your frontend LocalDataManager?
-
-3. **Migration strategy**: Do you have existing data in Supabase that needs to be migrated to local SQLite?
-
-## 📋 **IMPLEMENTATION PLAN**
-
-**If you approve, I'll provide:**
-
-1. **Backend storage service** (Python SQLite wrapper)
-2. **Modified backend endpoints** with hybrid routing
-3. **Complete LocalDataManager.ts** implementation
-4. **Complete StorageService.ts** implementation
-5. **Updated App.tsx** with storage initialization
-6. **Fixed type definitions** across the stack
-7. **Migration utility** to move existing Supabase data to local
-
-**Shall I proceed with the complete implementation?** This will touch your backend significantly but preserve all your excellent frontend architecture.
+The cache system is spread across 5+ files and adds zero value since SQLite IS your cache. You're essentially caching a cache.
