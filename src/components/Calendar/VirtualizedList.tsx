@@ -60,7 +60,7 @@ export const VirtualizedTaskList: React.FC<{
           onClick={() => onTaskClick(task)}
         >
           <div
-            className="week-task-status"
+            className="task-status"
             onClick={(e) => {
               e.stopPropagation();
               onCompleteTask(task);

@@ -675,9 +675,7 @@ const DayView: React.FC = () => {
               {currentDateEvents.map((event) => (
                 <div
                   key={event.id}
-                  className={`day-item event ${
-                    highlightId === `event-${event.id}` ? "highlighted" : ""
-                  }`}
+                  className={`event-item event-${event.type?.toLowerCase()}`}
                   onClick={() => handleEventDetails(event)}
                 >
                   <div className="event-info">
@@ -776,9 +774,7 @@ const DayView: React.FC = () => {
               {currentDateTasks.map((task) => (
                 <div
                   key={task.id}
-                  className={`day-item task ${task.completed ? "completed" : ""} ${
-                    highlightId === `task-${task.id}` ? "highlighted" : ""
-                  }`}
+                  className={`task-item ${task.completed ? "completed" : ""}`}
                   onClick={() => handleTaskDetails(task)}
                 >
                   <button
