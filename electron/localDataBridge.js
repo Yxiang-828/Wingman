@@ -37,108 +37,170 @@ class LocalDataManager {
     let schemaLoaded = false;
     
     for (const schemaPath of schemaPaths) {
-      try {
-        if (fs.existsSync(schemaPath)) {
+      if (fs.existsSync(schemaPath)) {
+        try {
           const schema = fs.readFileSync(schemaPath, 'utf8');
           this.db.exec(schema);
-          console.log(`✅ Database schema loaded from: ${schemaPath}`);
+          console.log(`✅ LocalDataManager: Schema loaded from ${schemaPath}`);
           schemaLoaded = true;
           break;
+        } catch (error) {
+          console.warn(`⚠️ LocalDataManager: Could not load schema from ${schemaPath}:`, error.message);
         }
-      } catch (error) {
-        console.error(`❌ Error loading schema from ${schemaPath}:`, error);
-        continue;
       }
     }
     
     if (!schemaLoaded) {
-      console.warn('⚠️ No schema.sql found, using inline schema');
+      console.log('⚠️ LocalDataManager: No schema file found, creating tables inline');
       this.createTablesInline();
+    }
+
+    // ✅ CRITICAL: Add migration to ensure 'failed' column exists
+    this.migrateDatabase();
+  }
+
+  // ✅ NEW: Database migration method
+  migrateDatabase() {
+    try {
+      console.log('🔄 LocalDataManager: Running database migrations...');
+      
+      // Check if 'failed' column exists in tasks table
+      const tableInfo = this.db.prepare("PRAGMA table_info(tasks)").all();
+      const hasFailedColumn = tableInfo.some(column => column.name === 'failed');
+      
+      if (!hasFailedColumn) {
+        console.log('📝 LocalDataManager: Adding missing "failed" column to tasks table');
+        this.db.exec('ALTER TABLE tasks ADD COLUMN failed BOOLEAN DEFAULT FALSE');
+        console.log('✅ LocalDataManager: "failed" column added successfully');
+      } else {
+        console.log('✅ LocalDataManager: "failed" column already exists');
+      }
+      
+      // ✅ NOW create the failed-related indexes (only after column exists)
+      console.log('📝 LocalDataManager: Creating failed-related indexes...');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_failed ON tasks(failed)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(completed, failed)');
+      console.log('✅ LocalDataManager: Failed-related indexes created');
+      
+      console.log('✅ LocalDataManager: Database migrations completed');
+      
+    } catch (error) {
+      console.error('❌ LocalDataManager: Migration error:', error);
+      throw error;
     }
   }
 
   createTablesInline() {
-    this.db.exec(`
+    const createTasksTable = `
       CREATE TABLE IF NOT EXISTS tasks (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id TEXT NOT NULL,
-          title TEXT NOT NULL,
-          task_date TEXT,
-          task_time TEXT,
-          completed BOOLEAN DEFAULT FALSE,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          task_type TEXT,
-          due_date TEXT,
-          last_reset_date TEXT,
-          urgency_level INTEGER,
-          status TEXT
-      );
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        task_date TEXT,
+        task_time TEXT,
+        completed BOOLEAN DEFAULT FALSE,
+        failed BOOLEAN DEFAULT FALSE,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        task_type TEXT,
+        due_date TEXT,
+        last_reset_date TEXT,
+        urgency_level INTEGER,
+        status TEXT
+      )
+    `;
 
+    const createEventsTable = `
       CREATE TABLE IF NOT EXISTS calendar_events (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id TEXT NOT NULL,
-          title TEXT NOT NULL,
-          event_date TEXT,
-          event_time TEXT,
-          type TEXT,
-          description TEXT,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-      );
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        event_date TEXT,
+        event_time TEXT,
+        type TEXT,
+        description TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
 
+    const createDiaryTable = `
       CREATE TABLE IF NOT EXISTS diary_entries (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id TEXT NOT NULL,
-          entry_date TEXT,
-          title TEXT,
-          content TEXT,
-          mood TEXT,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-      );
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        entry_date TEXT,
+        title TEXT,
+        content TEXT,
+        mood TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
 
+    const createChatSessionsTable = `
       CREATE TABLE IF NOT EXISTS chat_sessions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id TEXT NOT NULL,
-          title TEXT,
-          started_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-      );
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        title TEXT,
+        started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
 
+    const createChatMessagesTable = `
       CREATE TABLE IF NOT EXISTS chat_messages (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          session_id INTEGER,
-          user_id TEXT NOT NULL,
-          is_ai BOOLEAN DEFAULT FALSE,
-          message TEXT NOT NULL,
-          timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-          updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
-      );
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER,
+        user_id TEXT NOT NULL,
+        is_ai BOOLEAN DEFAULT FALSE,
+        message TEXT NOT NULL,
+        timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
+      )
+    `;
 
+    const createChatHistoryTable = `
       CREATE TABLE IF NOT EXISTS chat_history (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id TEXT NOT NULL,
-          message TEXT NOT NULL,
-          timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-          is_ai BOOLEAN DEFAULT FALSE
-      );
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        message TEXT NOT NULL,
+        timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+        is_ai BOOLEAN DEFAULT FALSE
+      )
+    `;
 
-      CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
-      CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date);
-      CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
-      CREATE INDEX IF NOT EXISTS idx_calendar_user_id ON calendar_events(user_id);
-      CREATE INDEX IF NOT EXISTS idx_calendar_date ON calendar_events(event_date);
-      CREATE INDEX IF NOT EXISTS idx_diary_user_id ON diary_entries(user_id);
-      CREATE INDEX IF NOT EXISTS idx_diary_date ON diary_entries(entry_date);
-      CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id);
-      CREATE INDEX IF NOT EXISTS idx_chat_messages_user ON chat_messages(user_id);
-      CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id);
-      CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp);
-    `);
-    console.log('✅ Tables created with inline schema');
+    try {
+      // ✅ FIXED: Create tables first
+      this.db.exec(createTasksTable);
+      this.db.exec(createEventsTable);
+      this.db.exec(createDiaryTable);
+      this.db.exec(createChatSessionsTable);
+      this.db.exec(createChatMessagesTable);
+      this.db.exec(createChatHistoryTable);
+      
+      // ✅ FIXED: Create indexes AFTER tables are created and migrated
+      console.log('✅ LocalDataManager: Tables created, now creating indexes...');
+      
+      // Basic indexes (safe to create)
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_calendar_user_id ON calendar_events(user_id)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_calendar_date ON calendar_events(event_date)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_diary_user_id ON diary_entries(user_id)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_diary_date ON diary_entries(entry_date)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_messages_user ON chat_messages(user_id)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id)');
+      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp)');
+      
+      console.log('✅ LocalDataManager: All tables and basic indexes created successfully');
+    } catch (error) {
+      console.error('❌ LocalDataManager: Error creating tables inline:', error);
+      throw error;
+    }
   }
 
   // ✅ FIXED: Complete getTasks implementation
@@ -281,57 +343,74 @@ class LocalDataManager {
     }
   }
 
-  // ✅ FIXED: Complete updateTask implementation
+  // ✅ FIXED: Complete updateTask implementation that properly handles 'failed' field
   updateTask(id, updates) {
     try {
-      console.log(`🔄 Updating task ${id} with updates:`, updates);
-      
+      console.log(`🔄 LocalDataManager: Updating task ${id} with:`, updates);
+
+      // ✅ CRITICAL: Sanitize all data for SQLite
       const sanitizedUpdates = {};
       
-      if (updates.title !== undefined) sanitizedUpdates.title = String(updates.title);
-      if (updates.task_date !== undefined) sanitizedUpdates.task_date = String(updates.task_date);
-      if (updates.task_time !== undefined) sanitizedUpdates.task_time = String(updates.task_time);
-      if (updates.completed !== undefined) sanitizedUpdates.completed = Boolean(updates.completed) ? 1 : 0;
-      if (updates.task_type !== undefined) sanitizedUpdates.task_type = updates.task_type ? String(updates.task_type) : null;
-      if (updates.urgency_level !== undefined) sanitizedUpdates.urgency_level = updates.urgency_level ? Number(updates.urgency_level) : null;
-      if (updates.status !== undefined) sanitizedUpdates.status = updates.status ? String(updates.status) : null;
-      if (updates.due_date !== undefined) sanitizedUpdates.due_date = updates.due_date ? String(updates.due_date) : null;
-      if (updates.last_reset_date !== undefined) sanitizedUpdates.last_reset_date = updates.last_reset_date ? String(updates.last_reset_date) : null;
-      
-      console.log('🧹 Sanitized updates for SQLite:', sanitizedUpdates);
-      
-      const updateFields = Object.keys(sanitizedUpdates);
-      const updateValues = Object.values(sanitizedUpdates);
-      
-      if (updateFields.length === 0) {
-        throw new Error("No valid fields to update");
+      // Only include allowed fields and convert to SQLite-compatible types
+      const allowedFields = [
+        'title', 'task_date', 'task_time', 'completed', 'failed', 
+        'task_type', 'due_date', 'last_reset_date', 'urgency_level', 'status'
+      ];
+
+      for (const [key, value] of Object.entries(updates)) {
+        if (allowedFields.includes(key)) {
+          // ✅ SANITIZE: Convert all values to SQLite-compatible types
+          if (value === null || value === undefined) {
+            sanitizedUpdates[key] = null;
+          } else if (typeof value === 'boolean') {
+            sanitizedUpdates[key] = value ? 1 : 0; // Convert boolean to integer
+          } else if (typeof value === 'number') {
+            sanitizedUpdates[key] = value;
+          } else if (typeof value === 'string') {
+            sanitizedUpdates[key] = value;
+          } else if (value instanceof Date) {
+            // Convert Date objects to ISO strings
+            sanitizedUpdates[key] = value.toISOString();
+          } else {
+            // Convert everything else to string
+            sanitizedUpdates[key] = String(value);
+          }
+        }
       }
-      
-      const setClause = updateFields.map(field => `${field} = ?`).join(', ');
+
+      // Always update the updated_at timestamp
+      sanitizedUpdates.updated_at = new Date().toISOString();
+
+      console.log(`🔄 LocalDataManager: Sanitized updates:`, sanitizedUpdates);
+
+      // Build dynamic UPDATE query
+      const setParts = Object.keys(sanitizedUpdates).map(key => `${key} = ?`);
+      const values = Object.values(sanitizedUpdates);
       
       const updateQuery = `
-        UPDATE tasks SET ${setClause}, updated_at = CURRENT_TIMESTAMP 
+        UPDATE tasks 
+        SET ${setParts.join(', ')}
         WHERE id = ?
       `;
+
+      console.log(`🔄 LocalDataManager: Update query:`, updateQuery);
+      console.log(`🔄 LocalDataManager: Update values:`, [...values, id]);
+
+      const result = this.db.prepare(updateQuery).run([...values, id]);
       
-      const updateStmt = this.db.prepare(updateQuery);
-      updateStmt.run(...updateValues, id);
-      
-      const getStmt = this.db.prepare('SELECT * FROM tasks WHERE id = ?');
-      const updatedTask = getStmt.get(id);
-      
-      if (updatedTask) {
-        return {
-          ...updatedTask,
-          completed: !!updatedTask.completed
-        };
+      if (result.changes === 0) {
+        throw new Error(`No task found with ID ${id}`);
       }
+
+      // Fetch and return the updated task
+      const updatedTask = this.db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
       
-      return null;
+      console.log(`✅ LocalDataManager: Task ${id} updated successfully:`, updatedTask);
+      return updatedTask;
+
     } catch (error) {
-      console.error('❌ Error updating task:', error);
-      console.error('❌ Failed updates:', updates);
-      throw new Error(`SQLite updateTask failed: ${error.message}`);
+      console.error(`❌ LocalDataManager: Error updating task ${id}:`, error);
+      throw new Error(`Failed to update task: SQLite updateTask failed: ${error.message}`);
     }
   }
 

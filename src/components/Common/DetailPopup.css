@@ -150,6 +150,36 @@
   border: 1px solid rgba(100, 108, 255, 0.3);
 }
 
+/* ✅ ADD: Retry button styling */
+.detail-action-btn.retry {
+  background: rgba(255, 165, 0, 0.2); /* Orange theme for retry */
+  color: #ffcc80;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.detail-action-btn.retry:hover {
+  background: rgba(255, 165, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ✅ ADD: Failed info styling */
+.detail-failed-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 77, 77, 0.1);
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  color: #ffb5b5;
+  font-size: 0.9rem;
+}
+
+.detail-failed-info .failed-icon {
+  font-size: 1.2rem;
+}
+
 .detail-action-btn:hover {
   transform: translateY(-2px);
 }

@@ -551,7 +551,7 @@ const DayView: React.FC = () => {
           <div className="day-stat-icon">✅</div>
           <div className="day-stat-content">
             <span className="day-stat-value">{stats.completedTasks}</span>
-            <span className="day-stat-label">Completed</span>
+            <span className="day-stat-label">Completed Tasks</span>
           </div>
         </div>
 
@@ -559,7 +559,7 @@ const DayView: React.FC = () => {
           <div className="day-stat-icon">📝</div>
           <div className="day-stat-content">
             <span className="day-stat-value">{stats.pendingTasks}</span>
-            <span className="day-stat-label">Pending</span>
+            <span className="day-stat-label">Pending Tasks</span>
           </div>
         </div>
       </div>

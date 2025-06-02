@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     task_date TEXT,         -- ISO format: YYYY-MM-DD
     task_time TEXT,         -- ISO format: HH:MM:SS
     completed BOOLEAN DEFAULT FALSE,
+    failed BOOLEAN DEFAULT FALSE,  -- ✅ CRITICAL: Task failure status
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
     task_type TEXT,
@@ -74,6 +75,8 @@ CREATE TABLE IF NOT EXISTS chat_history (
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date);
 CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
+CREATE INDEX IF NOT EXISTS idx_tasks_failed ON tasks(failed);  -- ✅ NEW: Index for failed column
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(completed, failed);  -- ✅ UPDATED: Combined status index
 CREATE INDEX IF NOT EXISTS idx_calendar_user_id ON calendar_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_calendar_date ON calendar_events(event_date);
 CREATE INDEX IF NOT EXISTS idx_diary_user_id ON diary_entries(user_id);
