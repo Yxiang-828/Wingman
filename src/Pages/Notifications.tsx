@@ -1,24 +1,34 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useNotifications } from "../context/NotificationsContext";
+import { useNavigationRefresh } from "../Hooks/useNavigationRefresh";
+import DetailPopup from "../components/Common/DetailPopup";
+import { parseLocalDateString, getTodayDateString } from "../utils/timeUtils";
+import { getCurrentUserId } from "../utils/auth";
 import type { Task } from "../api/Task";
 import type { CalendarEvent } from "../api/Calendar";
-import DetailPopup from "../components/Common/DetailPopup";
 import "./Notifications.css";
-import { useNavigationRefresh } from "../Hooks/useNavigationRefresh";
-import {
-  getTodayDateString,
-  formatDateToString,
-  parseLocalDateString,
-} from "../utils/timeUtils";
 
-// ✅ NEW: Countdown Timer Component (keeping existing)
+// ✅ LOCAL: formatTime function
+const formatTime = (timeStr: string): string => {
+  if (!timeStr) return "";
+
+  if (/^\d{2}:\d{2}$/.test(timeStr)) {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  }
+
+  return timeStr;
+};
+
+// ✅ COUNTDOWN TIMER: Keep existing component
 interface CountdownTimerProps {
   targetTime: string;
   date: string;
   type: "task" | "event";
   isCompleted?: boolean;
-  onComplete?: () => void; // ✅ NEW: Callback when timer hits 0
+  onComplete?: () => void;
 }
 
 const CountdownTimer: React.FC<CountdownTimerProps> = ({
@@ -26,7 +36,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   date,
   type,
   isCompleted = false,
-  onComplete, // ✅ NEW: Callback prop
+  onComplete,
 }) => {
   const [timeLeft, setTimeLeft] = useState<{
     hours: number;
@@ -42,62 +52,51 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     isPast: false,
   });
 
-  const [pulseKey, setPulseKey] = useState(0);
-
   useEffect(() => {
     const calculateTimeLeft = () => {
       try {
-        // Use parseLocalDateString for consistent time handling
         const targetDate = parseLocalDateString(date);
         if (targetTime) {
-          const [hours, minutes] = targetTime.split(":").map(Number);
-          targetDate.setHours(hours, minutes, 0, 0);
+          const [time, period] = targetTime.split(/\s+/);
+          const [hours, minutes] = time.split(':').map(Number);
+          
+          let adjustedHours = hours;
+          if (period && period.toLowerCase() === 'pm' && hours !== 12) {
+            adjustedHours += 12;
+          } else if (period && period.toLowerCase() === 'am' && hours === 12) {
+            adjustedHours = 0;
+          }
+          
+          targetDate.setHours(adjustedHours, minutes, 0, 0);
         }
 
-        const todayStr = getTodayDateString();
         const now = new Date();
         const diff = targetDate.getTime() - now.getTime();
 
         if (diff <= 0) {
-          // ✅ NEW: Trigger callback when timer hits 0 (only once)
-          if (!timeLeft.isPast && onComplete && Math.abs(diff) < 2000) {
-            // Within 2 seconds of hitting 0
-            console.log(`⏰ Timer completed for ${type}:`, targetTime);
-            onComplete();
-          }
-
-          const absDiff = Math.abs(diff);
-          const hoursOverdue = Math.floor(absDiff / (1000 * 60 * 60));
-          const minutesOverdue = Math.floor(
-            (absDiff % (1000 * 60 * 60)) / (1000 * 60)
-          );
-          const secondsOverdue = Math.floor((absDiff % (1000 * 60)) / 1000);
-
           setTimeLeft({
-            hours: hoursOverdue,
-            minutes: minutesOverdue,
-            seconds: secondsOverdue,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
             isOverdue: true,
             isPast: true,
           });
+          
+          if (onComplete && !timeLeft.isPast) {
+            onComplete();
+          }
         } else {
-          const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
-          const minutesLeft = Math.floor(
-            (diff % (1000 * 60 * 60)) / (1000 * 60)
-          );
-          const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000);
-
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          
           setTimeLeft({
-            hours: hoursLeft,
-            minutes: minutesLeft,
-            seconds: secondsLeft,
+            hours,
+            minutes,
+            seconds,
             isOverdue: false,
             isPast: false,
           });
-
-          if (diff < 30 * 60 * 1000 && diff > 0) {
-            setPulseKey((prev) => prev + 1);
-          }
         }
       } catch (error) {
         console.error("Error calculating countdown:", error);
@@ -107,7 +106,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     calculateTimeLeft();
     const interval = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(interval);
-  }, [targetTime, date, onComplete, timeLeft.isPast]); // ✅ Add dependencies
+  }, [targetTime, date, onComplete, timeLeft.isPast]);
 
   if (isCompleted || !targetTime || targetTime === "All day") {
     return null;
@@ -125,75 +124,32 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   };
 
   const urgencyLevel = getUrgencyLevel();
-  const formatTime = (value: number) => value.toString().padStart(2, "0");
+  const formatCountdownTime = (value: number) => value.toString().padStart(2, "0");
 
   return (
-    <div className={`countdown-timer ${urgencyLevel} ${type}`} key={pulseKey}>
+    <div className={`countdown-timer ${urgencyLevel} ${type}`}>
       <div className="countdown-content">
         {isPast ? (
           <div className="overdue-indicator">
             <span className="overdue-icon">⚠️</span>
-            <span className="overdue-text">
-              {hours > 0 && `${hours}h `}
-              {minutes > 0 && `${minutes}m `}
-              overdue
-            </span>
+            <span className="overdue-text">Overdue</span>
           </div>
         ) : (
           <div className="time-display">
-            {hours > 0 && (
-              <>
-                <span className="time-unit">
-                  <span className="time-value">{formatTime(hours)}</span>
-                  <span className="time-label">h</span>
-                </span>
-                <span className="time-separator">:</span>
-              </>
-            )}
-            <span className="time-unit">
-              <span className="time-value">{formatTime(minutes)}</span>
+            <div className="time-unit">
+              <span className="time-value">{formatCountdownTime(hours)}</span>
+              <span className="time-label">h</span>
+            </div>
+            <span className="time-separator">:</span>
+            <div className="time-unit">
+              <span className="time-value">{formatCountdownTime(minutes)}</span>
               <span className="time-label">m</span>
-            </span>
-            {hours === 0 && minutes < 30 && (
-              <>
-                <span className="time-separator">:</span>
-                <span className="time-unit">
-                  <span className="time-value">{formatTime(seconds)}</span>
-                  <span className="time-label">s</span>
-                </span>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Progress ring for visual countdown */}
-        {!isPast && hours < 24 && (
-          <div className="countdown-ring">
-            <svg width="20" height="20" viewBox="0 0 20 20">
-              <circle
-                cx="10"
-                cy="10"
-                r="8"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeOpacity="0.3"
-              />
-              <circle
-                cx="10"
-                cy="10"
-                r="8"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeDasharray="50.27"
-                strokeDashoffset={
-                  50.27 * (1 - Math.min((hours * 60 + minutes) / (24 * 60), 1))
-                }
-                transform="rotate(-90 10 10)"
-                className="countdown-progress"
-              />
-            </svg>
+            </div>
+            <span className="time-separator">:</span>
+            <div className="time-unit">
+              <span className="time-value">{formatCountdownTime(seconds)}</span>
+              <span className="time-label">s</span>
+            </div>
           </div>
         )}
       </div>
@@ -205,25 +161,23 @@ const Notifications: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const {
-    todaysEvents,
-    pendingTasks,
-    loading,
-    isReady,
-    markAsRead,
-    markAllAsRead,
-    completeTask,
-    showPopupFor,
-    currentPopupItem,
-    closePopup,
-    unreadCount,
-  } = useNotifications();
+  // ✅ OWN DATA: Notifications manages its own state
+  const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
+  const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  // ✅ NEW: Alert system state
+  // ✅ POPUP STATE: Manage our own popup
+  const [currentPopupItem, setCurrentPopupItem] = useState<Task | CalendarEvent | null>(null);
+
+  // Alert system state
   const [alertItems, setAlertItems] = useState<Set<string>>(new Set());
   const [activeAlerts, setActiveAlerts] = useState<
     Map<string, { task?: Task; event?: CalendarEvent }>
   >(new Map());
+
+  // Read state management
+  const [readItems, setReadItems] = useState<Set<string>>(new Set());
 
   const query = new URLSearchParams(location.search);
   const tabFromUrl = query.get("tab");
@@ -232,7 +186,97 @@ const Notifications: React.FC = () => {
     tabFromUrl === "task" || tabFromUrl === "event" ? tabFromUrl : "all"
   );
 
-  // ✅ NEW: Load alert items from localStorage on mount
+  // ✅ OWN FETCH: Notifications fetches its own data from SQLite
+  const fetchNotificationsData = useCallback(async () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.log("🔔 Notifications: No user ID, skipping fetch");
+      setLoading(false);
+      setIsReady(true);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const today = getTodayDateString();
+      console.log(`🔔 Notifications: Fetching data for ${today} (own data management)`);
+
+      // ✅ DIRECT SQLite calls
+      const [tasks, events] = await Promise.all([
+        window.electronAPI.db.getTasks(userId, today),
+        window.electronAPI.db.getEvents(userId, today),
+      ]);
+
+      // Filter for notifications
+      const pendingTasksFiltered = (tasks || []).filter((task: Task) => !task.completed);
+      const todaysEventsFiltered = events || [];
+
+      setPendingTasks(pendingTasksFiltered);
+      setTodaysEvents(todaysEventsFiltered);
+
+      console.log(`✅ Notifications: Loaded ${pendingTasksFiltered.length} pending tasks, ${todaysEventsFiltered.length} events`);
+    } catch (error) {
+      console.error("🔔 Notifications: Error fetching data:", error);
+      setPendingTasks([]);
+      setTodaysEvents([]);
+    } finally {
+      setLoading(false);
+      setIsReady(true);
+    }
+  }, []);
+
+  // ✅ INITIAL LOAD: Fetch data on mount
+  useEffect(() => {
+    fetchNotificationsData();
+  }, [fetchNotificationsData]);
+
+  // ✅ AUTO REFRESH: Every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("🔔 Notifications: Auto-refresh triggered");
+      fetchNotificationsData();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [fetchNotificationsData]);
+
+  // ✅ LISTEN: For task/event updates from other components
+  useEffect(() => {
+    const handleDataUpdate = () => {
+      console.log("🔔 Notifications: External data update detected, refreshing");
+      fetchNotificationsData();
+    };
+
+    // Listen for various refresh events
+    window.addEventListener("dashboard-refresh", handleDataUpdate);
+    window.addEventListener("notifications-refresh", handleDataUpdate);
+    window.addEventListener("navigation-refresh", handleDataUpdate);
+    window.addEventListener("task-updated", handleDataUpdate);
+    window.addEventListener("event-updated", handleDataUpdate);
+
+    return () => {
+      window.removeEventListener("dashboard-refresh", handleDataUpdate);
+      window.removeEventListener("notifications-refresh", handleDataUpdate);
+      window.removeEventListener("navigation-refresh", handleDataUpdate);
+      window.removeEventListener("task-updated", handleDataUpdate);
+      window.removeEventListener("event-updated", handleDataUpdate);
+    };
+  }, [fetchNotificationsData]);
+
+  // Load read items from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('notification-read-items');
+      if (stored) {
+        setReadItems(new Set(JSON.parse(stored)));
+      }
+    } catch (error) {
+      console.error('Error loading read items:', error);
+    }
+  }, []);
+
+  // Load alert items from localStorage on mount
   useEffect(() => {
     try {
       const alerts = localStorage.getItem("alertItems");
@@ -245,22 +289,82 @@ const Notifications: React.FC = () => {
     }
   }, []);
 
-  // ✅ NEW: Alert Me functionality
+  // ✅ OWN POPUP MANAGEMENT
+  const showPopupFor = useCallback((item: Task | CalendarEvent) => {
+    setCurrentPopupItem(item);
+  }, []);
+
+  const closePopup = useCallback(() => {
+    setCurrentPopupItem(null);
+  }, []);
+
+  // ✅ OWN TASK COMPLETION
+  const completeTask = useCallback(async (taskId: number): Promise<void> => {
+    try {
+      const task = pendingTasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      // Update in database
+      await window.electronAPI.db.updateTask(taskId, {
+        completed: true,
+      });
+
+      // Refresh our data
+      await fetchNotificationsData();
+      
+      // Close popup
+      closePopup();
+
+      console.log(`✅ Notifications: Task ${taskId} completed and data refreshed`);
+    } catch (error) {
+      console.error('Error completing task:', error);
+      throw error;
+    }
+  }, [pendingTasks, fetchNotificationsData, closePopup]);
+
+  // Save read items to localStorage
+  const saveReadItems = useCallback((items: Set<string>) => {
+    try {
+      localStorage.setItem('notification-read-items', JSON.stringify([...items]));
+    } catch (error) {
+      console.error('Error saving read items:', error);
+    }
+  }, []);
+
+  // Read state management
+  const markAsRead = useCallback((itemId: string) => {
+    setReadItems(prev => {
+      const newSet = new Set(prev);
+      newSet.add(itemId);
+      saveReadItems(newSet);
+      return newSet;
+    });
+  }, [saveReadItems]);
+
+  const markAllAsRead = useCallback(() => {
+    const allIds = [
+      ...pendingTasks.map(task => `task-${task.id}`),
+      ...todaysEvents.map(event => `event-${event.id}`)
+    ];
+    
+    const newSet = new Set([...readItems, ...allIds]);
+    setReadItems(newSet);
+    saveReadItems(newSet);
+  }, [pendingTasks, todaysEvents, readItems, saveReadItems]);
+
+  // Alert Me functionality
   const handleSetAlert = (
     item: Task | CalendarEvent,
     type: "task" | "event"
   ) => {
     const itemId = `${type}-${item.id}`;
 
-    // Add to alert list
     setAlertItems((prev) => new Set([...prev, itemId]));
 
-    // Save to localStorage
     const alerts = JSON.parse(localStorage.getItem("alertItems") || "[]");
     alerts.push(itemId);
     localStorage.setItem("alertItems", JSON.stringify(alerts));
 
-    // Mark as read
     markAsRead(itemId);
 
     console.log(
@@ -276,45 +380,26 @@ const Notifications: React.FC = () => {
     }
   };
 
-  const formatDateHeader = (dateStr: string) => {
-    const date = parseLocalDateString(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (date.toDateString() === today.toDateString()) {
-      return "Today";
-    } else {
-      return date.toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-      });
-    }
-  };
-
   const handleItemClick = (item: Task | CalendarEvent) => {
     const itemId = `${item.id}`;
     markAsRead(itemId);
     showPopupFor(item);
   };
 
-  // ✅ NEW: Handle timer completion
+  // Handle timer completion
   const handleTimerComplete = useCallback(
     (item: Task | CalendarEvent, type: "task" | "event") => {
       const itemId = `${type}-${item.id}`;
 
-      // Only show alert if this item is in alert list
       if (alertItems.has(itemId)) {
         setActiveAlerts((prev) => new Map(prev.set(itemId, { [type]: item })));
 
-        // Remove from alert list since it's now triggered
         setAlertItems((prev) => {
           const newSet = new Set(prev);
           newSet.delete(itemId);
           return newSet;
         });
 
-        // Update localStorage
         const alerts = JSON.parse(localStorage.getItem("alertItems") || "[]");
         const filteredAlerts = alerts.filter((id: string) => id !== itemId);
         localStorage.setItem("alertItems", JSON.stringify(filteredAlerts));
@@ -323,7 +408,7 @@ const Notifications: React.FC = () => {
     [alertItems]
   );
 
-  // ✅ NEW: Close alert popup
+  // Close alert popup
   const closeAlert = (itemId: string) => {
     setActiveAlerts((prev) => {
       const newMap = new Map(prev);
@@ -332,9 +417,8 @@ const Notifications: React.FC = () => {
     });
   };
 
-  // ✅ UPDATED: Filter items to exclude those with alerts set (optional - or keep them visible)
-  const getFilteredItems = () => {
-    // Show all items regardless of alert status
+  // ✅ FILTER: Only for display - counts stay the same
+  const getFilteredItemsForDisplay = () => {
     switch (activeTab) {
       case "task":
         return {
@@ -354,10 +438,20 @@ const Notifications: React.FC = () => {
     }
   };
 
-  const { tasks: filteredTasks, events: filteredEvents } = getFilteredItems();
-  const totalItems = filteredTasks.length + filteredEvents.length;
+  const { tasks: filteredTasks, events: filteredEvents } = getFilteredItemsForDisplay();
 
-  // Add this hook to trigger refresh on navigation
+  // ✅ FIXED: Static counts - never change regardless of tab
+  const totalTasksCount = pendingTasks.length;
+  const totalEventsCount = todaysEvents.length;
+  const totalAllCount = totalTasksCount + totalEventsCount;
+
+  // Calculate unread count
+  const unreadCount = [
+    ...pendingTasks.filter(task => !readItems.has(`task-${task.id}`)),
+    ...todaysEvents.filter(event => !readItems.has(`event-${event.id}`))
+  ].length;
+
+  // Add navigation refresh hook
   useNavigationRefresh();
 
   if (!isReady || loading) {
@@ -374,15 +468,19 @@ const Notifications: React.FC = () => {
   return (
     <div className="notifications-container">
       <div className="notifications-header">
-        <h1 className="notifications-title">Notifications</h1>
+        <h1 className="notifications-title">
+          Notifications 
+          {unreadCount > 0 && (
+            <span className="notifications-count">{unreadCount}</span>
+          )}
+        </h1>
         <div className="notifications-actions">
           <button
             className="notifications-mark-all"
             onClick={markAllAsRead}
             disabled={unreadCount === 0}
           >
-            <span className="icon">✓</span>
-            Mark All as Read
+            Mark All Read
           </button>
         </div>
       </div>
@@ -393,211 +491,137 @@ const Notifications: React.FC = () => {
           onClick={() => setActiveTab("all")}
         >
           All
-          <span className="notifications-count">
-            {pendingTasks.length + todaysEvents.length}
-          </span>
+          <span className="notifications-count">{totalAllCount}</span>
         </button>
         <button
-          className={`notifications-tab ${
-            activeTab === "task" ? "active" : ""
-          }`}
+          className={`notifications-tab ${activeTab === "task" ? "active" : ""}`}
           onClick={() => setActiveTab("task")}
         >
           Tasks
-          <span className="notifications-count">{pendingTasks.length}</span>
+          <span className="notifications-count">{totalTasksCount}</span>
         </button>
         <button
-          className={`notifications-tab ${
-            activeTab === "event" ? "active" : ""
-          }`}
+          className={`notifications-tab ${activeTab === "event" ? "active" : ""}`}
           onClick={() => setActiveTab("event")}
         >
           Events
-          <span className="notifications-count">{todaysEvents.length}</span>
+          <span className="notifications-count">{totalEventsCount}</span>
         </button>
       </div>
 
       <div className="notifications-list">
-        {totalItems > 0 ? (
-          <div className="notifications-items">
-            <div className="notification-date-group">
-              <div className="notification-date-header">
-                <h3>
-                  {formatDateHeader(new Date().toISOString().split("T")[0])}
-                </h3>
+        {/* Display tasks */}
+        {filteredTasks.map((task) => (
+          <div
+            key={`task-${task.id}`}
+            className="notification-item task unread"
+            onClick={() => handleItemClick(task)}
+          >
+            <div className="notification-icon task">📝</div>
+            <div className="notification-content">
+              <div className="notification-header">
+                <h3 className="notification-title">{task.title}</h3>
+                <div className="notification-time">
+                  {task.task_time && formatTime(task.task_time)}
+                </div>
               </div>
-
-              {/* Render Tasks */}
-              {filteredTasks.map((task) => (
-                <div
-                  key={`task-${task.id}`}
-                  className="notification-item task"
-                  onClick={() => handleItemClick(task)}
-                >
-                  <div className="notification-icon task">✅</div>
-                  <div className="notification-content">
-                    <div className="notification-title">
-                      {task.title}
-                      <span className="notification-badge">Pending Task</span>
-                    </div>
-                    <div className="notification-message">
-                      {task.task_time
-                        ? `Scheduled for ${task.task_time}`
-                        : "No specific time"}
-                    </div>
-                    <div className="notification-meta">
-                      <span className="notification-time">
-                        {task.task_time || "All day"}
-                      </span>
-                      <span className="notification-date">
-                        {task.task_date}
-                      </span>
-                    </div>
-
-                    <CountdownTimer
-                      targetTime={task.task_time || ""}
-                      date={task.task_date}
-                      type="task"
-                      isCompleted={task.completed}
-                      onComplete={() => handleTimerComplete(task, "task")} // ✅ NEW: onComplete handler
-                    />
-                  </div>
-                  <div className="notification-actions">
-                    <button
-                      className="notification-action-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        completeTask(task.id);
-                      }}
-                    >
-                      Complete
-                    </button>
-
-                    {/* ✅ NEW: Alert Me button */}
-                    <button
-                      className={`notification-alert-btn ${
-                        alertItems.has(`task-${task.id}`) ? "active" : ""
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSetAlert(task, "task");
-                      }}
-                      title={
-                        alertItems.has(`task-${task.id}`)
-                          ? "Alert is set"
-                          : "Set alert for when time is up"
-                      }
-                    >
-                      {alertItems.has(`task-${task.id}`)
-                        ? "🔔 Alert Set"
-                        : "🔔 Alert Me"}
-                    </button>
-
-                    <button
-                      className="notification-navigate"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToNotificationSource("task", task.id);
-                      }}
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {/* Render Events */}
-              {filteredEvents.map((event) => (
-                <div
-                  key={`event-${event.id}`}
-                  className="notification-item event"
-                  onClick={() => handleItemClick(event)}
-                >
-                  <div className="notification-icon event">📅</div>
-                  <div className="notification-content">
-                    <div className="notification-title">
-                      {event.title}
-                      <span className="notification-badge">
-                        {event.type || "Event"}
-                      </span>
-                    </div>
-                    <div className="notification-message">
-                      {event.description || "No description"}
-                    </div>
-                    <div className="notification-meta">
-                      <span className="notification-time">
-                        {event.event_time || "All day"}
-                      </span>
-                      <span className="notification-date">
-                        {event.event_date}
-                      </span>
-                    </div>
-
-                    <CountdownTimer
-                      targetTime={event.event_time || ""}
-                      date={event.event_date}
-                      type="event"
-                      onComplete={() => handleTimerComplete(event, "event")} // ✅ NEW: onComplete handler
-                    />
-                  </div>
-                  <div className="notification-actions">
-                    {/* ✅ NEW: Alert Me button for events */}
-                    <button
-                      className={`notification-alert-btn ${
-                        alertItems.has(`event-${event.id}`) ? "active" : ""
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSetAlert(event, "event");
-                      }}
-                      title={
-                        alertItems.has(`event-${event.id}`)
-                          ? "Alert is set"
-                          : "Set alert for when time is up"
-                      }
-                    >
-                      {alertItems.has(`event-${event.id}`)
-                        ? "🔔 Alert Set"
-                        : "🔔 Alert Me"}
-                    </button>
-
-                    <button
-                      className="notification-navigate"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        goToNotificationSource("event", event.id);
-                      }}
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              ))}
+              
+              {task.task_time && (
+                <CountdownTimer
+                  targetTime={task.task_time}
+                  date={task.task_date}
+                  type="task"
+                  isCompleted={task.completed}
+                  onComplete={() => handleTimerComplete(task, "task")}
+                />
+              )}
+            </div>
+            <div className="notification-actions">
+              <button
+                className="notification-alert-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSetAlert(task, "task");
+                }}
+              >
+                🔔
+              </button>
+              <button
+                className="notification-navigate"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNotificationSource("task", task.id);
+                }}
+              >
+                →
+              </button>
             </div>
           </div>
-        ) : (
-          <div className="notification-empty">
-            <div className="notification-empty-icon">📅</div>
-            <h2 className="notification-empty-text">
-              {activeTab === "task" && "No pending tasks"}
-              {activeTab === "event" && "No events today"}
-              {activeTab === "all" && "No notifications today"}
-            </h2>
-            <p className="notification-empty-subtext">
-              {activeTab === "task" &&
-                "All your tasks are completed or dismissed!"}
-              {activeTab === "event" &&
-                "You don't have any events scheduled for today."}
-              {activeTab === "all" &&
-                "You don't have any pending tasks or events for today."}
-            </p>
+        ))}
+
+        {/* Display events */}
+        {filteredEvents.map((event) => (
+          <div
+            key={`event-${event.id}`}
+            className="notification-item event unread"
+            onClick={() => handleItemClick(event)}
+          >
+            <div className="notification-icon event">📅</div>
+            <div className="notification-content">
+              <div className="notification-header">
+                <h3 className="notification-title">{event.title}</h3>
+                <div className="notification-time">
+                  {event.event_time && formatTime(event.event_time)}
+                </div>
+              </div>
+              
+              {event.event_time && (
+                <CountdownTimer
+                  targetTime={event.event_time}
+                  date={event.event_date}
+                  type="event"
+                  onComplete={() => handleTimerComplete(event, "event")}
+                />
+              )}
+              
+              {event.description && (
+                <p className="notification-message">{event.description}</p>
+              )}
+            </div>
+            <div className="notification-actions">
+              <button
+                className="notification-alert-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSetAlert(event, "event");
+                }}
+              >
+                🔔
+              </button>
+              <button
+                className="notification-navigate"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNotificationSource("event", event.id);
+                }}
+              >
+                →
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Empty state */}
+        {totalAllCount === 0 && (
+          <div className="notifications-empty">
+            <div className="empty-icon">📭</div>
+            <h3>No notifications</h3>
+            <p>You're all caught up! No pending tasks or events for today.</p>
             <button
-              className="notification-action"
+              className="empty-action-btn"
               onClick={() => navigate("/calendar/day")}
             >
-              {activeTab === "task" && "Add New Task"}
-              {activeTab === "event" && "Add New Event"}
-              {activeTab === "all" && "Go to Calendar"}
+              Add New Task or Event
             </button>
           </div>
         )}
@@ -612,20 +636,16 @@ const Notifications: React.FC = () => {
         />
       )}
 
-      {/* ✅ NEW: Alert Popups */}
+      {/* Alert Popups */}
       {Array.from(activeAlerts.entries()).map(([itemId, alertData]) => {
         const item = alertData.task || alertData.event;
         const type = alertData.task ? "task" : "event";
 
         return (
-          <div
-            key={itemId}
-            className="alert-popup-overlay"
-            onClick={() => closeAlert(itemId)}
-          >
-            <div className="alert-popup" onClick={(e) => e.stopPropagation()}>
+          <div key={itemId} className="alert-popup-overlay">
+            <div className="alert-popup">
               <div className="alert-header">
-                <span className="alert-icon">⏰</span>
+                <div className="alert-icon">{type === "task" ? "📝" : "📅"}</div>
                 <h3>Time's Up!</h3>
                 <button
                   className="alert-close"
@@ -634,47 +654,42 @@ const Notifications: React.FC = () => {
                   ×
                 </button>
               </div>
-
               <div className="alert-content">
-                <div className="alert-item-type">
-                  {type === "task" ? "📋 Task" : "📅 Event"}
-                </div>
+                <div className="alert-item-type">{type.toUpperCase()}</div>
                 <div className="alert-title">{item?.title}</div>
-                {type === "event" && (item as CalendarEvent).description && (
-                  <div className="alert-description">
-                    {(item as CalendarEvent).description}
-                  </div>
+                {item && 'description' in item && item.description && (
+                  <div className="alert-description">{item.description}</div>
                 )}
               </div>
-
               <div className="alert-actions">
                 {type === "task" && (
                   <button
                     className="alert-action-btn complete"
                     onClick={() => {
-                      completeTask((item as Task).id);
+                      if (item?.id) completeTask(item.id);
                       closeAlert(itemId);
                     }}
                   >
                     Complete Task
                   </button>
                 )}
-
                 <button
                   className="alert-action-btn view"
                   onClick={() => {
-                    goToNotificationSource(type, item!.id);
+                    const date = type === "task" 
+                      ? (item as Task)?.task_date 
+                      : (item as CalendarEvent)?.event_date;
+                    navigate(`/calendar/day?date=${date}&highlight=${type}-${item?.id}`);
                     closeAlert(itemId);
                   }}
                 >
-                  View {type === "task" ? "Task" : "Event"}
+                  View in Calendar
                 </button>
-
                 <button
                   className="alert-action-btn dismiss"
                   onClick={() => closeAlert(itemId)}
                 >
-                  OK
+                  Dismiss
                 </button>
               </div>
             </div>
