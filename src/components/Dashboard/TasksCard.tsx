@@ -4,8 +4,6 @@ import type { Task } from "../../api/Task";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
-import "./Dashboard.css";
-import "./TasksCard.css";
 
 interface TasksCardProps {
   tasks: Task[];
@@ -16,23 +14,49 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
   
-  // Get pending tasks only, sorted by latest first, limited to 12
-  const displayTasks = useMemo(() => {
-    return tasks
-      .filter(task => !task.completed)
-      .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
-      .slice(0, 12);
+  // ✅ UPDATED: Separate tasks into pending and failed, with proper sorting
+  const { pendingTasks, failedTasks, totalPendingTasks, totalFailedTasks } = useMemo(() => {
+    const pending = tasks
+      .filter(task => !task.completed && !task.failed)
+      .sort((a, b) => {
+        // Sort by time (earliest first), then by creation time
+        if (a.task_time && b.task_time) {
+          return a.task_time.localeCompare(b.task_time);
+        }
+        if (a.task_time && !b.task_time) return -1;
+        if (!a.task_time && b.task_time) return 1;
+        return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+      });
+
+    const failed = tasks
+      .filter(task => task.failed && !task.completed)
+      .sort((a, b) => {
+        // Sort failed tasks by time as well (earliest first)
+        if (a.task_time && b.task_time) {
+          return a.task_time.localeCompare(b.task_time);
+        }
+        if (a.task_time && !b.task_time) return -1;
+        if (!a.task_time && b.task_time) return 1;
+        return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+      });
+
+    return {
+      pendingTasks: pending.slice(0, 8), // Show max 8 pending
+      failedTasks: failed.slice(0, 4), // Show max 4 failed
+      totalPendingTasks: pending.length,
+      totalFailedTasks: failed.length
+    };
   }, [tasks]);
 
-  const totalPendingTasks = tasks.filter(task => !task.completed).length;
-  const hasMore = totalPendingTasks > 12;
+  const hasMorePending = totalPendingTasks > 8;
+  const hasMoreFailed = totalFailedTasks > 4;
   
   // Handle clicking on a task item - show popup
   const handleTaskClick = useCallback((task: Task) => {
     showPopupFor(task);
   }, [showPopupFor]);
   
-  // ✅ FIXED: Task completion that triggers dashboard refresh
+  // ✅ UNCHANGED: Task completion handler
   const handleTaskCompletion = useCallback(async (e: React.MouseEvent, task: Task): Promise<void> => {
     e.stopPropagation(); // Prevent item click
     
@@ -71,7 +95,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   return (
     <div className="dashboard-card tasks-card">
       <div className="dashboard-card-header">
-        <h2>Today's Tasks ({totalPendingTasks})</h2>
+        <h2>Today's Tasks ({totalPendingTasks + totalFailedTasks})</h2>
         <button
           className="card-action-btn"
           onClick={() => navigate("/calendar/day?tab=tasks")}
@@ -81,10 +105,11 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       </div>
 
       <div className="dashboard-card-content">
-        {displayTasks.length > 0 ? (
+        {(pendingTasks.length > 0 || failedTasks.length > 0) ? (
           <>
             <div className="dashboard-list">
-              {displayTasks.map((task) => (
+              {/* ✅ PENDING TASKS - Show first */}
+              {pendingTasks.map((task) => (
                 <div
                   key={task.id}
                   className="dashboard-item task"
@@ -108,21 +133,47 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
                   </div>
                 </div>
               ))}
+
+              {/* ✅ FAILED TASKS - Show at bottom */}
+              {failedTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="dashboard-item task failed"
+                  onClick={() => handleTaskClick(task)}
+                >
+                  <div
+                    className="item-status failed"
+                    title="Failed task"
+                  >
+                    ✗
+                  </div>
+                  
+                  <div className="item-content">
+                    <div className="item-title failed">{task.title}</div>
+                    <div className="item-meta">
+                      {task.task_time && (
+                        <span className="item-time">{task.task_time}</span>
+                      )}
+                      <span className="failed-label">Failed</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
             
-            {hasMore && (
+            {(hasMorePending || hasMoreFailed) && (
               <button
                 className="view-more-btn"
                 onClick={() => navigate("/calendar/day?tab=tasks")}
               >
-                View All {totalPendingTasks} Tasks →
+                View All {totalPendingTasks + totalFailedTasks} Tasks →
               </button>
             )}
           </>
         ) : (
           <div className="dashboard-empty">
             <div className="dashboard-empty-icon">📝</div>
-            <p>No pending tasks for today</p>
+            <p>No tasks for today</p>
             <button
               className="action-btn"
               onClick={() => navigate("/calendar/day?tab=tasks")}

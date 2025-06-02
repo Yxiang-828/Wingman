@@ -129,3 +129,41 @@
   opacity: 0.7;
   pointer-events: none;
 }
+
+/* ✅ ADD: Failed task styling */
+.tasks-card .dashboard-item.task.failed {
+  background: rgba(180, 100, 100, 0.1);
+  border-left-color: rgba(255, 77, 77, 0.5);
+  opacity: 0.8;
+}
+
+.tasks-card .dashboard-item.task.failed:hover {
+  background: rgba(180, 100, 100, 0.15);
+  border-left-color: rgba(255, 77, 77, 0.7);
+}
+
+.tasks-card .item-status.failed {
+  border-color: rgba(255, 77, 77, 0.5);
+  background: rgba(255, 77, 77, 0.1);
+  color: #ff9999;
+}
+
+.tasks-card .item-status.failed:hover {
+  border-color: rgba(255, 77, 77, 0.7);
+  background: rgba(255, 77, 77, 0.2);
+}
+
+.tasks-card .item-title.failed {
+  color: rgba(255, 153, 153, 0.8);
+  text-decoration: line-through;
+}
+
+.tasks-card .failed-label {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ffb5b5;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}

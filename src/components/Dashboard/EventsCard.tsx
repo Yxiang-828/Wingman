@@ -14,15 +14,22 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
 
-  // Sort events by latest first, limited to 12
+  // ✅ FIXED: Sort events by time (earliest first), then by creation time
   const displayEvents = useMemo(() => {
     return events
-      .sort(
-        (a, b) =>
-          new Date(b.created_at || "").getTime() -
-          new Date(a.created_at || "").getTime()
-      )
-      .slice(0, 12);
+      .sort((a, b) => {
+        // Sort by event time first (earliest first)
+        if (a.event_time && b.event_time) {
+          return a.event_time.localeCompare(b.event_time);
+        }
+        // Events with time come before events without time
+        if (a.event_time && !b.event_time) return -1;
+        if (!a.event_time && b.event_time) return 1;
+        
+        // If no event times, sort by creation time (latest first)
+        return new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime();
+      })
+      .slice(0, 12); // Show max 12 events
   }, [events]);
 
   const hasMore = events.length > 12;

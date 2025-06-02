@@ -1,13 +1,18 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { format } from "date-fns"; // ✅ ADD: Missing import
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
-import { getCurrentUserId } from "../../utils/auth";
-import { formatDateToString, parseLocalDateString } from "../../utils/timeUtils";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
+import {
+  getTodayDateString,
+  formatDateToString,
+  parseLocalDateString,
+  getCurrentTimeString,
+} from "../../utils/timeUtils";
+import { getCurrentUserId } from "../../utils/auth";
 import DetailPopup from "../Common/DetailPopup";
-import TimeInput from "../Common/TimeInput";
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -63,82 +68,93 @@ const DayView: React.FC = () => {
     events: 0,
   });
 
+  // ✅ FIXED: Move the useMemo AFTER currentDateTasks is declared
+  // Separate tasks into pending and failed, sorted by time
+  const { pendingTasks, failedTasks } = useMemo(() => {
+    const pending = currentDateTasks
+      .filter(task => !task.completed && !task.failed)
+      .sort((a, b) => {
+        if (a.task_time && b.task_time) {
+          return a.task_time.localeCompare(b.task_time);
+        }
+        if (a.task_time && !b.task_time) return -1;
+        if (!a.task_time && b.task_time) return 1;
+        return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+      });
+
+    const failed = currentDateTasks
+      .filter(task => task.failed && !task.completed)
+      .sort((a, b) => {
+        if (a.task_time && b.task_time) {
+          return a.task_time.localeCompare(b.task_time);
+        }
+        if (a.task_time && !b.task_time) return -1;
+        if (!a.task_time && b.task_time) return 1;
+        return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+      });
+
+    return { pendingTasks: pending, failedTasks: failed };
+  }, [currentDateTasks]);
+
   // ✅ FIXED: Parse date from URL and set it immediately
   useEffect(() => {
     try {
       const query = new URLSearchParams(location.search);
-      const dateStr = query.get("date");
-      const highlight = query.get("highlight");
-
-      if (highlight) {
-        setHighlightId(highlight);
-        setTimeout(() => setHighlightId(null), 3000);
-      }
-
-      let targetDate: Date;
-      if (dateStr) {
-        targetDate = parseLocalDateString(dateStr);
-        if (isNaN(targetDate.getTime())) {
-          console.warn("Invalid date from URL, using today");
-          targetDate = new Date();
-        }
+      const dateParam = query.get("date");
+      
+      if (dateParam) {
+        const parsedDate = parseLocalDateString(dateParam);
+        setDate(parsedDate);
       } else {
-        targetDate = new Date();
+        setDate(new Date());
       }
-
-      console.log(`📅 DayView: Setting date to ${formatDateToString(targetDate)}`);
-      setDate(targetDate);
     } catch (err) {
-      console.error("Error parsing date:", err);
-      const today = new Date();
-      setDate(today);
+      console.error("Error parsing date from URL:", err);
+      setDate(new Date());
     }
   }, [location.search]);
 
   // ✅ NEW: Direct SQLite data fetching
   useEffect(() => {
-    if (!date) {
-      console.log("📅 DayView: No date set, skipping fetch");
-      return;
-    }
+    if (!date) return;
 
     const fetchData = async () => {
-      const userId = getCurrentUserId();
-      if (!userId) {
-        console.log("📅 DayView: No user ID, skipping fetch");
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       setError(null);
-      
-      try {
-        const dateStr = formatDateToString(date);
-        console.log(`📅 DayView: Direct SQLite fetch for ${dateStr}`);
 
-        // ✅ Direct SQLite calls - no cache layer
-        const [tasks, events] = await Promise.all([
+      try {
+        const userId = getCurrentUserId();
+        if (!userId) {
+          console.log("DayView: No user authenticated");
+          setLoading(false);
+          return;
+        }
+
+        const dateStr = formatDateToString(date);
+        console.log(`📅 DayView: Loading data for ${dateStr} (direct SQLite)`);
+
+        const [tasksData, eventsData] = await Promise.all([
           window.electronAPI.db.getTasks(userId, dateStr),
           window.electronAPI.db.getEvents(userId, dateStr),
         ]);
 
-        setCurrentDateTasks(tasks || []);
-        setCurrentDateEvents(events || []);
-        
-        // Update real counts
+        setCurrentDateTasks(tasksData || []);
+        setCurrentDateEvents(eventsData || []);
         setRealCounts({
-          tasks: tasks?.length || 0,
-          events: events?.length || 0,
+          tasks: (tasksData || []).length,
+          events: (eventsData || []).length,
         });
 
-        console.log(`✅ DayView: Loaded ${tasks?.length || 0} tasks, ${events?.length || 0} events`);
+        console.log(
+          `✅ DayView: Loaded ${(tasksData || []).length} tasks, ${
+            (eventsData || []).length
+          } events`
+        );
       } catch (error) {
-        console.error("📅 DayView: Error loading data:", error);
+        console.error("DayView data fetch error:", error);
         setError("Failed to load data");
         setCurrentDateTasks([]);
         setCurrentDateEvents([]);
-        setRealCounts({ tasks: 0, events: 0 });
       } finally {
         setLoading(false);
       }
@@ -152,12 +168,11 @@ const DayView: React.FC = () => {
     try {
       const query = new URLSearchParams(location.search);
       const tabParam = query.get("tab");
-
       if (tabParam === "tasks" || tabParam === "events") {
         setActiveTab(tabParam);
       }
     } catch (err) {
-      console.error("Error parsing tab parameter:", err);
+      console.error("Error parsing tab from URL:", err);
     }
   }, [location.search]);
 
@@ -167,26 +182,26 @@ const DayView: React.FC = () => {
     try {
       const prevDay = new Date(date);
       prevDay.setDate(prevDay.getDate() - 1);
-      const prevDayStr = formatDateToString(prevDay);
-      navigate(`/calendar/day?date=${prevDayStr}`);
+      const prevDateStr = formatDateToString(prevDay);
+      navigate(`/calendar/day?date=${prevDateStr}&tab=${activeTab}`);
     } catch (error) {
-      console.error("Navigation error:", error);
+      console.error("Error navigating to previous day:", error);
     }
-  }, [date, navigate]);
+  }, [date, navigate, activeTab]);
 
   const handleNextDay = useCallback(() => {
     if (!date) return;
     try {
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
-      const nextDayStr = formatDateToString(nextDay);
-      navigate(`/calendar/day?date=${nextDayStr}`);
+      const nextDateStr = formatDateToString(nextDay);
+      navigate(`/calendar/day?date=${nextDateStr}&tab=${activeTab}`);
     } catch (error) {
-      console.error("Navigation error:", error);
+      console.error("Error navigating to next day:", error);
     }
-  }, [date, navigate]);
+  }, [date, navigate, activeTab]);
 
-  // ✅ UPDATED: Task submission with immediate UI update
+  // ✅ UPDATED: Task submission with failed task support
   const handleTaskSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
     isEditing: boolean
@@ -204,45 +219,34 @@ const DayView: React.FC = () => {
 
     try {
       if (isEditing && editingTask) {
-        const taskToUpdate = {
+        await updateTask({
           ...editingTask,
           title: taskData.title,
           task_time: taskData.task_time,
-          task_date,
-        };
-
-        await updateTask(taskToUpdate);
+          updated_at: new Date().toISOString(),
+        });
         setEditingTask(null);
-        setEditTaskForm({ title: "", task_time: "" });
       } else {
-        const newTaskData = {
+        await createTask({
           title: taskData.title,
           task_date,
           task_time: taskData.task_time,
           completed: false,
-          user_id: getCurrentUserId(),
-        };
-
-        await createTask(newTaskData);
+          failed: false, // ✅ NEW: Initialize failed status
+        });
         setNewTask({ title: "", task_time: "" });
       }
 
-      // ✅ IMMEDIATE: Refresh data after operation
+      // Refresh data
       const userId = getCurrentUserId();
       if (userId) {
-        const [updatedTasks, updatedEvents] = await Promise.all([
+        const [tasksData] = await Promise.all([
           window.electronAPI.db.getTasks(userId, task_date),
-          window.electronAPI.db.getEvents(userId, task_date),
         ]);
-        setCurrentDateTasks(updatedTasks || []);
-        setCurrentDateEvents(updatedEvents || []);
-        setRealCounts({
-          tasks: updatedTasks?.length || 0,
-          events: updatedEvents?.length || 0,
-        });
+        setCurrentDateTasks(tasksData || []);
       }
     } catch (error) {
-      console.error("Error submitting task:", error);
+      console.error("Error saving task:", error);
       alert("Failed to save task. Please try again.");
     }
   };
@@ -258,58 +262,43 @@ const DayView: React.FC = () => {
     const event_date = formatDateToString(date);
     const eventData = isEditing ? editEventForm : newEvent;
 
-    if (!eventData.title.trim() || !eventData.event_time || !eventData.type) {
-      alert("Please fill all required fields");
+    if (!eventData.title.trim()) {
+      alert("Please enter an event title");
       return;
     }
 
     try {
       if (isEditing && editingEvent) {
-        const updatedEvent = await updateEvent({
+        await updateEvent({
           ...editingEvent,
-          title: eventData.title.trim(),
+          title: eventData.title,
           event_time: eventData.event_time,
           type: eventData.type,
-          description: eventData.description.trim(),
+          description: eventData.description,
+          updated_at: new Date().toISOString(),
         });
-
         setEditingEvent(null);
-        setEditEventForm({
-          title: "",
-          event_time: "",
-          type: "",
-          description: "",
-        });
       } else {
-        const newEventData = {
-          title: eventData.title.trim(),
+        await createEvent({
+          title: eventData.title,
           event_date,
           event_time: eventData.event_time,
           type: eventData.type,
-          description: eventData.description.trim(),
-          user_id: getCurrentUserId(),
-        };
-
-        await createEvent(newEventData);
+          description: eventData.description,
+        });
         setNewEvent({ title: "", event_time: "", type: "", description: "" });
       }
 
-      // ✅ IMMEDIATE: Refresh data after operation
+      // Refresh data
       const userId = getCurrentUserId();
       if (userId) {
-        const [updatedTasks, updatedEvents] = await Promise.all([
-          window.electronAPI.db.getTasks(userId, event_date),
+        const [eventsData] = await Promise.all([
           window.electronAPI.db.getEvents(userId, event_date),
         ]);
-        setCurrentDateTasks(updatedTasks || []);
-        setCurrentDateEvents(updatedEvents || []);
-        setRealCounts({
-          tasks: updatedTasks?.length || 0,
-          events: updatedEvents?.length || 0,
-        });
+        setCurrentDateEvents(eventsData || []);
       }
     } catch (error) {
-      console.error("Event operation failed:", error);
+      console.error("Error saving event:", error);
       alert("Failed to save event. Please try again.");
     }
   };
@@ -319,16 +308,14 @@ const DayView: React.FC = () => {
     try {
       await toggleTask(task);
       
-      // ✅ IMMEDIATE: Refresh data after operation
+      // Refresh data
       const userId = getCurrentUserId();
-      const dateStr = formatDateToString(date!);
-      if (userId) {
-        const updatedTasks = await window.electronAPI.db.getTasks(userId, dateStr);
-        setCurrentDateTasks(updatedTasks || []);
-        setRealCounts(prev => ({
-          ...prev,
-          tasks: updatedTasks?.length || 0,
-        }));
+      if (userId && date) {
+        const dateStr = formatDateToString(date);
+        const [tasksData] = await Promise.all([
+          window.electronAPI.db.getTasks(userId, dateStr),
+        ]);
+        setCurrentDateTasks(tasksData || []);
       }
     } catch (error) {
       console.error("Error toggling task:", error);
@@ -337,27 +324,19 @@ const DayView: React.FC = () => {
 
   // ✅ UPDATED: Delete task with immediate UI update
   const handleDeleteTask = async (id: number) => {
-    try {
-      if (!confirm("Are you sure you want to delete this task?")) {
-        return;
-      }
+    if (!confirm("Are you sure you want to delete this task?")) return;
 
+    try {
       await deleteTask(id);
       
-      // ✅ IMMEDIATE: Refresh data after operation
+      // Refresh data
       const userId = getCurrentUserId();
-      const dateStr = formatDateToString(date!);
-      if (userId) {
-        const updatedTasks = await window.electronAPI.db.getTasks(userId, dateStr);
-        setCurrentDateTasks(updatedTasks || []);
-        setRealCounts(prev => ({
-          ...prev,
-          tasks: updatedTasks?.length || 0,
-        }));
-      }
-      
-      if (currentPopupItem && currentPopupItem.id === id) {
-        closePopup();
+      if (userId && date) {
+        const dateStr = formatDateToString(date);
+        const [tasksData] = await Promise.all([
+          window.electronAPI.db.getTasks(userId, dateStr),
+        ]);
+        setCurrentDateTasks(tasksData || []);
       }
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -366,52 +345,50 @@ const DayView: React.FC = () => {
 
   // ✅ UPDATED: Delete event with immediate UI update
   const handleDeleteEvent = async (id: number) => {
-    try {
-      if (!confirm("Are you sure you want to delete this event?")) {
-        return;
-      }
+    if (!confirm("Are you sure you want to delete this event?")) return;
 
+    try {
       await deleteEvent(id);
       
-      // ✅ IMMEDIATE: Refresh data after operation
+      // Refresh data
       const userId = getCurrentUserId();
-      const dateStr = formatDateToString(date!);
-      if (userId) {
-        const updatedEvents = await window.electronAPI.db.getEvents(userId, dateStr);
-        setCurrentDateEvents(updatedEvents || []);
-        setRealCounts(prev => ({
-          ...prev,
-          events: updatedEvents?.length || 0,
-        }));
+      if (userId && date) {
+        const dateStr = formatDateToString(date);
+        const [eventsData] = await Promise.all([
+          window.electronAPI.db.getEvents(userId, dateStr),
+        ]);
+        setCurrentDateEvents(eventsData || []);
       }
     } catch (error) {
-      console.error("Failed to delete event:", error);
-      alert("Could not delete event. Please try again.");
+      console.error("Error deleting event:", error);
     }
   };
 
   // ✅ Keep all other helper functions unchanged
   const formatTime = (time: string) => {
     if (!time) return "";
-    const match = time.match(/^(\d{1,2}):(\d{2})(\s*(am|pm|AM|PM))?$/);
-    if (match) {
-      const hour = parseInt(match[1], 10);
-      const minute = match[2];
-      const ampm = match[3] ? match[3].toLowerCase() : "";
-      return ampm ? `${hour}:${minute} ${ampm}` : `${hour}:${minute}`;
+    
+    try {
+      const [hours, minutes] = time.split(":");
+      const hour = parseInt(hours, 10);
+      const ampm = hour >= 12 ? "PM" : "AM";
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${minutes} ${ampm}`;
+    } catch (error) {
+      return time;
     }
-    return time;
   };
 
   const getStats = () => {
-    const completedTasks = currentDateTasks.filter(
-      (task) => task.completed
-    ).length;
-    const pendingTasks = currentDateTasks.length - completedTasks;
+    const totalTasks = currentDateTasks.length;
+    const completedTasks = currentDateTasks.filter(t => t.completed).length;
+    const totalEvents = currentDateEvents.length;
+
     return {
-      events: realCounts.events,
+      totalTasks,
       completedTasks,
-      pendingTasks,
+      pendingTasks: totalTasks - completedTasks,
+      totalEvents,
     };
   };
 
@@ -425,28 +402,24 @@ const DayView: React.FC = () => {
 
   const handleEditTask = (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
-    e.preventDefault();
-
-    setEditingTask(task);
     setEditTaskForm({
       title: task.title,
       task_time: task.task_time || "",
     });
+    setEditingTask(task);
     setActiveTab("tasks");
     document.querySelector(".day-form")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleEditEvent = (e: React.MouseEvent, event: CalendarEvent) => {
     e.stopPropagation();
-    e.preventDefault();
-
-    setEditingEvent(event);
     setEditEventForm({
       title: event.title,
       event_time: event.event_time || "",
       type: event.type || "",
       description: event.description || "",
     });
+    setEditingEvent(event);
     setActiveTab("events");
     document.querySelector(".day-form")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -477,7 +450,7 @@ const DayView: React.FC = () => {
   if (loading) {
     return (
       <div className="day-view-container">
-        <div className="day-loading">
+        <div className="day-view-loading">
           <div className="loading-spinner"></div>
           <p>Loading day data...</p>
         </div>
@@ -489,8 +462,8 @@ const DayView: React.FC = () => {
   if (error) {
     return (
       <div className="day-view-container">
-        <div className="day-error">
-          <p>Error loading data: {error}</p>
+        <div className="day-view-error">
+          <p>Error: {error}</p>
           <button onClick={() => window.location.reload()}>Retry</button>
         </div>
       </div>
@@ -500,8 +473,8 @@ const DayView: React.FC = () => {
   if (!date) {
     return (
       <div className="day-view-container">
-        <div className="day-error">
-          <p>No date selected</p>
+        <div className="day-view-loading">
+          <p>Loading...</p>
         </div>
       </div>
     );
@@ -511,55 +484,48 @@ const DayView: React.FC = () => {
 
   return (
     <div className="day-view-container">
-      {/* ✅ Keep existing JSX structure exactly the same */}
       <div className="day-view-header">
-        <h1 className="day-view-date">
-          {date.toLocaleDateString(undefined, {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </h1>
-
-        <div className="day-view-navigation">
-          <button className="day-nav-btn" onClick={handlePrevDay}>
-            ← Previous
-          </button>
-          <button
-            className="day-nav-btn"
-            onClick={() => navigate("/calendar/day")}
-          >
-            Today
-          </button>
-          <button className="day-nav-btn" onClick={handleNextDay}>
-            Next →
-          </button>
+        <div className="day-view-date">
+          <h1>{format(date, "EEEE, MMMM d, yyyy")}</h1>
+          <div className="day-view-navigation">
+            <button className="day-nav-btn" onClick={handlePrevDay}>
+              ← Previous
+            </button>
+            <button 
+              className="day-nav-btn today-btn"
+              onClick={() => navigate(`/calendar/day?tab=${activeTab}`)}
+            >
+              Today
+            </button>
+            <button className="day-nav-btn" onClick={handleNextDay}>
+              Next →
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="day-view-stats">
+        <div className="day-stat-card" onClick={navigateToNotificationsTasks}>
+          <div className="day-stat-icon">📝</div>
+          <div className="day-stat-content">
+            <div className="day-stat-value">{stats.pendingTasks}</div>
+            <div className="day-stat-label">Pending Tasks</div>
+          </div>
+        </div>
+
         <div className="day-stat-card" onClick={navigateToNotificationsEvents}>
           <div className="day-stat-icon">📅</div>
           <div className="day-stat-content">
-            <span className="day-stat-value">{stats.events}</span>
-            <span className="day-stat-label">Events</span>
+            <div className="day-stat-value">{stats.totalEvents}</div>
+            <div className="day-stat-label">Events</div>
           </div>
         </div>
 
         <div className="day-stat-card" onClick={navigateToCompletedTasks}>
           <div className="day-stat-icon">✅</div>
           <div className="day-stat-content">
-            <span className="day-stat-value">{stats.completedTasks}</span>
-            <span className="day-stat-label">Completed Tasks</span>
-          </div>
-        </div>
-
-        <div className="day-stat-card" onClick={navigateToNotificationsTasks}>
-          <div className="day-stat-icon">📝</div>
-          <div className="day-stat-content">
-            <span className="day-stat-value">{stats.pendingTasks}</span>
-            <span className="day-stat-label">Pending Tasks</span>
+            <div className="day-stat-value">{stats.completedTasks}</div>
+            <div className="day-stat-label">Completed</div>
           </div>
         </div>
       </div>
@@ -569,67 +535,55 @@ const DayView: React.FC = () => {
           className={`day-view-tab ${activeTab === "events" ? "active" : ""}`}
           onClick={() => setActiveTab("events")}
         >
-          Events ({realCounts.events})
+          Events ({currentDateEvents.length})
         </button>
         <button
           className={`day-view-tab ${activeTab === "tasks" ? "active" : ""}`}
           onClick={() => setActiveTab("tasks")}
         >
-          Tasks ({realCounts.tasks})
+          Tasks ({pendingTasks.length + failedTasks.length})
         </button>
       </div>
 
       <div className="day-view-content">
         {activeTab === "events" && (
           <div className="day-view-section">
-            <form
-              className="day-form"
-              onSubmit={(e) => handleEventSubmit(e, !!editingEvent)}
-            >
+            <div className="day-section-header">
+              <h3 className="day-section-title">
+                Events ({currentDateEvents.length})
+              </h3>
+            </div>
+
+            <form onSubmit={(e) => handleEventSubmit(e, false)} className="day-form">
               <div className="day-form-grid">
                 <div className="day-form-group">
                   <input
                     type="text"
+                    placeholder="Event title"
+                    value={newEvent.title}
+                    onChange={(e) =>
+                      setNewEvent({ ...newEvent, title: e.target.value })
+                    }
                     className="day-form-input"
-                    placeholder="Event title..."
-                    value={editingEvent ? editEventForm.title : newEvent.title}
-                    onChange={(e) => {
-                      if (editingEvent) {
-                        setEditEventForm(prev => ({ ...prev, title: e.target.value }));
-                      } else {
-                        setNewEvent(prev => ({ ...prev, title: e.target.value }));
-                      }
-                    }}
-                    required
                   />
                 </div>
-
                 <div className="day-form-group">
-                  <TimeInput
-                    value={editingEvent ? editEventForm.event_time : newEvent.event_time}
-                    onChange={(time) => {
-                      if (editingEvent) {
-                        setEditEventForm(prev => ({ ...prev, event_time: time }));
-                      } else {
-                        setNewEvent(prev => ({ ...prev, event_time: time }));
-                      }
-                    }}
-                    placeholder="Select time"
+                  <input
+                    type="time"
+                    value={newEvent.event_time}
+                    onChange={(e) =>
+                      setNewEvent({ ...newEvent, event_time: e.target.value })
+                    }
+                    className="day-form-input"
                   />
                 </div>
-
                 <div className="day-form-group">
                   <select
+                    value={newEvent.type}
+                    onChange={(e) =>
+                      setNewEvent({ ...newEvent, type: e.target.value })
+                    }
                     className="day-form-select"
-                    value={editingEvent ? editEventForm.type : newEvent.type}
-                    onChange={(e) => {
-                      if (editingEvent) {
-                        setEditEventForm(prev => ({ ...prev, type: e.target.value }));
-                      } else {
-                        setNewEvent(prev => ({ ...prev, type: e.target.value }));
-                      }
-                    }}
-                    required
                   >
                     <option value="">Select type</option>
                     <option value="meeting">Meeting</option>
@@ -638,55 +592,35 @@ const DayView: React.FC = () => {
                   </select>
                 </div>
               </div>
-
               <div className="day-form-group">
-                <input
-                  type="text"
-                  className="day-form-input"
+                <textarea
                   placeholder="Description (optional)"
-                  value={editingEvent ? editEventForm.description : newEvent.description}
-                  onChange={(e) => {
-                    if (editingEvent) {
-                      setEditEventForm(prev => ({ ...prev, description: e.target.value }));
-                    } else {
-                      setNewEvent(prev => ({ ...prev, description: e.target.value }));
-                    }
-                  }}
+                  value={newEvent.description}
+                  onChange={(e) =>
+                    setNewEvent({ ...newEvent, description: e.target.value })
+                  }
+                  className="day-form-input"
+                  rows={2}
                 />
               </div>
-
-              <div className="day-form-actions">
-                <button type="submit" className="day-form-btn primary">
-                  {editingEvent ? "Update Event" : "Add Event"}
-                </button>
-                {editingEvent && (
-                  <button
-                    type="button"
-                    className="day-form-btn cancel"
-                    onClick={cancelEdit}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
+              <button type="submit" className="day-form-btn">
+                Add Event
+              </button>
             </form>
 
             <div className="day-list">
               {currentDateEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className={`event-item event-${event.type?.toLowerCase()}`}
-                  onClick={() => handleEventDetails(event)}
-                >
+                <div key={event.id} className={`event-item ${event.type || ''}`}>
                   <div className="event-info">
-                    <h3 className="event-title">{event.title}</h3>
+                    <div className="event-title">{event.title}</div>
                     <div className="event-meta">
-                      <span className="event-time">{formatTime(event.event_time)}</span>
-                      <span className="event-type">{event.type}</span>
+                      {event.event_time && (
+                        <span className="event-time">{formatTime(event.event_time)}</span>
+                      )}
+                      {event.type && (
+                        <span className="event-type">{event.type}</span>
+                      )}
                     </div>
-                    {event.description && (
-                      <p className="event-description">{event.description}</p>
-                    )}
                   </div>
                   <div className="event-actions">
                     <button
@@ -697,20 +631,18 @@ const DayView: React.FC = () => {
                     </button>
                     <button
                       className="event-btn delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteEvent(event.id);
-                      }}
+                      onClick={() => handleDeleteEvent(event.id)}
                     >
                       Delete
                     </button>
                   </div>
                 </div>
               ))}
-              
+
               {currentDateEvents.length === 0 && (
-                <div className="day-empty">
-                  <p>No events for this day</p>
+                <div className="day-empty-state">
+                  <div className="day-empty-icon">📅</div>
+                  <p className="day-empty-text">No events for today</p>
                 </div>
               )}
             </div>
@@ -719,81 +651,102 @@ const DayView: React.FC = () => {
 
         {activeTab === "tasks" && (
           <div className="day-view-section">
-            <form
-              className="day-form"
-              onSubmit={(e) => handleTaskSubmit(e, !!editingTask)}
-            >
-              <div className="day-form-group">
-                <input
-                  type="text"
-                  className="day-form-input"
-                  placeholder="Enter task title..."
-                  value={editingTask ? editTaskForm.title : newTask.title}
-                  onChange={(e) => {
-                    if (editingTask) {
-                      setEditTaskForm(prev => ({ ...prev, title: e.target.value }));
-                    } else {
-                      setNewTask(prev => ({ ...prev, title: e.target.value }));
-                    }
-                  }}
-                  required
-                />
-              </div>
+            <div className="day-section-header">
+              <h3 className="day-section-title">
+                Tasks ({pendingTasks.length + failedTasks.length})
+              </h3>
+            </div>
 
-              <div className="day-form-group">
-                <TimeInput
-                  value={editingTask ? editTaskForm.task_time : newTask.task_time}
-                  onChange={(time) => {
-                    if (editingTask) {
-                      setEditTaskForm(prev => ({ ...prev, task_time: time }));
-                    } else {
-                      setNewTask(prev => ({ ...prev, task_time: time }));
-                    }
-                  }}
-                  placeholder="Select time (optional)"
-                />
-              </div>
-
-              <div className="day-form-actions">
-                <button type="submit" className="day-form-btn primary">
-                  {editingTask ? "Update Task" : "Add Task"}
-                </button>
-                {editingTask && (
-                  <button
-                    type="button"
+            {editingTask ? (
+              <form onSubmit={(e) => handleTaskSubmit(e, true)} className="day-form">
+                <div className="day-form-grid">
+                  <div className="day-form-group">
+                    <input
+                      type="text"
+                      placeholder="Task title"
+                      value={editTaskForm.title}
+                      onChange={(e) =>
+                        setEditTaskForm({ ...editTaskForm, title: e.target.value })
+                      }
+                      className="day-form-input"
+                    />
+                  </div>
+                  <div className="day-form-group">
+                    <input
+                      type="time"
+                      value={editTaskForm.task_time}
+                      onChange={(e) =>
+                        setEditTaskForm({ ...editTaskForm, task_time: e.target.value })
+                      }
+                      className="day-form-input"
+                    />
+                  </div>
+                </div>
+                <div className="day-form-actions">
+                  <button type="submit" className="day-form-btn">
+                    Update Task
+                  </button>
+                  <button 
+                    type="button" 
                     className="day-form-btn cancel"
                     onClick={cancelEdit}
                   >
                     Cancel
                   </button>
-                )}
-              </div>
-            </form>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={(e) => handleTaskSubmit(e, false)} className="day-form">
+                <div className="day-form-grid">
+                  <div className="day-form-group">
+                    <input
+                      type="text"
+                      placeholder="Task title"
+                      value={newTask.title}
+                      onChange={(e) =>
+                        setNewTask({ ...newTask, title: e.target.value })
+                      }
+                      className="day-form-input"
+                    />
+                  </div>
+                  <div className="day-form-group">
+                    <input
+                      type="time"
+                      value={newTask.task_time}
+                      onChange={(e) =>
+                        setNewTask({ ...newTask, task_time: e.target.value })
+                      }
+                      className="day-form-input"
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="day-form-btn">
+                  Add Task
+                </button>
+              </form>
+            )}
 
             <div className="day-list">
-              {currentDateTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`task-item ${task.completed ? "completed" : ""}`}
-                  onClick={() => handleTaskDetails(task)}
-                >
-                  <button
-                    className={`task-status ${task.completed ? "completed" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleTask(task);
-                    }}
+              {/* ✅ PENDING TASKS - Show first */}
+              {pendingTasks.map((task) => (
+                <div key={task.id} className="task-item">
+                  <div
+                    className="task-status"
+                    onClick={(e) => handleToggleTask(task)}
+                    title="Mark as completed"
                   >
-                    {task.completed ? "✓" : ""}
-                  </button>
+                    {task.completed ? "✓" : "○"}
+                  </div>
+                  
                   <div className="task-info">
-                    <h3 className="task-title">{task.title}</h3>
+                    <div className="task-title">{task.title}</div>
                     <div className="task-meta">
                       {task.task_time && (
                         <span className="task-time">{formatTime(task.task_time)}</span>
                       )}
                     </div>
                   </div>
+                  
                   <div className="task-actions">
                     <button
                       className="task-btn edit"
@@ -803,20 +756,49 @@ const DayView: React.FC = () => {
                     </button>
                     <button
                       className="task-btn delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTask(task.id);
-                      }}
+                      onClick={() => handleDeleteTask(task.id)}
                     >
                       Delete
                     </button>
                   </div>
                 </div>
               ))}
-              
-              {currentDateTasks.length === 0 && (
-                <div className="day-empty">
-                  <p>No tasks for this day</p>
+
+              {/* ✅ FAILED TASKS - Show at bottom */}
+              {failedTasks.map((task) => (
+                <div key={task.id} className="task-item failed">
+                  <div
+                    className="task-status failed"
+                    title="Failed task"
+                  >
+                    ✗
+                  </div>
+                  
+                  <div className="task-info">
+                    <div className="task-title failed">{task.title}</div>
+                    <div className="task-meta">
+                      {task.task_time && (
+                        <span className="task-time">{formatTime(task.task_time)}</span>
+                      )}
+                      <span className="failed-label">Failed</span>
+                    </div>
+                  </div>
+                  
+                  <div className="task-actions">
+                    <button
+                      className="task-btn retry"
+                      onClick={(e) => handleTaskDetails(task)}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {pendingTasks.length === 0 && failedTasks.length === 0 && (
+                <div className="day-empty-state">
+                  <div className="day-empty-icon">📝</div>
+                  <p className="day-empty-text">No tasks for today</p>
                 </div>
               )}
             </div>
