@@ -6,22 +6,41 @@
   contain: content; /* Performance optimization */
 }
 
-/* ✅ FIXED: Task row layout - better spacing and centering */
-.task-row {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  gap: 1rem; /* ✅ CONSISTENT GAP */
-  padding: 0.5rem 0; /* ✅ ADD VERTICAL PADDING */
+/* TasksCard following DiaryCard gentle hover pattern */
+
+/* ✅ GENTLE: Follow DiaryCard hover pattern */
+.tasks-card .dashboard-item:hover {
+  background: rgba(30, 30, 50, 0.6);
+  transform: translateX(2px); /* ✅ SAME AS DIARY CARD */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ✅ SAME AS DIARY CARD */
+  border-left-color: rgba(100, 108, 255, 0.7);
+  transition: all 0.2s ease; /* ✅ SAME AS DIARY CARD */
 }
 
-/* ✅ FIXED: Task content container - proper flex and centering */
-.task-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0; /* ✅ PREVENT OVERFLOW */
-  justify-content: center; /* ✅ CENTER VERTICALLY */
+.tasks-card .item-status:hover {
+  transform: scale(1.05); /* ✅ GENTLE SCALE */
+  border-color: rgba(100, 108, 255, 0.6); /* ✅ GENTLE GLOW */
+  box-shadow: 0 0 4px rgba(100, 108, 255, 0.2); /* ✅ SOFT SHADOW */
+  background: rgba(100, 108, 255, 0.05); /* ✅ SUBTLE */
+}
+
+.tasks-card .item-status.completed:hover {
+  transform: scale(1.05); /* ✅ GENTLE SCALE */
+  border-color: rgba(74, 222, 128, 0.6); /* ✅ GENTLE GLOW */
+  box-shadow: 0 0 4px rgba(74, 222, 128, 0.2); /* ✅ SOFT SHADOW */
+  background: rgba(74, 222, 128, 0.1); /* ✅ SUBTLE */
+}
+
+.tasks-card .card-action-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2); /* ✅ SOFT */
+}
+
+.tasks-card .view-more-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.1); /* ✅ SOFT */
 }
 
 /* Task status circle - specific to TasksCard */
@@ -41,9 +60,9 @@
 }
 
 .task-status-circle:hover {
-  transform: scale(1.1);
-  border-color: rgba(100, 108, 255, 0.8);
-  box-shadow: 0 0 8px rgba(100, 108, 255, 0.3);
+  transform: scale(1.05); /* ✅ GENTLE LIKE DIARY CARD */
+  border-color: rgba(100, 108, 255, 0.6);
+  box-shadow: 0 0 4px rgba(100, 108, 255, 0.2);
 }
 
 .task-status-circle.completed {
@@ -52,29 +71,23 @@
   color: #4ade80;
 }
 
-/* Processing state - specific to TasksCard */
-.task-item.processing {
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-/* ✅ OVERRIDE: Fix task items from Dashboard.css */
+/* Task items */
 .tasks-card .task-item {
   background: rgba(20, 20, 35, 0.5);
   border-radius: 10px;
   padding: 1rem; /* ✅ CONSISTENT PADDING */
   display: flex;
   align-items: center;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.2s ease; /* ✅ GENTLE TIMING LIKE DIARY CARD */
   border-left: 3px solid var(--accent-primary);
   cursor: pointer;
   min-height: 60px; /* ✅ CONSISTENT HEIGHT */
 }
 
 .tasks-card .task-item:hover {
-  transform: translateX(6px);
-  background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateX(2px); /* ✅ SAME AS DIARY CARD */
+  background: rgba(30, 30, 50, 0.6); /* ✅ SAME AS DIARY CARD */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ✅ SAME AS DIARY CARD */
 }
 
 .tasks-card .task-title {
@@ -91,4 +104,28 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+/* Task row layout - better spacing and centering */
+.task-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 1rem; /* ✅ CONSISTENT GAP */
+  padding: 0.5rem 0; /* ✅ ADD VERTICAL PADDING */
+}
+
+/* ✅ FIXED: Task content container - proper flex and centering */
+.task-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0; /* ✅ PREVENT OVERFLOW */
+  justify-content: center; /* ✅ CENTER VERTICALLY */
+}
+
+/* Processing state - specific to TasksCard */
+.task-item.processing {
+  opacity: 0.7;
+  pointer-events: none;
 }

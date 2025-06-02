@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-// ✅ REMOVED: import { useCalendarCache } from "../../Hooks/useCalendar";
 import { useDiary } from "../../context/DiaryContext";
 import { getCurrentUserId } from "../../utils/auth";
 import DiaryCard from "./DiaryCard";
@@ -16,15 +15,13 @@ import "./Dashboard.css";
 const Dashboard: React.FC = () => {
   const { entries, refreshEntries, loading: diaryLoading } = useDiary();
 
-  // ✅ REMOVED ONLY THE CACHE: const { getDayData, loading: cacheLoading } = useCalendarCache("Dashboard");
-
   const [todaysTasks, setTodaysTasks] = useState<Task[]>([]);
   const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
   const [recentDiaryEntries, setRecentDiaryEntries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
 
-  // ✅ NEW: Direct SQLite data fetching (ONLY replacing cache part)
+  // ✅ FIXED: Direct SQLite data fetching with proper refresh
   const fetchDashboardData = useCallback(async () => {
     const userId = getCurrentUserId();
     if (!userId) {
@@ -37,7 +34,6 @@ const Dashboard: React.FC = () => {
       const today = getTodayDateString();
       console.log(`📊 Dashboard: Loading data for ${today} (direct SQLite)`);
 
-      // ✅ DIRECT SQLite calls - replacing cache calls
       const [tasksData, eventsData] = await Promise.all([
         window.electronAPI.db.getTasks(userId, today),
         window.electronAPI.db.getEvents(userId, today),
@@ -52,7 +48,6 @@ const Dashboard: React.FC = () => {
         } tasks, ${eventsData?.length || 0} events`
       );
 
-      // ✅ KEEP: Load diary entries (UNCHANGED!)
       await refreshEntries();
     } catch (error) {
       console.error("Dashboard load error:", error);
@@ -63,7 +58,7 @@ const Dashboard: React.FC = () => {
     }
   }, [refreshEntries]);
 
-  // ✅ KEEP: Diary entries logic (UNCHANGED!)
+  // ✅ KEEP: Diary entries logic
   useEffect(() => {
     if (entries && entries.length > 0) {
       const recent = [...entries]
@@ -80,31 +75,45 @@ const Dashboard: React.FC = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // ✅ SIMPLIFIED: Loading state (removed cache dependency)
+  // ✅ LOADING state
   useEffect(() => {
     if (isReady && !diaryLoading) {
       setIsLoading(false);
     }
   }, [isReady, diaryLoading]);
 
-  // ✅ KEEP: Task toggle handler (UNCHANGED!)
-  const handleToggleTask = async (task: Task) => {
+  // ✅ FIXED: Task toggle handler that refreshes ALL dashboard data
+  const handleToggleTask = useCallback(async (task: Task) => {
     try {
+      console.log(`🎯 Dashboard: Toggling task ${task.id}`);
+      
+      // Update in database
       const updatedTask = await window.electronAPI.db.updateTask(task.id, {
         completed: !task.completed,
       });
 
-      setTodaysTasks((prev) =>
-        prev.map((t) =>
-          t.id === task.id
-            ? updatedTask || { ...task, completed: !task.completed }
-            : t
-        )
-      );
+      // ✅ CRITICAL: Refresh ALL dashboard data from database
+      await fetchDashboardData();
+      
+      console.log(`✅ Dashboard: Task ${task.id} toggled and dashboard refreshed`);
+      
+      return updatedTask || { ...task, completed: !task.completed };
     } catch (error) {
       console.error("Error toggling task:", error);
+      throw error;
     }
-  };
+  }, [fetchDashboardData]);
+
+  // ✅ LISTEN: For external refresh events (from TasksCard completion)
+  useEffect(() => {
+    const handleDashboardRefresh = () => {
+      console.log("📊 Dashboard: External refresh triggered");
+      fetchDashboardData();
+    };
+
+    window.addEventListener("dashboard-refresh", handleDashboardRefresh);
+    return () => window.removeEventListener("dashboard-refresh", handleDashboardRefresh);
+  }, [fetchDashboardData]);
 
   if (isLoading) {
     return (
@@ -117,9 +126,9 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // ✅ KEEP: All your existing filtering logic (UNCHANGED!)
-  const todaysCompletedTasks = todaysTasks.filter((task) => task.completed);
+  // ✅ SPLIT: Tasks into pending and completed
   const pendingTasks = todaysTasks.filter((t) => !t.completed);
+  const completedTasks = todaysTasks.filter((t) => t.completed);
 
   return (
     <div className="dashboard-container">
@@ -127,7 +136,7 @@ const Dashboard: React.FC = () => {
       <div className="dashboard">
         <TasksCard tasks={pendingTasks} onToggleTask={handleToggleTask} />
         <EventsCard events={todaysEvents} />
-        <CompletedTasksCard tasks={todaysCompletedTasks} />
+        <CompletedTasksCard tasks={completedTasks} />
         <DiaryCard entries={recentDiaryEntries} />
       </div>
     </div>

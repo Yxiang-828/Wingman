@@ -4,60 +4,74 @@ import type { Task } from "../../api/Task";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
-import { VirtualizedTaskList } from "../Calendar/VirtualizedList";
 import "./Dashboard.css";
 import "./TasksCard.css";
 
 interface TasksCardProps {
   tasks: Task[];
-  onToggleTask: (task: Task) => void;
+  onToggleTask: (task: Task) => Promise<Task>;
 }
 
 const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
-  const { toggleTask } = useData();
   
-  // Get pending tasks only
-  const pendingTasks = useMemo(() => {
-    return tasks.filter(task => !task.completed);
+  // Get pending tasks only, sorted by latest first, limited to 12
+  const displayTasks = useMemo(() => {
+    return tasks
+      .filter(task => !task.completed)
+      .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
+      .slice(0, 12);
   }, [tasks]);
+
+  const totalPendingTasks = tasks.filter(task => !task.completed).length;
+  const hasMore = totalPendingTasks > 12;
   
   // Handle clicking on a task item - show popup
   const handleTaskClick = useCallback((task: Task) => {
     showPopupFor(task);
   }, [showPopupFor]);
   
-  // Handle task completion
-  const handleTaskCompletion = useCallback(async (task: Task): Promise<void> => {
+  // ✅ FIXED: Task completion that triggers dashboard refresh
+  const handleTaskCompletion = useCallback(async (e: React.MouseEvent, task: Task): Promise<void> => {
+    e.stopPropagation(); // Prevent item click
+    
     if (task.isProcessing) return;
     
     try {
-      const updatedTask = await toggleTask(task);
-      onToggleTask(updatedTask);
+      console.log(`🎯 TasksCard: Completing task ${task.id}`);
+      
+      // Use the parent's toggle handler
+      await onToggleTask(task);
+      
+      // ✅ IMMEDIATE: Scroll to completed tasks card after a brief delay
+      setTimeout(() => {
+        const completedCard = document.querySelector('.completed-tasks-card');
+        if (completedCard) {
+          completedCard.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center'
+          });
+          
+          // Add highlight effect
+          completedCard.classList.add('highlight-flash');
+          setTimeout(() => {
+            completedCard.classList.remove('highlight-flash');
+          }, 2000);
+        }
+      }, 100);
+      
+      console.log(`✅ TasksCard: Task ${task.id} completed successfully`);
+      
     } catch (error) {
       console.error(`❌ Error toggling task ${task.id}:`, error);
     }
-  }, [onToggleTask, toggleTask]);
-  
-  // Handle deletion - removed since we removed delete buttons
-  const handleDeleteTask = useCallback(async (task: Task) => {
-    console.log("Delete task:", task.id);
-  }, []);
-  
-  // Handle completion from popup
-  const handleCompleteFromPopup = useCallback(async (taskId: number): Promise<void> => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    
-    await handleTaskCompletion(task);
-    closePopup();
-  }, [tasks, handleTaskCompletion, closePopup]);
+  }, [onToggleTask]);
 
   return (
     <div className="dashboard-card tasks-card">
       <div className="dashboard-card-header">
-        <h2>Today's Tasks ({pendingTasks.length})</h2>
+        <h2>Today's Tasks ({totalPendingTasks})</h2>
         <button
           className="card-action-btn"
           onClick={() => navigate("/calendar/day?tab=tasks")}
@@ -66,33 +80,63 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         </button>
       </div>
 
-      {pendingTasks.length > 0 ? (
-        <div className="tasks-virtualized-container">
-          <VirtualizedTaskList
-            tasks={pendingTasks}
-            onTaskClick={handleTaskClick}
-            onCompleteTask={handleTaskCompletion}
-            onDeleteTask={handleDeleteTask}
-          />
-        </div>
-      ) : (
-        <div className="empty-list-message">
-          <div className="empty-icon">📝</div>
-          <p>No pending tasks for today</p>
-          <button
-            className="action-btn small"
-            onClick={() => navigate("/calendar/day?tab=tasks")}
-          >
-            Add Task
-          </button>
-        </div>
-      )}
+      <div className="dashboard-card-content">
+        {displayTasks.length > 0 ? (
+          <>
+            <div className="dashboard-list">
+              {displayTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="dashboard-item task"
+                  onClick={() => handleTaskClick(task)}
+                >
+                  <div
+                    className="item-status"
+                    onClick={(e) => handleTaskCompletion(e, task)}
+                    title="Mark as completed"
+                  >
+                    ○
+                  </div>
+                  
+                  <div className="item-content">
+                    <div className="item-title">{task.title}</div>
+                    <div className="item-meta">
+                      {task.task_time && (
+                        <span className="item-time">{task.task_time}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {hasMore && (
+              <button
+                className="view-more-btn"
+                onClick={() => navigate("/calendar/day?tab=tasks")}
+              >
+                View All {totalPendingTasks} Tasks →
+              </button>
+            )}
+          </>
+        ) : (
+          <div className="dashboard-empty">
+            <div className="dashboard-empty-icon">📝</div>
+            <p>No pending tasks for today</p>
+            <button
+              className="action-btn"
+              onClick={() => navigate("/calendar/day?tab=tasks")}
+            >
+              Add Task
+            </button>
+          </div>
+        )}
+      </div>
 
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}
           onClose={closePopup}
-          onComplete={handleCompleteFromPopup}
           container={document.body}
         />
       )}

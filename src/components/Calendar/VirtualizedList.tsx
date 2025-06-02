@@ -1,7 +1,7 @@
 import React from "react";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import "./WeekView.css";
+import "./VirtualizedList.css";
 
 // Helper function to truncate titles to max 10 words
 const truncateTitle = (title: string, maxWords: number = 10): string => {
@@ -24,14 +24,14 @@ const ScrollableContainer: React.FC<{ children: React.ReactNode }> = ({ children
 export const VirtualizedEventList: React.FC<{
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
-  onDeleteEvent: (event: CalendarEvent) => void;
+  onDeleteEvent?: (event: CalendarEvent) => void;
 }> = React.memo(({ events, onEventClick }) => {
   return (
     <ScrollableContainer>
       {events.map((event) => (
         <div
           key={event.id}
-          className={`week-event-item ${event.type.toLowerCase()}`}
+          className={`week-event-item ${event.type?.toLowerCase() || ''}`}
           onClick={() => onEventClick(event)}
         >
           {event.event_time && <div className="week-event-time">{event.event_time}</div>}
@@ -44,13 +44,31 @@ export const VirtualizedEventList: React.FC<{
   );
 });
 
-// Virtualized Task List Component
+// ✅ FIXED: Virtualized Task List Component with proper onCompleteTask handling
 export const VirtualizedTaskList: React.FC<{
   tasks: Task[];
   onTaskClick: (task: Task) => void;
   onCompleteTask: (task: Task) => void;
-  onDeleteTask: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void;
 }> = React.memo(({ tasks, onTaskClick, onCompleteTask }) => {
+  
+  // ✅ FIXED: Handle task completion with proper error handling
+  const handleTaskComplete = (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    
+    // ✅ VALIDATION: Check if onCompleteTask is actually a function
+    if (typeof onCompleteTask !== 'function') {
+      console.error('❌ VirtualizedTaskList: onCompleteTask is not a function', typeof onCompleteTask);
+      return;
+    }
+    
+    try {
+      onCompleteTask(task);
+    } catch (error) {
+      console.error('❌ VirtualizedTaskList: Error in onCompleteTask:', error);
+    }
+  };
+
   return (
     <ScrollableContainer>
       {tasks.map((task) => (
@@ -61,10 +79,8 @@ export const VirtualizedTaskList: React.FC<{
         >
           <div
             className="task-status"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCompleteTask(task);
-            }}
+            onClick={(e) => handleTaskComplete(e, task)}
+            title={task.completed ? "Mark as incomplete" : "Mark as completed"}
           >
             {task.completed ? "✓" : "○"}
           </div>
@@ -77,3 +93,6 @@ export const VirtualizedTaskList: React.FC<{
     </ScrollableContainer>
   );
 });
+
+VirtualizedTaskList.displayName = "VirtualizedTaskList";
+VirtualizedEventList.displayName = "VirtualizedEventList";

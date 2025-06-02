@@ -1,4 +1,4 @@
-/* Completely isolated CSS for CompletedTasks with cpt- prefix */
+/* CompletedTasksCard following DiaryCard gentle hover pattern */
 
 @keyframes fadeIn {
   from {
@@ -82,6 +82,7 @@
   align-items: center;
 }
 
+/* ✅ GENTLE: Follow DiaryCard hover pattern for buttons */
 .cpt-back-btn {
   padding: 8px 16px;
   background: rgba(30, 30, 50, 0.6);
@@ -93,13 +94,13 @@
   align-items: center;
   gap: 8px;
   font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease; /* ✅ GENTLE TIMING LIKE DIARY CARD */
 }
 
 .cpt-back-btn:hover {
-  background: rgba(40, 40, 60, 0.7);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(30, 30, 50, 0.6); /* ✅ GENTLE LIKE DIARY CARD */
+  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ✅ SOFT */
 }
 
 .cpt-filter {
@@ -129,12 +130,12 @@
   justify-content: center;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease; /* ✅ GENTLE TIMING */
 }
 
 .cpt-clear-btn:hover {
   background: rgba(255, 77, 77, 0.2);
-  transform: rotate(90deg);
+  transform: scale(1.05); /* ✅ GENTLE SCALE LIKE DIARY CARD */
 }
 
 .cpt-week-range {
@@ -188,16 +189,45 @@
   background: rgba(25, 25, 45, 0.4);
   border-radius: 12px;
   border-left: 3px solid rgba(74, 222, 128, 0.6);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease; /* ✅ GENTLE TIMING LIKE DIARY CARD */
   animation: slideIn 0.3s ease-out;
   animation-fill-mode: both;
   cursor: pointer;
 }
 
+/* ✅ GENTLE: Follow DiaryCard hover pattern */
 .cpt-task-item:hover {
-  background: rgba(35, 35, 55, 0.6);
-  transform: translateX(5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(30, 30, 50, 0.6); /* ✅ SAME AS DIARY CARD */
+  transform: translateX(2px); /* ✅ SAME AS DIARY CARD */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ✅ SAME AS DIARY CARD */
+}
+
+/* ✅ GENTLE: Dashboard item hover for completed tasks */
+.completed-tasks-card .dashboard-item:hover {
+  background: rgba(30, 30, 50, 0.6);
+  transform: translateX(2px); /* ✅ SAME AS DIARY CARD */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ✅ SAME AS DIARY CARD */
+  border-left-color: rgba(74, 222, 128, 0.6);
+  transition: all 0.2s ease; /* ✅ SAME AS DIARY CARD */
+}
+
+.completed-tasks-card .item-status:hover {
+  transform: scale(1.05); /* ✅ GENTLE LIKE DIARY CARD */
+  border-color: rgba(74, 222, 128, 0.6);
+  box-shadow: 0 0 4px rgba(74, 222, 128, 0.2); /* ✅ SOFT */
+  background: rgba(74, 222, 128, 0.05); /* ✅ SUBTLE */
+}
+
+.completed-tasks-card .card-action-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2); /* ✅ SOFT */
+}
+
+.completed-tasks-card .view-more-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.1); /* ✅ SOFT */
 }
 
 .cpt-task-status {
@@ -210,7 +240,7 @@
   background: rgba(74, 222, 128, 0.15);
   border: 2px solid rgba(74, 222, 128, 0.5);
   color: rgba(74, 222, 128, 0.9);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease; /* ✅ GENTLE TIMING LIKE DIARY CARD */
   flex-shrink: 0;
   font-size: 1rem;
   cursor: pointer;
@@ -218,8 +248,8 @@
 
 .cpt-task-status:hover {
   background: rgba(74, 222, 128, 0.25);
-  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.1);
-  transform: scale(1.1);
+  transform: scale(1.05); /* ✅ GENTLE SCALE LIKE DIARY CARD */
+  box-shadow: 0 0 4px rgba(74, 222, 128, 0.2); /* ✅ SOFT GLOW */
 }
 
 .cpt-task-content {
@@ -288,6 +318,7 @@
   margin-bottom: 24px;
 }
 
+/* ✅ GENTLE: Action button hover like diary card */
 .cpt-action-btn {
   padding: 12px 24px;
   background: rgba(74, 222, 128, 0.2);
@@ -296,13 +327,13 @@
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease; /* ✅ GENTLE TIMING LIKE DIARY CARD */
 }
 
 .cpt-action-btn:hover {
   background: rgba(74, 222, 128, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(74, 222, 128, 0.15);
+  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.15); /* ✅ SOFT */
 }
 
 .cpt-loading {
@@ -313,10 +344,8 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* CompletedTasksCard-specific styles, inheriting general styling from Dashboard.css */
-
+/* CompletedTasksCard-specific styles */
 .completed-tasks-card {
-  /* Only override what's different from the base dashboard-card */
   background: linear-gradient(
     135deg,
     rgba(20, 35, 25, 0.85) 0%,
@@ -324,7 +353,6 @@
   );
 }
 
-/* Completed task specifics */
 .completed-status {
   width: 24px;
   height: 24px;
@@ -358,10 +386,9 @@
 
 .clear-completed:hover {
   background: rgba(255, 77, 77, 0.2);
-  transform: translateY(-2px);
+  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
 }
 
-/* Empty state specific to CompletedTasksCard */
 .completed-empty {
   color: rgba(74, 222, 128, 0.6);
 }

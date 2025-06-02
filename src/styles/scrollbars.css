@@ -24,6 +24,41 @@
   background: transparent;
 }
 
+/* ✅ SLOWER SCROLLING: Make all scrolling slower and smoother */
+* {
+  scroll-behavior: smooth !important;
+}
+
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth !important;
+  /* ✅ SLOWER: Reduce scroll sensitivity */
+  scroll-padding: 20px;
+}
+
+body {
+  scroll-behavior: smooth !important;
+}
+
+/* ✅ SLOWER: Force smooth scrolling on all scrollable containers */
+.day-view-content,
+.dashboard-list,
+.virtualized-scroll-container,
+.notifications-list,
+.tasks-list,
+.events-list,
+.week-day-content,
+.month-view-container,
+.diary-entries-container,
+.chat-messages,
+.detail-popup,
+.sidebar-content {
+  scroll-behavior: smooth !important;
+  /* ✅ SLOWER: Reduce scroll jump distance */
+  overscroll-behavior: contain;
+}
+
 /* Component-specific scrollbar styling */
 
 /* Calendar - DayView */
@@ -62,7 +97,7 @@
 
 /* Diary - writing area should NOT have a scrollbar */
 .diary-textarea {
-  overflow: hidden; /* Remove scrollbars from textarea */
+  overflow: hidden;
   resize: none;
 }
 
@@ -106,7 +141,7 @@
 
 /* Week view */
 .week-days::-webkit-scrollbar {
-  height: 8px; /* For horizontal scrolling */
+  height: 8px;
 }
 
 .week-day-content::-webkit-scrollbar {
@@ -117,33 +152,42 @@
   background: rgba(100, 108, 255, 0.3);
 }
 
-/* Prevent scrollbar jumps */
-html {
-  overflow-y: scroll; /* Always show scrollbar to prevent layout shifts */
-  scrollbar-gutter: stable; /* Reserve space for scrollbar */
-}
-
-/* Add smooth transitions to reduce visual flickering */
+/* ✅ SLOWER: Enhanced smooth transitions for slower feel */
 .week-day, .month-day, .day-view-container, .calendar-container {
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out; /* ✅ SLOWER: doubled transition time */
 }
 
-/* Optimize rendering using hardware acceleration on critical elements */
+/* ✅ SLOWER: Optimize for smoother scrolling */
 .week-days-grid, .month-days-grid, .day-view-content {
   transform: translateZ(0);
   backface-visibility: hidden;
-  will-change: transform, opacity;
+  will-change: scroll-position; /* ✅ OPTIMIZED: for scroll performance */
 }
 
-/* Dashboard cards and items */
+/* ✅ SLOWER: Dashboard cards with slower transitions */
 .dashboard-card, .task-item, .event-item {
   contain: content;
   will-change: transform;
-  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  transition: transform 0.5s ease-out, box-shadow 0.5s ease-out; /* ✅ SLOWER: increased duration */
 }
 
 /* Animation content containment for performance */
 .loading-spinner {
   will-change: transform;
   contain: strict;
+}
+
+/* ✅ SLOWER: Force Firefox to scroll slower too */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.4) rgba(30, 30, 50, 0.2);
+}
+
+/* ✅ SLOWER: Additional scroll behavior controls */
+.dashboard-container,
+.calendar-container,
+.main-content,
+.app-container {
+  scroll-behavior: smooth !important;
+  overscroll-behavior: contain;
 }

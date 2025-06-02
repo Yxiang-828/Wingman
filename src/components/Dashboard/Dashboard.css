@@ -1,4 +1,4 @@
-/* Enhanced Dashboard Styling with your existing theme */
+/* Enhanced Dashboard Styling with gentle hover effects like diary card */
 
 /* Main dashboard container */
 .dashboard-container {
@@ -24,8 +24,8 @@
   background: linear-gradient(135deg, rgba(22, 22, 30, 0.85) 0%, rgba(18, 18, 28, 0.9) 100%);
   border-radius: 16px;
   padding: 1.5rem;
-  height: 350px; /* ✅ FIXED HEIGHT */
-  overflow: hidden; /* ✅ HIDE OVERFLOW ON PARENT */
+  height: 400px;
+  overflow: hidden;
   position: relative;
   border: 1px solid rgba(100, 108, 255, 0.15);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -34,17 +34,13 @@
   flex-direction: column;
 }
 
-/* ✅ NEW: Ensure content area is scrollable */
-.dashboard-card > *:last-child {
-  flex: 1;
-  min-height: 0; /* ✅ ALLOW FLEX SHRINKING */
-  overflow: hidden; /* ✅ PARENT MANAGES OVERFLOW */
-}
-
+/* ✅ GENTLE: Card hover effects like diary card */
 .dashboard-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25), 0 0 20px var(--glow-primary);
-  border-color: rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+  border-color: rgba(100, 108, 255, 0.25);
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 /* Card header styling */
@@ -55,6 +51,7 @@
   margin-bottom: 1.2rem;
   padding-bottom: 0.8rem;
   border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
 }
 
 .dashboard-card-header h2 {
@@ -67,7 +64,7 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Card action button */
+/* ✅ GENTLE: Action button hover like diary card */
 .card-action-btn {
   background: rgba(100, 108, 255, 0.15);
   color: var(--accent-primary);
@@ -77,13 +74,287 @@
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
+  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
 }
 
 .card-action-btn:hover {
   background: rgba(100, 108, 255, 0.25);
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+/* ✅ FIXED: Dashboard card content area - handles scrollbar properly */
+.dashboard-card-content {
+  flex: 1;
+  min-height: 0; /* ✅ CRITICAL: Allow flex shrinking */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* ✅ RESERVE SPACE: Add padding-right to account for potential scrollbar */
+  padding-right: 2px;
+}
+
+/* ✅ FIXED: Virtualized container styling for dashboard cards */
+.tasks-virtualized-container,
+.events-virtualized-container,
+.completed-tasks-container {
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ✅ FIXED: List containers with proper scrollbar handling */
+.dashboard-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.3) transparent;
+  scroll-behavior: smooth;
+  /* ✅ CRITICAL: Add stable gutter to prevent layout shift */
+  scrollbar-gutter: stable;
+  /* ✅ RESERVE SPACE: Account for scrollbar width */
+  padding-right: 8px;
+}
+
+/* ✅ HOVER: Only show scrollbar on hover/active */
+.dashboard-card:not(:hover) .dashboard-list {
+  overflow-y: hidden;
+  padding-right: 0.5rem; /* Reset padding when no scrollbar */
+}
+
+.dashboard-card:hover .dashboard-list {
+  overflow-y: auto;
+  padding-right: 8px; /* Account for scrollbar when visible */
+}
+
+.dashboard-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-list::-webkit-scrollbar-track {
+  background: rgba(20, 20, 35, 0.3);
+  border-radius: 3px;
+}
+
+.dashboard-list::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.4);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.dashboard-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 108, 255, 0.6);
+}
+
+/* ✅ COMPACT: Dashboard item styling with proper width handling */
+.dashboard-item {
+  background: rgba(25, 25, 40, 0.6);
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  border-left: 3px solid rgba(100, 108, 255, 0.5);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  /* ✅ PREVENT OVERFLOW: Ensure content doesn't exceed container */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ✅ GENTLE: Dashboard item hover like diary card */
+.dashboard-item:hover {
+  background: rgba(30, 30, 50, 0.6);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left-color: rgba(100, 108, 255, 0.7);
+}
+
+.dashboard-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Task-specific styling */
+.dashboard-item.task {
+  border-left-color: rgba(100, 108, 255, 0.6);
+}
+
+.dashboard-item.task.completed {
+  opacity: 0.8;
+  border-left-color: rgba(74, 222, 128, 0.6);
+}
+
+/* Event-specific styling */
+.dashboard-item.event {
+  border-left-color: rgba(147, 51, 234, 0.6);
+}
+
+.dashboard-item.event.meeting {
+  border-left-color: rgba(100, 108, 255, 0.6);
+}
+
+.dashboard-item.event.personal {
+  border-left-color: rgba(74, 222, 128, 0.6);
+}
+
+.dashboard-item.event.reminder {
+  border-left-color: rgba(248, 113, 113, 0.6);
+}
+
+/* ✅ GENTLE: Status indicator hover like diary card */
+.item-status {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(100, 108, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(20, 20, 35, 0.5);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.item-status:hover {
+  transform: scale(1.05);
+  border-color: rgba(100, 108, 255, 0.8);
+  box-shadow: 0 0 4px rgba(100, 108, 255, 0.2);
+  background: rgba(100, 108, 255, 0.1);
+}
+
+.item-status.completed {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #4ade80;
+}
+
+.item-status.completed:hover {
+  transform: scale(1.05);
+  border-color: rgba(74, 222, 128, 0.8);
+  box-shadow: 0 0 4px rgba(74, 222, 128, 0.2);
+  background: rgba(74, 222, 128, 0.3);
+}
+
+/* ✅ FIXED: Item content styling with proper text overflow */
+.item-content {
+  flex: 1;
+  min-width: 0; /* ✅ CRITICAL: Allow text to be truncated */
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  /* ✅ PREVENT OVERFLOW: Ensure content doesn't exceed available space */
+  overflow: hidden;
+}
+
+.item-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.2;
+  margin: 0;
+  /* ✅ PREVENT OVERFLOW: Truncate long titles */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.item-title.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.item-meta {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  line-height: 1;
+  /* ✅ PREVENT OVERFLOW: Allow wrapping if needed */
+  flex-wrap: wrap;
+}
+
+.item-time {
+  background: rgba(20, 20, 35, 0.6);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+}
+
+.item-type {
+  background: rgba(100, 108, 255, 0.15);
+  color: rgba(100, 108, 255, 0.8);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+}
+
+/* ✅ GENTLE: Completed tasks flash effect - more controlled */
+.highlight-flash {
+  animation: gentleHighlightFlash 2s ease-out;
+  border-color: rgba(74, 222, 128, 0.6) !important;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.2) !important;
+}
+
+@keyframes gentleHighlightFlash {
+  0% {
+    background: rgba(74, 222, 128, 0.12);
+    border-color: rgba(74, 222, 128, 0.6);
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.2);
+  }
+  25% {
+    background: rgba(74, 222, 128, 0.08);
+    border-color: rgba(74, 222, 128, 0.5);
+    box-shadow: 0 0 6px rgba(74, 222, 128, 0.15);
+  }
+  50% {
+    background: rgba(74, 222, 128, 0.05);
+    border-color: rgba(74, 222, 128, 0.4);
+    box-shadow: 0 0 4px rgba(74, 222, 128, 0.1);
+  }
+  100% {
+    background: rgba(25, 25, 40, 0.6);
+    border-color: rgba(74, 222, 128, 0.6);
+    box-shadow: none;
+  }
+}
+
+/* ✅ GENTLE: View more button hover like diary card */
+.view-more-btn {
+  background: rgba(100, 108, 255, 0.15);
+  color: rgba(100, 108, 255, 0.9);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+  text-align: center;
+  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+}
+
+.view-more-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
 /* Summary card styles */
@@ -99,6 +370,7 @@
   margin-top: 1rem;
 }
 
+/* ✅ GENTLE: Stat item hover like diary card */
 .stat-item {
   background: rgba(15, 15, 28, 0.7);
   border-radius: 12px;
@@ -110,10 +382,10 @@
 }
 
 .stat-item:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-2px) scale(1.01);
   background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 15px var(--glow-primary);
-  border-color: rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  border-color: rgba(100, 108, 255, 0.25);
 }
 
 .stat-number {
@@ -145,7 +417,6 @@
   border-left: 4px solid var(--accent-primary);
 }
 
-
 .quote-box::before {
   content: '"';
   font-size: 4rem;
@@ -156,384 +427,53 @@
   font-family: Georgia, serif;
 }
 
-/* Task list styling */
-.tasks-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  flex: 1;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
-  min-height: 0; /* ✅ CRITICAL */
-}
-
-.task-item {
-  background: rgba(20, 20, 35, 0.5);
-  border-radius: 10px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-  border-left: 3px solid var(--accent-primary);
-  cursor: pointer;
-  min-height: 60px;
-  position: relative;
-}
-
-/* ✅ FIXED: Virtualized container styling for dashboard cards */
-.tasks-virtualized-container,
-.events-virtualized-container {
-  flex: 1;
-  min-height: 0; /* ✅ CRITICAL: Allow flex shrinking */
-  border-radius: 8px;
-  overflow: hidden; /* ✅ Hide parent overflow */
-  display: flex;
-  flex-direction: column;
-  position: relative; /* ✅ FOR PROPER POSITIONING */
-}
-
-/* ✅ ENSURE: Dashboard cards can scroll properly */
-.dashboard-card {
-  background: linear-gradient(135deg, rgba(22, 22, 30, 0.85) 0%, rgba(18, 18, 28, 0.9) 100%);
-  border-radius: 16px;
-  padding: 1.5rem;
-  height: 350px; /* ✅ FIXED HEIGHT */
-  overflow: hidden; /* ✅ HIDE OVERFLOW ON PARENT */
-  position: relative;
-  border: 1px solid rgba(100, 108, 255, 0.15);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-/* ✅ NEW: Ensure content area is scrollable */
-.dashboard-card > *:last-child {
-  flex: 1;
-  min-height: 0; /* ✅ ALLOW FLEX SHRINKING */
-  overflow: hidden; /* ✅ PARENT MANAGES OVERFLOW */
-}
-
-/* ✅ WEEK VIEW ITEMS: Override for dashboard context */
-.tasks-virtualized-container .week-task-item,
-.events-virtualized-container .week-event-item {
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-height: 50px; /* ✅ CONSISTENT HEIGHT */
-  max-height: none; /* ✅ ALLOW CONTENT HEIGHT */
-}
-
-.tasks-virtualized-container .week-task-item:hover,
-.events-virtualized-container .week-event-item:hover {
-  transform: translateX(4px);
-  background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* ✅ FALLBACK: Ensure regular task lists also scroll */
-.tasks-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  flex: 1;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
-  min-height: 0; /* ✅ CRITICAL */
-}
-
-.task-item:hover {
-  transform: translateX(6px);
-  background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.task-item.completed {
-  opacity: 0.7;
-  border-left-color: rgba(74, 222, 128, 0.7);
-}
-
-.task-item.completed .task-title {
-  text-decoration: line-through;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.task-status {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid rgba(100, 108, 255, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: rgba(20, 20, 35, 0.5);
-  transition: all 0.2s ease;
-}
-
-.task-item.completed .task-status {
-  background: rgba(74, 222, 128, 0.2);
-  border-color: rgba(74, 222, 128, 0.5);
-  color: #4ade80;
-}
-
-.task-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  justify-content: center;
-}
-
-.task-title {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.4;
-  margin: 0 0 0.25rem 0;
-  word-wrap: break-word;
-}
-
-.task-meta {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.task-time {
-  background: rgba(15, 15, 25, 0.5);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-}
-
-.task-date {
-  background: rgba(15, 15, 25, 0.5);
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-}
-
-/* Priority indicators */
-.task-priority {
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.priority-urgent {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-}
-
-.priority-high {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fbbf24;
-}
-
-.priority-medium {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-}
-
-/* Event list styling */
-.events-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.event-item {
-  background: rgba(20, 20, 35, 0.5);
-  border-radius: 10px;
-  padding: 1rem 1.2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-  cursor: pointer;
-}
-
-.event-item:hover {
-  transform: translateX(6px);
-  background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.event-type {
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-
-.event-type.meeting {
-  background: rgba(100, 108, 255, 0.15);
-  color: #b8baff;
-  border-left: 3px solid #646cff;
-}
-
-.event-type.personal {
-  background: rgba(74, 222, 128, 0.15);
-  color: #a7f3c1;
-  border-left: 3px solid #4ade80;
-}
-
-.event-type.reminder {
-  background: rgba(248, 113, 113, 0.15);
-  color: #ffc0c0;
-  border-left: 3px solid #f87171;
-}
-
-.event-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.event-title {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.event-time {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  background: rgba(15, 15, 25, 0.5);
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  width: fit-content;
-}
-
-/* Diary entry styling */
-.entries-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.entry-item {
-  background: rgba(20, 20, 35, 0.5);
-  border-radius: 10px;
-  padding: 1rem 1.2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-  border-left: 3px solid var(--accent-tertiary);
-  cursor: pointer;
-  min-height: 80px;
-}
-
-.entry-item:hover {
-  transform: translateY(-4px);
-  background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.entry-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.entry-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.entry-date {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  background: rgba(15, 15, 25, 0.5);
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-}
-
-.entry-preview {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.4;
-}
-
-/* Empty state styling */
-.empty-list-message {
+/* Empty state */
+.dashboard-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.5rem 1rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
-  height: 100%;
+  color: rgba(255, 255, 255, 0.6);
+  min-height: 120px;
+  flex: 1;
 }
 
-.empty-list-message p {
-  margin-bottom: 1.5rem;
-  font-style: italic;
+.dashboard-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.7;
 }
 
-.empty-list-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  opacity: 0.3;
+.dashboard-empty p {
+  margin: 0 0 0.8rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
-/* Loading state */
-.dashboard-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
-  gap: 1.5rem;
+/* ✅ GENTLE: Action button hover like diary card */
+.action-btn {
+  background: rgba(100, 108, 255, 0.15);
+  color: rgba(100, 108, 255, 0.9);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(100, 108, 255, 0.2);
-  border-top-color: var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.action-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* Scroll behavior for dashboard */
+.dashboard-container {
+  scroll-behavior: smooth;
 }
 
 /* Custom scrollbar styling */
@@ -548,38 +488,104 @@
 .tasks-list::-webkit-scrollbar-track,
 .events-list::-webkit-scrollbar-track,
 .entries-list::-webkit-scrollbar-track {
-  background: rgba(15, 15, 25, 0.2);
-  border-radius: 10px;
+  background: rgba(20, 20, 35, 0.3);
+  border-radius: 3px;
 }
 
 .dashboard-card::-webkit-scrollbar-thumb,
 .tasks-list::-webkit-scrollbar-thumb,
 .events-list::-webkit-scrollbar-thumb,
 .entries-list::-webkit-scrollbar-thumb {
-  background: rgba(100, 108, 255, 0.3);
-  border-radius: 10px;
+  background: rgba(100, 108, 255, 0.4);
+  border-radius: 3px;
 }
 
 .dashboard-card::-webkit-scrollbar-thumb:hover,
 .tasks-list::-webkit-scrollbar-thumb:hover,
 .events-list::-webkit-scrollbar-thumb:hover,
 .entries-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 108, 255, 0.5);
+  background: rgba(100, 108, 255, 0.6);
 }
 
 /* Media queries for responsiveness */
 @media (max-width: 1200px) {
   .dashboard {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
   .dashboard {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
-  
-  .summary-stats {
-    grid-template-columns: 1fr;
+
+  .dashboard-card {
+    padding: 1rem;
+    height: 350px;
   }
+
+  .dashboard-card-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-item {
+    padding: 0.5rem 0.6rem;
+    min-height: 40px;
+    gap: 0.5rem;
+  }
+
+  .item-title {
+    font-size: 0.8rem;
+  }
+
+  .item-meta {
+    font-size: 0.7rem;
+  }
+
+  .item-status {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+  }
+}
+
+/* ✅ REFERENCE: DiaryCard hover pattern - ALL cards should follow this */
+.diary-card .dashboard-item:hover,
+.tasks-card .dashboard-item:hover,
+.events-card .dashboard-item:hover,
+.completed-tasks-card .dashboard-item:hover {
+  background: rgba(30, 30, 50, 0.6);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+/* ✅ CONSISTENT: All status hovers follow diary card pattern */
+.diary-card .item-status:hover,
+.tasks-card .item-status:hover,
+.events-card .item-status:hover,
+.completed-tasks-card .item-status:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 4px rgba(100, 108, 255, 0.2);
+}
+
+/* ✅ CONSISTENT: All button hovers follow diary card pattern */
+.diary-card .card-action-btn:hover,
+.tasks-card .card-action-btn:hover,
+.events-card .card-action-btn:hover,
+.completed-tasks-card .card-action-btn:hover,
+.diary-card .view-more-btn:hover,
+.tasks-card .view-more-btn:hover,
+.events-card .view-more-btn:hover,
+.completed-tasks-card .view-more-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+  transition: all 0.2s ease;
 }
