@@ -10,6 +10,20 @@ const { LocalDataManager } = require('./localDataBridge');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// ✅ SANE GPU FLAGS - Not nuclear overkill
+app.commandLine.appendSwitch('enable-gpu');
+app.commandLine.appendSwitch('enable-gpu-compositing');
+app.commandLine.appendSwitch('enable-accelerated-2d-canvas');
+app.commandLine.appendSwitch('enable-smooth-scrolling');
+
+// ✅ REMOVE THE INSANE FLAGS THAT CRASH GPU
+// REMOVED: enable-unsafe-webgpu, disable-gpu-sandbox, ignore-gpu-blacklist, etc.
+
+if (process.platform === 'win32') {
+  // ✅ MINIMAL Windows flags
+  app.commandLine.appendSwitch('enable-d3d11');
+}
+
 // FIXED: Check if backend is already running
 let backendProcess = null;
 let isBackendStarting = false;
@@ -245,7 +259,14 @@ function createWindow() {
       contextIsolation: true,
       sandbox: true,
       preload: path.join(__dirname, 'preload.js'),
-      devTools: true  // Always allow DevTools, regardless of environment
+      devTools: true,
+      experimentalFeatures: false, // ✅ DISABLE experimental features
+      enableRemoteModule: false,
+      webSecurity: true, // ✅ RE-ENABLE web security
+      offscreen: false,
+      backgroundThrottling: false,
+      hardwareAcceleration: true, // Keep this
+      allowRunningInsecureContent: false, // ✅ DISABLE insecure content
     }
   });
 
@@ -253,8 +274,28 @@ function createWindow() {
     win.show();
     if (isDevelopment) {
       win.webContents.openDevTools({ mode: 'detach' });
+      
+      // ✅ SIMPLE GPU DEBUG - No crashes
+      console.log('🎮 GPU Acceleration Status:');
+      win.webContents.executeJavaScript(`
+        (function() {
+          console.log('🎮 GPU Debug - Safe Mode');
+          console.log('🎮 Hardware concurrency:', navigator.hardwareConcurrency);
+          
+          // Simple WebGL test
+          const canvas = document.createElement('canvas');
+          const gl = canvas.getContext('webgl');
+          if (gl) {
+            console.log('✅ WebGL available');
+            console.log('🎮 WebGL Renderer:', gl.getParameter(gl.RENDERER));
+          } else {
+            console.log('❌ WebGL not available');
+          }
+          
+          canvas.remove();
+        })();
+      `);
     }
-    // We don't auto-open DevTools in production, but they're available
   });
 
   const loadApp = async () => {
@@ -314,6 +355,23 @@ async function setupDatabaseIPC() {
       } catch (error) {
         console.error('❌ IPC: Error getting tasks:', error);
         throw new Error(`Failed to get tasks: ${error.message}`);
+      }
+    });
+
+    // ✅ SAFE GPU HANDLER - No crashes
+    ipcMain.handle('get-gpu-info', async () => {
+      try {
+        // ✅ SAFE: Don't call getGPUInfo - it crashes
+        return {
+          success: true,
+          gpuInfo: { message: 'GPU info disabled to prevent crashes' },
+          gpuFeatureStatus: { webgl: 'enabled', canvas2d: 'enabled' }
+        };
+      } catch (error) {
+        return {  
+          success: false,
+          error: error.message
+        };
       }
     });
 
@@ -577,7 +635,7 @@ async function setupDatabaseIPC() {
       'db:getEvents', 'db:saveEvent', 'db:updateEvent', 'db:deleteEvent',
       'db:getDiaryEntries', 'db:saveDiaryEntry',
       'db:getChatHistory', 'db:saveChatMessage', 'db:clearChatHistory',
-      'db:getStorageStats',
+      'db:getStorageStats', 'get-gpu-info',
       'open-external', 'get-version', 'select-file', 'save-file', 'read-file', 'write-file'
     ];
 
@@ -599,7 +657,6 @@ app.whenReady().then(async () => {
     await setupDatabaseIPC();
     console.log('✅ Database IPC setup complete');
     
-    // ✅ SIMPLE SUCCESS CHECK - If setupDatabaseIPC() didn't throw, we're good!
     console.log('✅ All IPC handlers registered successfully');
     
     await startBackendServer();

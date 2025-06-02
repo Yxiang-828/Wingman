@@ -66,3 +66,24 @@ export const getCurrentTimeString = (): string => {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes}`;
 };
+
+/**
+ * ✅ NEW: Validate if a time string is in the future today
+ */
+export const isTimeInFuture = (timeStr: string): boolean => {
+  if (!timeStr) return false;
+  
+  const currentTime = getCurrentTimeString();
+  return timeStr > currentTime;
+};
+
+/**
+ * ✅ NEW: Get next available time slot (current time + 30 minutes)
+ */
+export const getNextAvailableTime = (): string => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + 30);
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};

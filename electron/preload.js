@@ -68,6 +68,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     saveFile: (options) => ipcRenderer.invoke('save-file', options),
     readFile: (filePath) => ipcRenderer.invoke('read-file', filePath),
     writeFile: (filePath, data) => ipcRenderer.invoke('write-file', filePath, data)
+  },
+
+  // ✅ ADD: GPU information
+  gpu: {
+    getInfo: () => ipcRenderer.invoke('get-gpu-info'),
   }
 });
 

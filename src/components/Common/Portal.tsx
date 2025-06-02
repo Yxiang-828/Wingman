@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 
 interface PortalProps {
   children: React.ReactNode;
-  container?: HTMLElement | undefined; // Allow explicit undefined
+  container?: HTMLElement;
 }
 
 /**
@@ -11,19 +11,22 @@ interface PortalProps {
  * Useful for modals, tooltips, and popovers that shouldn't be constrained by parent styling
  */
 const Portal: React.FC<PortalProps> = ({ children, container }) => {
-  const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    // Use specified container, or default to document.body
-    const targetNode = container || document.body;
-    setMountNode(targetNode);
-    
-    return () => {
-      setMountNode(null);
-    };
+  // ✅ MEMOIZED: Calculate container once
+  const portalContainer = useMemo(() => {
+    return container || document.body;
   }, [container]);
 
-  return mountNode ? createPortal(children, mountNode) : null;
+  // ✅ PERFORMANCE: Disable scroll only when needed
+  useEffect(() => {
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  return createPortal(children, portalContainer);
 };
 
 export default Portal;

@@ -1,708 +1,875 @@
-.notifications-container {
+.mission-control-container {
   max-width: 1000px;
   margin: 0 auto;
   padding: 1rem;
   min-height: 100vh;
+  background: radial-gradient(ellipse at center, rgba(15, 20, 35, 0.9) 0%, rgba(8, 12, 22, 0.95) 100%);
 }
 
-/* ✅ ENHANCED: Gaming-style header */
-.notifications-header {
+/* ✅ REVAMPED: Mission control header with new color scheme */
+.mission-control-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: linear-gradient(
-    135deg,
-    rgba(100, 108, 255, 0.1),
-    rgba(147, 51, 234, 0.1)
-  );
-  border-radius: 16px;
-  border: 1px solid rgba(100, 108, 255, 0.2);
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(20, 28, 45, 0.8), rgba(25, 35, 55, 0.9));
+  border-radius: 20px;
+  border: 2px solid rgba(64, 120, 192, 0.3);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(64, 120, 192, 0.1);
 }
 
-.notifications-header::before {
+.mission-control-header::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(100, 108, 255, 0.1),
-    transparent
-  );
-  animation: scan 3s infinite;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(64, 120, 192, 0.05), transparent);
+  animation: mission-scan 4s infinite linear;
+  z-index: 1;
 }
 
-@keyframes scan {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
+@keyframes mission-scan {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.notifications-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: white;
-  margin: 0;
-  text-shadow: 0 0 20px rgba(100, 108, 255, 0.5);
+.mission-title-section {
   position: relative;
   z-index: 2;
 }
 
-/* ✅ ENHANCED: Gaming-style tabs */
-.notifications-tabs {
+.mission-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #87ceeb;
+  margin: 0;
+  text-shadow: 0 0 30px rgba(135, 206, 235, 0.4);
+  position: relative;
+  z-index: 2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mission-summary {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(64, 120, 192, 0.3);
+  position: relative;
+  z-index: 2;
+  margin-top: 1rem;
+}
+
+.mission-count {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #87ceeb;
+  text-shadow: 0 0 10px rgba(135, 206, 235, 0.5);
+}
+
+/* ✅ REVAMPED: Mission tabs with new color scheme */
+.mission-tabs {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 2rem;
-  background: rgba(20, 20, 35, 0.8);
-  padding: 0.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(100, 108, 255, 0.2);
+  background: rgba(8, 15, 25, 0.9);
+  padding: 0.75rem;
+  border-radius: 16px;
+  border: 2px solid rgba(64, 120, 192, 0.3);
+  overflow-x: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 1px 3px rgba(64, 120, 192, 0.1);
 }
 
-.notifications-tab {
+.mission-tab {
   flex: 1;
-  padding: 1rem 1.5rem;
-  background: transparent;
-  border: none;
+  min-width: 140px;
+  padding: 1.2rem 1.8rem;
+  background: linear-gradient(135deg, rgba(25, 35, 50, 0.8), rgba(20, 30, 45, 0.9));
+  border: 2px solid rgba(64, 120, 192, 0.2);
   color: rgba(255, 255, 255, 0.7);
-  font-weight: 600;
-  border-radius: 8px;
+  font-weight: 700;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-}
-
-.notifications-tab:hover {
-  color: white;
-  background: rgba(100, 108, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.notifications-tab.active {
-  background: linear-gradient(
-    135deg,
-    rgba(100, 108, 255, 0.2),
-    rgba(147, 51, 234, 0.2)
-  );
-  color: white;
-  border: 1px solid rgba(100, 108, 255, 0.3);
-  box-shadow: 0 4px 16px rgba(100, 108, 255, 0.2);
-}
-
-.notifications-count {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 0.3rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  min-width: 24px;
-  text-align: center;
-}
-
-.notifications-count.failed {
-  background: rgba(255, 77, 77, 0.3);
-  color: #ffb5b5;
-  box-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
-  animation: pulse-danger 2s infinite;
-}
-
-@keyframes pulse-danger {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-/* ✅ ENHANCED: Notification items with mission-style design */
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  background: rgba(25, 25, 45, 0.6);
-  border-radius: 12px;
-  border-left: 4px solid transparent;
-  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
-.notification-item::before {
+.mission-tab:hover {
+  background: linear-gradient(135deg, rgba(45, 65, 90, 0.9), rgba(35, 55, 80, 0.95));
+  border-color: rgba(64, 120, 192, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(64, 120, 192, 0.2);
+}
+
+.mission-tab.active {
+  background: linear-gradient(135deg, rgba(64, 120, 192, 0.3), rgba(50, 100, 160, 0.4));
+  border-color: rgba(64, 120, 192, 0.8);
+  color: #87ceeb;
+  box-shadow: 0 8px 25px rgba(64, 120, 192, 0.3), inset 0 2px 10px rgba(64, 120, 192, 0.2);
+  position: relative;
+}
+
+.mission-tab.active::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.03) 50%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background: linear-gradient(45deg, rgba(64, 120, 192, 0.1), rgba(135, 206, 235, 0.1));
+  border-radius: 10px;
+  animation: mission-glow 2s ease-in-out infinite alternate;
 }
 
-.notification-item:hover::before {
-  opacity: 1;
+@keyframes mission-glow {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
-.notification-item:hover {
-  transform: translateX(5px);
-  border-left-color: rgba(100, 108, 255, 0.8);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.notification-item.task {
-  border-left-color: rgba(100, 108, 255, 0.6);
-}
-
-.notification-item.event {
-  border-left-color: rgba(147, 51, 234, 0.6);
-}
-
-/* ✅ ENHANCED: Failed task styling */
-.notification-item.failed {
-  border-left-color: rgba(255, 77, 77, 0.8);
-  background: rgba(255, 77, 77, 0.05);
-  animation: failed-glow 2s infinite;
-}
-
-.notification-item.failed:hover {
-  background: rgba(255, 77, 77, 0.1);
-  box-shadow: 0 8px 24px rgba(255, 77, 77, 0.3);
-}
-
-.notification-icon.failed {
-  background: rgba(255, 77, 77, 0.2);
-  color: #ff6b6b;
-  border: 2px solid rgba(255, 77, 77, 0.5);
-  animation: shake 0.5s infinite;
-}
-
-.failed-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  padding: 0.3rem 0.6rem;
-  background: rgba(255, 77, 77, 0.1);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 77, 77, 0.3);
-}
-
-.failed-text {
-  font-size: 0.8rem;
-  color: #ffb5b5;
-  font-weight: 600;
-}
-
-.notification-badge.failed {
-  background: rgba(255, 77, 77, 0.3);
-  color: #ffb5b5;
-  box-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
-  animation: pulse-danger 2s infinite;
-}
-
-@keyframes failed-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 8px rgba(255, 77, 77, 0.1);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(255, 77, 77, 0.3);
-  }
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-2px);
-  }
-  75% {
-    transform: translateX(2px);
-  }
-}
-
-@keyframes pulse-danger {
-  0%,
-  100% {
-    opacity: 1;
-    box-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
-  }
-  50% {
-    opacity: 0.7;
-    box-shadow: 0 0 16px rgba(255, 77, 77, 0.5);
-  }
-}
-
-/* ✅ ENHANCED: Gaming-style icons */
-.notification-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.tab-icon {
   font-size: 1.5rem;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.notification-icon.task {
-  background: linear-gradient(
-    135deg,
-    rgba(100, 108, 255, 0.2),
-    rgba(100, 108, 255, 0.1)
-  );
-  border: 2px solid rgba(100, 108, 255, 0.3);
-}
-
-.notification-icon.event {
-  background: linear-gradient(
-    135deg,
-    rgba(147, 51, 234, 0.2),
-    rgba(147, 51, 234, 0.1)
-  );
-  border: 2px solid rgba(147, 51, 234, 0.3);
-}
-
-.notification-icon.failed {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 77, 77, 0.2),
-    rgba(255, 77, 77, 0.1)
-  );
-  border: 2px solid rgba(255, 77, 77, 0.3);
-  animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-5px);
-  }
-  75% {
-    transform: translateX(5px);
-  }
-}
-
-/* ✅ ENHANCED: Content styling */
-.notification-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notification-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: white;
   margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  filter: drop-shadow(0 0 8px rgba(64, 120, 192, 0.3));
 }
 
-.notification-badge {
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 700;
+.tab-text {
+  font-size: 0.9rem;
+  text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.notification-badge.active {
-  background: rgba(74, 222, 128, 0.2);
-  color: #a7f3c1;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.2);
-}
-
-.notification-badge.failed {
-  background: rgba(255, 77, 77, 0.3);
-  color: #ffb5b5;
-  box-shadow: 0 0 8px rgba(255, 77, 77, 0.3);
-  animation: pulse-danger 2s infinite;
-}
-
-.notification-badge.meeting {
-  background: rgba(100, 108, 255, 0.2);
-  color: #c4c6ff;
-}
-
-.notification-badge.personal {
-  background: rgba(147, 51, 234, 0.2);
-  color: #d8b4fe;
-}
-
-.notification-badge.reminder {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fcd34d;
-}
-
-/* ✅ ENHANCED: Enhanced Countdown Timer */
-.countdown-timer {
-  display: inline-flex;
+.mission-badge {
+  background: linear-gradient(135deg, rgba(64, 120, 192, 0.8), rgba(50, 100, 160, 0.9));
+  color: white;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 800;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
+  justify-content: center;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mission-badge.completed {
+  background: linear-gradient(135deg, rgba(60, 140, 110, 0.8), rgba(45, 120, 95, 0.9));
+  animation: none;
+}
+
+.mission-badge.failed {
+  background: linear-gradient(135deg, rgba(180, 80, 80, 0.8), rgba(160, 65, 65, 0.9));
+  animation: mission-alert 1s ease-in-out infinite alternate;
+}
+
+@keyframes mission-alert {
+  0% { box-shadow: 0 0 5px rgba(180, 80, 80, 0.5); }
+  100% { box-shadow: 0 0 15px rgba(180, 80, 80, 0.8); }
+}
+
+/* ✅ REVAMPED: Mission operations list */
+.mission-operations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ✅ COMPACT: Reduced height mission items */
+.mission-item {
+  padding: 0.8rem 1rem;
+  margin-bottom: 0.5rem;
+  min-height: 60px;
+  background: rgba(20, 30, 45, 0.6);
+  border-radius: 12px;
+  border-left: 3px solid rgba(64, 120, 192, 0.3);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   position: relative;
   overflow: hidden;
 }
 
-.countdown-timer.normal {
-  background: rgba(74, 222, 128, 0.1);
-  color: #a7f3c1;
-  border: 1px solid rgba(74, 222, 128, 0.2);
+.mission-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(64, 120, 192, 0.05), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
 }
 
-.countdown-timer.upcoming {
-  background: rgba(245, 158, 11, 0.1);
-  color: #fcd34d;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+.mission-item:hover::before {
+  transform: translateX(100%);
 }
 
-.countdown-timer.warning {
-  background: rgba(249, 115, 22, 0.1);
-  color: #fdba74;
-  border: 1px solid rgba(249, 115, 22, 0.2);
-  animation: warning-pulse 1s ease-in-out infinite;
+.mission-item:hover {
+  background: rgba(25, 40, 60, 0.8);
+  border-left-color: rgba(64, 120, 192, 0.6);
+  transform: translateX(3px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(64, 120, 192, 0.1);
 }
 
-.countdown-timer.critical {
-  background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  animation: critical-pulse 0.5s ease-in-out infinite;
+/* ✅ SUBTLE: Mission type specific styling */
+.mission-item.active-mission {
+  border-left-color: rgba(64, 120, 192, 0.7);
+  background: linear-gradient(135deg, rgba(20, 30, 45, 0.7), rgba(25, 40, 60, 0.6));
 }
 
-.countdown-timer.failed {
-  background: rgba(255, 77, 77, 0.2);
-  color: #ffb5b5;
-  border: 1px solid rgba(255, 77, 77, 0.3);
+.mission-item.completed-mission {
+  border-left-color: rgba(60, 140, 110, 0.4);
+  background: rgba(60, 140, 110, 0.05);
 }
 
-@keyframes warning-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.02);
-    opacity: 0.8;
-  }
+.mission-item.failed-mission {
+  border-left-color: rgba(180, 100, 100, 0.4);
+  background: rgba(180, 100, 100, 0.05);
 }
 
-@keyframes critical-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
+.mission-item.event {
+  border-left: 4px solid rgba(120, 80, 200, 0.8);
+  background: linear-gradient(135deg, rgba(25, 20, 45, 0.8), rgba(35, 25, 55, 0.6));
 }
 
-.time-display {
+.mission-item.event.over {
+  opacity: 0.6;
+  border-left-color: rgba(120, 120, 120, 0.5);
+  background: linear-gradient(135deg, rgba(25, 25, 25, 0.8), rgba(35, 35, 35, 0.6));
+}
+
+/* ✅ REVAMPED: Mission icons */
+.mission-icon {
+  font-size: 2rem;
+  min-width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
-  gap: 0.2rem;
-  font-family: "Courier New", monospace;
+  justify-content: center;
+  background: rgba(64, 120, 192, 0.2);
+  border-radius: 50%;
+  border: 2px solid rgba(64, 120, 192, 0.4);
+  color: #87ceeb;
+}
+
+.mission-icon.completed {
+  background: rgba(60, 140, 110, 0.2);
+  border-color: rgba(60, 140, 110, 0.4);
+  color: #5fb3a3;
+}
+
+.mission-icon.failed {
+  background: rgba(180, 100, 100, 0.2);
+  border-color: rgba(180, 100, 100, 0.4);
+  color: #e19999;
+  animation: mission-danger-glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes mission-danger-glow {
+  0% { box-shadow: 0 0 10px rgba(180, 100, 100, 0.3); }
+  100% { box-shadow: 0 0 20px rgba(180, 100, 100, 0.6); }
+}
+
+.mission-icon.event {
+  background: rgba(120, 80, 200, 0.2);
+  border-color: rgba(120, 80, 200, 0.4);
+  color: #b19cd9;
+}
+
+/* ✅ COMPACT: Mission content */
+.mission-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mission-objective {
+  font-size: 0.95rem;
+  line-height: 1.3;
+  margin: 0;
+  color: #e6f2ff;
+}
+
+.mission-objective.completed {
+  color: #5fb3a3;
+  text-decoration: line-through;
+}
+
+.mission-objective.failed {
+  color: #e19999;
+}
+
+.mission-meta {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+/* ✅ SUBTLE: Mission status badges */
+.mission-status {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+.mission-status.active {
+  background: rgba(64, 120, 192, 0.3);
+  color: #87ceeb;
+  animation: mission-active-pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes mission-active-pulse {
+  0% { box-shadow: 0 0 5px rgba(64, 120, 192, 0.3); }
+  100% { box-shadow: 0 0 15px rgba(64, 120, 192, 0.6); }
+}
+
+.mission-status.completed {
+  background: rgba(60, 140, 110, 0.15);
+  color: rgba(95, 179, 163, 0.8);
+}
+
+.mission-status.failed {
+  background: rgba(180, 100, 100, 0.15);
+  color: rgba(225, 153, 153, 0.8);
+}
+
+.mission-status.over {
+  background: rgba(120, 120, 120, 0.3);
+  color: #c0c0c0;
+}
+
+.mission-deadline {
+  background: rgba(25, 35, 50, 0.8);
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(64, 120, 192, 0.2);
+}
+
+.mission-deadline.failed {
+  background: rgba(180, 100, 100, 0.2);
+  border-color: rgba(180, 100, 100, 0.3);
+  color: #e19999;
+}
+
+/* ✅ REVAMPED: Mission controls */
+.mission-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.mission-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mission-controls-group .mission-timer {
+  margin-right: auto;
+}
+
+.mission-btn {
+  background: linear-gradient(135deg, rgba(64, 120, 192, 0.2), rgba(50, 100, 160, 0.3));
+  border: 1px solid rgba(64, 120, 192, 0.4);
+  color: #87ceeb;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mission-btn:hover {
+  background: linear-gradient(135deg, rgba(64, 120, 192, 0.3), rgba(50, 100, 160, 0.4));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 120, 192, 0.3);
+}
+
+.active-mission .mission-btn {
+  background: linear-gradient(135deg, rgba(64, 120, 192, 0.3), rgba(50, 100, 160, 0.4));
+  border-color: rgba(64, 120, 192, 0.6);
+}
+
+.active-mission .mission-btn:hover {
+  background: linear-gradient(135deg, rgba(64, 120, 192, 0.4), rgba(50, 100, 160, 0.5));
+  box-shadow: 0 6px 16px rgba(64, 120, 192, 0.4);
+}
+
+.completed-mission .mission-btn {
+  background: linear-gradient(135deg, rgba(60, 140, 110, 0.2), rgba(45, 120, 95, 0.3));
+  border-color: rgba(60, 140, 110, 0.4);
+  color: #5fb3a3;
+}
+
+.failed-mission .mission-btn {
+  background: linear-gradient(135deg, rgba(180, 100, 100, 0.2), rgba(160, 85, 85, 0.3));
+  border-color: rgba(180, 100, 100, 0.4);
+  color: #e19999;
+}
+
+.mission-tracker-btn {
+  background: linear-gradient(135deg, rgba(120, 80, 200, 0.2), rgba(100, 60, 180, 0.3));
+  border: 1px solid rgba(120, 80, 200, 0.4);
+  color: #b19cd9;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mission-tracker-btn:hover {
+  background: linear-gradient(135deg, rgba(120, 80, 200, 0.3), rgba(100, 60, 180, 0.4));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(120, 80, 200, 0.3);
+}
+
+.mission-tracker-btn.active {
+  background: linear-gradient(135deg, rgba(120, 80, 200, 0.4), rgba(100, 60, 180, 0.5));
+  border-color: rgba(120, 80, 200, 0.6);
+  animation: mission-tracking 2s ease-in-out infinite alternate;
+}
+
+@keyframes mission-tracking {
+  0% { box-shadow: 0 0 8px rgba(120, 80, 200, 0.4); }
+  100% { box-shadow: 0 0 20px rgba(120, 80, 200, 0.7); }
+}
+
+/* ✅ REVAMPED: Mission timer */
+.mission-timer {
+  background: rgba(25, 35, 50, 0.8);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid rgba(64, 120, 192, 0.3);
+  min-width: 80px;
+  text-align: center;
+}
+
+.mission-timer.normal {
+  color: #87ceeb;
+  border-color: rgba(64, 120, 192, 0.3);
+}
+
+.mission-timer.upcoming {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.3);
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.mission-timer.warning {
+  color: #ff8c42;
+  border-color: rgba(255, 140, 66, 0.3);
+  background: rgba(255, 140, 66, 0.1);
+  animation: mission-warning-pulse 1s ease-in-out infinite alternate;
+}
+
+.mission-timer.critical {
+  color: #ff4757;
+  border-color: rgba(255, 71, 87, 0.3);
+  background: rgba(255, 71, 87, 0.1);
+  animation: mission-critical-pulse 0.5s ease-in-out infinite alternate;
+}
+
+/* ✅ NEW: Loading state for timer */
+.mission-timer.loading {
+  background: rgba(100, 108, 255, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 8px;
+  min-width: 120px;
+}
+
+.timer-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(100, 108, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: rgba(100, 108, 255, 0.8);
+  animation: timer-spin 1s linear infinite;
+}
+
+@keyframes timer-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ✅ OPTIMIZED: Simplified timer display */
+.mission-display {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .time-value {
-  font-weight: 700;
-  font-size: 1.1rem;
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
 }
 
 .time-separator {
   opacity: 0.7;
-  animation: blink 1s infinite;
+  animation: mission-blink 2s infinite;
 }
 
-@keyframes blink {
-  0%,
-  50% {
-    opacity: 0.7;
-  }
-  51%,
-  100% {
-    opacity: 0.3;
-  }
-}
-
-.failed-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.failed-icon {
-  font-size: 1.2rem;
-  animation: explosion 0.6s ease-out;
-}
-
-@keyframes explosion {
-  0% {
-    transform: scale(0.5) rotate(0deg);
-  }
-  50% {
-    transform: scale(1.2) rotate(180deg);
-  }
-  100% {
-    transform: scale(1) rotate(360deg);
-  }
-}
-
-/* ✅ ENHANCED: Event Notify Button */
-.event-notify-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  background: linear-gradient(
-    135deg,
-    rgba(147, 51, 234, 0.1),
-    rgba(100, 108, 255, 0.1)
-  );
-  border: 1px solid rgba(147, 51, 234, 0.3);
-  color: #d8b4fe;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  font-size: 0.9rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.event-notify-btn::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(147, 51, 234, 0.2),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.event-notify-btn:hover::before {
-  left: 100%;
-}
-
-.event-notify-btn:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(147, 51, 234, 0.2),
-    rgba(100, 108, 255, 0.2)
-  );
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(147, 51, 234, 0.3);
-}
-
-.event-notify-btn.active {
-  background: linear-gradient(
-    135deg,
-    rgba(74, 222, 128, 0.2),
-    rgba(34, 197, 94, 0.2)
-  );
-  border-color: rgba(74, 222, 128, 0.4);
-  color: #a7f3c1;
-  box-shadow: 0 0 16px rgba(74, 222, 128, 0.3);
-}
-
-.event-notify-btn.active:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(74, 222, 128, 0.3),
-    rgba(34, 197, 94, 0.3)
-  );
-}
-
-.notify-icon {
-  font-size: 1.1rem;
-  animation: ring 2s ease-in-out infinite;
-}
-
-@keyframes ring {
-  0%,
-  90%,
-  100% {
-    transform: rotate(0deg);
-  }
-  5%,
-  15% {
-    transform: rotate(15deg);
-  }
-  10% {
-    transform: rotate(-15deg);
-  }
-}
-
-.event-notify-btn.active .notify-icon {
-  animation: success-bounce 0.6s ease-out;
-}
-
-@keyframes success-bounce {
-  0% {
-    transform: scale(0.8);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* ✅ ENHANCED: Action buttons */
-.notification-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: flex-end;
-}
-
-.notification-navigate {
-  padding: 0.5rem 1rem;
-  background: rgba(100, 108, 255, 0.1);
-  border: 1px solid rgba(100, 108, 255, 0.3);
-  color: #c4c6ff;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.8rem;
+/* ✅ IMPROVED: Completed and failed states */
+.mission-timer.completed .mission-display,
+.mission-timer.failed .mission-display,
+.mission-timer.all-day .mission-display {
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
-.notification-navigate:hover {
-  background: rgba(100, 108, 255, 0.2);
-  transform: translateY(-1px);
+/* ✅ PERFORMANCE: Reduce animation intensity */
+.mission-timer.critical {
+  animation: mission-critical-pulse 2s infinite;
 }
 
-/* ✅ ENHANCED: Empty state */
-.notifications-empty {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: rgba(255, 255, 255, 0.7);
+.mission-timer.warning {
+  animation: mission-warning-pulse 3s infinite;
 }
 
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  animation: celebrate 2s ease-in-out infinite;
-}
-
-@keyframes celebrate {
-  0%,
-  100% {
-    transform: scale(1) rotate(0deg);
+@keyframes mission-critical-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(255, 77, 77, 0.3); 
+    border-color: rgba(255, 77, 77, 0.5);
   }
-  25% {
-    transform: scale(1.1) rotate(-5deg);
-  }
-  75% {
-    transform: scale(1.1) rotate(5deg);
+  50% { 
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.6); 
+    border-color: rgba(255, 77, 77, 0.8);
   }
 }
 
-.notifications-empty h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: white;
+@keyframes mission-warning-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(255, 193, 7, 0.3); 
+    border-color: rgba(255, 193, 7, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.5); 
+    border-color: rgba(255, 193, 7, 0.7);
+  }
 }
 
-.notifications-empty p {
+.mission-display {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.time-value {
   font-size: 1rem;
-  margin: 0;
+  font-weight: 800;
 }
 
-/* ✅ PERFORMANCE: Loading state */
-.notifications-loading {
+.time-separator {
+  animation: mission-blink 1s linear infinite;
+}
+
+@keyframes mission-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.overdue-text {
+  color: #ff4757;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ✅ REVAMPED: Mission standby */
+.mission-standby {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 60vh;
-  color: rgba(255, 255, 255, 0.8);
+  padding: 4rem 2rem;
+  text-align: center;
+  background: rgba(15, 25, 40, 0.5);
+  border-radius: 16px;
+  border: 2px dashed rgba(64, 120, 192, 0.3);
+}
+
+.mission-standby-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+  animation: mission-standby-pulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes mission-standby-pulse {
+  0% { 
+    opacity: 0.5; 
+    transform: scale(1); 
+    filter: drop-shadow(0 0 10px rgba(64, 120, 192, 0.3));
+  }
+  100% { 
+    opacity: 0.8; 
+    transform: scale(1.05); 
+    filter: drop-shadow(0 0 20px rgba(64, 120, 192, 0.5));
+  }
+}
+
+.mission-standby h3 {
+  font-size: 1.5rem;
+  color: #87ceeb;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+}
+
+.mission-standby p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+/* ✅ REVAMPED: Mission loading */
+.mission-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(100, 108, 255, 0.3);
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(64, 120, 192, 0.3);
   border-radius: 50%;
-  border-top-color: rgba(100, 108, 255, 0.8);
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+  border-top-color: rgba(64, 120, 192, 0.8);
+  animation: mission-spin 1s linear infinite;
+  margin-bottom: 1.5rem;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes mission-spin {
+  to { transform: rotate(360deg); }
 }
 
-/* ✅ RESPONSIVE: Mobile optimizations */
+.mission-loading p {
+  color: #87ceeb;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* ✅ NEW: Categories grid layout */
+.mission-categories-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ✅ NEW: Category section styling */
+.mission-category-section {
+  background: linear-gradient(135deg, rgba(20, 28, 45, 0.8), rgba(25, 35, 55, 0.9));
+  border-radius: 16px;
+  border: 2px solid rgba(64, 120, 192, 0.3);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ✅ NEW: Category header */
+.mission-category-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, rgba(30, 40, 60, 0.9), rgba(35, 45, 70, 0.95));
+  border-bottom: 1px solid rgba(64, 120, 192, 0.3);
+}
+
+.category-icon {
+  font-size: 1.8rem;
+  filter: drop-shadow(0 0 8px rgba(64, 120, 192, 0.4));
+}
+
+.category-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #87ceeb;
+  margin: 0;
+  flex: 1;
+  text-shadow: 0 0 15px rgba(135, 206, 235, 0.3);
+}
+
+.category-count {
+  background: rgba(64, 120, 192, 0.3);
+  color: #87ceeb;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 40px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(64, 120, 192, 0.2);
+}
+
+/* ✅ NEW: Category content */
+.mission-category-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* ✅ NEW: Category empty state */
+.mission-category-empty {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+/* ✅ PRIORITY: Urgent section highlight */
+.mission-category-section:first-child {
+  border-color: rgba(255, 165, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(255, 165, 0, 0.2);
+}
+
+.mission-category-section:first-child .mission-category-header {
+  background: linear-gradient(135deg, rgba(40, 30, 10, 0.9), rgba(60, 40, 20, 0.95));
+}
+
+.mission-category-section:first-child .category-icon {
+  filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.6));
+}
+
+.mission-category-section:first-child .category-count {
+  background: rgba(255, 165, 0, 0.3);
+  color: #ffcc80;
+}
+
+/* ✅ COMPLETED: Success section styling */
+.mission-category-section:nth-child(2) {
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
+.mission-category-section:nth-child(2) .category-icon {
+  filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.5));
+}
+
+.mission-category-section:nth-child(2) .category-count {
+  background: rgba(74, 222, 128, 0.3);
+  color: #a7f3c1;
+}
+
+/* ✅ FAILED: Danger section styling */
+.mission-category-section:nth-child(3) {
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.mission-category-section:nth-child(3) .category-icon {
+  filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.5));
+}
+
+.mission-category-section:nth-child(3) .category-count {
+  background: rgba(248, 113, 113, 0.3);
+  color: #ffb5b5;
+}
+
+/* ✅ RESPONSIVE: Mobile adjustments */
 @media (max-width: 768px) {
-  .notifications-container {
+  .mission-control-container {
     padding: 0.5rem;
   }
-
-  .notifications-tabs {
-    flex-wrap: wrap;
+  
+  .mission-control-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
   }
-
-  .notifications-tab {
-    flex: 1 1 calc(50% - 0.25rem);
-    min-width: 120px;
+  
+  .mission-title {
+    font-size: 2rem;
   }
-
-  .notification-item {
+  
+  .mission-tabs {
+    flex-direction: column;
+  }
+  
+  .mission-item {
     padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
   }
+  
+  .mission-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .mission-categories-grid {
+    gap: 1.5rem;
+  }
+  
+  .mission-category-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .category-title {
+    font-size: 1.2rem;
+  }
+  
+  .category-icon {
+    font-size: 1.5rem;
+  }
+}
 
-  .notification-actions {
-    margin-top: 1rem;
-    flex-direction: row;
-    align-items: center;
-  }
+/* ✅ ACCESSIBILITY */
+.mission-tab:focus-visible,
+.mission-btn:focus-visible,
+.mission-tracker-btn:focus-visible {
+  outline: 2px solid rgba(64, 120, 192, 0.8);
+  outline-offset: 2px;
+}
+
+/* ✅ PERFORMANCE */
+.mission-item,
+.mission-tab,
+.mission-btn,
+.mission-icon {
+  will-change: transform;
+  backface-visibility: hidden;
 }

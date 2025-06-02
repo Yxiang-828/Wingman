@@ -27,6 +27,7 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   ├── TimeBlockVisualizer.tsx
 │   │   ├── TimeInput.css
 │   │   ├── TimeInput.tsx
+│   │   ├── VirtualizedList.css
 │   │   ├── VirtualizedList.tsx
 │   │   ├── WeekView.css
 │   │   └── WeekView.tsx
@@ -54,6 +55,8 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   └── WingmanAvatar.tsx
 │   ├── Dashboard/
 │   │   ├── ChatCard.tsx
+│   │   ├── CompactList.css
+│   │   ├── CompactList.tsx
 │   │   ├── CompletedTasksCard.css
 │   │   ├── CompletedTasksCard.tsx
 │   │   ├── Dashboard.css
@@ -123,7 +126,6 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   └── ThemeContext.tsx
 ├── Hooks/
 │   ├── useAuth.ts
-│   ├── useCalendar.ts
 │   ├── useChat.ts
 │   ├── useDiary.ts
 │   ├── useMood.ts
@@ -149,7 +151,6 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   ├── NotificationCleanupService.ts
 │   └── NotificationService.ts
 ├── storage/
-│   ├── LocalDataManager.ts
 │   └── schema.sql
 ├── styles/
 │   └── scrollbars.css
@@ -179,5 +180,4 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 ├── index.css
 ├── main.css
 ├── main.tsx
-├── scroll_top.tsx
-└── WelcomePopup.tsx
+└── scroll_top.tsx
