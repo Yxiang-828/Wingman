@@ -48,13 +48,24 @@ const TimeInput: React.FC<TimeInputProps> = ({
     let filtered = "";
     const input = e.target.value;
 
+    // ✅ RESTRICTED: Max 4 digits total (HHMM format)
+    let digitCount = 0;
+
     for (let i = 0; i < input.length && i < 5; i++) {
       const char = input[i];
-      if (char === ":" && filtered.length === 2) {
+
+      if (char === ":" && filtered.length === 2 && digitCount === 2) {
         filtered += ":";
-      } else if (/[0-9]/.test(char)) {
+      } else if (/[0-9]/.test(char) && digitCount < 4) {
+        // ✅ MAX 4 DIGITS
         filtered += char;
+        digitCount++;
       }
+    }
+
+    // ✅ AUTO-FORMAT: Add colon after 2 digits if not present
+    if (/^\d{2}$/.test(filtered)) {
+      filtered = filtered + ":";
     }
 
     // Validate hours (0-23) and minutes (0-59)
@@ -65,6 +76,9 @@ const TimeInput: React.FC<TimeInputProps> = ({
       // Enforce valid ranges
       if (hours > 23) filtered = "23" + filtered.substring(2);
       if (minutes > 59) filtered = filtered.substring(0, 2) + "59";
+
+      // Auto-format to HH:MM
+      filtered = filtered.substring(0, 2) + ":" + filtered.substring(2, 4);
     } else if (/^\d{2}:\d{2}$/.test(filtered)) {
       const hours = parseInt(filtered.substring(0, 2));
       const minutes = parseInt(filtered.substring(3, 5));

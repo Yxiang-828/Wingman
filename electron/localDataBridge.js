@@ -206,18 +206,50 @@ class LocalDataManager {
   // ✅ FIXED: Complete getTasks implementation
   getTasks(userId, date) {
     try {
-      console.log(`📊 Getting tasks for user ${userId}${date ? ` on ${date}` : ''}`);
-      const query = date 
-        ? 'SELECT * FROM tasks WHERE user_id = ? AND task_date = ? ORDER BY created_at DESC'
-        : 'SELECT * FROM tasks WHERE user_id = ? ORDER BY task_date DESC, created_at DESC';
+      const stmt = this.db.prepare(`
+        SELECT * FROM tasks 
+        WHERE user_id = ? AND task_date = ?
+        ORDER BY 
+          CASE WHEN task_time IS NULL OR task_time = '' THEN 1 ELSE 0 END,
+          task_time ASC,
+          created_at ASC
+      `);
       
-      const stmt = this.db.prepare(query);
-      const rows = date ? stmt.all(userId, date) : stmt.all(userId);
+      const tasks = stmt.all(userId, date);
       
-      return rows.map(row => ({
-        ...row,
-        completed: !!row.completed
-      }));
+      // ✅ AUTO-DETECT: Check and mark failed tasks for today only
+      if (date === new Date().toISOString().split('T')[0]) {
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        let updatedCount = 0;
+        
+        // ✅ ADD THE MISSING LOOP:
+        tasks.forEach(task => {
+          if (!task.completed && !task.failed && task.task_time && 
+              task.task_time !== 'All day' && task.task_time < currentTime) {
+            
+            // Mark as failed in database
+            const updateStmt = this.db.prepare(`
+              UPDATE tasks 
+              SET failed = TRUE, updated_at = datetime('now') 
+              WHERE id = ?
+            `);
+            updateStmt.run(task.id);
+            
+            // Update in memory
+            task.failed = true;
+            updatedCount++;
+          }
+        });
+        
+        if (updatedCount > 0) {
+          console.log(`⏰ getTasks: Auto-marked ${updatedCount} tasks as failed for ${date}`);
+        }
+      }
+      
+      return tasks;
+      
     } catch (error) {
       console.error('Error getting tasks:', error);
       return [];
@@ -346,71 +378,44 @@ class LocalDataManager {
   // ✅ FIXED: Complete updateTask implementation that properly handles 'failed' field
   updateTask(id, updates) {
     try {
-      console.log(`🔄 LocalDataManager: Updating task ${id} with:`, updates);
-
-      // ✅ CRITICAL: Sanitize all data for SQLite
-      const sanitizedUpdates = {};
+      console.log(`📝 LocalDataManager: Updating task ${id} with:`, updates);
       
-      // Only include allowed fields and convert to SQLite-compatible types
-      const allowedFields = [
-        'title', 'task_date', 'task_time', 'completed', 'failed', 
-        'task_type', 'due_date', 'last_reset_date', 'urgency_level', 'status'
-      ];
-
-      for (const [key, value] of Object.entries(updates)) {
-        if (allowedFields.includes(key)) {
-          // ✅ SANITIZE: Convert all values to SQLite-compatible types
-          if (value === null || value === undefined) {
-            sanitizedUpdates[key] = null;
-          } else if (typeof value === 'boolean') {
-            sanitizedUpdates[key] = value ? 1 : 0; // Convert boolean to integer
-          } else if (typeof value === 'number') {
-            sanitizedUpdates[key] = value;
-          } else if (typeof value === 'string') {
-            sanitizedUpdates[key] = value;
-          } else if (value instanceof Date) {
-            // Convert Date objects to ISO strings
-            sanitizedUpdates[key] = value.toISOString();
-          } else {
-            // Convert everything else to string
-            sanitizedUpdates[key] = String(value);
-          }
+      // Build the SET clause dynamically
+      const setClause = [];
+      const values = [];
+      
+      Object.keys(updates).forEach(key => {
+        if (key !== 'id') {
+          setClause.push(`${key} = ?`);
+          values.push(updates[key]);
         }
-      }
-
-      // Always update the updated_at timestamp
-      sanitizedUpdates.updated_at = new Date().toISOString();
-
-      console.log(`🔄 LocalDataManager: Sanitized updates:`, sanitizedUpdates);
-
-      // Build dynamic UPDATE query
-      const setParts = Object.keys(sanitizedUpdates).map(key => `${key} = ?`);
-      const values = Object.values(sanitizedUpdates);
+      });
       
-      const updateQuery = `
-        UPDATE tasks 
-        SET ${setParts.join(', ')}
-        WHERE id = ?
-      `;
-
-      console.log(`🔄 LocalDataManager: Update query:`, updateQuery);
-      console.log(`🔄 LocalDataManager: Update values:`, [...values, id]);
-
-      const result = this.db.prepare(updateQuery).run([...values, id]);
+      // Add the ID for WHERE clause
+      values.push(id);
+      
+      const sql = `UPDATE tasks SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+      
+      console.log(`🔧 SQL Query:`, sql);
+      console.log(`🔧 Values:`, values);
+      
+      const stmt = this.db.prepare(sql);
+      const result = stmt.run(...values);
       
       if (result.changes === 0) {
         throw new Error(`No task found with ID ${id}`);
       }
-
-      // Fetch and return the updated task
-      const updatedTask = this.db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
       
-      console.log(`✅ LocalDataManager: Task ${id} updated successfully:`, updatedTask);
+      // Return the updated task
+      const getStmt = this.db.prepare('SELECT * FROM tasks WHERE id = ?');
+      const updatedTask = getStmt.get(id);
+      
+      console.log(`✅ Task ${id} updated successfully:`, updatedTask);
       return updatedTask;
-
+      
     } catch (error) {
-      console.error(`❌ LocalDataManager: Error updating task ${id}:`, error);
-      throw new Error(`Failed to update task: SQLite updateTask failed: ${error.message}`);
+      console.error(`❌ Error updating task ${id}:`, error);
+      throw error;
     }
   }
 

@@ -457,6 +457,109 @@ const DayView: React.FC = () => {
     setEditEventForm({ title: "", event_time: "", type: "", description: "" });
   };
 
+  // ✅ NEW: Add refresh function
+  const refreshDayView = useCallback(async () => {
+    if (!date) return;
+
+    try {
+      setLoading(true);
+      const today = formatDateToString(date);
+      const userId = getCurrentUserId();
+      
+      if (!userId) return;
+
+      const [tasksData, eventsData] = await Promise.all([
+        window.electronAPI.db.getTasks(userId, today),
+        window.electronAPI.db.getEvents(userId, today),
+      ]);
+
+      setCurrentDateTasks(tasksData || []);
+      setCurrentDateEvents(eventsData || []);
+      
+      console.log(`✅ DayView: Refreshed data - ${tasksData?.length || 0} tasks, ${eventsData?.length || 0} events`);
+    } catch (error) {
+      console.error("❌ DayView refresh error:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [date]);
+
+  // ✅ NEW: Listen for retry mission refresh events
+  useEffect(() => {
+    const handleRetryRefresh = () => {
+      console.log("🔄 DayView: Retry mission refresh triggered");
+      refreshDayView();
+    };
+
+    window.addEventListener("retry-mission-refresh", handleRetryRefresh);
+    window.addEventListener("dashboard-refresh", handleRetryRefresh);
+    window.addEventListener("notifications-refresh", handleRetryRefresh);
+    
+    return () => {
+      window.removeEventListener("retry-mission-refresh", handleRetryRefresh);
+      window.removeEventListener("dashboard-refresh", handleRetryRefresh);
+      window.removeEventListener("notifications-refresh", handleRetryRefresh);
+    };
+  }, [refreshDayView]);
+
+  // ✅ ADD: Auto-detect failed tasks every minute (copy from Notifications)
+  useEffect(() => {
+    if (!date) return;
+
+    const checkForFailedTasks = async () => {
+      const userId = getCurrentUserId();
+      if (!userId) return;
+
+      try {
+        const dateStr = formatDateToString(date);
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        console.log(`⏰ DayView: Checking for failed tasks at ${currentTime}`);
+        
+        // Get tasks for this date
+        const tasks = await window.electronAPI.db.getTasks(userId, dateStr);
+        
+        let updatedCount = 0;
+        
+        // Check each task for failure (only for today's date)
+        if (dateStr === getTodayDateString()) {
+          for (const task of tasks || []) {
+            if (!task.completed && !task.failed && task.task_time && 
+                task.task_time !== 'All day' && task.task_time < currentTime) {
+              
+              // Mark as failed in database
+              await window.electronAPI.db.updateTask(task.id, {
+                failed: true,
+                updated_at: new Date().toISOString()
+              });
+              
+              updatedCount++;
+              console.log(`❌ DayView: Marked task ${task.id} as failed (${task.task_time} < ${currentTime})`);
+            }
+          }
+        }
+        
+        if (updatedCount > 0) {
+          console.log(`⏰ DayView: Auto-marked ${updatedCount} tasks as failed, refreshing day view`);
+          // Refresh day view data to show updated failed status
+          setCurrentDateTasks(tasks || []);
+        }
+        
+      } catch (error) {
+        console.error('❌ DayView: Error checking failed tasks:', error);
+      }
+    };
+
+    // Check immediately when date changes
+    checkForFailedTasks();
+    
+    // Then check every minute
+    const interval = setInterval(checkForFailedTasks, 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [date]);
+
   // Loading state
   if (loading) {
     return (

@@ -8,6 +8,7 @@ import Portal from "./Portal";
 import RetryMissionPopup from "./RetryMissionPopup";
 import { getTodayDateString } from "../../utils/timeUtils";
 import "./DetailPopup.css";
+import TimeInput from "../Calendar/TimeInput"; // ✅ ADD: Import TimeInput
 
 interface DetailPopupProps {
   item: Task | CalendarEvent;
@@ -49,7 +50,7 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(({
     setShowRetryPopup(true);
   }, [isTask]);
 
-  // ✅ OPTIMIZED: Memoized retry handler
+  // ✅ OPTIMIZED: Memoized retry handler with DayView refresh
   const handleRetryConfirm = useCallback(async (newTime: string) => {
     if (!isTask) return;
 
@@ -70,7 +71,8 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(({
       setShowRetryPopup(false);
       onClose();
 
-      // Dispatch refresh events
+      // ✅ CRITICAL: Dispatch specific refresh event for DayView
+      window.dispatchEvent(new CustomEvent("retry-mission-refresh"));
       window.dispatchEvent(new CustomEvent("dashboard-refresh"));
       window.dispatchEvent(new CustomEvent("notifications-refresh"));
     } catch (error) {

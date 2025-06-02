@@ -3,6 +3,7 @@ import type { Task } from '../../api/Task';
 import Portal from './Portal';
 import { getCurrentTimeString } from '../../utils/timeUtils';
 import './RetryMissionPopup.css';
+import TimeInput from "../Calendar/TimeInput"; // ✅ ADD: Import TimeInput
 
 interface RetryMissionPopupProps {
   task: Task;
@@ -23,6 +24,12 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
 
   // ✅ MEMOIZED: Prevent recalculation on every render
   const currentTime = useMemo(() => getCurrentTimeString(), []);
+  
+  // ✅ OPTIMIZED: Use TimeInput change handler
+  const handleTimeChange = useCallback((formattedTime: string) => {
+    setNewTime(formattedTime);
+    setError(''); // Clear error when user types
+  }, []);
   
   // ✅ OPTIMIZED: Use useCallback to prevent re-renders
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -52,12 +59,6 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
       setIsSubmitting(false);
     }
   }, [newTime, currentTime, onRetry, onClose]);
-
-  // ✅ OPTIMIZED: Memoized input change handler
-  const handleTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTime(e.target.value);
-    setError(''); // Clear error when user types
-  }, []);
 
   // ✅ OPTIMIZED: Memoized click handlers
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
@@ -104,15 +105,12 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
           <form onSubmit={handleSubmit} className="retry-form">
             <div className="retry-form-group">
               <label htmlFor="retry-time">New time (must be later than now):</label>
-              <input
-                id="retry-time"
-                type="time"
+              {/* ✅ REPLACED: Use TimeInput component instead of HTML input */}
+              <TimeInput
                 value={newTime}
                 onChange={handleTimeChange}
-                min={currentTime}
+                placeholder="Enter new time (HH:MM)"
                 className="retry-time-input"
-                required
-                autoFocus
               />
             </div>
 
@@ -131,12 +129,13 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
               >
                 Cancel
               </button>
+              
               <button
                 type="submit"
                 className="retry-btn confirm"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !newTime}
               >
-                {isSubmitting ? 'Rescheduling...' : '🔄 Reschedule Mission'}
+                {isSubmitting ? 'Scheduling...' : 'Retry Mission'}
               </button>
             </div>
           </form>

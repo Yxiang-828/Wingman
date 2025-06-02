@@ -115,6 +115,61 @@ const Dashboard: React.FC = () => {
     return () => window.removeEventListener("dashboard-refresh", handleDashboardRefresh);
   }, [fetchDashboardData]);
 
+  // ✅ ADD: Auto-detect failed tasks every minute (copy from Notifications)
+  useEffect(() => {
+    const checkForFailedTasks = async () => {
+      const userId = getCurrentUserId();
+      if (!userId) return;
+
+      try {
+        const today = getTodayDateString();
+        const now = new Date();
+        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        console.log(`⏰ Dashboard: Checking for failed tasks at ${currentTime}`);
+        
+        // Get today's tasks
+        const tasks = await window.electronAPI.db.getTasks(userId, today);
+        
+        let updatedCount = 0;
+        
+        // Check each task for failure
+        for (const task of tasks || []) {
+          if (!task.completed && !task.failed && task.task_time && 
+              task.task_time !== 'All day' && task.task_time < currentTime) {
+            
+            console.log(`❌ Dashboard: Task ${task.id} is overdue (${task.task_time} < ${currentTime})`);
+            
+            // Mark as failed in database
+            await window.electronAPI.db.updateTask(task.id, {
+              failed: true,
+              updated_at: new Date().toISOString()
+            });
+            
+            updatedCount++;
+            console.log(`❌ Dashboard: Marked task ${task.id} as failed`);
+          }
+        }
+        
+        if (updatedCount > 0) {
+          console.log(`⏰ Dashboard: Auto-marked ${updatedCount} tasks as failed, refreshing dashboard`);
+          await fetchDashboardData();
+        }
+        
+      } catch (error) {
+        console.error('❌ Dashboard: Error checking failed tasks:', error);
+      }
+    };
+
+    // Check immediately on mount
+    checkForFailedTasks();
+    
+    // Then check every minute
+    const interval = setInterval(checkForFailedTasks, 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [fetchDashboardData]);
+
   if (isLoading) {
     return (
       <div className="dashboard-container">
