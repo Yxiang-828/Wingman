@@ -9,14 +9,12 @@ import { format } from "date-fns";
 interface DetailPopupProps {
   item: Task | CalendarEvent;
   onClose: () => void;
-  onComplete?: (taskId: number) => Promise<void>;
   container?: HTMLElement;
 }
 
 const DetailPopup: React.FC<DetailPopupProps> = ({
   item,
   onClose,
-  onComplete,
   container,
 }) => {
   const navigate = useNavigate();
@@ -28,14 +26,6 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
   const formattedDate = isTask 
     ? format(new Date(item.task_date), "MMM d, yyyy")
     : format(new Date((item as CalendarEvent).event_date), "MMM d, yyyy");
-  
-  // Complete task handler
-  const handleCompleteTask = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isTask && onComplete) {
-      onComplete(item.id);
-    }
-  };
   
   // Navigate to calendar day view
   const viewInCalendar = (e: React.MouseEvent) => {
@@ -70,14 +60,6 @@ const DetailPopup: React.FC<DetailPopupProps> = ({
                 )}
                 
                 <div className="detail-popup-actions">
-                  {!(item as Task).completed && onComplete && (
-                    <button
-                      className="detail-action-btn complete"
-                      onClick={handleCompleteTask}
-                    >
-                      Mark Complete
-                    </button>
-                  )}
                   <button
                     className="detail-action-btn view"
                     onClick={viewInCalendar}
