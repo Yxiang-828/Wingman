@@ -25,7 +25,7 @@ const WeekDay = React.memo(
   ({ date, events = [], tasks = [], isToday, onDayClick }: WeekDayProps) => {
     const dateStr = formatDateToString(date);
     const navigate = useNavigate();
-    const { showPopupFor } = useNotifications(); // ✅ ADD
+    const { showPopupFor } = useNotifications();
 
     // ✅ LIMITS: Max 12 tasks, 12 events
     const displayTasks = tasks.slice(0, 12);
@@ -37,24 +37,12 @@ const WeekDay = React.memo(
     // ✅ UPDATED: Show popup instead of direct navigation
     const handleTaskClick = (e: React.MouseEvent, task: any) => {
       e.stopPropagation();
-      showPopupFor(task); // Show popup instead of navigate
+      showPopupFor(task);
     };
 
     const handleEventClick = (e: React.MouseEvent, event: any) => {
       e.stopPropagation();
-      showPopupFor(event); // Show popup instead of navigate
-    };
-
-    const handleTaskComplete = async (e: React.MouseEvent, task: any) => {
-      e.stopPropagation();
-      try {
-        await window.electronAPI.db.updateTask(task.id, {
-          completed: !task.completed,
-        });
-        window.dispatchEvent(new CustomEvent("week-data-refresh"));
-      } catch (error) {
-        console.error("Error toggling task:", error);
-      }
+      showPopupFor(event);
     };
 
     const handleDayViewClick = (e: React.MouseEvent) => {
@@ -67,68 +55,65 @@ const WeekDay = React.memo(
         className={`week-day-compact ${isToday ? "today" : ""}`}
         onClick={() => onDayClick(dateStr)}
       >
-        {/* Compact header */}
         <div className="week-day-header-compact">
-          <span className="week-day-name-compact">{format(date, "EEE")}</span>
-          <span className="week-day-date-compact">{date.getDate()}</span>
+          <div className="week-day-name-compact">
+            {format(date, "EEE")}
+          </div>
+          <div className="week-day-date-compact">
+            {format(date, "d")}
+          </div>
         </div>
 
-        {/* Compact content */}
         <div className="week-day-content-compact">
-          {/* Tasks - max 12 */}
           {displayTasks.map((task) => (
             <div
               key={`task-${task.id}`}
               className={`week-item-compact task ${
                 task.completed ? "completed" : ""
-              }`}
-              onClick={(e) => handleTaskClick(e, task)} // ✅ SHOWS POPUP
-              title={task.title}
+              } ${task.failed ? "failed" : ""}`} // ✅ ADD: failed class
+              onClick={(e) => handleTaskClick(e, task)}
             >
-              <div
-                className="task-status-compact"
-                onClick={(e) => handleTaskComplete(e, task)}
-              >
-                {task.completed ? "✓" : "○"}
+              {/* ✅ UPDATED: Show cross for failed, tick for completed, circle for pending */}
+              <div className="task-status-compact-readonly">
+                {task.failed ? "×" : task.completed ? "✓" : "○"}
               </div>
-              <div className="item-title-compact">{task.title}</div>
-              {task.task_time && (
-                <div className="item-time-compact">{task.task_time}</div>
-              )}
+              <div className="item-content-wrapper">
+                <div className="item-title-compact">{task.title}</div>
+                {task.task_time && (
+                  <div className="item-time-compact">{task.task_time}</div>
+                )}
+              </div>
+              {/* ✅ ADD: Task type label */}
+              <div className="item-type-label task-label">Task</div>
             </div>
           ))}
 
-          {/* Events - max 12 */}
           {displayEvents.map((event) => (
             <div
               key={`event-${event.id}`}
-              className="week-item-compact event"
-              onClick={(e) => handleEventClick(e, event)} // ✅ SHOWS POPUP
-              title={event.title}
+              className={`week-item-compact event ${
+                event.type?.toLowerCase() || ""
+              }`}
+              onClick={(e) => handleEventClick(e, event)}
             >
-              <div className="item-title-compact">{event.title}</div>
-              {event.event_time && (
-                <div className="item-time-compact">{event.event_time}</div>
-              )}
+              <div className="item-content-wrapper">
+                <div className="item-title-compact">{event.title}</div>
+                {event.event_time && (
+                  <div className="item-time-compact">{event.event_time}</div>
+                )}
+              </div>
+              {/* ✅ ADD: Event type label */}
+              <div className="item-type-label event-label">Event</div>
             </div>
           ))}
 
-          {/* Overflow navigation button */}
           {hasOverflow && (
             <button
               className="day-view-more-btn"
               onClick={handleDayViewClick}
-              title={`${
-                hasMoreTasks ? `+${tasks.length - 12} more tasks` : ""
-              } ${hasMoreEvents ? `+${events.length - 12} more events` : ""}`}
             >
-              Day View ({tasks.length + events.length} total) →
+              View All ({tasks.length + events.length})
             </button>
-          )}
-
-          {/* Empty state */}
-          {displayTasks.length === 0 && displayEvents.length === 0 && (
-            <div className="day-empty-compact">No items</div>
           )}
         </div>
       </div>

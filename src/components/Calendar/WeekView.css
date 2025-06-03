@@ -15,7 +15,7 @@
 
 /* ✅ FULL SCREEN: Compact version also uses full height */
 .calendar-week-view-compact {
-  height: 100vh;
+  height: 88vh;
   background: rgba(25, 25, 45, 0.5);
   border-radius: 12px;
   overflow: hidden;
@@ -520,90 +520,115 @@
 .week-item-compact {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
-  background: rgba(40, 40, 60, 0.4);
-  font-size: 0.7rem;
-  line-height: 1.1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: background 0.1s ease;
-  min-height: 20px;
-  cursor: pointer;
-}
-
-.week-item-compact:hover {
-  background: rgba(45, 45, 70, 0.6);
-}
-
-.week-item-compact.event {
-  border-left: 2px solid rgba(100, 108, 255, 0.6);
-}
-
-.week-item-compact.task {
-  border-left: 2px solid rgba(74, 222, 128, 0.6);
-}
-
-.week-item-compact.task.completed {
-  opacity: 0.6;
-  text-decoration: line-through;
-  border-left-color: rgba(74, 222, 128, 0.3);
-}
-
-.item-time-compact {
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.5);
-  flex-shrink: 0;
-  min-width: 30px;
-}
-
-.item-title-compact {
-  flex: 1;
-  color: rgba(255, 255, 255, 0.9);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.task-status-compact {
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.7);
-  flex-shrink: 0;
-  width: 10px;
-  cursor: pointer;
-}
-
-/* ✅ NEW: Day view navigation button */
-.day-view-more-btn {
-  background: rgba(100, 108, 255, 0.15);
-  color: rgba(100, 108, 255, 0.9);
-  border: 1px solid rgba(100, 108, 255, 0.2);
+  justify-content: space-between; /* ✅ CHANGED: Space between for labels */
+  gap: 0.4rem;
   padding: 0.3rem 0.5rem;
+  background: rgba(30, 30, 50, 0.4);
   border-radius: 4px;
-  font-size: 0.65rem;
   cursor: pointer;
-  transition: all 0.1s ease;
-  margin-top: 0.2rem;
-  text-align: center;
+  transition: all 0.15s ease;
+  border-left: 2px solid transparent;
+  margin-bottom: 0.25rem;
+  min-height: 24px;
+  font-size: 0.75rem;
+}
+
+/* ✅ ADD: Content wrapper for title and time */
+.item-content-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+}
+
+/* ✅ UPDATED: Item title with better truncation */
+.item-title-compact {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
+  flex: 1;
+  min-width: 0;
 }
 
-.day-view-more-btn:hover {
-  background: rgba(100, 108, 255, 0.25);
-  border-color: rgba(100, 108, 255, 0.4);
-  transform: translateY(-1px);
+/* ✅ ADD: Type labels styling */
+.item-type-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-/* ✅ COMPACT: Empty state */
-.day-empty-compact {
+/* ✅ ADD: Task label styling */
+.item-type-label.task-label {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+/* ✅ ADD: Event label styling */
+.item-type-label.event-label {
+  background: rgba(100, 108, 255, 0.2);
+  color: #646cff;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+}
+
+/* ✅ ADD: Failed task label color override */
+.week-item-compact.task.failed .item-type-label.task-label {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff6b6b;
+  border-color: rgba(255, 77, 77, 0.3);
+}
+
+/* ✅ ADD: Completed task label opacity */
+.week-item-compact.task.completed .item-type-label.task-label {
+  opacity: 0.6;
+}
+
+/* ✅ KEEP: Time display unchanged */
+.item-time-compact {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(20, 20, 35, 0.5);
+  padding: 0.15rem 0.3rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+
+/* ✅ KEEP: Task status unchanged */
+.task-status-compact-readonly {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.4);
-  text-align: center;
-  padding: 0.8rem 0.4rem;
-  font-style: italic;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(30, 30, 50, 0.3);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  cursor: default;
+  pointer-events: none;
+  font-weight: 600;
+}
+
+/* ✅ KEEP: Failed task status styling */
+.week-item-compact.task.failed .task-status-compact-readonly {
+  background: rgba(255, 77, 77, 0.2);
+  border-color: rgba(255, 77, 77, 0.4);
+  color: #ff6b6b;
 }
 
 /* Responsive design */
