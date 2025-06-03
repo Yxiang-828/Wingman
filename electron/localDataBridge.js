@@ -224,10 +224,10 @@ class LocalDataManager {
         
         let updatedCount = 0;
         
-        // ✅ ADD THE MISSING LOOP:
+        // ✅ FIX: Change < to <= to match Dashboard/DayView behavior
         tasks.forEach(task => {
           if (!task.completed && !task.failed && task.task_time && 
-              task.task_time !== 'All day' && task.task_time < currentTime) {
+              task.task_time !== 'All day' && task.task_time <= currentTime) {  // ✅ CHANGED: <= instead of <
             
             // Mark as failed in database
             const updateStmt = this.db.prepare(`

@@ -1741,3 +1741,43 @@
 .day-form-btn.cancel:hover {
   background: rgba(248, 113, 113, 0.3);
 }
+
+/* ✅ ADD: Task group styling */
+.task-group {
+  margin-bottom: 1.5rem;
+}
+
+.task-group-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.task-item.failed {
+  background: rgba(255, 77, 77, 0.1);
+  border-left-color: rgba(255, 77, 77, 0.6);
+}
+
+.task-item.failed:hover {
+  background: rgba(255, 77, 77, 0.15);
+}
+
+.task-status.failed {
+  border-color: rgba(255, 77, 77, 0.6);
+  color: #ff4d4d;
+}
+
+.task-btn.retry {
+  background: rgba(255, 165, 0, 0.2);
+  color: #ffcc80;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.task-btn.retry:hover {
+  background: rgba(255, 165, 0, 0.3);
+}

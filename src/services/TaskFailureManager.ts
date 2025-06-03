@@ -43,19 +43,32 @@ class TaskFailureManager {
    */
   public start(): void {
     if (this.isRunning) {
-      this.log('⚠️ TaskFailureManager: Already running, skipping start');
+      this.log('⚠️ TaskFailureManager: Already running');
       return;
     }
 
     this.log('🚀 TaskFailureManager: Starting centralized task failure detection');
     
-    // Run initial check
+    // ✅ IMMEDIATE: Run initial check right away
     this.checkForFailedTasks();
     
-    // Set up interval for subsequent checks
-    this.intervalId = setInterval(() => {
-      this.checkForFailedTasks();
-    }, this.config.checkIntervalMs);
+    // ✅ SYNC TO MINUTE: Calculate delay to next minute boundary
+    const now = new Date();
+    const secondsUntilNextMinute = 60 - now.getSeconds();
+    const millisecondsUntilNextMinute = (secondsUntilNextMinute * 1000) - now.getMilliseconds();
+    
+    this.log(`⏰ Next check in ${secondsUntilNextMinute} seconds (at next minute boundary)`);
+    
+    // ✅ SYNC: Set timeout to start interval at next minute boundary
+    setTimeout(() => {
+      this.log('🎯 TaskFailureManager: Now running on minute boundaries');
+      
+      // Now set up interval to run every minute exactly at seconds=0
+      this.intervalId = setInterval(() => {
+        this.checkForFailedTasks();
+      }, 60 * 1000); // 60 seconds
+      
+    }, millisecondsUntilNextMinute);
     
     this.isRunning = true;
   }
