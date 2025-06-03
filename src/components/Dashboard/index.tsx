@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useDiary } from "../../context/DiaryContext";
-import { getCurrentUserId } from "../../utils/auth";
+import { getCurrentUserId } from "../../utils/helpers";
+import { getCurrentTimeString, getTodayDateString } from "../../utils/timeUtils"; // ✅ ADD: Import time functions
 import DiaryCard from "./DiaryCard";
 import TasksCard from "./TasksCard";
 import EventsCard from "./EventsCard";
 import SummaryCard from "./SummaryCard";
 import CompletedTasksCard from "./CompletedTasksCard";
-import { getTodayDateString } from "../../utils/timeUtils";
-import type { Task } from "../../api/Task";
-import type { CalendarEvent } from "../../api/Calendar";
 
 import "./Dashboard.css";
 
@@ -115,56 +113,56 @@ const Dashboard: React.FC = () => {
     return () => window.removeEventListener("dashboard-refresh", handleDashboardRefresh);
   }, [fetchDashboardData]);
 
-  // ✅ ADD: Auto-detect failed tasks every minute (copy from Notifications)
+  // ✅ ADD: Auto-detect failed tasks every 60 seconds (COPIED FROM NOTIFICATIONS)
   useEffect(() => {
     const checkForFailedTasks = async () => {
-      const userId = getCurrentUserId();
-      if (!userId) return;
-
       try {
+        const userId = getCurrentUserId();
+        if (!userId) return;
+
+        const currentTime = getCurrentTimeString();
         const today = getTodayDateString();
-        const now = new Date();
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         
         console.log(`⏰ Dashboard: Checking for failed tasks at ${currentTime}`);
-        
+
         // Get today's tasks
         const tasks = await window.electronAPI.db.getTasks(userId, today);
-        
-        let updatedCount = 0;
-        
-        // Check each task for failure
-        for (const task of tasks || []) {
-          if (!task.completed && !task.failed && task.task_time && 
-              task.task_time !== 'All day' && task.task_time < currentTime) {
-            
-            console.log(`❌ Dashboard: Task ${task.id} is overdue (${task.task_time} < ${currentTime})`);
-            
-            // Mark as failed in database
+        if (!tasks || tasks.length === 0) return;
+
+        // Find tasks that should be marked as failed
+        const tasksToFail = tasks.filter((task: Task) => {
+          if (task.completed || task.failed || !task.task_time) return false;
+          
+          // Compare current time with task time
+          return currentTime >= task.task_time;
+        });
+
+        if (tasksToFail.length > 0) {
+          console.log(`❌ Dashboard: Found ${tasksToFail.length} tasks to mark as failed`);
+          
+          // Update each failed task in database
+          for (const task of tasksToFail) {
             await window.electronAPI.db.updateTask(task.id, {
               failed: true,
               updated_at: new Date().toISOString()
             });
-            
-            updatedCount++;
             console.log(`❌ Dashboard: Marked task ${task.id} as failed`);
           }
-        }
-        
-        if (updatedCount > 0) {
-          console.log(`⏰ Dashboard: Auto-marked ${updatedCount} tasks as failed, refreshing dashboard`);
+
+          // Refresh Dashboard data after marking tasks as failed
           await fetchDashboardData();
+          
+          console.log(`✅ Dashboard: Completed failed task detection and refresh`);
         }
-        
       } catch (error) {
-        console.error('❌ Dashboard: Error checking failed tasks:', error);
+        console.error("❌ Dashboard: Error in failed task detection:", error);
       }
     };
 
     // Check immediately on mount
     checkForFailedTasks();
     
-    // Then check every minute
+    // Then check every 60 seconds
     const interval = setInterval(checkForFailedTasks, 60 * 1000);
     
     return () => clearInterval(interval);

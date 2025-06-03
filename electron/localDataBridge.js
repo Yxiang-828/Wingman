@@ -259,119 +259,58 @@ class LocalDataManager {
   // ✅ FIXED: Complete saveTask implementation with correct parameter order
   saveTask(task) {
     try {
-      console.log('📥 Raw task data received:', JSON.stringify(task, null, 2));
+      console.log('📝 LocalDataManager: Saving task:', task);
+
+      // ✅ FIX: Convert booleans to integers for SQLite
+      const sanitizedTask = {};
       
-      const sanitizedData = {};
-      
-      if (task.title !== undefined && task.title !== null) {
-        sanitizedData.title = String(task.title);
-      } else {
-        sanitizedData.title = '';
+      // Copy all fields and convert booleans
+      for (const [key, value] of Object.entries(task)) {
+        if (key === 'completed' || key === 'failed') {
+          sanitizedTask[key] = value ? 1 : 0;
+        } else {
+          sanitizedTask[key] = value;
+        }
       }
-      
-      if (task.task_date !== undefined && task.task_date !== null) {
-        sanitizedData.task_date = String(task.task_date);
+
+      if (sanitizedTask.id) {
+        // Update existing task
+        return this.updateTask(sanitizedTask.id, sanitizedTask);
       } else {
-        sanitizedData.task_date = '';
-      }
-      
-      if (task.task_time !== undefined && task.task_time !== null) {
-        sanitizedData.task_time = String(task.task_time);
-      } else {
-        sanitizedData.task_time = '';
-      }
-      
-      if (task.completed !== undefined && task.completed !== null) {
-        sanitizedData.completed = Boolean(task.completed) ? 1 : 0;
-      } else {
-        sanitizedData.completed = 0;
-      }
-      
-      if (task.user_id !== undefined && task.user_id !== null) {
-        sanitizedData.user_id = String(task.user_id);
-      } else {
-        throw new Error('user_id is required');
-      }
-      
-      sanitizedData.task_type = task.task_type ? String(task.task_type) : null;
-      sanitizedData.urgency_level = task.urgency_level ? Number(task.urgency_level) : null;
-      sanitizedData.status = task.status ? String(task.status) : null;
-      sanitizedData.due_date = task.due_date ? String(task.due_date) : null;
-      sanitizedData.last_reset_date = task.last_reset_date ? String(task.last_reset_date) : null;
-      
-      console.log('🧹 Sanitized data for SQLite:', JSON.stringify(sanitizedData, null, 2));
-      
-      if (task.id && Number(task.id) > 0) {
-        // UPDATE OPERATION
-        const updateStmt = this.db.prepare(`
-          UPDATE tasks SET 
-            title = ?,
-            task_date = ?,
-            task_time = ?,
-            completed = ?,
-            task_type = ?,
-            urgency_level = ?,
-            status = ?,
-            due_date = ?,
-            last_reset_date = ?,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = ? AND user_id = ?
-        `);
-        
-        const updateResult = updateStmt.run(
-          sanitizedData.title,
-          sanitizedData.task_date,
-          sanitizedData.task_time,
-          sanitizedData.completed,
-          sanitizedData.task_type,
-          sanitizedData.urgency_level,
-          sanitizedData.status,
-          sanitizedData.due_date,
-          sanitizedData.last_reset_date,
-          Number(task.id),
-          sanitizedData.user_id
+        // Insert new task
+        const sql = `INSERT INTO tasks (
+          user_id, title, task_date, task_time, completed, failed,
+          task_type, due_date, urgency_level, status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
+
+        const result = this.db.prepare(sql).run(
+          sanitizedTask.user_id,
+          sanitizedTask.title,
+          sanitizedTask.task_date,
+          sanitizedTask.task_time || null,
+          sanitizedTask.completed || 0,
+          sanitizedTask.failed || 0,
+          sanitizedTask.task_type || null,
+          sanitizedTask.due_date || null,
+          sanitizedTask.urgency_level || null,
+          sanitizedTask.status || null
         );
+
+        const newTask = this.db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
         
-        const selectStmt = this.db.prepare('SELECT * FROM tasks WHERE id = ?');
-        const updatedTask = selectStmt.get(Number(task.id));
-        return {
-          ...updatedTask,
-          completed: !!updatedTask.completed
-        };
-      } else {
-        // CREATE OPERATION - FIXED PARAMETER ORDER
-        const insertStmt = this.db.prepare(`
-          INSERT INTO tasks (
-            user_id, title, task_date, task_time, completed,
-            task_type, due_date, last_reset_date, urgency_level, status
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-        
-        const insertResult = insertStmt.run(
-          sanitizedData.user_id,     // 1
-          sanitizedData.title,       // 2
-          sanitizedData.task_date,   // 3
-          sanitizedData.task_time,   // 4
-          sanitizedData.completed,   // 5
-          sanitizedData.task_type,   // 6
-          sanitizedData.due_date,    // 7
-          sanitizedData.last_reset_date, // 8
-          sanitizedData.urgency_level,   // 9
-          sanitizedData.status       // 10
-        );
-        
-        const selectStmt = this.db.prepare('SELECT * FROM tasks WHERE id = ?');
-        const createdTask = selectStmt.get(insertResult.lastInsertRowid);
-        console.log('✅ Task created with ID:', insertResult.lastInsertRowid);
-        return {
-          ...createdTask,
-          completed: !!createdTask.completed
-        };
+        // ✅ FIX: Convert integers back to booleans
+        if (newTask.completed !== undefined) {
+          newTask.completed = Boolean(newTask.completed);
+        }
+        if (newTask.failed !== undefined) {
+          newTask.failed = Boolean(newTask.failed);
+        }
+
+        return newTask;
       }
     } catch (error) {
-      console.error('❌ SQLite saveTask error:', error);
-      console.error('❌ Original task data:', JSON.stringify(task, null, 2));
-      throw new Error(`SQLite saveTask failed: ${error.message}`);
+      console.error('❌ Error saving task:', error);
+      throw error;
     }
   }
 
@@ -379,40 +318,53 @@ class LocalDataManager {
   updateTask(id, updates) {
     try {
       console.log(`📝 LocalDataManager: Updating task ${id} with:`, updates);
+
+      // ✅ FIX: Convert booleans to integers FIRST before any processing
+      const sanitizedUpdates = {};
       
-      // Build the SET clause dynamically
-      const setClause = [];
-      const values = [];
-      
-      Object.keys(updates).forEach(key => {
-        if (key !== 'id') {
-          setClause.push(`${key} = ?`);
-          values.push(updates[key]);
+      // Copy all fields and convert booleans to integers
+      for (const [key, value] of Object.entries(updates)) {
+        if (key === 'completed' || key === 'failed') {
+          sanitizedUpdates[key] = value ? 1 : 0;
+        } else {
+          sanitizedUpdates[key] = value;
         }
-      });
-      
-      // Add the ID for WHERE clause
-      values.push(id);
-      
-      const sql = `UPDATE tasks SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-      
-      console.log(`🔧 SQL Query:`, sql);
-      console.log(`🔧 Values:`, values);
-      
-      const stmt = this.db.prepare(sql);
-      const result = stmt.run(...values);
-      
-      if (result.changes === 0) {
-        throw new Error(`No task found with ID ${id}`);
       }
-      
-      // Return the updated task
-      const getStmt = this.db.prepare('SELECT * FROM tasks WHERE id = ?');
-      const updatedTask = getStmt.get(id);
-      
-      console.log(`✅ Task ${id} updated successfully:`, updatedTask);
-      return updatedTask;
-      
+
+    // Build dynamic SQL
+    const fields = Object.keys(sanitizedUpdates).filter(key => key !== 'id');
+    const setClause = fields.map(field => `${field} = ?`).join(', ');
+    const values = fields.map(field => sanitizedUpdates[field]);
+    
+    const sql = `UPDATE tasks SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
+    values.push(id);
+
+    console.log('🔧 SQL Query:', sql);
+    console.log('🔧 Values:', values);
+
+    const result = this.db.prepare(sql).run(...values);
+    
+    if (result.changes === 0) {
+      throw new Error(`Task with id ${id} not found`);
+    }
+
+    // Fetch and return updated task
+    const updatedTask = this.db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+    
+    if (!updatedTask) {
+      throw new Error(`Failed to retrieve updated task ${id}`);
+    }
+
+    // ✅ FIX: Convert integers back to booleans for frontend
+    if (updatedTask.completed !== undefined) {
+      updatedTask.completed = Boolean(updatedTask.completed);
+    }
+    if (updatedTask.failed !== undefined) {
+      updatedTask.failed = Boolean(updatedTask.failed);
+    }
+
+    console.log(`✅ Task ${id} updated successfully`);
+    return updatedTask;
     } catch (error) {
       console.error(`❌ Error updating task ${id}:`, error);
       throw error;

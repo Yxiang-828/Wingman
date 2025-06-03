@@ -57,13 +57,19 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(({
     try {
       console.log(`🔄 Retrying mission ${item.id} with new time: ${newTime}`);
 
+      // ✅ FIX: Only pass primitive values that SQLite accepts
+      const taskUpdates = {
+        title: String(item.title || ''),
+        task_date: String(getTodayDateString()),
+        task_time: String(newTime),
+        completed: false,  // boolean is fine
+        failed: false,     // boolean is fine
+        user_id: String(item.user_id || getCurrentUserId() || ''),
+      };
+
       await updateTask({
-        ...(item as Task),
-        task_time: newTime,
-        task_date: getTodayDateString(),
-        failed: false,
-        completed: false,
-        updated_at: new Date().toISOString(),
+        id: Number(item.id),
+        ...taskUpdates
       });
 
       console.log(`✅ Mission ${item.id} rescheduled successfully`);

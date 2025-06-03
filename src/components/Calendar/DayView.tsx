@@ -19,7 +19,7 @@ import {
 } from "../../utils/timeUtils";
 import { getCurrentUserId } from "../../utils/auth";
 import DetailPopup from "../Common/DetailPopup";
-import TimeInput from "../Common/TimeInput"; // ✅ FIX: Proper TimeInput import
+import TimeInput from "./TimeInput"; // ✅ FIX: Proper TimeInput import
 import "./Calendar.css";
 
 const DayView: React.FC = () => {
@@ -502,63 +502,62 @@ const DayView: React.FC = () => {
     };
   }, [refreshDayView]);
 
-  // ✅ ADD: Auto-detect failed tasks every minute (copy from Notifications)
+  // ✅ ADD: Auto-detect failed tasks every 60 seconds (COPIED FROM NOTIFICATIONS)
   useEffect(() => {
     if (!date) return;
 
     const checkForFailedTasks = async () => {
-      const userId = getCurrentUserId();
-      if (!userId) return;
-
       try {
+        const userId = getCurrentUserId();
+        if (!userId) return;
+
+        const currentTime = getCurrentTimeString();
         const dateStr = formatDateToString(date);
-        const now = new Date();
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         
-        console.log(`⏰ DayView: Checking for failed tasks at ${currentTime}`);
-        
-        // Get tasks for this date
+        console.log(`⏰ DayView: Checking for failed tasks at ${currentTime} on ${dateStr}`);
+
+        // Get today's tasks
         const tasks = await window.electronAPI.db.getTasks(userId, dateStr);
-        
-        let updatedCount = 0;
-        
-        // Check each task for failure (only for today's date)
-        if (dateStr === getTodayDateString()) {
-          for (const task of tasks || []) {
-            if (!task.completed && !task.failed && task.task_time && 
-                task.task_time !== 'All day' && task.task_time < currentTime) {
-              
-              // Mark as failed in database
-              await window.electronAPI.db.updateTask(task.id, {
-                failed: true,
-                updated_at: new Date().toISOString()
-              });
-              
-              updatedCount++;
-              console.log(`❌ DayView: Marked task ${task.id} as failed (${task.task_time} < ${currentTime})`);
-            }
+        if (!tasks || tasks.length === 0) return;
+
+        // Find tasks that should be marked as failed
+        const tasksToFail = tasks.filter((task: Task) => {
+          if (task.completed || task.failed || !task.task_time) return false;
+          
+          // Compare current time with task time
+          return currentTime >= task.task_time;
+        });
+
+        if (tasksToFail.length > 0) {
+          console.log(`❌ DayView: Found ${tasksToFail.length} tasks to mark as failed`);
+          
+          // Update each failed task in database
+          for (const task of tasksToFail) {
+            await window.electronAPI.db.updateTask(task.id, {
+              failed: true,
+              updated_at: new Date().toISOString()
+            });
+            console.log(`❌ DayView: Marked task ${task.id} as failed`);
           }
+
+          // Refresh DayView data after marking tasks as failed
+          await refreshDayView();
+          
+          console.log(`✅ DayView: Completed failed task detection and refresh`);
         }
-        
-        if (updatedCount > 0) {
-          console.log(`⏰ DayView: Auto-marked ${updatedCount} tasks as failed, refreshing day view`);
-          // Refresh day view data to show updated failed status
-          setCurrentDateTasks(tasks || []);
-        }
-        
       } catch (error) {
-        console.error('❌ DayView: Error checking failed tasks:', error);
+        console.error("❌ DayView: Error in failed task detection:", error);
       }
     };
 
-    // Check immediately when date changes
+    // Check immediately on mount
     checkForFailedTasks();
     
-    // Then check every minute
+    // Then check every 60 seconds
     const interval = setInterval(checkForFailedTasks, 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [date]);
+  }, [date, refreshDayView]);
 
   // Loading state
   if (loading) {

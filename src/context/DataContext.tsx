@@ -116,20 +116,37 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     setError(null);
 
     try {
-      // ✅ REMOVED: Optimistic update broadcasting
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
 
-      // Update in SQLite
-      const updatedTask = await window.electronAPI.db.updateTask(task.id, task);
+      console.log(`📝 DataContext: Updating task ${task.id}`);
+      
+      // ✅ FIX: Ensure all values are proper SQLite types
+      const updates = {
+        title: String(task.title || ''),
+        task_date: String(task.task_date || ''),
+        task_time: task.task_time ? String(task.task_time) : null,
+        completed: Boolean(task.completed),
+        failed: Boolean(task.failed),
+        task_type: task.task_type ? String(task.task_type) : null,
+        due_date: task.due_date ? String(task.due_date) : null,
+        urgency_level: task.urgency_level ? Number(task.urgency_level) : null,
+        status: task.status ? String(task.status) : null,
+        updated_at: String(new Date().toISOString())
+      };
 
-      const finalTask = updatedTask || task;
-      console.log(`✅ Task updated in SQLite:`, finalTask);
-      return finalTask;
+      const updatedTask = await window.electronAPI.db.updateTask(Number(task.id), updates);
+      
+      if (!updatedTask) {
+        throw new Error("Failed to update task");
+      }
+
+      console.log(`✅ DataContext: Task ${task.id} updated successfully`);
+      return updatedTask;
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update task";
       console.error("❌ Error updating task:", error);
-      setError("Failed to update task");
-
-      // ✅ REMOVED: Rollback broadcasting
-
+      setError(errorMessage);
       throw error;
     } finally {
       setLoading(false);

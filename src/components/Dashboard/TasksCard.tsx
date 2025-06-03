@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
 import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import DetailPopup from "../Common/DetailPopup";
-import { getCurrentUserId, getTodayDateString } from "../../utils/helpers";
+import { getCurrentUserId } from "../../utils/helpers"; // ✅ KEEP: User ID from helpers
+import { getCurrentTimeString, getTodayDateString } from "../../utils/timeUtils"; // ✅ FIX: Time functions from timeUtils
 
 interface TasksCardProps {
   tasks: Task[];
@@ -73,16 +74,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       setTimeout(() => {
         const completedCard = document.querySelector('.completed-tasks-card');
         if (completedCard) {
-          completedCard.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center'
-          });
-          
-          // Add highlight effect
-          completedCard.classList.add('highlight-flash');
-          setTimeout(() => {
-            completedCard.classList.remove('highlight-flash');
-          }, 2000);
+          completedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
       
@@ -92,6 +84,62 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       console.error(`❌ Error toggling task ${task.id}:`, error);
     }
   }, [onToggleTask]);
+
+  // ✅ ADD: Auto-detect failed tasks every 60 seconds (COPIED FROM NOTIFICATIONS)
+  useEffect(() => {
+    const checkForFailedTasks = async () => {
+      try {
+        const userId = getCurrentUserId();
+        if (!userId) return;
+
+        const currentTime = getCurrentTimeString();
+        const today = getTodayDateString();
+        
+        console.log(`⏰ TasksCard: Checking for failed tasks at ${currentTime}`);
+
+        // Get today's tasks
+        const todaysTasks = await window.electronAPI.db.getTasks(userId, today);
+        if (!todaysTasks || todaysTasks.length === 0) return;
+
+        // Find tasks that should be marked as failed
+        const tasksToFail = todaysTasks.filter((task: Task) => {
+          if (task.completed || task.failed || !task.task_time) return false;
+          
+          // Compare current time with task time
+          return currentTime >= task.task_time;
+        });
+
+        if (tasksToFail.length > 0) {
+          console.log(`❌ TasksCard: Found ${tasksToFail.length} tasks to mark as failed`);
+          
+          // Update each failed task in database
+          for (const task of tasksToFail) {
+            await window.electronAPI.db.updateTask(task.id, {
+              failed: true,
+              updated_at: new Date().toISOString()
+            });
+            console.log(`❌ TasksCard: Marked task ${task.id} as failed`);
+          }
+
+          // Trigger dashboard refresh after marking tasks as failed
+          const refreshEvent = new CustomEvent("dashboard-refresh");
+          window.dispatchEvent(refreshEvent);
+          
+          console.log(`✅ TasksCard: Completed failed task detection and triggered refresh`);
+        }
+      } catch (error) {
+        console.error("❌ TasksCard: Error in failed task detection:", error);
+      }
+    };
+
+    // Check immediately on mount
+    checkForFailedTasks();
+    
+    // Then check every 60 seconds
+    const interval = setInterval(checkForFailedTasks, 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="dashboard-card tasks-card">
@@ -106,10 +154,30 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
       </div>
 
       <div className="dashboard-card-content">
-        {(pendingTasks.length > 0 || failedTasks.length > 0) ? (
+        {pendingTasks.length > 0 || failedTasks.length > 0 ? (
           <>
             <div className="dashboard-list">
-              {/* ✅ PENDING TASKS - Show first */}
+              {/* Failed Tasks First */}
+              {failedTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="dashboard-item task failed"
+                  onClick={() => handleTaskClick(task)}
+                >
+                  <div className="item-status failed">❌</div>
+                  <div className="item-content">
+                    <div className="item-title failed">{task.title}</div>
+                    <div className="item-meta">
+                      {task.task_time && (
+                        <span className="item-time">{task.task_time}</span>
+                      )}
+                      <span className="failed-label">Failed</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Pending Tasks */}
               {pendingTasks.map((task) => (
                 <div
                   key={task.id}
@@ -123,7 +191,6 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
                   >
                     ○
                   </div>
-                  
                   <div className="item-content">
                     <div className="item-title">{task.title}</div>
                     <div className="item-meta">
@@ -134,34 +201,8 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
                   </div>
                 </div>
               ))}
-
-              {/* ✅ FAILED TASKS - Show at bottom */}
-              {failedTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="dashboard-item task failed"
-                  onClick={() => handleTaskClick(task)}
-                >
-                  <div
-                    className="item-status failed"
-                    title="Failed task"
-                  >
-                    ✗
-                  </div>
-                  
-                  <div className="item-content">
-                    <div className="item-title failed">{task.title}</div>
-                    <div className="item-meta">
-                      {task.task_time && (
-                        <span className="item-time">{task.task_time}</span>
-                      )}
-                      <span className="failed-label">Failed</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
-            
+
             {(hasMorePending || hasMoreFailed) && (
               <button
                 className="view-more-btn"
@@ -173,8 +214,8 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           </>
         ) : (
           <div className="dashboard-empty">
-            <div className="dashboard-empty-icon">📝</div>
-            <p>No tasks for today</p>
+            <div className="dashboard-empty-icon">✅</div>
+            <p>No pending tasks for today</p>
             <button
               className="action-btn"
               onClick={() => navigate("/calendar/day?tab=tasks")}

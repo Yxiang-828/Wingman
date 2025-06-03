@@ -3,7 +3,7 @@ import { useData } from "../../context/DataContext";
 import { useNotifications } from "../../context/NotificationsContext";
 import type { CalendarEvent } from "../../api/Calendar";
 import { getCurrentUserId } from "../../utils/auth";
-import TimeInput from "../Common/TimeInput";
+import TimeInput from "./TimeInput";
 import Modal from "../Common/Modal";
 import "./Calendar.css";
 
