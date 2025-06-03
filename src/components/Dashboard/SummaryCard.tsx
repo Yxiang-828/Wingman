@@ -68,7 +68,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
           aria-label="View pending tasks"
         >
           <span className="stat-number">{stats.pendingTasks}</span>
-          <span className="stat-label">Pending Tasks</span>
+          <span className="stat-label">Tasks</span>
         </div>
         
         <div 

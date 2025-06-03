@@ -37,13 +37,11 @@
 /* NOT TOUCHING: Sidebar toggle button - keeping as requested */
 /* Updated sidebar toggle button - wider but keeping round icon */
 .sidebar-toggle {
-  position: fixed !important;
-  left: 0 !important; /* Keep it on the left side */
-  top: 50%; /* Start at center */
-  transform: translateY(-50%);
-  width: 24px; /* Increased width while still thin */
+  position: fixed;
+  left: 0px;
+  top: 50vh; /* ✅ CENTER: Start at middle of screen */
+  width: 30px;
   height: 80px;
-  border: none;
   border-radius: 0 50px 50px 0;
   cursor: pointer;
   z-index: 101;
@@ -54,39 +52,111 @@
   background: transparent;
   overflow: visible;
   box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
-  animation: float-vertical 8s ease-in-out infinite alternate !important; /* Very slow up/down animation */
-  will-change: top !important;
+  transform: translateY(-50%); /* ✅ STATIC: Just center the button */
+  /* ✅ REMOVED: animation from button - avatar will handle its own animation */
 }
 
-/* Create a floating animation that spans 50vh centered on the screen */
-@keyframes float-vertical {
+/* ✅ NEW: Apply floating animation ONLY to the avatar inside */
+.sidebar-toggle .sidebar-toggle-avatar {
+  /* ✅ SMOOTH: Pure floating animation for the avatar PNG */
+  animation: avatar-float 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ✅ NEW: Smooth floating animation specifically for avatar */
+@keyframes avatar-float {
   0% {
-    top: 20vh !important; /* Start at 20% of screen height */
+    transform: translateY(-12px); /* Start 12px above natural position */
+  }
+  50% {
+    transform: translateY(12px); /* Move 12px below natural position */
   }
   100% {
-    top: 80vh !important; /* End at 80% of screen height */
+    transform: translateY(-12px); /* Return to 12px above natural position */
   }
 }
 
-.sidebar-toggle.open {
-  left: 280px !important; /* Keep it visible when sidebar is open */
-  animation: float-vertical 8s ease-in-out infinite alternate !important; /* KEEP animation when open */
+/* ✅ KEEP: All your existing avatar styling unchanged */
+.sidebar-toggle-avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.sidebar-toggle::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(
-    --color-bg-sidebar-toggle,
-    linear-gradient(135deg, rgba(53, 53, 99, 1) 0%, rgba(30, 30, 56, 1) 100%)
-  );
-  border-radius: 0 50px 50px 0;
-  z-index: -1;
+.sidebar-toggle-avatar .wingman-avatar {
+  width: 45px !important;
+  height: 45px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
 }
+
+.sidebar-toggle-avatar .wingman-avatar__container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.sidebar-toggle-avatar .wingman-avatar__image-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.sidebar-toggle-avatar .wingman-avatar__image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* ✅ ALTERNATIVE: If you want the entire button to float (button + avatar together) */
+.sidebar-toggle-alt {
+  position: fixed;
+  left: -15px;
+  top: 50vh;
+  width: 60px;
+  height: 60px;
+  border-radius: 0 50px 50px 0;
+  cursor: pointer;
+  z-index: 101;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: visible;
+  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+  /* ✅ SMOOTH: Float the entire button */
+  animation: button-float 4s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+@keyframes button-float {
+  0% {
+    transform: translateY(calc(-50% - 15px));
+  }
+  50% {
+    transform: translateY(calc(-50% + 15px));
+  }
+  100% {
+    transform: translateY(calc(-50% - 15px));
+  }
+}
+
+/* ✅ GENTLE: Smaller floating movement */
+@keyframes avatar-float-gentle {
+  0% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+  100% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ✅ USAGE: Change the animation name to switch styles */
+/* .sidebar-toggle .sidebar-toggle-avatar { animation: avatar-float-gentle 3s ease-in-out infinite; } */
 
 .sidebar-toggle.open {
   left: 280px; /* Stay on left when open */
@@ -94,7 +164,8 @@
 }
 
 .sidebar-toggle:hover {
-  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.5);
+  /* Don't override the floating animation */
 }
 
 .sidebar-toggle-icon {

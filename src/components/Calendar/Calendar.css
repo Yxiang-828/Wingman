@@ -1502,7 +1502,6 @@
   justify-content: center;
   margin-right: 10px;
   cursor: pointer;
-  color: transparent;
   transition: all 0.2s ease;
 }
 
@@ -1511,9 +1510,9 @@
 }
 
 .task-status-circle.completed {
-  border-color: rgba(74, 222, 128, 0.5);
+  border-color: rgba(74, 222, 128, 0.7);
   background: rgba(74, 222, 128, 0.2);
-  color: rgba(74, 222, 128, 1);
+  color: #4ade80;
 }
 
 /* Processing state indicator */
