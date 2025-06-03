@@ -108,45 +108,46 @@ const DayView: React.FC = () => {
     setHighlightId(highlightParam);
   }, [location.search]);
 
-  // Fetch data when date changes
-  useEffect(() => {
+  // ✅ DEFINE: fetchDayData as a standalone function (ADD AFTER LINE 110)
+  const fetchDayData = useCallback(async () => {
     if (!date) return;
+    
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.log("DayView: No user ID, skipping fetch");
+      return;
+    }
 
-    const fetchDayData = async () => {
-      const userId = getCurrentUserId();
-      if (!userId) {
-        console.log("DayView: No user ID, skipping fetch");
-        return;
-      }
+    setLoading(true);
+    try {
+      const dateStr = format(date, "yyyy-MM-dd");
+      console.log(`📅 DayView: Fetching data for ${dateStr} (direct SQLite)`);
 
-      setLoading(true);
-      try {
-        const dateStr = format(date, "yyyy-MM-dd");
-        console.log(`📅 DayView: Fetching data for ${dateStr} (direct SQLite)`);
+      const [tasks, events] = await Promise.all([
+        window.electronAPI.db.getTasks(userId, dateStr),
+        window.electronAPI.db.getEvents(userId, dateStr),
+      ]);
 
-        const [tasks, events] = await Promise.all([
-          window.electronAPI.db.getTasks(userId, dateStr),
-          window.electronAPI.db.getEvents(userId, dateStr),
-        ]);
+      setCurrentDateTasks(tasks || []);
+      setCurrentDateEvents(events || []);
+      setRealCounts({
+        tasks: (tasks || []).length,
+        events: (events || []).length,
+      });
 
-        setCurrentDateTasks(tasks || []);
-        setCurrentDateEvents(events || []);
-        setRealCounts({
-          tasks: (tasks || []).length,
-          events: (events || []).length,
-        });
-
-        console.log(`📅 DayView: Loaded ${tasks?.length || 0} tasks, ${events?.length || 0} events`);
-      } catch (error) {
-        console.error("❌ DayView: Error fetching data:", error);
-        setError("Failed to load day data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDayData();
+      console.log(`📅 DayView: Loaded ${tasks?.length || 0} tasks, ${events?.length || 0} events`);
+    } catch (error) {
+      console.error("❌ DayView: Error fetching data:", error);
+      setError("Failed to load day data");
+    } finally {
+      setLoading(false);
+    }
   }, [date]);
+
+  // ✅ REPLACE: The existing useEffect (lines 113-143) with this simple one:
+  useEffect(() => {
+    fetchDayData();
+  }, [fetchDayData]);
 
   // Set active tab from URL
   useEffect(() => {
@@ -456,50 +457,84 @@ const DayView: React.FC = () => {
     return () => window.removeEventListener("retry-mission-refresh", handleRetryRefresh);
   }, [refreshDayView]);
 
-  // ✅ ADD: Auto-detect failed tasks every 60 seconds (COPIED FROM NOTIFICATIONS)
+  // ✅ ADD: Listen for task failure updates and auto-refresh
   useEffect(() => {
-    const checkForFailedTasks = async () => {
+    const checkAndMarkFailedTasks = async () => {
       if (!date) return;
       
-      try {
-        const userId = getCurrentUserId();
-        if (!userId) return;
-
-        const dateStr = format(date, "yyyy-MM-dd");
-        const currentTime = getCurrentTimeString();
-        
-        const tasks = await window.electronAPI.db.getTasks(userId, dateStr);
-        const tasksToFail = (tasks || []).filter((task: Task) => 
-          !task.completed && 
-          !task.failed && 
-          task.task_time && 
-          task.task_time < currentTime
-        );
-
-        if (tasksToFail.length > 0) {
-          console.log(`⏰ DayView: Found ${tasksToFail.length} tasks to mark as failed`);
-          
-          // Update failed tasks
-          for (const task of tasksToFail) {
-            await window.electronAPI.db.updateTask(task.id, { failed: true });
+      const currentTime = getCurrentTimeString();
+      const currentDate = format(date, "yyyy-MM-dd");
+      const today = getTodayDateString();
+      
+      // Only check for failures on today's date
+      if (currentDate !== today) return;
+      
+      let hasUpdates = false;
+      
+      const updatedTasks = await Promise.all(
+        currentDateTasks.map(async (task) => {
+          // Check if task should be marked as failed
+          if (
+            !task.completed &&
+            !task.failed &&
+            task.task_time &&
+            task.task_time < currentTime
+          ) {
+            try {
+              console.log(`❌ DayView: Marking task ${task.id} "${task.title}" as failed`);
+              // ✅ UPDATE DATABASE
+              await window.electronAPI.db.updateTask(task.id, { failed: true });
+              hasUpdates = true;
+              return { ...task, failed: true };
+            } catch (error) {
+              console.error(`Failed to mark task ${task.id} as failed:`, error);
+              return task;
+            }
           }
-          
-          // Refresh view
-          await refreshDayView();
-        }
-      } catch (error) {
-        console.error("❌ DayView: Error checking for failed tasks:", error);
+          return task;
+        })
+      );
+
+      // ✅ UPDATE LOCAL STATE
+      if (hasUpdates) {
+        setCurrentDateTasks(updatedTasks);
+        console.log(`✅ DayView: Marked failed tasks and updated UI`);
       }
     };
 
-    // Check immediately
-    checkForFailedTasks();
+    const handleTaskFailure = (event?: CustomEvent) => {
+      if (event?.detail?.affectedDate) {
+        const affectedDate = event.detail.affectedDate;
+        const currentDate = date ? format(date, "yyyy-MM-dd") : null;
+        
+        if (currentDate === affectedDate) {
+          console.log(`🔄 DayView: ${event.detail.totalFailed || 0} tasks failed on ${affectedDate}, refreshing`);
+          checkAndMarkFailedTasks(); // Use our function instead of fetchDayData
+        }
+      } else {
+        console.log(`🔄 DayView: Generic refresh triggered`);
+        checkAndMarkFailedTasks();
+      }
+    };
+
+    // Listen for events
+    window.addEventListener('task-failure-detected', handleTaskFailure as EventListener);
+    window.addEventListener('dashboard-refresh', handleTaskFailure);
+    window.addEventListener('notifications-refresh', handleTaskFailure);
+    window.addEventListener('retry-mission-refresh', handleTaskFailure);
     
-    // Then check every 60 seconds
-    const interval = setInterval(checkForFailedTasks, 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, [date, refreshDayView]);
+    // ✅ SINGLE INTERVAL: Check and mark failed tasks every minute
+    checkAndMarkFailedTasks(); // Run immediately
+    const interval = setInterval(checkAndMarkFailedTasks, 60 * 1000);
+
+    return () => {
+      window.removeEventListener('task-failure-detected', handleTaskFailure as EventListener);
+      window.removeEventListener('dashboard-refresh', handleTaskFailure);
+      window.removeEventListener('notifications-refresh', handleTaskFailure);
+      window.removeEventListener('retry-mission-refresh', handleTaskFailure);
+      clearInterval(interval);
+    };
+  }, [currentDateTasks, date]);
 
   // Loading state
   if (loading) {
