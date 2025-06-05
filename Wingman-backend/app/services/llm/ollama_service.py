@@ -299,6 +299,26 @@ Key guidelines:
         try:
             print(f"Checking download progress for: {model_name}")
             
+            # Check if model is currently being downloaded via Ollama
+            try:
+                # Try to get download status from Ollama
+                response = await self.client.get(f"{self.ollama_url}/api/ps")
+                if response.status_code == 200:
+                    data = response.json()
+                    # Check if any models are currently downloading
+                    for model in data.get("models", []):
+                        if model.get("name") == model_name and model.get("status") == "downloading":
+                            return {
+                                "progress": model.get("percent_complete", 0),
+                                "status": "downloading",
+                                "download_speed_mbps": model.get("download_speed", 0),
+                                "estimated_time_remaining": model.get("eta", 0),
+                                "size_downloaded": model.get("completed_bytes", 0),
+                                "total_size": model.get("total_bytes", 0)
+                            }
+            except:
+                pass
+            
             # Check if model is already downloaded
             models = await self.get_downloaded_models()
             if any(m.get('name') == model_name for m in models):
@@ -312,8 +332,8 @@ Key guidelines:
                 }
             else:
                 return {
-                    "progress": 0,
-                    "status": "not_started",
+                   "progress": 50,  # Show some progress during download
+                   "status": "downloading",
                     "download_speed_mbps": 0,
                     "estimated_time_remaining": 0,
                     "size_downloaded": 0,

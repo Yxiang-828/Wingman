@@ -478,7 +478,7 @@ class LocalDataManager {
         INSERT INTO chat_history (user_id, message, is_ai, timestamp)
         VALUES (?, ?, ?, datetime('now'))
       `);
-      const result = stmt.run(userId, message, isAi);
+      const result = stmt.run(userId, message, isAi ? 1 : 0);
       return { id: result.lastInsertRowid, success: true };
     } catch (error) {
       console.error('Error saving chat message:', error);

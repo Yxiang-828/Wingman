@@ -120,6 +120,11 @@
   cursor: not-allowed;
 }
 
+.model-card.selected {
+  border: 2px solid #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
 .model-card-header {
   display: flex;
   justify-content: space-between;
@@ -223,6 +228,7 @@
   border-radius: 12px;
   border: 2px solid var(--color-accent-primary, #646cff);
   box-shadow: 0 0 20px rgba(100, 108, 255, 0.2);
+  animation: pulse 1.5s infinite;
 }
 
 .progress-header {
@@ -255,4 +261,27 @@
   justify-content: space-between;
   font-size: 0.85rem;
   color: var(--color-text-secondary, #a0a0a0);
+}
+
+.selection-feedback {
+  background: #2a4a2a;
+  border: 1px solid #4a6a4a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.selected-badge {
+  background: #4CAF50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
 }

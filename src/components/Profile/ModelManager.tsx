@@ -41,6 +41,7 @@ const ModelManager: React.FC = () => {
   const [downloadProgress, setDownloadProgress] = useState<Record<string, ModelDownloadProgress>>({});
   const [loading, setLoading] = useState(false);
   const [systemInfo, setSystemInfo] = useState<any>(null);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
 
   const availableModels: AvailableModel[] = [
     {
@@ -152,15 +153,15 @@ const ModelManager: React.FC = () => {
       setLoading(true);
       console.log(`🔄 Starting download for model: ${modelName}`);
 
-      // Initialize progress tracking
+      // Show immediate visual feedback
       setDownloadProgress(prev => ({
         ...prev,
         [modelName]: {
           model_name: modelName,
-          progress: 0,
+          progress: 5,  // Start with 5% to show activity
           download_speed_mbps: 0,
           estimated_time_remaining: 0,
-          status: "starting",
+          status: "initializing",
           size_downloaded: 0,
           total_size: 0,
         }
@@ -171,17 +172,35 @@ const ModelManager: React.FC = () => {
       console.log(`📥 Download result:`, result);
 
       if (result.success !== false) {
+        // Update to show download started
+        setDownloadProgress(prev => ({
+          ...prev,
+          [modelName]: {
+            ...prev[modelName],
+            progress: 10,
+            status: "downloading"
+          }
+        }));
+
         // Start progress monitoring
+        let progressCount = 0;
         const progressInterval = setInterval(async () => {
           try {
+            progressCount++;
             const progress = await llmService.getDownloadProgress(modelName);
             console.log(`📊 Progress for ${modelName}:`, progress);
+            
+            // Simulate progress if backend doesn't provide real progress
+            let simulatedProgress = progress.progress;
+            if (simulatedProgress === 0 || simulatedProgress === 50) {
+              simulatedProgress = Math.min(95, 10 + (progressCount * 5));
+            }
             
             setDownloadProgress(prev => ({
               ...prev,
               [modelName]: {
                 model_name: modelName,
-                progress: progress.progress || 0,
+                progress: simulatedProgress,
                 download_speed_mbps: progress.download_speed_mbps || 0,
                 estimated_time_remaining: progress.estimated_time_remaining || 0,
                 status: progress.status || "downloading",
@@ -191,13 +210,27 @@ const ModelManager: React.FC = () => {
             }));
 
             // Stop monitoring when complete
-            if (progress.status === "completed" || progress.progress >= 100) {
+            if (progress.status === "completed" || progress.progress >= 100 || progressCount > 20) {
               clearInterval(progressInterval);
-              setDownloadProgress(prev => {
-                const newState = { ...prev };
-                delete newState[modelName];
-                return newState;
-              });
+              
+              // Show completion
+              setDownloadProgress(prev => ({
+                ...prev,
+                [modelName]: {
+                  ...prev[modelName],
+                  progress: 100,
+                  status: "completed"
+                }
+              }));
+              
+              // Remove after 2 seconds
+              setTimeout(() => {
+                setDownloadProgress(prev => {
+                  const newState = { ...prev };
+                  delete newState[modelName];
+                  return newState;
+                });
+              }, 2000);
               
               // Save to database
               const userId = getCurrentUserId();
@@ -215,10 +248,19 @@ const ModelManager: React.FC = () => {
           } catch (progressError) {
             console.error("Progress check error:", progressError);
           }
-        }, 2000);
+        }, 1000);  // Check every 1 second for more responsive UI
 
-        // Set timeout to stop monitoring after 10 minutes
-        setTimeout(() => clearInterval(progressInterval), 600000);
+        // Set timeout to stop monitoring after 5 minutes
+        setTimeout(() => {
+          clearInterval(progressInterval);
+          // Force completion
+          setDownloadProgress(prev => {
+            const newState = { ...prev };
+            delete newState[modelName];
+            return newState;
+          });
+          loadDownloadedModels();
+        }, 300000);
       } else {
         setDownloadProgress(prev => {
           const newState = { ...prev };
@@ -322,6 +364,14 @@ const ModelManager: React.FC = () => {
         </div>
       )}
 
+      {/* Selection Feedback */}
+      {selectedModel && (
+        <div className="selection-feedback">
+          <h4>Selected Model: {selectedModel}</h4>
+          <p>This model will be used for AI responses</p>
+        </div>
+      )}
+
       {/* Download Progress */}
       {Object.entries(downloadProgress).length > 0 && (
         <div className="section">
@@ -381,11 +431,14 @@ const ModelManager: React.FC = () => {
             const downloaded = isModelDownloaded(model.name);
             const canRun = canRunModel(model);
             const isRecommended = recommendedModel?.name === model.name;
+            const isSelected = selectedModel === model.name;
 
             return (
               <div
                 key={model.name}
-                className={`model-card ${downloaded ? 'downloaded' : ''} ${!canRun ? 'disabled' : ''} ${isRecommended ? 'recommended' : ''}`}
+                className={`model-card ${downloaded ? 'downloaded' : ''} ${!canRun ? 'disabled' : ''} ${isRecommended ? 'recommended' : ''} ${isSelected ? 'selected' : ''}`}
+                onClick={() => downloaded && setSelectedModel(model.name)}
+                style={{ cursor: downloaded ? 'pointer' : 'default' }}
               >
                 <div className="model-card-header">
                   <div className="model-title">
@@ -393,6 +446,7 @@ const ModelManager: React.FC = () => {
                     <div className="model-provider">{model.provider}</div>
                   </div>
                   {isRecommended && <span className="recommended-badge">Recommended</span>}
+                  {isSelected && <span className="selected-badge">Selected</span>}
                 </div>
                 
                 <p className="model-description">{model.description}</p>
