@@ -205,7 +205,7 @@ async function startBackend(backendDir) {
       
       backendProcess.stderr.on('data', (data) => {
         const error = data.toString();
-        console.error('🐍 Backend Error:', error);
+        console.error('🐍 Backend Status:', error);
         
         if (error.includes('Address already in use')) {
           console.error('❌ Port 8080 is still in use');
@@ -318,13 +318,10 @@ function createWindow() {
 // ✅ COMPLETE: Initialize LocalDataManager and setup ALL IPC handlers
 async function setupDatabaseIPC() {
   try {
-    console.log('📊 Initializing LocalDataManager...');
+    // Initialize LocalDataManager
     dataManager = new LocalDataManager();
-    console.log('✅ LocalDataManager created');
-    
-    console.log('📊 Database path:', dataManager.dbPath);
-    console.log('📊 Database exists:', require('fs').existsSync(dataManager.dbPath));
-    
+    console.log('✅ LocalDataManager initialized successfully');
+
     // ✅ CRITICAL TEST: Verify dataManager methods exist
     console.log('🧪 Testing dataManager methods:');
     console.log('- getTasks method:', typeof dataManager.getTasks);
@@ -595,6 +592,71 @@ async function setupDatabaseIPC() {
       }
     });
 
+    // ✅ USER SETTINGS HANDLERS
+    ipcMain.handle('db:getUserSettings', async (event, userId) => {
+      try {
+        console.log(`🔄 IPC: Getting user settings for user ${userId}`);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const settings = dataManager.getUserSettings(userId);
+        console.log(`✅ IPC: Found settings for user ${userId}`);
+        return settings;
+      } catch (error) {
+        console.error('❌ IPC: Error getting user settings:', error);
+        throw new Error(`Failed to get user settings: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('db:saveUserSettings', async (event, userId, settings) => {
+      try {
+        console.log(`🔄 IPC: Saving user settings for user ${userId}`, settings);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const result = dataManager.saveUserSettings(userId, settings);
+        console.log(`✅ IPC: User settings saved successfully for user ${userId}`);
+        return result;
+      } catch (error) {
+        console.error('❌ IPC: Error saving user settings:', error);
+        throw new Error(`Failed to save user settings: ${error.message}`);
+      }
+    });
+
+    // ✅ MODEL HANDLERS
+    ipcMain.handle('db:getDownloadedModels', async (event, userId) => {
+      try {
+        if (!dataManager) throw new Error('DataManager not initialized');
+        console.log(`🔄 IPC: Getting downloaded models for user ${userId}`);
+        return dataManager.getDownloadedModels(userId);
+      } catch (error) {
+        console.error('IPC Error - getDownloadedModels:', error);
+        return [];
+      }
+    });
+
+    ipcMain.handle('db:saveDownloadedModel', async (event, userId, modelData) => {
+      try {
+        if (!dataManager) throw new Error('DataManager not initialized');
+        console.log(`🔄 IPC: Saving downloaded model for user ${userId}:`, modelData);
+        return dataManager.saveDownloadedModel(userId, modelData);
+      } catch (error) {
+        console.error('IPC Error - saveDownloadedModel:', error);
+        throw error;
+      }
+    });
+
+    ipcMain.handle('db:deleteDownloadedModel', async (event, userId, modelName) => {
+      try {
+        if (!dataManager) throw new Error('DataManager not initialized');
+        console.log(`🔄 IPC: Deleting downloaded model for user ${userId}: ${modelName}`);
+        return dataManager.deleteDownloadedModel(userId, modelName);
+      } catch (error) {
+        console.error('IPC Error - deleteDownloadedModel:', error);
+        throw error;
+      }
+    });
+
     // ✅ VERIFY ALL HANDLERS ARE REGISTERED
     const registeredHandlers = [
       'db:getTasks', 'db:saveTask', 'db:updateTask', 'db:deleteTask',
@@ -602,7 +664,9 @@ async function setupDatabaseIPC() {
       'db:getDiaryEntries', 'db:saveDiaryEntry',
       'db:getChatHistory', 'db:saveChatMessage', 'db:clearChatHistory',
       'db:getStorageStats', 'get-gpu-info',
-      'open-external', 'get-version', 'select-file', 'save-file', 'read-file', 'write-file'
+      'open-external', 'get-version', 'select-file', 'save-file', 'read-file', 'write-file',
+      'db:getUserSettings', 'db:saveUserSettings',
+      'db:getDownloadedModels', 'db:saveDownloadedModel', 'db:deleteDownloadedModel'
     ];
 
     console.log('✅ All database IPC handlers registered successfully:');

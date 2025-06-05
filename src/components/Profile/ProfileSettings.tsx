@@ -4,6 +4,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useBackground } from "../../context/BackgroundContext";
 import { llmService } from "../../services/llmService";
 import "./Settings.css"; // ✅ USING THE CSS!
+import ModelManager from './ModelManager';
 
 interface AvailableModels {
   models: Record<string, any>;
@@ -299,6 +300,9 @@ const ProfileSettings: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Model Manager */}
+      <ModelManager />
 
       {/* Appearance Settings */}
       <div className="settings-card">

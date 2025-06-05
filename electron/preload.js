@@ -62,6 +62,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getUserSettings: (userId) => 
       ipcRenderer.invoke('db:getUserSettings', userId),
 
+    // ✅ NEW: Model Download operations
+    getDownloadedModels: (userId) => 
+      ipcRenderer.invoke('db:getDownloadedModels', userId),
+    saveDownloadedModel: (userId, modelData) => 
+      ipcRenderer.invoke('db:saveDownloadedModel', userId, modelData),
+    deleteDownloadedModel: (userId, modelName) => 
+      ipcRenderer.invoke('db:deleteDownloadedModel', userId, modelName),
+
     // ═══════════════════════════════════════════════════════════════
     // 🎯 **UTILITY OPERATIONS**
     // ═══════════════════════════════════════════════════════════════

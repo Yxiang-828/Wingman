@@ -38,15 +38,11 @@ class LocalDataManager {
     
     for (const schemaPath of schemaPaths) {
       if (fs.existsSync(schemaPath)) {
-        try {
-          const schema = fs.readFileSync(schemaPath, 'utf8');
-          this.db.exec(schema);
-          console.log(`✅ LocalDataManager: Schema loaded from ${schemaPath}`);
-          schemaLoaded = true;
-          break;
-        } catch (error) {
-          console.warn(`⚠️ LocalDataManager: Could not load schema from ${schemaPath}:`, error.message);
-        }
+        console.log(`📋 LocalDataManager: Loading schema from ${schemaPath}`);
+        const schema = fs.readFileSync(schemaPath, 'utf8');
+        this.db.exec(schema);
+        schemaLoaded = true;
+        break;
       }
     }
     
@@ -62,31 +58,56 @@ class LocalDataManager {
   // ✅ NEW: Database migration method
   migrateDatabase() {
     try {
-      console.log('🔄 LocalDataManager: Running database migrations...');
-      
       // Check if 'failed' column exists in tasks table
       const tableInfo = this.db.prepare("PRAGMA table_info(tasks)").all();
       const hasFailedColumn = tableInfo.some(column => column.name === 'failed');
       
       if (!hasFailedColumn) {
-        console.log('📝 LocalDataManager: Adding missing "failed" column to tasks table');
+        console.log('🔄 LocalDataManager: Adding failed column to tasks table');
         this.db.exec('ALTER TABLE tasks ADD COLUMN failed BOOLEAN DEFAULT FALSE');
-        console.log('✅ LocalDataManager: "failed" column added successfully');
-      } else {
-        console.log('✅ LocalDataManager: "failed" column already exists');
       }
-      
-      // ✅ NOW create the failed-related indexes (only after column exists)
-      console.log('📝 LocalDataManager: Creating failed-related indexes...');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_failed ON tasks(failed)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(completed, failed)');
-      console.log('✅ LocalDataManager: Failed-related indexes created');
-      
-      console.log('✅ LocalDataManager: Database migrations completed');
-      
+
+      // Ensure downloaded_models table exists
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS downloaded_models (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL,
+          model_name TEXT NOT NULL,
+          size_mb INTEGER DEFAULT 0,
+          status TEXT DEFAULT 'completed',
+          download_date TEXT DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id, model_name)
+        )
+      `);
+
+      // Ensure user_settings table exists
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS user_settings (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL UNIQUE,
+          ai_model TEXT DEFAULT 'llama3.2:1b',
+          ai_model_auto_selected BOOLEAN DEFAULT FALSE,
+          theme TEXT DEFAULT 'dark',
+          background TEXT DEFAULT 'default',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Ensure chat_quick_prompts table exists
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS chat_quick_prompts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL,
+          prompt_text TEXT NOT NULL,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          last_used_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          usage_count INTEGER DEFAULT 0
+        )
+      `);
+
     } catch (error) {
       console.error('❌ LocalDataManager: Migration error:', error);
-      throw error;
     }
   }
 
@@ -171,32 +192,13 @@ class LocalDataManager {
     `;
 
     try {
-      // ✅ FIXED: Create tables first
       this.db.exec(createTasksTable);
       this.db.exec(createEventsTable);
       this.db.exec(createDiaryTable);
       this.db.exec(createChatSessionsTable);
       this.db.exec(createChatMessagesTable);
       this.db.exec(createChatHistoryTable);
-      
-      // ✅ FIXED: Create indexes AFTER tables are created and migrated
-      console.log('✅ LocalDataManager: Tables created, now creating indexes...');
-      
-      // Basic indexes (safe to create)
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_calendar_user_id ON calendar_events(user_id)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_calendar_date ON calendar_events(event_date)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_diary_user_id ON diary_entries(user_id)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_diary_date ON diary_entries(entry_date)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_messages_user ON chat_messages(user_id)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id)');
-      this.db.exec('CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp)');
-      
-      console.log('✅ LocalDataManager: All tables and basic indexes created successfully');
+      console.log('✅ LocalDataManager: Tables created inline successfully');
     } catch (error) {
       console.error('❌ LocalDataManager: Error creating tables inline:', error);
       throw error;
@@ -208,25 +210,26 @@ class LocalDataManager {
     try {
       const stmt = this.db.prepare(`
         SELECT * FROM tasks 
-        WHERE user_id = ? AND task_date = ?
+        WHERE user_id = ? AND task_date = ? 
         ORDER BY 
           CASE WHEN task_time IS NULL OR task_time = '' THEN 1 ELSE 0 END,
-          task_time ASC,
-          created_at ASC
+          task_time ASC
       `);
       
       const tasks = stmt.all(userId, date);
       
-      // ✅ AUTO-DETECT: Check and mark failed tasks for today only
-      if (date === new Date().toISOString().split('T')[0]) {
+      // ✅ ENHANCED: Auto-mark overdue tasks as failed
+      if (tasks.length > 0) {
         const now = new Date();
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const currentTime = now.toTimeString().slice(0, 8); // HH:MM:SS format
+        const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD format
         
         let updatedCount = 0;
         
-        // ✅ FIX: Change < to <= to match Dashboard/DayView behavior
         tasks.forEach(task => {
-          if (!task.completed && !task.failed && task.task_time && 
+          // Only check tasks for today or past dates
+          if (task.task_date <= currentDate && 
+              !task.completed && !task.failed && task.task_time && 
               task.task_time !== 'All day' && task.task_time <= currentTime) {  // ✅ CHANGED: <= instead of <
             
             // Mark as failed in database
@@ -259,57 +262,29 @@ class LocalDataManager {
   // ✅ FIXED: Complete saveTask implementation with correct parameter order
   saveTask(task) {
     try {
-      console.log('📝 LocalDataManager: Saving task:', task);
-
-      // ✅ FIX: Convert booleans to integers for SQLite
-      const sanitizedTask = {};
+      const stmt = this.db.prepare(`
+        INSERT INTO tasks (user_id, title, task_date, task_time, completed, failed, task_type, due_date, urgency_level, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      `);
       
-      // Copy all fields and convert booleans
-      for (const [key, value] of Object.entries(task)) {
-        if (key === 'completed' || key === 'failed') {
-          sanitizedTask[key] = value ? 1 : 0;
-        } else {
-          sanitizedTask[key] = value;
-        }
-      }
-
-      if (sanitizedTask.id) {
-        // Update existing task
-        return this.updateTask(sanitizedTask.id, sanitizedTask);
-      } else {
-        // Insert new task
-        const sql = `INSERT INTO tasks (
-          user_id, title, task_date, task_time, completed, failed,
-          task_type, due_date, urgency_level, status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
-
-        const result = this.db.prepare(sql).run(
-          sanitizedTask.user_id,
-          sanitizedTask.title,
-          sanitizedTask.task_date,
-          sanitizedTask.task_time || null,
-          sanitizedTask.completed || 0,
-          sanitizedTask.failed || 0,
-          sanitizedTask.task_type || null,
-          sanitizedTask.due_date || null,
-          sanitizedTask.urgency_level || null,
-          sanitizedTask.status || null
-        );
-
-        const newTask = this.db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
-        
-        // ✅ FIX: Convert integers back to booleans
-        if (newTask.completed !== undefined) {
-          newTask.completed = Boolean(newTask.completed);
-        }
-        if (newTask.failed !== undefined) {
-          newTask.failed = Boolean(newTask.failed);
-        }
-
-        return newTask;
-      }
+      const result = stmt.run(
+        task.user_id,
+        task.title,
+        task.task_date,
+        task.task_time || null,
+        task.completed || false,
+        task.failed || false,
+        task.task_type || null,
+        task.due_date || null,
+        task.urgency_level || null,
+        task.status || null
+      );
+      
+      console.log(`✅ saveTask: Task "${task.title}" saved with ID ${result.lastInsertRowid}`);
+      return { id: result.lastInsertRowid, success: true };
+      
     } catch (error) {
-      console.error('❌ Error saving task:', error);
+      console.error('❌ saveTask error:', error);
       throw error;
     }
   }
@@ -317,56 +292,42 @@ class LocalDataManager {
   // ✅ FIXED: Complete updateTask implementation that properly handles 'failed' field
   updateTask(id, updates) {
     try {
-      console.log(`📝 LocalDataManager: Updating task ${id} with:`, updates);
-
-      // ✅ FIX: Convert booleans to integers FIRST before any processing
-      const sanitizedUpdates = {};
+      const allowedFields = ['title', 'task_date', 'task_time', 'completed', 'failed', 'task_type', 'due_date', 'urgency_level', 'status'];
+      const updateFields = [];
+      const values = [];
       
-      // Copy all fields and convert booleans to integers
-      for (const [key, value] of Object.entries(updates)) {
-        if (key === 'completed' || key === 'failed') {
-          sanitizedUpdates[key] = value ? 1 : 0;
-        } else {
-          sanitizedUpdates[key] = value;
+      Object.keys(updates).forEach(key => {
+        if (allowedFields.includes(key)) {
+          updateFields.push(`${key} = ?`);
+          values.push(updates[key]);
         }
+      });
+      
+      if (updateFields.length === 0) {
+        throw new Error('No valid fields to update');
       }
-
-    // Build dynamic SQL
-    const fields = Object.keys(sanitizedUpdates).filter(key => key !== 'id');
-    const setClause = fields.map(field => `${field} = ?`).join(', ');
-    const values = fields.map(field => sanitizedUpdates[field]);
-    
-    const sql = `UPDATE tasks SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;
-    values.push(id);
-
-    console.log('🔧 SQL Query:', sql);
-    console.log('🔧 Values:', values);
-
-    const result = this.db.prepare(sql).run(...values);
-    
-    if (result.changes === 0) {
-      throw new Error(`Task with id ${id} not found`);
-    }
-
-    // Fetch and return updated task
-    const updatedTask = this.db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
-    
-    if (!updatedTask) {
-      throw new Error(`Failed to retrieve updated task ${id}`);
-    }
-
-    // ✅ FIX: Convert integers back to booleans for frontend
-    if (updatedTask.completed !== undefined) {
-      updatedTask.completed = Boolean(updatedTask.completed);
-    }
-    if (updatedTask.failed !== undefined) {
-      updatedTask.failed = Boolean(updatedTask.failed);
-    }
-
-    console.log(`✅ Task ${id} updated successfully`);
-    return updatedTask;
+      
+      updateFields.push('updated_at = datetime(\'now\')');
+      values.push(id);
+      
+      const stmt = this.db.prepare(`
+        UPDATE tasks 
+        SET ${updateFields.join(', ')} 
+        WHERE id = ?
+      `);
+      
+      const result = stmt.run(...values);
+      
+      if (result.changes > 0) {
+        console.log(`✅ updateTask: Task ${id} updated successfully`);
+        return { success: true, changes: result.changes };
+      } else {
+        console.log(`⚠️ updateTask: No task found with ID ${id}`);
+        return { success: false, error: 'Task not found' };
+      }
+      
     } catch (error) {
-      console.error(`❌ Error updating task ${id}:`, error);
+      console.error('❌ updateTask error:', error);
       throw error;
     }
   }
@@ -375,10 +336,18 @@ class LocalDataManager {
   deleteTask(id) {
     try {
       const stmt = this.db.prepare('DELETE FROM tasks WHERE id = ?');
-      stmt.run(id);
-      return { success: true };
+      const result = stmt.run(id);
+      
+      if (result.changes > 0) {
+        console.log(`✅ deleteTask: Task ${id} deleted successfully`);
+        return { success: true, deleted: true };
+      } else {
+        console.log(`⚠️ deleteTask: No task found with ID ${id}`);
+        return { success: false, error: 'Task not found' };
+      }
+      
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error('❌ deleteTask error:', error);
       throw error;
     }
   }
@@ -386,14 +355,12 @@ class LocalDataManager {
   // ✅ FIXED: Complete getEvents implementation
   getEvents(userId, date) {
     try {
-      const query = date 
-        ? 'SELECT * FROM calendar_events WHERE user_id = ? AND event_date = ? ORDER BY event_time'
-        : 'SELECT * FROM calendar_events WHERE user_id = ? ORDER BY event_date DESC, event_time';
-      
-      const stmt = this.db.prepare(query);
-      const rows = date ? stmt.all(userId, date) : stmt.all(userId);
-      
-      return rows;
+      const stmt = this.db.prepare(`
+        SELECT * FROM calendar_events 
+        WHERE user_id = ? AND event_date = ? 
+        ORDER BY event_time ASC
+      `);
+      return stmt.all(userId, date);
     } catch (error) {
       console.error('Error getting events:', error);
       return [];
@@ -403,66 +370,24 @@ class LocalDataManager {
   // ✅ FIXED: Complete saveEvent implementation
   saveEvent(event) {
     try {
-      console.log('📥 Raw event data received:', JSON.stringify(event, null, 2));
+      const stmt = this.db.prepare(`
+        INSERT INTO calendar_events (user_id, title, event_date, event_time, type, description, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+      `);
       
-      const sanitizedEvent = {};
+      const result = stmt.run(
+        event.user_id,
+        event.title,
+        event.event_date,
+        event.event_time || null,
+        event.type || null,
+        event.description || null
+      );
       
-      const allowedFields = ['id', 'user_id', 'title', 'event_date', 'event_time', 'type', 'description'];
-      
-      allowedFields.forEach(field => {
-        if (event[field] !== undefined && event[field] !== null) {
-          sanitizedEvent[field] = String(event[field]);
-        }
-      });
-      
-      if (sanitizedEvent.id && Number(sanitizedEvent.id) > 0) {
-        // UPDATE OPERATION
-        const updateStmt = this.db.prepare(`
-          UPDATE calendar_events SET 
-            title = ?, event_date = ?, event_time = ?, type = ?, description = ?,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = ? AND user_id = ?
-        `);
-        
-        updateStmt.run(
-          sanitizedEvent.title,
-          sanitizedEvent.event_date,
-          sanitizedEvent.event_time,
-          sanitizedEvent.type,
-          sanitizedEvent.description,
-          Number(sanitizedEvent.id),
-          sanitizedEvent.user_id
-        );
-        
-        const selectStmt = this.db.prepare('SELECT * FROM calendar_events WHERE id = ?');
-        return selectStmt.get(Number(sanitizedEvent.id));
-      } else {
-        // CREATE OPERATION
-        const insertStmt = this.db.prepare(`
-          INSERT INTO calendar_events (
-            user_id, title, event_date, event_time, type, description
-          ) VALUES (?, ?, ?, ?, ?, ?)
-        `);
-        
-        const result = insertStmt.run(
-          sanitizedEvent.user_id,
-          sanitizedEvent.title,
-          sanitizedEvent.event_date,
-          sanitizedEvent.event_time,
-          sanitizedEvent.type,
-          sanitizedEvent.description
-        );
-        
-        const getStmt = this.db.prepare('SELECT * FROM calendar_events WHERE id = ?');
-        const createdEvent = getStmt.get(result.lastInsertRowid);
-        
-        console.log('✅ Event created with ID:', result.lastInsertRowid);
-        return createdEvent;
-      }
+      return { id: result.lastInsertRowid, success: true };
     } catch (error) {
-      console.error('❌ SQLite saveEvent error:', error);
-      console.error('❌ Original event data:', JSON.stringify(event, null, 2));
-      throw new Error(`SQLite saveEvent failed: ${error.message}`);
+      console.error('Error saving event:', error);
+      throw error;
     }
   }
 
@@ -470,8 +395,8 @@ class LocalDataManager {
   deleteEvent(id) {
     try {
       const stmt = this.db.prepare('DELETE FROM calendar_events WHERE id = ?');
-      stmt.run(id);
-      return { success: true };
+      const result = stmt.run(id);
+      return { success: result.changes > 0, deleted: result.changes > 0 };
     } catch (error) {
       console.error('Error deleting event:', error);
       throw error;
@@ -481,14 +406,22 @@ class LocalDataManager {
   // ✅ FIXED: Complete getDiaryEntries implementation
   getDiaryEntries(userId, date) {
     try {
-      const query = date 
-        ? 'SELECT * FROM diary_entries WHERE user_id = ? AND entry_date = ? ORDER BY created_at DESC'
-        : 'SELECT * FROM diary_entries WHERE user_id = ? ORDER BY entry_date DESC, created_at DESC';
-      
-      const stmt = this.db.prepare(query);
-      const rows = date ? stmt.all(userId, date) : stmt.all(userId);
-      
-      return rows;
+      if (date) {
+        const stmt = this.db.prepare(`
+          SELECT * FROM diary_entries 
+          WHERE user_id = ? AND entry_date = ? 
+          ORDER BY created_at DESC
+        `);
+        return stmt.all(userId, date);
+      } else {
+        const stmt = this.db.prepare(`
+          SELECT * FROM diary_entries 
+          WHERE user_id = ? 
+          ORDER BY entry_date DESC, created_at DESC 
+          LIMIT 50
+        `);
+        return stmt.all(userId);
+      }
     } catch (error) {
       console.error('Error getting diary entries:', error);
       return [];
@@ -498,66 +431,27 @@ class LocalDataManager {
   // ✅ FIXED: Complete saveDiaryEntry implementation
   saveDiaryEntry(entry) {
     try {
-      console.log('📥 Raw diary entry received:', JSON.stringify(entry, null, 2));
-      
-      const sanitizedEntry = {};
-      
-      const allowedFields = ['id', 'user_id', 'entry_date', 'title', 'content', 'mood'];
-      
-      allowedFields.forEach(field => {
-        if (entry[field] !== undefined && entry[field] !== null) {
-          sanitizedEntry[field] = String(entry[field]);
-        }
-      });
-      
-      console.log('🧹 Sanitized diary entry for SQLite:', JSON.stringify(sanitizedEntry, null, 2));
-      
-      if (sanitizedEntry.id && Number(sanitizedEntry.id) > 0) {
-        // UPDATE OPERATION
-        const updateStmt = this.db.prepare(`
-          UPDATE diary_entries SET 
-            entry_date = ?, title = ?, content = ?, mood = ?,
-            updated_at = CURRENT_TIMESTAMP
+      if (entry.id) {
+        // Update existing entry
+        const stmt = this.db.prepare(`
+          UPDATE diary_entries 
+          SET title = ?, content = ?, mood = ?, updated_at = datetime('now') 
           WHERE id = ? AND user_id = ?
         `);
-        
-        updateStmt.run(
-          sanitizedEntry.entry_date,
-          sanitizedEntry.title,
-          sanitizedEntry.content,
-          sanitizedEntry.mood,
-          Number(sanitizedEntry.id),
-          sanitizedEntry.user_id
-        );
-        
-        const selectStmt = this.db.prepare('SELECT * FROM diary_entries WHERE id = ?');
-        return selectStmt.get(Number(sanitizedEntry.id));
+        const result = stmt.run(entry.title, entry.content, entry.mood, entry.id, entry.user_id);
+        return { id: entry.id, success: result.changes > 0 };
       } else {
-        // CREATE OPERATION
-        const insertStmt = this.db.prepare(`
-          INSERT INTO diary_entries (
-            user_id, entry_date, title, content, mood
-          ) VALUES (?, ?, ?, ?, ?)
+        // Create new entry
+        const stmt = this.db.prepare(`
+          INSERT INTO diary_entries (user_id, entry_date, title, content, mood, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         `);
-        
-        const result = insertStmt.run(
-          sanitizedEntry.user_id,
-          sanitizedEntry.entry_date,
-          sanitizedEntry.title,
-          sanitizedEntry.content,
-          sanitizedEntry.mood
-        );
-        
-        const getStmt = this.db.prepare('SELECT * FROM diary_entries WHERE id = ?');
-        const createdEntry = getStmt.get(result.lastInsertRowid);
-        
-        console.log('✅ Diary entry created with ID:', result.lastInsertRowid);
-        return createdEntry;
+        const result = stmt.run(entry.user_id, entry.entry_date, entry.title, entry.content, entry.mood);
+        return { id: result.lastInsertRowid, success: true };
       }
     } catch (error) {
-      console.error('❌ SQLite saveDiaryEntry error:', error);
-      console.error('❌ Original entry data:', JSON.stringify(entry, null, 2));
-      throw new Error(`SQLite saveDiaryEntry failed: ${error.message}`);
+      console.error('Error saving diary entry:', error);
+      throw error;
     }
   }
 
@@ -567,15 +461,10 @@ class LocalDataManager {
       const stmt = this.db.prepare(`
         SELECT * FROM chat_history 
         WHERE user_id = ? 
-        ORDER BY timestamp DESC 
+        ORDER BY timestamp ASC 
         LIMIT ?
       `);
-      
-      const rows = stmt.all(userId, limit);
-      return rows.map(row => ({
-        ...row,
-        is_ai: !!row.is_ai
-      })).reverse();
+      return stmt.all(userId, limit);
     } catch (error) {
       console.error('Error getting chat history:', error);
       return [];
@@ -586,19 +475,11 @@ class LocalDataManager {
   saveChatMessage(message, isAi, userId, sessionId) {
     try {
       const stmt = this.db.prepare(`
-        INSERT INTO chat_history (user_id, is_ai, message)
-        VALUES (?, ?, ?)
+        INSERT INTO chat_history (user_id, message, is_ai, timestamp)
+        VALUES (?, ?, ?, datetime('now'))
       `);
-      
-      const result = stmt.run(userId, isAi ? 1 : 0, message);
-      
-      return {
-        id: result.lastInsertRowid,
-        user_id: userId,
-        is_ai: isAi,
-        message: message,
-        timestamp: new Date().toISOString()
-      };
+      const result = stmt.run(userId, message, isAi);
+      return { id: result.lastInsertRowid, success: true };
     } catch (error) {
       console.error('Error saving chat message:', error);
       throw error;
@@ -609,8 +490,8 @@ class LocalDataManager {
   clearChatHistory(userId) {
     try {
       const stmt = this.db.prepare('DELETE FROM chat_history WHERE user_id = ?');
-      stmt.run(userId);
-      return { success: true };
+      const result = stmt.run(userId);
+      return { success: true, deleted_count: result.changes };
     } catch (error) {
       console.error('Error clearing chat history:', error);
       throw error;
@@ -620,21 +501,28 @@ class LocalDataManager {
   // ✅ FIXED: Complete getStorageStats implementation
   getStorageStats(userId) {
     try {
-      const taskCount = this.db.prepare('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?').get(userId);
-      const eventCount = this.db.prepare('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?').get(userId);
-      const diaryCount = this.db.prepare('SELECT COUNT(*) as count FROM diary_entries WHERE user_id = ?').get(userId);
-      const chatCount = this.db.prepare('SELECT COUNT(*) as count FROM chat_history WHERE user_id = ?').get(userId);
+      const stats = {};
       
-      return {
-        tasks: taskCount.count,
-        events: eventCount.count,
-        diary_entries: diaryCount.count,
-        chat_messages: chatCount.count,
-        database_path: this.dbPath
-      };
+      // Count tasks
+      const tasksStmt = this.db.prepare('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?');
+      stats.total_tasks = tasksStmt.get(userId).count;
+      
+      // Count events
+      const eventsStmt = this.db.prepare('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?');
+      stats.total_events = eventsStmt.get(userId).count;
+      
+      // Count diary entries
+      const diaryStmt = this.db.prepare('SELECT COUNT(*) as count FROM diary_entries WHERE user_id = ?');
+      stats.total_diary_entries = diaryStmt.get(userId).count;
+      
+      // Count chat messages
+      const chatStmt = this.db.prepare('SELECT COUNT(*) as count FROM chat_history WHERE user_id = ?');
+      stats.total_chat_messages = chatStmt.get(userId).count;
+      
+      return stats;
     } catch (error) {
       console.error('Error getting storage stats:', error);
-      return { tasks: 0, events: 0, diary_entries: 0, chat_messages: 0 };
+      return {};
     }
   }
 
@@ -643,11 +531,10 @@ class LocalDataManager {
     try {
       const stmt = this.db.prepare(`
         SELECT * FROM chat_quick_prompts 
-        WHERE user_id = ?
-        ORDER BY last_used_at DESC, usage_count DESC
+        WHERE user_id = ? 
+        ORDER BY usage_count DESC, last_used_at DESC 
         LIMIT 4
       `);
-      
       return stmt.all(userId);
     } catch (error) {
       console.error('Error getting quick prompts:', error);
@@ -657,52 +544,12 @@ class LocalDataManager {
 
   saveQuickPrompt(userId, promptText) {
     try {
-      // Check if prompt already exists
-      const existingStmt = this.db.prepare(`
-        SELECT id FROM chat_quick_prompts 
-        WHERE user_id = ? AND prompt_text = ?
+      const stmt = this.db.prepare(`
+        INSERT INTO chat_quick_prompts (user_id, prompt_text, created_at, last_used_at, usage_count)
+        VALUES (?, ?, datetime('now'), datetime('now'), 0)
       `);
-      
-      const existing = existingStmt.get(userId, promptText);
-      
-      if (existing) {
-        // Update existing prompt
-        const updateStmt = this.db.prepare(`
-          UPDATE chat_quick_prompts 
-          SET last_used_at = CURRENT_TIMESTAMP, usage_count = usage_count + 1
-          WHERE id = ?
-        `);
-        updateStmt.run(existing.id);
-        return existing.id;
-      } else {
-        // Check if user has 4+ prompts
-        const countStmt = this.db.prepare(`
-          SELECT COUNT(*) as count FROM chat_quick_prompts WHERE user_id = ?
-        `);
-        const { count } = countStmt.get(userId);
-        
-        if (count >= 4) {
-          // Delete oldest prompt
-          const deleteStmt = this.db.prepare(`
-            DELETE FROM chat_quick_prompts 
-            WHERE user_id = ? AND id = (
-              SELECT id FROM chat_quick_prompts 
-              WHERE user_id = ? 
-              ORDER BY last_used_at ASC, usage_count ASC 
-              LIMIT 1
-            )
-          `);
-          deleteStmt.run(userId, userId);
-        }
-        
-        // Insert new prompt
-        const insertStmt = this.db.prepare(`
-          INSERT INTO chat_quick_prompts (user_id, prompt_text)
-          VALUES (?, ?)
-        `);
-        const result = insertStmt.run(userId, promptText);
-        return result.lastInsertRowid;
-      }
+      const result = stmt.run(userId, promptText);
+      return { id: result.lastInsertRowid, success: true };
     } catch (error) {
       console.error('Error saving quick prompt:', error);
       throw error;
@@ -711,10 +558,9 @@ class LocalDataManager {
 
   deleteQuickPrompt(promptId) {
     try {
-      const stmt = this.db.prepare(`
-        DELETE FROM chat_quick_prompts WHERE id = ?
-      `);
-      return stmt.run(promptId);
+      const stmt = this.db.prepare('DELETE FROM chat_quick_prompts WHERE id = ?');
+      const result = stmt.run(promptId);
+      return { success: result.changes > 0 };
     } catch (error) {
       console.error('Error deleting quick prompt:', error);
       throw error;
@@ -725,12 +571,96 @@ class LocalDataManager {
     try {
       const stmt = this.db.prepare(`
         UPDATE chat_quick_prompts 
-        SET last_used_at = CURRENT_TIMESTAMP, usage_count = usage_count + 1
+        SET usage_count = usage_count + 1, last_used_at = datetime('now') 
         WHERE id = ?
       `);
-      return stmt.run(promptId);
+      const result = stmt.run(promptId);
+      return { success: result.changes > 0 };
     } catch (error) {
       console.error('Error updating quick prompt usage:', error);
+      throw error;
+    }
+  }
+
+  getDownloadedModels(userId) {
+    try {
+      console.log(`📊 Getting downloaded models for user: ${userId}`);
+      const stmt = this.db.prepare('SELECT * FROM downloaded_models WHERE user_id = ? ORDER BY download_date DESC');
+      const results = stmt.all(userId);
+      console.log(`📊 Found ${results.length} downloaded models in database`);
+      return results;
+    } catch (error) {
+      console.error('❌ Database Error - getDownloadedModels:', error);
+      return [];
+    }
+  }
+
+  saveDownloadedModel(userId, modelData) {
+    try {
+      console.log(`💾 Saving downloaded model for user: ${userId}`, modelData);
+      const stmt = this.db.prepare(`
+        INSERT OR REPLACE INTO downloaded_models (user_id, model_name, size_mb, status, download_date)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      const result = stmt.run(
+        userId, 
+        modelData.model_name, 
+        modelData.size_mb || 0, 
+        modelData.status || 'completed', 
+        new Date().toISOString()
+      );
+      console.log(`✅ Saved downloaded model: ${modelData.model_name} with ID ${result.lastInsertRowid}`);
+      return { success: true, id: result.lastInsertRowid };
+    } catch (error) {
+      console.error('❌ Database Error - saveDownloadedModel:', error);
+      throw error;
+    }
+  }
+
+  deleteDownloadedModel(userId, modelName) {
+    try {
+      console.log(`🗑️ Deleting downloaded model for user: ${userId}, model: ${modelName}`);
+      const stmt = this.db.prepare('DELETE FROM downloaded_models WHERE user_id = ? AND model_name = ?');
+      const result = stmt.run(userId, modelName);
+      console.log(`✅ Deleted model: ${modelName}, changes: ${result.changes}`);
+      return { success: true, changes: result.changes };
+    } catch (error) {
+      console.error('❌ Database Error - deleteDownloadedModel:', error);
+      throw error;
+    }
+  }
+
+  getUserSettings(userId) {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM user_settings WHERE user_id = ?
+      `);
+      const result = stmt.get(userId);
+      
+      if (result) {
+        return {
+          ai_model: result.ai_model,
+          theme: result.theme,
+          background: result.background
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting user settings:', error);
+      return null;
+    }
+  }
+
+  saveUserSettings(userId, settings) {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT OR REPLACE INTO user_settings (user_id, ai_model, theme, background, updated_at)
+        VALUES (?, ?, ?, ?, datetime('now'))
+      `);
+      const result = stmt.run(userId, settings.aiModel, settings.theme, settings.background);
+      return { success: true, changes: result.changes };
+    } catch (error) {
+      console.error('Error saving user settings:', error);
       throw error;
     }
   }
@@ -738,71 +668,9 @@ class LocalDataManager {
   close() {
     if (this.db) {
       this.db.close();
+      console.log('✅ LocalDataManager: Database connection closed');
     }
   }
 }
 
 module.exports = { LocalDataManager };
-
-// Add to existing ipcMain handlers
-
-// Save user settings to database
-ipcMain.handle('db:saveUserSettings', async (event, userId, settings) => {
-  try {
-    const dbPath = getDBPath();
-    const db = new Database(dbPath);
-    
-    // Insert or update user settings
-    const stmt = db.prepare(`
-      INSERT OR REPLACE INTO user_settings 
-      (user_id, ai_model, theme, background, updated_at) 
-      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `);
-    
-    const result = stmt.run(
-      userId,
-      settings.aiModel || 'llama3.2:1b',
-      settings.theme || 'dark',
-      settings.background || 'default'
-    );
-    
-    db.close();
-    return { success: true, changes: result.changes };
-  } catch (error) {
-    console.error('Error saving user settings:', error);
-    throw error;
-  }
-});
-
-// Get user settings from database
-ipcMain.handle('db:getUserSettings', async (event, userId) => {
-  try {
-    const dbPath = getDBPath();
-    const db = new Database(dbPath);
-    
-    const stmt = db.prepare(`
-      SELECT ai_model, theme, background, ai_model_auto_selected 
-      FROM user_settings 
-      WHERE user_id = ?
-    `);
-    
-    const settings = stmt.get(userId);
-    db.close();
-    
-    return settings || {
-      ai_model: 'llama3.2:1b',
-      theme: 'dark',
-      background: 'default',
-      ai_model_auto_selected: false
-    };
-  } catch (error) {
-    console.error('Error getting user settings:', error);
-    // Return defaults on error
-    return {
-      ai_model: 'llama3.2:1b',
-      theme: 'dark',
-      background: 'default',
-      ai_model_auto_selected: false
-    };
-  }
-});

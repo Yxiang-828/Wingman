@@ -1,60 +1,69 @@
+-- ✅ CREATE USERS TABLE FIRST (this was missing!)
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Tasks table (matches Supabase tasks exactly)
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,  -- Will store UUID as string
+    user_id TEXT NOT NULL,
     title TEXT NOT NULL,
-    task_date TEXT,         -- ISO format: YYYY-MM-DD
-    task_time TEXT,         -- ISO format: HH:MM:SS
+    task_date TEXT,
+    task_time TEXT,
     completed BOOLEAN DEFAULT FALSE,
-    failed BOOLEAN DEFAULT FALSE,  -- ✅ CRITICAL: Task failure status
+    failed BOOLEAN DEFAULT FALSE,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
     task_type TEXT,
-    due_date TEXT,          -- ISO format: YYYY-MM-DD
-    last_reset_date TEXT,   -- ISO format: YYYY-MM-DD  
-    urgency_level INTEGER,  -- Changed from TEXT to INTEGER to match Supabase
+    due_date TEXT,
+    last_reset_date TEXT,
+    urgency_level INTEGER,
     status TEXT
 );
 
--- Calendar Events table (matches Supabase calendar_events exactly)
+-- Calendar Events table
 CREATE TABLE IF NOT EXISTS calendar_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,  -- Will store UUID as string
+    user_id TEXT NOT NULL,
     title TEXT NOT NULL,
-    event_date TEXT,        -- ISO format: YYYY-MM-DD
-    event_time TEXT,        -- ISO format: HH:MM:SS
+    event_date TEXT,
+    event_time TEXT,
     type TEXT,
     description TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Diary Entries table (matches Supabase diary_entries exactly)
+-- Diary Entries table
 CREATE TABLE IF NOT EXISTS diary_entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,  -- Will store UUID as string
-    entry_date TEXT,        -- ISO format: YYYY-MM-DD
+    user_id TEXT NOT NULL,
+    entry_date TEXT,
     title TEXT,
     content TEXT,
-    mood TEXT,              -- Will store mood_scale values as TEXT
+    mood TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Chat Sessions table (matches Supabase chat_sessions exactly)
+-- Chat Sessions table
 CREATE TABLE IF NOT EXISTS chat_sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,  -- Will store UUID as string
+    user_id TEXT NOT NULL,
     title TEXT,
     started_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Chat Messages table (matches Supabase chat_messages exactly)
+-- Chat Messages table
 CREATE TABLE IF NOT EXISTS chat_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id INTEGER,     -- Foreign key to chat_sessions
-    user_id TEXT NOT NULL,  -- Will store UUID as string
+    session_id INTEGER,
+    user_id TEXT NOT NULL,
     is_ai BOOLEAN DEFAULT FALSE,
     message TEXT NOT NULL,
     timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -62,16 +71,16 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
 );
 
--- Chat History table (matches Supabase chat_history exactly)  
+-- Chat History table
 CREATE TABLE IF NOT EXISTS chat_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,  -- Will store UUID as string
+    user_id TEXT NOT NULL,
     message TEXT NOT NULL,
     timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
     is_ai BOOLEAN DEFAULT FALSE
 );
 
--- ✅ Quick Prompts table
+-- Quick Prompts table
 CREATE TABLE IF NOT EXISTS chat_quick_prompts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,
@@ -81,11 +90,7 @@ CREATE TABLE IF NOT EXISTS chat_quick_prompts (
     usage_count INTEGER DEFAULT 0
 );
 
--- Add to existing users table or create settings table
-ALTER TABLE users ADD COLUMN ai_model TEXT DEFAULT 'llama3.2:1b';
-ALTER TABLE users ADD COLUMN ai_model_auto_selected BOOLEAN DEFAULT FALSE;
-
--- Or create dedicated settings table
+-- ✅ FIXED: User Settings table (standalone, not dependent on users)
 CREATE TABLE IF NOT EXISTS user_settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL UNIQUE,
@@ -94,16 +99,25 @@ CREATE TABLE IF NOT EXISTS user_settings (
     theme TEXT DEFAULT 'dark',
     background TEXT DEFAULT 'default',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for better query performance
+-- Downloaded Models table
+CREATE TABLE IF NOT EXISTS downloaded_models (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    model_name TEXT NOT NULL,
+    size_mb INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'completed',
+    download_date TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, model_name)
+);
+
+-- Create indexes
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date);
 CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
-CREATE INDEX IF NOT EXISTS idx_tasks_failed ON tasks(failed);  -- ✅ NEW: Index for failed column
-CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(completed, failed);  -- ✅ UPDATED: Combined status index
+CREATE INDEX IF NOT EXISTS idx_tasks_failed ON tasks(failed);
 CREATE INDEX IF NOT EXISTS idx_calendar_user_id ON calendar_events(user_id);
 CREATE INDEX IF NOT EXISTS idx_calendar_date ON calendar_events(event_date);
 CREATE INDEX IF NOT EXISTS idx_diary_user_id ON diary_entries(user_id);
@@ -114,4 +128,4 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_user ON chat_messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp);
 CREATE INDEX IF NOT EXISTS idx_chat_quick_prompts_user_id ON chat_quick_prompts(user_id);
-CREATE INDEX IF NOT EXISTS idx_chat_quick_prompts_last_used ON chat_quick_prompts(last_used_at);
+CREATE INDEX IF NOT EXISTS idx_downloaded_models_user_id ON downloaded_models(user_id);

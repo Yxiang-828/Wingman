@@ -1,8 +1,7 @@
 import httpx
+import psutil
 import asyncio
 import json
-import psutil
-import platform
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
@@ -61,13 +60,6 @@ class WingmanOllamaService:
                 "ram_required": 12,
                 "description": "Top-tier reasoning model for complex problems",
                 "provider": "DeepSeek"
-            },
-            "deepseek-r1:32b": {
-                "name": "deepseek-r1:32b",
-                "size": "18.9GB",
-                "ram_required": 20,
-                "description": "Elite reasoning model for advanced research",
-                "provider": "DeepSeek"
             }
         }
     
@@ -76,11 +68,12 @@ class WingmanOllamaService:
         try:
             response = await self.client.get(f"{self.ollama_url}/api/tags")
             if response.status_code == 200:
-                models = response.json().get("models", [])
+                models_data = response.json()
+                available_models = [model.get("name", "") for model in models_data.get("models", [])]
                 return {
                     "status": "running",
                     "available": True,
-                    "models": [model["name"] for model in models],
+                    "models": available_models,
                     "recommended_model": self._get_recommended_model()
                 }
             else:
@@ -95,12 +88,12 @@ class WingmanOllamaService:
         try:
             total_ram_gb = psutil.virtual_memory().total / (1024**3)
             
-            if total_ram_gb >= 16:
-                return "llama3.2:3b"
+            if total_ram_gb >= 12:
+                return "deepseek-r1:7b"
             elif total_ram_gb >= 8:
-                return "llama3.2:3b"  # 3B can run on 8GB
+                return "llama3.2:3b"
             else:
-                return "llama3.2:1b"
+                return "deepseek-r1:1.5b"
         except:
             return "llama3.2:1b"  # Safe fallback
     
@@ -108,17 +101,24 @@ class WingmanOllamaService:
         """Get system information for model recommendations"""
         try:
             memory = psutil.virtual_memory()
+            total_ram_gb = memory.total / (1024**3)
+            
             return {
-                "total_ram_gb": round(memory.total / (1024**3), 1),
+                "total_ram_gb": round(total_ram_gb, 1),
                 "available_ram_gb": round(memory.available / (1024**3), 1),
-                "cpu_count": psutil.cpu_count(),
-                "platform": platform.system(),
                 "recommended_model": self._get_recommended_model(),
-                "can_run_3b": memory.total >= 8 * (1024**3),
-                "can_run_1b": memory.total >= 2 * (1024**3)
+                "can_run_3b": total_ram_gb >= 4,
+                "can_run_1b": total_ram_gb >= 2
             }
         except Exception as e:
-            return {"error": str(e), "recommended_model": "llama3.2:1b"}
+            return {
+                "total_ram_gb": 8.0,
+                "available_ram_gb": 4.0,
+                "recommended_model": "llama3.2:1b",
+                "can_run_3b": True,
+                "can_run_1b": True,
+                "error": str(e)
+            }
     
     async def pull_model(self, model_name: str) -> Dict[str, Any]:
         """Download/pull a model from Ollama"""
@@ -126,27 +126,39 @@ class WingmanOllamaService:
             response = await self.client.post(
                 f"{self.ollama_url}/api/pull",
                 json={"name": model_name},
-                timeout=300.0  # 5 minutes for model download
+                timeout=300.0  # 5 minutes for download
             )
             
             if response.status_code == 200:
-                return {"success": True, "model": model_name}
+                return {
+                    "success": True,
+                    "message": f"Successfully started download of {model_name}",
+                    "model": model_name
+                }
             else:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+                return {
+                    "success": False,
+                    "error": f"Failed to pull model: HTTP {response.status_code}",
+                    "model": model_name
+                }
                 
         except Exception as e:
-            return {"success": False, "error": str(e)}
+            return {
+                "success": False,
+                "error": f"Error pulling model {model_name}: {str(e)}",
+                "model": model_name
+            }
     
     async def generate_response(
         self, 
         prompt: str, 
         context: str = "", 
-        model: str = None
+        model: Optional[str] = None
     ) -> Dict[str, Any]:
         """Generate AI response using Ollama"""
         
         if not model:
-            model = self.current_model or self._get_recommended_model()
+            model = self._get_recommended_model()
         
         # Build the full prompt with context
         full_prompt = self._build_prompt(prompt, context)
@@ -159,24 +171,18 @@ class WingmanOllamaService:
                 json={
                     "model": model,
                     "prompt": full_prompt,
-                    "stream": False,
-                    "options": {
-                        "temperature": 0.7,
-                        "top_p": 0.9,
-                        "top_k": 40
-                    }
+                    "stream": False
                 },
-                timeout=60.0
+                timeout=30.0
             )
             
-            end_time = datetime.now()
-            processing_time = (end_time - start_time).total_seconds()
+            processing_time = (datetime.now() - start_time).total_seconds()
             
             if response.status_code == 200:
                 result = response.json()
                 return {
                     "success": True,
-                    "response": result.get("response", "").strip(),
+                    "response": result.get("response", "No response generated"),
                     "model_used": model,
                     "processing_time": processing_time,
                     "context_used": bool(context)
@@ -184,21 +190,24 @@ class WingmanOllamaService:
             else:
                 return {
                     "success": False,
-                    "error": f"Ollama API error: HTTP {response.status_code}",
-                    "fallback_response": self._fallback_response(prompt)
+                    "fallback_response": self._fallback_response(prompt),
+                    "model_used": model,
+                    "processing_time": processing_time
                 }
                 
         except httpx.TimeoutException:
             return {
                 "success": False,
-                "error": "Request timed out",
-                "fallback_response": self._fallback_response(prompt)
+                "fallback_response": f"I'm taking a bit longer to think about that. {self._fallback_response(prompt)}",
+                "model_used": model,
+                "error": "timeout"
             }
         except Exception as e:
             return {
                 "success": False,
-                "error": str(e),
-                "fallback_response": self._fallback_response(prompt)
+                "fallback_response": self._fallback_response(prompt),
+                "model_used": model,
+                "error": str(e)
             }
     
     def _build_prompt(self, user_message: str, context: str) -> str:
@@ -211,14 +220,14 @@ Key guidelines:
 - Provide actionable suggestions
 - Be encouraging and supportive
 - If asked about specific tasks or events, refer to the context provided
-- Keep responses under 200 words unless more detail is specifically requested
+- Keep responses under 500 words unless more detail is specifically requested
 
 """
         
         if context:
-            full_prompt = f"{system_prompt}\nContext about the user:\n{context}\n\nUser: {user_message}\nWingman:"
+            full_prompt = f"{system_prompt}\nUser's Current Data:\n{context}\n\nUser Message: {user_message}\n\nResponse:"
         else:
-            full_prompt = f"{system_prompt}\nUser: {user_message}\nWingman:"
+            full_prompt = f"{system_prompt}\nUser Message: {user_message}\n\nResponse:"
         
         return full_prompt
     
@@ -228,23 +237,95 @@ Key guidelines:
         
         # Smart fallback responses based on keywords
         if any(word in prompt_lower for word in ['task', 'todo', 'work']):
-            return "I'd love to help with your tasks! It looks like there might be a connection issue with the AI service. You can still manage your tasks using the main interface."
+            return "I'd love to help you with your tasks! While my AI brain is taking a quick break, you can check your task list in the sidebar or add new tasks using the quick-add feature."
         
         elif any(word in prompt_lower for word in ['calendar', 'schedule', 'event']):
-            return "I can help you stay organized! While the AI service is temporarily unavailable, you can check your calendar and add events using the main interface."
+            return "Perfect timing to check your schedule! While I'm reconnecting to my smart features, you can view your calendar and upcoming events in the Calendar section."
         
         elif any(word in prompt_lower for word in ['diary', 'mood', 'feel']):
-            return "Reflection is important! Even though the AI assistant is temporarily unavailable, you can still write in your diary to track your thoughts and mood."
+            return "I appreciate you wanting to share your thoughts! While my AI is offline, feel free to write in your diary - I'll be able to give you insights once I'm back online."
         
         elif any(word in prompt_lower for word in ['hello', 'hi', 'hey']):
-            return "Hello! I'm your Wingman assistant. The AI service is temporarily unavailable, but I'm still here to help you navigate the app!"
+            return "Hello there! Your loyal Wingman is here, though my AI brain is taking a quick coffee break. I'm still ready to help you navigate the app and manage your productivity!"
         
         else:
-            return "I'm here to help! The AI service is temporarily unavailable, but you can still use all the app features. Try asking me again in a moment!"
+            return "I'm having a brief moment of digital confusion, but your faithful Wingman is still here! Try rephrasing your request or explore the app while I get my AI circuits back online."
     
     async def close(self):
         """Clean up resources"""
         await self.client.aclose()
+    
+    async def delete_model(self, model_name: str) -> Dict[str, Any]:
+        """Delete a model from Ollama"""
+        try:
+            print(f"Attempting to delete model: {model_name}")
+            response = await self.client.request(
+                "DELETE",
+                f"{self.ollama_url}/api/delete",
+                json={"name": model_name}
+            )
+            
+            if response.status_code == 200:
+                print(f"Successfully deleted model: {model_name}")
+                return {"success": True, "message": f"Model {model_name} deleted successfully"}
+            else:
+                error_msg = f"Failed to delete model: HTTP {response.status_code}"
+                print(f"{error_msg}")
+                return {"success": False, "error": error_msg}
+        except Exception as e:
+            print(f"Error deleting model {model_name}: {e}")
+            return {"success": False, "error": str(e)}
 
-# Singleton instance
-ollama_service = WingmanOllamaService()
+    async def get_downloaded_models(self) -> List[Dict]:
+        """Get list of downloaded models from Ollama"""
+        try:
+            print("Fetching downloaded models from Ollama...")
+            response = await self.client.get(f"{self.ollama_url}/api/tags")
+            
+            if response.status_code == 200:
+                data = response.json()
+                models = data.get("models", [])
+                print(f"Found {len(models)} models in Ollama")
+                return models
+            else:
+                print(f"Failed to fetch models, status: {response.status_code}")
+                return []
+        except Exception as e:
+            print(f"Error getting downloaded models: {e}")
+            return []
+
+    async def get_download_progress(self, model_name: str) -> Dict[str, Any]:
+        """Get download progress for a model"""
+        try:
+            print(f"Checking download progress for: {model_name}")
+            
+            # Check if model is already downloaded
+            models = await self.get_downloaded_models()
+            if any(m.get('name') == model_name for m in models):
+                return {
+                    "progress": 100,
+                    "status": "completed",
+                    "download_speed_mbps": 0,
+                    "estimated_time_remaining": 0,
+                    "size_downloaded": 0,
+                    "total_size": 0
+                }
+            else:
+                return {
+                    "progress": 0,
+                    "status": "not_started",
+                    "download_speed_mbps": 0,
+                    "estimated_time_remaining": 0,
+                    "size_downloaded": 0,
+                    "total_size": 0
+                }
+        except Exception as e:
+            print(f"Error checking download progress for {model_name}: {e}")
+            return {
+                "progress": 0,
+                "status": "error",
+                "download_speed_mbps": 0,
+                "estimated_time_remaining": 0,
+                "size_downloaded": 0,
+                "total_size": 0
+            }

@@ -1,11 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
-import asyncio
 from datetime import datetime
 
 from app.services.llm.context_builder import WingmanContextBuilder
-from app.services.llm.ollama_service import ollama_service
+from app.services.llm.ollama_service import WingmanOllamaService
 
 router = APIRouter()
 
@@ -31,6 +30,8 @@ class OllamaStatusResponse(BaseModel):
     recommended_model: Optional[str] = None
     system_info: dict = {}
     error: Optional[str] = None
+
+ollama_service = WingmanOllamaService()
 
 @router.post("/", response_model=ChatResponse)
 async def send_chat_message(request: ChatRequest):
@@ -140,8 +141,35 @@ async def get_available_models():
         system_info = ollama_service.get_system_info()
         return {
             "models": ollama_service.models,
-            "system_info": system_info,
-            "recommended": system_info.get("recommended_model")
+            "system_info": system_info
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ✅ NEW: Missing endpoints that were causing 500 errors
+@router.delete("/delete-model/{model_name}")
+async def delete_model(model_name: str):
+    """Delete a model from Ollama"""
+    try:
+        result = await ollama_service.delete_model(model_name)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/downloaded-models")
+async def get_downloaded_models():
+    """Get list of downloaded models from Ollama"""
+    try:
+        models = await ollama_service.get_downloaded_models()
+        return {"models": models}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/download-progress/{model_name}")
+async def get_download_progress(model_name: str):
+    """Get download progress for a model"""
+    try:
+        progress = await ollama_service.get_download_progress(model_name)
+        return progress
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -154,6 +154,47 @@ class LLMService {
       return { success: false, error: error instanceof Error ? error.message : 'Wingman failed to download brain upgrade' };
     }
   }
+
+  /**
+   * Delete a specific model
+   */
+  async deleteModel(modelName: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseURL}/delete-model/${modelName}`, {
+        method: 'DELETE'
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('🤖 Wingman Delete Model Error:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Delete failed' };
+    }
+  }
+
+  /**
+   * Get list of downloaded models
+   */
+  async getDownloadedModels(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseURL}/downloaded-models`);
+      return await response.json();
+    } catch (error) {
+      console.error('🤖 Wingman Get Downloaded Models Error:', error);
+      return { models: [], error: error instanceof Error ? error.message : 'Failed to get models' };
+    }
+  }
+
+  /**
+   * Get download progress for a model
+   */
+  async getDownloadProgress(modelName: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseURL}/download-progress/${modelName}`);
+      return await response.json();
+    } catch (error) {
+      console.error('🤖 Wingman Download Progress Error:', error);
+      return { progress_percent: 0, status: 'error', download_speed_mbps: 0, estimated_time_remaining: 0, size_downloaded: 0, total_size: 0 };
+    }
+  }
 }
 
 // Export singleton instance
