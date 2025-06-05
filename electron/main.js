@@ -595,12 +595,12 @@ async function setupDatabaseIPC() {
     // ✅ USER SETTINGS HANDLERS
     ipcMain.handle('db:getUserSettings', async (event, userId) => {
       try {
-        console.log(`🔄 IPC: Getting user settings for user ${userId}`);
+        console.log(`🔄 IPC: Getting user settings for ${userId}`);
         if (!dataManager) {
           throw new Error('DataManager is not initialized');
         }
         const settings = dataManager.getUserSettings(userId);
-        console.log(`✅ IPC: Found settings for user ${userId}`);
+        console.log('✅ IPC: User settings retrieved:', settings);
         return settings;
       } catch (error) {
         console.error('❌ IPC: Error getting user settings:', error);
@@ -610,12 +610,12 @@ async function setupDatabaseIPC() {
 
     ipcMain.handle('db:saveUserSettings', async (event, userId, settings) => {
       try {
-        console.log(`🔄 IPC: Saving user settings for user ${userId}`, settings);
+        console.log(`🔄 IPC: Saving user settings for ${userId}:`, settings);
         if (!dataManager) {
           throw new Error('DataManager is not initialized');
         }
         const result = dataManager.saveUserSettings(userId, settings);
-        console.log(`✅ IPC: User settings saved successfully for user ${userId}`);
+        console.log('✅ IPC: User settings saved successfully');
         return result;
       } catch (error) {
         console.error('❌ IPC: Error saving user settings:', error);
@@ -654,6 +654,40 @@ async function setupDatabaseIPC() {
       } catch (error) {
         console.error('IPC Error - deleteDownloadedModel:', error);
         throw error;
+      }
+    });
+
+    // ✅ ENHANCED: Chat session handlers
+    ipcMain.handle('db:createChatSession', async (event, userId, title) => {
+      try {
+        const result = dataManager.createChatSession(userId, title);
+        console.log('✅ IPC: Chat session created:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ IPC: Error creating chat session:', error);
+        throw new Error(`Failed to create chat session: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('db:getChatSessions', async (event, userId) => {
+      try {
+        const sessions = dataManager.getChatSessions(userId);
+        console.log(`✅ IPC: Found ${sessions.length} chat sessions`);
+        return sessions;
+      } catch (error) {
+        console.error('❌ IPC: Error getting chat sessions:', error);
+        throw new Error(`Failed to get chat sessions: ${error.message}`);
+      }
+    });
+
+    ipcMain.handle('db:getSessionMessages', async (event, sessionId) => {
+      try {
+        const messages = dataManager.getSessionMessages(sessionId);
+        console.log(`✅ IPC: Found ${messages.length} messages in session ${sessionId}`);
+        return messages;
+      } catch (error) {
+        console.error('❌ IPC: Error getting session messages:', error);
+        throw new Error(`Failed to get session messages: ${error.message}`);
       }
     });
 

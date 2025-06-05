@@ -455,13 +455,92 @@ class LocalDataManager {
     }
   }
 
-  // ✅ FIXED: Complete getChatHistory implementation
+  // ✅ ENHANCED: Chat session management
+  createChatSession(userId, title = null) {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO chat_sessions (user_id, title, started_at, updated_at)
+        VALUES (?, ?, datetime('now'), datetime('now'))
+      `);
+      const result = stmt.run(userId, title);
+      return { id: result.lastInsertRowid, success: true };
+    } catch (error) {
+      console.error('Error creating chat session:', error);
+      throw error;
+    }
+  }
+
+  getCurrentChatSession(userId) {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM chat_sessions 
+        WHERE user_id = ? 
+        ORDER BY updated_at DESC 
+        LIMIT 1
+      `);
+      return stmt.get(userId);
+    } catch (error) {
+      console.error('Error getting current chat session:', error);
+      return null;
+    }
+  }
+
+  // ✅ ENHANCED: Save chat message with session support
+  saveChatMessage(message, isAi, userId, sessionId = null) {
+    try {
+      // If no session ID provided, get or create current session
+      if (!sessionId) {
+        let currentSession = this.getCurrentChatSession(userId);
+        if (!currentSession) {
+          const newSession = this.createChatSession(userId, 'Chat Session');
+          sessionId = newSession.id;
+        } else {
+          sessionId = currentSession.id;
+        }
+      }
+
+      // Save to chat_history (for simple access)
+      const historyStmt = this.db.prepare(`
+        INSERT INTO chat_history (user_id, message, is_ai, timestamp)
+        VALUES (?, ?, ?, datetime('now'))
+      `);
+      const historyResult = historyStmt.run(userId, message, isAi ? 1 : 0);
+
+      // Also save to chat_messages (for session management)
+      const messageStmt = this.db.prepare(`
+        INSERT INTO chat_messages (session_id, user_id, message, is_ai, timestamp, updated_at)
+        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+      `);
+      const messageResult = messageStmt.run(sessionId, userId, message, isAi ? 1 : 0);
+
+      // Update session timestamp
+      const updateSessionStmt = this.db.prepare(`
+        UPDATE chat_sessions 
+        SET updated_at = datetime('now') 
+        WHERE id = ?
+      `);
+      updateSessionStmt.run(sessionId);
+
+      return { 
+        id: historyResult.lastInsertRowid, 
+        session_id: sessionId,
+        success: true 
+      };
+    } catch (error) {
+      console.error('Error saving chat message:', error);
+      throw error;
+    }
+  }
+
+  // ✅ ENHANCED: Get chat history with session info
   getChatHistory(userId, limit = 50) {
     try {
       const stmt = this.db.prepare(`
-        SELECT * FROM chat_history 
-        WHERE user_id = ? 
-        ORDER BY timestamp ASC 
+        SELECT h.*, s.id as session_id, s.title as session_title
+        FROM chat_history h
+        LEFT JOIN chat_sessions s ON s.user_id = h.user_id
+        WHERE h.user_id = ? 
+        ORDER BY h.timestamp ASC 
         LIMIT ?
       `);
       return stmt.all(userId, limit);
@@ -471,30 +550,36 @@ class LocalDataManager {
     }
   }
 
-  // ✅ FIXED: Complete saveChatMessage implementation
-  saveChatMessage(message, isAi, userId, sessionId) {
+  // ✅ NEW: Get chat sessions
+  getChatSessions(userId) {
     try {
       const stmt = this.db.prepare(`
-        INSERT INTO chat_history (user_id, message, is_ai, timestamp)
-        VALUES (?, ?, ?, datetime('now'))
+        SELECT s.*, COUNT(m.id) as message_count
+        FROM chat_sessions s
+        LEFT JOIN chat_messages m ON s.id = m.session_id
+        WHERE s.user_id = ?
+        GROUP BY s.id
+        ORDER BY s.updated_at DESC
       `);
-      const result = stmt.run(userId, message, isAi ? 1 : 0);
-      return { id: result.lastInsertRowid, success: true };
+      return stmt.all(userId);
     } catch (error) {
-      console.error('Error saving chat message:', error);
-      throw error;
+      console.error('Error getting chat sessions:', error);
+      return [];
     }
   }
 
-  // ✅ FIXED: Complete clearChatHistory implementation
-  clearChatHistory(userId) {
+  // ✅ NEW: Get messages for specific session
+  getSessionMessages(sessionId) {
     try {
-      const stmt = this.db.prepare('DELETE FROM chat_history WHERE user_id = ?');
-      const result = stmt.run(userId);
-      return { success: true, deleted_count: result.changes };
+      const stmt = this.db.prepare(`
+        SELECT * FROM chat_messages 
+        WHERE session_id = ? 
+        ORDER BY timestamp ASC
+      `);
+      return stmt.all(sessionId);
     } catch (error) {
-      console.error('Error clearing chat history:', error);
-      throw error;
+      console.error('Error getting session messages:', error);
+      return [];
     }
   }
 
@@ -637,28 +722,61 @@ class LocalDataManager {
       `);
       const result = stmt.get(userId);
       
+      // Convert integers back to booleans
       if (result) {
-        return {
-          ai_model: result.ai_model,
-          theme: result.theme,
-          background: result.background
-        };
+        result.ai_model_auto_selected = result.ai_model_auto_selected === 1;
+        result.notifications_enabled = result.notifications_enabled === 1;
       }
-      return null;
+      
+      return result || {};
     } catch (error) {
       console.error('Error getting user settings:', error);
-      return null;
+      return {};
     }
   }
 
   saveUserSettings(userId, settings) {
     try {
-      const stmt = this.db.prepare(`
-        INSERT OR REPLACE INTO user_settings (user_id, ai_model, theme, background, updated_at)
-        VALUES (?, ?, ?, ?, datetime('now'))
-      `);
-      const result = stmt.run(userId, settings.aiModel, settings.theme, settings.background);
-      return { success: true, changes: result.changes };
+      // Check if settings exist
+      const existing = this.getUserSettings(userId);
+      
+      if (Object.keys(existing).length > 0) {
+        // Update existing settings
+        const updates = [];
+        const values = [];
+        
+        Object.keys(settings).forEach(key => {
+          updates.push(`${key} = ?`);
+          // Convert booleans to integers for SQLite
+          const value = typeof settings[key] === 'boolean' ? (settings[key] ? 1 : 0) : settings[key];
+          values.push(value);
+        });
+        
+        values.push(userId);
+        
+        const stmt = this.db.prepare(`
+          UPDATE user_settings 
+          SET ${updates.join(', ')}, updated_at = datetime('now')
+          WHERE user_id = ?
+        `);
+        stmt.run(...values);
+      } else {
+        // Insert new settings
+        const stmt = this.db.prepare(`
+          INSERT INTO user_settings (
+            user_id, ai_model, ai_model_auto_selected, theme, notifications_enabled, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        `);
+        stmt.run(
+          userId, 
+          settings.ai_model || 'llama3.2:1b',
+          settings.ai_model_auto_selected ? 1 : 0,
+          settings.theme || 'dark',
+          settings.notifications_enabled ? 1 : 0
+        );
+      }
+      
+      return { success: true };
     } catch (error) {
       console.error('Error saving user settings:', error);
       throw error;

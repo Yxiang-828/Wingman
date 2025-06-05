@@ -90,18 +90,6 @@ CREATE TABLE IF NOT EXISTS chat_quick_prompts (
     usage_count INTEGER DEFAULT 0
 );
 
--- ✅ FIXED: User Settings table (standalone, not dependent on users)
-CREATE TABLE IF NOT EXISTS user_settings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL UNIQUE,
-    ai_model TEXT DEFAULT 'llama3.2:1b',
-    ai_model_auto_selected BOOLEAN DEFAULT FALSE,
-    theme TEXT DEFAULT 'dark',
-    background TEXT DEFAULT 'default',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Downloaded Models table
 CREATE TABLE IF NOT EXISTS downloaded_models (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -111,6 +99,18 @@ CREATE TABLE IF NOT EXISTS downloaded_models (
     status TEXT DEFAULT 'completed',
     download_date TEXT DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, model_name)
+);
+
+-- User Settings table (make sure booleans are stored as INTEGER)
+CREATE TABLE IF NOT EXISTS user_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL UNIQUE,
+    ai_model TEXT DEFAULT 'llama3.2:1b',
+    ai_model_auto_selected INTEGER DEFAULT 1,  -- Store as INTEGER not BOOLEAN
+    theme TEXT DEFAULT 'dark',
+    notifications_enabled INTEGER DEFAULT 1,   -- Store as INTEGER not BOOLEAN
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create indexes
@@ -129,3 +129,4 @@ CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp);
 CREATE INDEX IF NOT EXISTS idx_chat_quick_prompts_user_id ON chat_quick_prompts(user_id);
 CREATE INDEX IF NOT EXISTS idx_downloaded_models_user_id ON downloaded_models(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);

@@ -24,7 +24,7 @@ class LLMService {
   /**
    * Send a message to Wingman AI with user's selected model
    */
-  async sendMessage(message: string, userId?: string): Promise<LLMResponse> {
+  async sendMessage(message: string, userId?: string, sessionId?: number): Promise<LLMResponse> {
     try {
       const currentUserId = userId || getCurrentUserId();
       
@@ -32,7 +32,6 @@ class LLMService {
         throw new Error('User authentication required');
       }
 
-      // ✅ GET MODEL FROM DATABASE
       const userSettings = await this.getUserSettings();
       const preferredModel = userSettings?.ai_model || 'llama3.2:1b';
 
@@ -45,7 +44,8 @@ class LLMService {
           user_id: currentUserId,
           message: message,
           date: new Date().toISOString().split('T')[0],
-          model: preferredModel // ✅ USES DATABASE-STORED PREFERENCE
+          model: preferredModel,
+          session_id: sessionId  // ADD THIS
         })
       });
 
@@ -55,15 +55,13 @@ class LLMService {
 
       const result: LLMResponse = await response.json();
       
-      // Log performance metrics for debugging
-      console.log(`🤖 Wingman Brain (${result.model_used}): Mission completed in ${result.processing_time?.toFixed(2)}s`);
+      console.log(`🤖 Wingman Brain (${result.model_used}): Mission completed in ${result.processing_time?.toFixed(2)}s with FULL CONTEXT`);
       
       return result;
 
     } catch (error) {
       console.error('🤖 Wingman Service Error:', error);
       
-      // Return faithful wingman fallback response
       return {
         response: "Boss, my AI brain is taking a quick coffee break! Your loyal Wingman is still here in manual mode. Please try again in a moment! ☕🤖",
         success: false,

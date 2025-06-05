@@ -42,6 +42,7 @@ const ModelManager: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [systemInfo, setSystemInfo] = useState<any>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [currentModel, setCurrentModel] = useState<string | null>(null);
 
   const availableModels: AvailableModel[] = [
     {
@@ -98,6 +99,7 @@ const ModelManager: React.FC = () => {
   useEffect(() => {
     loadDownloadedModels();
     loadSystemInfo();
+    loadCurrentModel(); // ADD THIS
   }, []);
 
   const loadSystemInfo = async () => {
@@ -145,6 +147,20 @@ const ModelManager: React.FC = () => {
     } catch (error) {
       console.error("❌ Failed to load downloaded models:", error);
       setDownloadedModels([]);
+    }
+  };
+
+  const loadCurrentModel = async () => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) return;
+
+      const settings = await window.electronAPI.db.getUserSettings(userId);
+      const selectedModel = settings?.ai_model || 'llama3.2:1b';
+      setCurrentModel(selectedModel);
+      setSelectedModel(selectedModel);
+    } catch (error) {
+      console.error("Failed to load current model:", error);
     }
   };
 
@@ -349,10 +365,48 @@ const ModelManager: React.FC = () => {
     }
   };
 
+  const handleModelSelect = async (modelName: string) => {
+    const downloaded = isModelDownloaded(modelName);
+    
+    if (!downloaded) {
+      alert(`Cannot select ${modelName}. Please download it first.`);
+      return;
+    }
+
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) return;
+
+      // Save to database with correct types
+      await window.electronAPI.db.saveUserSettings(userId, {
+        ai_model: modelName,
+        ai_model_auto_selected: false  // boolean will be converted to 0/1 in localDataBridge
+      });
+
+      setSelectedModel(modelName);
+      setCurrentModel(modelName);
+      
+      console.log(`✅ Model switched to: ${modelName}`);
+    } catch (error) {
+      console.error("Failed to save model selection:", error);
+    }
+  };
+
   return (
     <div className="model-manager">
       <h3>AI Model Manager</h3>
       
+      {/* Current Model Display */}
+      {currentModel && (
+        <div className="current-model-display">
+          <h4>🤖 Active Model</h4>
+          <div className="current-model-card">
+            <div className="model-name">{currentModel}</div>
+            <div className="model-status">Currently powering your Wingman</div>
+          </div>
+        </div>
+      )}
+
       {/* System Info */}
       {systemInfo && (
         <div className="system-info-banner">
@@ -379,15 +433,10 @@ const ModelManager: React.FC = () => {
           {Object.entries(downloadProgress).map(([modelName, progress]) => (
             <div key={modelName} className="download-progress">
               <div className="progress-header">
-                <span>{modelName}</span>
-                <span>{(progress.progress || 0).toFixed(1)}%</span>
+                <span>Downloading {progress.model_name}</span>
+                <span>{progress.progress.toFixed(1)}%</span>
               </div>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${progress.progress || 0}%` }}
-                />
-              </div>
+
               <div className="progress-details">
                 <span>Status: {progress.status}</span>
                 <span>Speed: {progress.download_speed_mbps.toFixed(1)} MB/s</span>
@@ -436,9 +485,12 @@ const ModelManager: React.FC = () => {
             return (
               <div
                 key={model.name}
-                className={`model-card ${downloaded ? 'downloaded' : ''} ${!canRun ? 'disabled' : ''} ${isRecommended ? 'recommended' : ''} ${isSelected ? 'selected' : ''}`}
-                onClick={() => downloaded && setSelectedModel(model.name)}
-                style={{ cursor: downloaded ? 'pointer' : 'default' }}
+                className={`model-card ${downloaded ? 'downloaded' : ''} ${!canRun ? 'disabled' : ''} ${isRecommended ? 'recommended' : ''} ${isSelected ? 'selected' : ''} ${!downloaded ? 'not-downloaded' : ''}`}
+                onClick={() => downloaded && handleModelSelect(model.name)}
+                style={{ 
+                  cursor: downloaded ? 'pointer' : 'not-allowed',
+                  opacity: downloaded ? 1 : 0.5
+                }}
               >
                 <div className="model-card-header">
                   <div className="model-title">
@@ -446,34 +498,47 @@ const ModelManager: React.FC = () => {
                     <div className="model-provider">{model.provider}</div>
                   </div>
                   {isRecommended && <span className="recommended-badge">Recommended</span>}
-                  {isSelected && <span className="selected-badge">Selected</span>}
+                  {isSelected && <span className="selected-badge">Active</span>}
+                  {!downloaded && <span className="download-required-badge">Download Required</span>}
                 </div>
-                
-                <p className="model-description">{model.description}</p>
-                
+
+                <div className="model-description">
+                  {model.description}
+                </div>
+
                 <div className="model-specs">
                   <span className="spec">Size: {model.size}</span>
                   <span className="spec">RAM: {model.ramRequired}GB+</span>
                 </div>
-                
+
                 {!canRun && (
                   <div className="model-warning">
-                    Requires {model.ramRequired}GB+ RAM
+                    ⚠️ Requires {model.ramRequired}GB+ RAM (you have {systemInfo?.total_ram_gb}GB)
                   </div>
                 )}
-                
+
                 <div className="model-actions">
                   {downloaded ? (
-                    <button className="action-btn downloaded" disabled>
-                      ✓ Downloaded
+                    <button 
+                      className={`action-btn ${isSelected ? 'active' : 'select'}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleModelSelect(model.name);
+                      }}
+                      disabled={!canRun}
+                    >
+                      {isSelected ? '✓ Active' : 'Select'}
                     </button>
                   ) : (
                     <button
                       className="action-btn download"
-                      onClick={() => handleDownloadModel(model.name)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownloadModel(model.name);
+                      }}
                       disabled={!canRun || loading}
                     >
-                      Download
+                      Download First
                     </button>
                   )}
                 </div>

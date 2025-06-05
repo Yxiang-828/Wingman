@@ -79,35 +79,22 @@ const ProfileSettings: React.FC = () => {
   };
 
   const handleSaveSettings = async () => {
-    setSaving(true);
-    setMessage("");
-
     try {
       const userId = getCurrentUserId();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
+      if (!userId) return;
 
-      const settings = {
-        aiModel,
-        theme,
-        background
-      };
+     // Map frontend camelCase to database snake_case
+     const settingsToSave = {
+       ai_model: settings.aiModel,
+       ai_model_auto_selected: settings.aiModelAutoSelected,
+       theme: settings.theme,
+       notifications_enabled: settings.notificationsEnabled
+     };
 
-      const result = await window.electronAPI.db.saveUserSettings(userId, settings);
-      
-      if (result.success) {
-        setMessage("Settings saved successfully!");
-        localStorage.setItem("userSettings", JSON.stringify(settings));
-      } else {
-        throw new Error("Failed to save settings");
-      }
+      await window.electronAPI.db.saveUserSettings(userId, settingsToSave);
+      console.log('✅ Settings saved successfully');
     } catch (error) {
-      console.error("Save settings error:", error);
-      setMessage("Error: Failed to save settings");
-    } finally {
-      setSaving(false);
-      setTimeout(() => setMessage(""), 3000);
+      console.error('Save settings error:', error);
     }
   };
 

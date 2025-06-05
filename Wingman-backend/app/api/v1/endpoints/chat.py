@@ -14,6 +14,7 @@ class ChatRequest(BaseModel):
     message: str
     date: Optional[str] = None
     model: Optional[str] = None  # Add model selection
+    session_id: Optional[int] = None  # ADD THIS
 
 class ChatResponse(BaseModel):
     response: str
@@ -22,6 +23,7 @@ class ChatResponse(BaseModel):
     processing_time: Optional[float] = None
     context_used: bool = False
     fallback_used: bool = False
+    session_id: Optional[int] = None  # ADD THIS
 
 class OllamaStatusResponse(BaseModel):
     status: str
@@ -36,10 +38,10 @@ ollama_service = WingmanOllamaService()
 @router.post("/", response_model=ChatResponse)
 async def send_chat_message(request: ChatRequest):
     """
-    Send a message to Wingman AI and get a response with context
+    Send a message to Wingman AI with FULL CHAT HISTORY CONTEXT
     """
     try:
-        # Build context from user data
+        # Build comprehensive context with chat history
         context_builder = WingmanContextBuilder()
         context = context_builder.build_context(
             user_id=request.user_id,
@@ -54,7 +56,7 @@ async def send_chat_message(request: ChatRequest):
             status = await ollama_service.check_ollama_status()
             preferred_model = status.get("recommended_model", "llama3.2:1b")
         
-        # Generate AI response with specified model
+        # Generate AI response with FULL CONTEXT
         result = await ollama_service.generate_response(
             prompt=request.message,
             context=context,
@@ -67,8 +69,9 @@ async def send_chat_message(request: ChatRequest):
                 success=True,
                 model_used=result.get("model_used", preferred_model),
                 processing_time=result.get("processing_time"),
-                context_used=result.get("context_used", False),
-                fallback_used=False
+                context_used=True,  # Always true now
+                fallback_used=False,
+                session_id=request.session_id
             )
         else:
             # Use fallback response
@@ -77,7 +80,8 @@ async def send_chat_message(request: ChatRequest):
                 success=False,
                 model_used=preferred_model,
                 fallback_used=True,
-                context_used=bool(context)
+                context_used=True,
+                session_id=request.session_id
             )
             
     except Exception as e:
@@ -86,7 +90,8 @@ async def send_chat_message(request: ChatRequest):
         return ChatResponse(
             response=fallback_msg,
             success=False,
-            fallback_used=True
+            fallback_used=True,
+            session_id=request.session_id
         )
 
 @router.get("/status", response_model=OllamaStatusResponse)

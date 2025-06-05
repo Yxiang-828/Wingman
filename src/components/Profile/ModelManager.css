@@ -280,6 +280,61 @@
   font-weight: bold;
 }
 
+.current-model-display {
+  background: linear-gradient(135deg, #2a5a2a, #1a4a1a);
+  border: 2px solid #4CAF50;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.current-model-card {
+  text-align: center;
+}
+
+.current-model-card .model-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #4CAF50;
+  margin-bottom: 0.5rem;
+}
+
+.current-model-card .model-status {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.model-card.not-downloaded {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  border-color: #666;
+}
+
+.model-card.not-downloaded:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.download-required-badge {
+  background: #f44336;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.action-btn.active {
+  background: #4CAF50;
+  color: white;
+  cursor: default;
+}
+
+.action-btn.select {
+  background: var(--color-accent-primary, #646cff);
+  color: white;
+}
+
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.7; }
