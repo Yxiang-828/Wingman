@@ -56,6 +56,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     updateQuickPromptUsage: (promptId) => 
       ipcRenderer.invoke('db:updateQuickPromptUsage', promptId),
 
+    // ✅ NEW: Settings persistence
+    saveUserSettings: (userId, settings) => 
+      ipcRenderer.invoke('db:saveUserSettings', userId, settings),
+    getUserSettings: (userId) => 
+      ipcRenderer.invoke('db:getUserSettings', userId),
+
     // ═══════════════════════════════════════════════════════════════
     // 🎯 **UTILITY OPERATIONS**
     // ═══════════════════════════════════════════════════════════════

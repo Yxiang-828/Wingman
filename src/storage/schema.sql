@@ -81,6 +81,23 @@ CREATE TABLE IF NOT EXISTS chat_quick_prompts (
     usage_count INTEGER DEFAULT 0
 );
 
+-- Add to existing users table or create settings table
+ALTER TABLE users ADD COLUMN ai_model TEXT DEFAULT 'llama3.2:1b';
+ALTER TABLE users ADD COLUMN ai_model_auto_selected BOOLEAN DEFAULT FALSE;
+
+-- Or create dedicated settings table
+CREATE TABLE IF NOT EXISTS user_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL UNIQUE,
+    ai_model TEXT DEFAULT 'llama3.2:1b',
+    ai_model_auto_selected BOOLEAN DEFAULT FALSE,
+    theme TEXT DEFAULT 'dark',
+    background TEXT DEFAULT 'default',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date);

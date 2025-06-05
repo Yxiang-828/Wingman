@@ -16,19 +16,58 @@ class WingmanOllamaService:
         self.current_model = None
         self.client = httpx.AsyncClient(timeout=30.0)
         
-        # Model configurations
+        # ✅ EXPANDED: Model configurations with DeepSeek
         self.models = {
+            # Llama models
             "llama3.2:1b": {
                 "name": "llama3.2:1b",
                 "size": "1.3GB",
                 "ram_required": 2,
-                "description": "Compact model for low-resource systems"
+                "description": "Compact model for low-resource systems",
+                "provider": "Meta"
             },
             "llama3.2:3b": {
                 "name": "llama3.2:3b", 
                 "size": "2.0GB",
                 "ram_required": 4,
-                "description": "Balanced model for most systems"
+                "description": "Balanced model for most systems",
+                "provider": "Meta"
+            },
+            "llama3.2:8b": {
+                "name": "llama3.2:8b",
+                "size": "4.9GB", 
+                "ram_required": 8,
+                "description": "Advanced model for complex tasks",
+                "provider": "Meta"
+            },
+            # ✅ NEW: DeepSeek models
+            "deepseek-r1:1.5b": {
+                "name": "deepseek-r1:1.5b",
+                "size": "0.9GB",
+                "ram_required": 2,
+                "description": "Fast reasoning model, excellent for coding and math",
+                "provider": "DeepSeek"
+            },
+            "deepseek-r1:7b": {
+                "name": "deepseek-r1:7b",
+                "size": "4.1GB",
+                "ram_required": 6,
+                "description": "Advanced reasoning model with superior logic",
+                "provider": "DeepSeek"
+            },
+            "deepseek-r1:14b": {
+                "name": "deepseek-r1:14b",
+                "size": "8.2GB",
+                "ram_required": 12,
+                "description": "Top-tier reasoning model for complex problems",
+                "provider": "DeepSeek"
+            },
+            "deepseek-r1:32b": {
+                "name": "deepseek-r1:32b",
+                "size": "18.9GB",
+                "ram_required": 20,
+                "description": "Elite reasoning model for advanced research",
+                "provider": "DeepSeek"
             }
         }
     

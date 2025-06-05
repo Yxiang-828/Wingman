@@ -22,15 +22,19 @@ class LLMService {
   private baseURL = 'http://localhost:8080/api/v1/chat';
 
   /**
-   * Send a message to Wingman AI and get intelligent response
+   * Send a message to Wingman AI with user's selected model
    */
   async sendMessage(message: string, userId?: string): Promise<LLMResponse> {
     try {
       const currentUserId = userId || getCurrentUserId();
       
       if (!currentUserId) {
-        throw new Error('Boss needs to authenticate first!');
+        throw new Error('User authentication required');
       }
+
+      // ✅ GET MODEL FROM DATABASE
+      const userSettings = await this.getUserSettings();
+      const preferredModel = userSettings?.ai_model || 'llama3.2:1b';
 
       const response = await fetch(`${this.baseURL}/`, {
         method: 'POST',
@@ -40,7 +44,8 @@ class LLMService {
         body: JSON.stringify({
           user_id: currentUserId,
           message: message,
-          date: new Date().toISOString().split('T')[0]
+          date: new Date().toISOString().split('T')[0],
+          model: preferredModel // ✅ USES DATABASE-STORED PREFERENCE
         })
       });
 
@@ -65,6 +70,30 @@ class LLMService {
         context_used: false,
         fallback_used: true
       };
+    }
+  }
+
+  /**
+   * Get user's preferred model from database
+   */
+  private async getUserSettings(): Promise<any> {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) return null;
+
+      // ✅ GET FROM DATABASE instead of localStorage
+      const settings = await window.electronAPI.db.getUserSettings(userId);
+      return settings;
+    } catch (error) {
+      console.error('Failed to get user settings:', error);
+      
+      // Fallback to localStorage if database fails
+      try {
+        const localSettings = localStorage.getItem('userSettings');
+        return localSettings ? JSON.parse(localSettings) : null;
+      } catch {
+        return null;
+      }
     }
   }
 

@@ -14,6 +14,7 @@ class ChatRequest(BaseModel):
     user_id: str
     message: str
     date: Optional[str] = None
+    model: Optional[str] = None  # Add model selection
 
 class ChatResponse(BaseModel):
     response: str
@@ -45,17 +46,25 @@ async def send_chat_message(request: ChatRequest):
             date=request.date
         )
         
-        # Generate AI response
+        # Use user's preferred model or fall back to recommended
+        preferred_model = request.model
+        if not preferred_model:
+            # Get system recommendation
+            status = await ollama_service.check_ollama_status()
+            preferred_model = status.get("recommended_model", "llama3.2:1b")
+        
+        # Generate AI response with specified model
         result = await ollama_service.generate_response(
             prompt=request.message,
-            context=context
+            context=context,
+            model=preferred_model
         )
         
         if result["success"]:
             return ChatResponse(
                 response=result["response"],
                 success=True,
-                model_used=result.get("model_used"),
+                model_used=result.get("model_used", preferred_model),
                 processing_time=result.get("processing_time"),
                 context_used=result.get("context_used", False),
                 fallback_used=False
@@ -65,6 +74,7 @@ async def send_chat_message(request: ChatRequest):
             return ChatResponse(
                 response=result["fallback_response"],
                 success=False,
+                model_used=preferred_model,
                 fallback_used=True,
                 context_used=bool(context)
             )
@@ -107,11 +117,15 @@ async def get_chat_status():
         )
 
 @router.post("/pull-model")
-async def pull_model(model_name: str):
+async def pull_model(request: dict):
     """
     Download/pull a specific Ollama model
     """
     try:
+        model_name = request.get("model_name")
+        if not model_name:
+            raise HTTPException(status_code=400, detail="model_name is required")
+            
         result = await ollama_service.pull_model(model_name)
         return result
     except Exception as e:

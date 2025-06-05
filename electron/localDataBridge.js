@@ -1,7 +1,7 @@
 const path = require('path');
 const Database = require('better-sqlite3');
 const fs = require('fs');
-const { app } = require('electron');
+const { app, ipcMain } = require('electron');
 
 class LocalDataManager {
   constructor() {
@@ -743,3 +743,66 @@ class LocalDataManager {
 }
 
 module.exports = { LocalDataManager };
+
+// Add to existing ipcMain handlers
+
+// Save user settings to database
+ipcMain.handle('db:saveUserSettings', async (event, userId, settings) => {
+  try {
+    const dbPath = getDBPath();
+    const db = new Database(dbPath);
+    
+    // Insert or update user settings
+    const stmt = db.prepare(`
+      INSERT OR REPLACE INTO user_settings 
+      (user_id, ai_model, theme, background, updated_at) 
+      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `);
+    
+    const result = stmt.run(
+      userId,
+      settings.aiModel || 'llama3.2:1b',
+      settings.theme || 'dark',
+      settings.background || 'default'
+    );
+    
+    db.close();
+    return { success: true, changes: result.changes };
+  } catch (error) {
+    console.error('Error saving user settings:', error);
+    throw error;
+  }
+});
+
+// Get user settings from database
+ipcMain.handle('db:getUserSettings', async (event, userId) => {
+  try {
+    const dbPath = getDBPath();
+    const db = new Database(dbPath);
+    
+    const stmt = db.prepare(`
+      SELECT ai_model, theme, background, ai_model_auto_selected 
+      FROM user_settings 
+      WHERE user_id = ?
+    `);
+    
+    const settings = stmt.get(userId);
+    db.close();
+    
+    return settings || {
+      ai_model: 'llama3.2:1b',
+      theme: 'dark',
+      background: 'default',
+      ai_model_auto_selected: false
+    };
+  } catch (error) {
+    console.error('Error getting user settings:', error);
+    // Return defaults on error
+    return {
+      ai_model: 'llama3.2:1b',
+      theme: 'dark',
+      background: 'default',
+      ai_model_auto_selected: false
+    };
+  }
+});
