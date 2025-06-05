@@ -6,6 +6,7 @@ import HumorSetting from "./HumorSetting";
 import MessageBubble from "./MessageBubble";
 import QuickReplies from "./QuickReplies";
 import { getCurrentUserId } from "../../utils/auth"; // ✅ ADD THIS
+import llmService from '../../services/llmService';
 import "./ChatBot.css";
 
 const moodIcons = {
@@ -43,6 +44,7 @@ const ChatBot = () => {
   const [input, setInput] = useState("");
   const [humor, setHumor] = useState<"serious" | "funny">("serious");
   const [loading, setLoading] = useState(false);
+  const [aiStatus, setAiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -66,7 +68,7 @@ const ChatBot = () => {
       if (history && history.length > 0) {
         // Format the messages for display
         const formattedMessages: Message[] = history.map((msg) => ({
-          id: msg.id,
+          id: parseInt(msg.id, 10),
           sender: msg.is_ai ? "wingman" : "user",
           text: msg.message,
           timestamp: msg.timestamp,
@@ -140,7 +142,7 @@ const ChatBot = () => {
 
       // ✅ TODO: Integrate with your LLM service for AI response
       // For now, create a simple response
-      const aiResponse = generateSimpleResponse(msg, humor);
+      const aiResponse = await generateAIResponse(msg, userId);
 
       // ✅ NEW: Save AI response to SQLite
       await window.electronAPI.db.saveChatMessage(aiResponse, true, userId);
@@ -174,60 +176,43 @@ const ChatBot = () => {
   };
 
   // ✅ HELPER: Simple response generator (replace with your LLM service)
-  const generateSimpleResponse = (userMessage: string, humorMode: string): string => {
-    const lowerMsg = userMessage.toLowerCase();
-    
-    // Simple keyword-based responses
-    if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
-      return humorMode === 'funny' 
-        ? "Hey there, productivity superstar! Ready to conquer the day? 🚀"
-        : "Hello! I'm here to help you stay organized and focused.";
+  const generateAIResponse = async (message: string, userId: string): Promise<string> => {
+    try {
+      setLoading(true);
+      
+      const result = await llmService.sendMessage(message, userId);
+      
+      // Show performance info in console
+      if (result.model_used && result.processing_time) {
+        console.log(`🤖 ${result.model_used} responded in ${result.processing_time.toFixed(2)}s`);
+      }
+      
+      return result.response;
+      
+    } catch (error) {
+      console.error('AI Error:', error);
+      return "I'm having trouble thinking right now. Please try again in a moment!";
+    } finally {
+      setLoading(false);
     }
-    
-    if (lowerMsg.includes('schedule') || lowerMsg.includes('calendar')) {
-      return humorMode === 'funny'
-        ? "Let's get your schedule sorted! Time to make those tasks tremble in fear! 📅"
-        : "I can help you manage your schedule. Check your calendar view for upcoming events.";
-    }
-    
-    if (lowerMsg.includes('task')) {
-      return humorMode === 'funny'
-        ? "Tasks, schmasks! Let's turn your to-do list into a to-DONE list! ✅"
-        : "I can help you manage your tasks. You can add new tasks or view existing ones.";
-    }
-    
-    if (lowerMsg.includes('diary') || lowerMsg.includes('journal')) {
-      return humorMode === 'funny'
-        ? "Diary time! Spill the tea about your day! ☕📝"
-        : "Journaling is a great way to reflect. You can write in your diary anytime.";
-    }
-    
-    if (lowerMsg.includes('joke')) {
-      return "Why don't scientists trust atoms? Because they make up everything! 😄";
-    }
-    
-    if (lowerMsg.includes('motivate')) {
-      return humorMode === 'funny'
-        ? "You're like a productivity ninja! Silent, swift, and getting stuff DONE! 🥷"
-        : "You've got this! Every small step forward is progress worth celebrating.";
-    }
-    
-    // Default responses
-    const funnyResponses = [
-      "Hmm, that's interesting! Tell me more! 🤔",
-      "I'm processing that with my super-advanced AI brain... beep boop! 🤖",
-      "That sounds important! How can I help you tackle it? 💪"
-    ];
-    
-    const seriousResponses = [
-      "I understand. How can I assist you with that?",
-      "Thank you for sharing. What would you like to focus on next?",
-      "I'm here to help. Can you provide more details?"
-    ];
-    
-    const responses = humorMode === 'funny' ? funnyResponses : seriousResponses;
-    return responses[Math.floor(Math.random() * responses.length)];
   };
+
+  useEffect(() => {
+    const checkAIStatus = async () => {
+      try {
+        const status = await llmService.getStatus();
+        setAiStatus(status.available ? 'online' : 'offline');
+      } catch (error) {
+        setAiStatus('offline');
+      }
+    };
+
+    checkAIStatus();
+    
+    // Check status every 30 seconds
+    const interval = setInterval(checkAIStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section className="chatbot p-6 bg-dark rounded-lg shadow-md hover-glow-tile">
@@ -240,6 +225,14 @@ const ChatBot = () => {
         />
         Wingman
       </h1>
+      <div className="ai-status">
+        <span className={`status-dot ${aiStatus}`}></span>
+        <span className="status-text">
+          {aiStatus === 'checking' && "🔄 Wingman's sweating it out..."}
+          {aiStatus === 'online' && "🤖 Wingman's at your command!"}
+          {aiStatus === 'offline' && "⚠️ Wingman's Sleeping..."}
+        </span>
+      </div>
       <HumorSetting humor={humor} setHumor={setHumor} />
       <div ref={chatBoxRef} className="chatbot-messages">
         {messages.map((message) => (
@@ -253,7 +246,7 @@ const ChatBot = () => {
           <div className="loading-message">
             <MessageBubble
               sender="wingman"
-              text="Thinking... 🤔"
+              text="Cooking... 🤔"
             />
           </div>
         )}
@@ -270,13 +263,13 @@ const ChatBot = () => {
         <input
           className="chatbot-input"
           type="text"
-          placeholder="Type your message..."
+          placeholder="Wingman's at your command..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
         />
         <button type="submit" className="chatbot-send-btn" disabled={loading || !input.trim()}>
-          {loading ? "Sending..." : "Send"}
+          {loading ? "Hold on..." : "Send"}
         </button>
       </form>
     </section>

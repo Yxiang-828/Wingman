@@ -49,8 +49,8 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   ├── Modal.css
 │   │   ├── Modal.tsx
 │   │   ├── Portal.tsx
-│   │   ├── TimeInput.css
-│   │   ├── TimeInput.tsx
+│   │   ├── RetryMissionPopup.css
+│   │   ├── RetryMissionPopup.tsx
 │   │   ├── WingmanAvatar.css
 │   │   └── WingmanAvatar.tsx
 │   ├── Dashboard/
@@ -129,7 +129,8 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   ├── useChat.ts
 │   ├── useDiary.ts
 │   ├── useMood.ts
-│   └── useNavigationRefresh.ts
+│   ├── useNavigationRefresh.ts
+│   └── usePageRefresh.ts
 ├── Pages/
 │   ├── Auth/
 │   │   ├── Login.tsx
@@ -149,7 +150,8 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   ├── llmService.ts
 │   ├── NavigationService.ts
 │   ├── NotificationCleanupService.ts
-│   └── NotificationService.ts
+│   ├── NotificationService.ts
+│   └── TaskFailureManager.ts
 ├── storage/
 │   └── schema.sql
 ├── styles/

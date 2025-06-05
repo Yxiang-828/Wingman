@@ -20,34 +20,21 @@ const MiniCalendar: React.FC = () => {
     [navigate]
   );
 
-  // ✅ DISABLED: All tile functions - no data fetching or display
-  /*
-  const getTileClass = useCallback(
-    (date: Date) => {
-      // All tile styling commented out
-      return "";
-    },
-    []
-  );
-
-  const getTileContent = useCallback(
-    (date: Date) => {
-      // All content display commented out
-      return null;
-    },
-    []
-  );
-  */
+  // ✅ NEW: Function to highlight today's date
+  const getTileClass = useCallback((date: Date) => {
+    const today = new Date();
+    const isToday = formatDateKey(date) === formatDateKey(today);
+    return isToday ? "today-highlight" : "";
+  }, []);
 
   return (
     <div className="mini-calendar-container">
       <Calendar
         onClickDay={handleDayClick}
         className="react-calendar--small"
+        //@ts-ignore
         calendarType="iso8601"
-        // ✅ DISABLED: All tile functions commented out
-        // tileClassName={({ date }) => getTileClass(date)}
-        // tileContent={({ date }) => getTileContent(date)}
+        tileClassName={({ date }) => getTileClass(date)}
       />
     </div>
   );
