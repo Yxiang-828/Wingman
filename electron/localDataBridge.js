@@ -638,6 +638,103 @@ class LocalDataManager {
     }
   }
 
+  // ✅ NEW: Quick Prompts CRUD operations
+  getQuickPrompts(userId) {
+    try {
+      const stmt = this.db.prepare(`
+        SELECT * FROM chat_quick_prompts 
+        WHERE user_id = ?
+        ORDER BY last_used_at DESC, usage_count DESC
+        LIMIT 4
+      `);
+      
+      return stmt.all(userId);
+    } catch (error) {
+      console.error('Error getting quick prompts:', error);
+      return [];
+    }
+  }
+
+  saveQuickPrompt(userId, promptText) {
+    try {
+      // Check if prompt already exists
+      const existingStmt = this.db.prepare(`
+        SELECT id FROM chat_quick_prompts 
+        WHERE user_id = ? AND prompt_text = ?
+      `);
+      
+      const existing = existingStmt.get(userId, promptText);
+      
+      if (existing) {
+        // Update existing prompt
+        const updateStmt = this.db.prepare(`
+          UPDATE chat_quick_prompts 
+          SET last_used_at = CURRENT_TIMESTAMP, usage_count = usage_count + 1
+          WHERE id = ?
+        `);
+        updateStmt.run(existing.id);
+        return existing.id;
+      } else {
+        // Check if user has 4+ prompts
+        const countStmt = this.db.prepare(`
+          SELECT COUNT(*) as count FROM chat_quick_prompts WHERE user_id = ?
+        `);
+        const { count } = countStmt.get(userId);
+        
+        if (count >= 4) {
+          // Delete oldest prompt
+          const deleteStmt = this.db.prepare(`
+            DELETE FROM chat_quick_prompts 
+            WHERE user_id = ? AND id = (
+              SELECT id FROM chat_quick_prompts 
+              WHERE user_id = ? 
+              ORDER BY last_used_at ASC, usage_count ASC 
+              LIMIT 1
+            )
+          `);
+          deleteStmt.run(userId, userId);
+        }
+        
+        // Insert new prompt
+        const insertStmt = this.db.prepare(`
+          INSERT INTO chat_quick_prompts (user_id, prompt_text)
+          VALUES (?, ?)
+        `);
+        const result = insertStmt.run(userId, promptText);
+        return result.lastInsertRowid;
+      }
+    } catch (error) {
+      console.error('Error saving quick prompt:', error);
+      throw error;
+    }
+  }
+
+  deleteQuickPrompt(promptId) {
+    try {
+      const stmt = this.db.prepare(`
+        DELETE FROM chat_quick_prompts WHERE id = ?
+      `);
+      return stmt.run(promptId);
+    } catch (error) {
+      console.error('Error deleting quick prompt:', error);
+      throw error;
+    }
+  }
+
+  updateQuickPromptUsage(promptId) {
+    try {
+      const stmt = this.db.prepare(`
+        UPDATE chat_quick_prompts 
+        SET last_used_at = CURRENT_TIMESTAMP, usage_count = usage_count + 1
+        WHERE id = ?
+      `);
+      return stmt.run(promptId);
+    } catch (error) {
+      console.error('Error updating quick prompt usage:', error);
+      throw error;
+    }
+  }
+
   close() {
     if (this.db) {
       this.db.close();

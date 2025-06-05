@@ -605,3 +605,45 @@
 .sidebar-link:active {
   transform: scale(0.98);
 }
+
+/* ✅ FIXED: Wingman icon in sidebar - proper sizing */
+.sidebar-wingman-icon {
+  width: 20px !important;
+  height: 20px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.sidebar-wingman-icon .wingman-avatar {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+}
+
+.sidebar-wingman-icon .wingman-avatar__container {
+  width: 20px !important;
+  height: 20px !important;
+  gap: 0 !important;
+}
+
+.sidebar-wingman-icon .wingman-avatar__image-wrapper {
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+}
+
+.sidebar-wingman-icon .wingman-avatar__image {
+  width: 20px !important;
+  height: 20px !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+}
+
+/* Hide mood indicator and name in sidebar */
+.sidebar-wingman-icon .wingman-avatar__mood-indicator,
+.sidebar-wingman-icon .wingman-avatar__name {
+  display: none !important;
+}

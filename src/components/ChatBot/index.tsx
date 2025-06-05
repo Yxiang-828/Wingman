@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom"; // ✅ ADD THIS
+import { useLocation } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
 import HumorSetting from "./HumorSetting";
 import MessageBubble from "./MessageBubble";
 import QuickReplies from "./QuickReplies";
-import { getCurrentUserId } from "../../utils/auth"; // ✅ ADD THIS
+import { getCurrentUserId } from "../../utils/auth";
 import llmService from '../../services/llmService';
 import "./ChatBot.css";
 
@@ -19,10 +19,9 @@ const moodLabels = {
   moody: "moody spirit",
 };
 
-// Keep the Message interface that's actually used:
 interface Message {
   id: number;
-  sender: "user" | "wingman"; // Strict union type
+  sender: "user" | "wingman";
   text: string;
   timestamp: string;
 }
@@ -31,22 +30,22 @@ const initialMessages: Message[] = [
   {
     id: 1,
     sender: "wingman" as "user" | "wingman",
-    text: "Hey! I'm your Wingman. How can I help you today?",
+    text: "At your service, boss! Your loyal Wingman reporting for duty. What can I help you conquer today? 🚀",
     timestamp: new Date().toISOString(),
   },
 ];
 
 const ChatBot = () => {
-  const [wingmanMood, setWingmanMood] = useState<"productive" | "moody">(
-    "productive"
-  );
+  const [wingmanMood, setWingmanMood] = useState<"productive" | "moody">("productive");
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [humor, setHumor] = useState<"serious" | "funny">("serious");
   const [loading, setLoading] = useState(false);
   const [aiStatus, setAiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [showHistory, setShowHistory] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatBoxRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const initialMessageHandled = useRef(false);
 
@@ -57,16 +56,13 @@ const ChatBot = () => {
     }
   }, []);
 
-  // ✅ MIGRATED: Load chat history from SQLite
   const loadChatHistory = async (userId: string) => {
     try {
-      console.log("Loading chat history from SQLite for user:", userId);
+      console.log("🤖 Wingman: Loading your conversation history, boss...");
       
-      // ✅ NEW: Use SQLite via electronAPI instead of deprecated API
       const history = await window.electronAPI.db.getChatHistory(userId, 50);
 
       if (history && history.length > 0) {
-        // Format the messages for display
         const formattedMessages: Message[] = history.map((msg) => ({
           id: parseInt(msg.id, 10),
           sender: msg.is_ai ? "wingman" : "user",
@@ -74,14 +70,12 @@ const ChatBot = () => {
           timestamp: msg.timestamp,
         }));
 
-        // Only replace initial messages if we have chat history
         if (formattedMessages.length > 0) {
           setMessages(formattedMessages);
         }
       }
     } catch (error) {
-      console.error("Failed to load chat history:", error);
-      // Keep initial messages on error
+      console.error("🤖 Wingman: Failed to load chat history:", error);
     }
   };
 
@@ -108,23 +102,20 @@ const ChatBot = () => {
       handleSend(initialMessage);
       initialMessageHandled.current = true;
     }
-    // eslint-disable-next-line
   }, [location.state?.initialMessage]);
 
-  // ✅ MIGRATED: Send message and get response using SQLite
   const handleSend = async (msg: string) => {
     if (!msg.trim()) return;
 
     const userId = getCurrentUserId();
     if (!userId) {
-      alert("Please log in to save your chat history.");
+      alert("Boss, I need you to log in first so I can save our conversation!");
       return;
     }
 
     setLoading(true);
     const timestamp = new Date().toISOString();
 
-    // Create user message object
     const userMessage: Message = {
       id: Date.now(),
       sender: "user",
@@ -132,19 +123,14 @@ const ChatBot = () => {
       timestamp,
     };
 
-    // Add to local state immediately
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
     try {
-      // ✅ NEW: Save user message to SQLite
       await window.electronAPI.db.saveChatMessage(msg, false, userId);
 
-      // ✅ TODO: Integrate with your LLM service for AI response
-      // For now, create a simple response
       const aiResponse = await generateAIResponse(msg, userId);
 
-      // ✅ NEW: Save AI response to SQLite
       await window.electronAPI.db.saveChatMessage(aiResponse, true, userId);
 
       const botMessage: Message = {
@@ -154,46 +140,57 @@ const ChatBot = () => {
         timestamp: new Date().toISOString(),
       };
 
-      // Add bot response to local state
       setMessages((prev) => [...prev, botMessage]);
 
-      console.log("✅ Chat messages saved to SQLite successfully");
+      console.log("✅ Wingman: Mission accomplished - conversation saved!");
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("🤖 Wingman: Error processing your command:", error);
 
-      // Add error message if SQLite operation fails
       const errorMessage: Message = {
         id: Date.now() + 1,
         sender: "wingman",
-        text: "Sorry, I encountered an error. Please try again later.",
+        text: "Apologies, boss! I encountered a glitch while processing your command. Your loyal Wingman is still learning. Please try again! 🛠️",
         timestamp: new Date().toISOString(),
       };
 
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
+      // Auto-focus back to input
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   };
 
-  // ✅ HELPER: Simple response generator (replace with your LLM service)
   const generateAIResponse = async (message: string, userId: string): Promise<string> => {
     try {
       setLoading(true);
       
       const result = await llmService.sendMessage(message, userId);
       
-      // Show performance info in console
       if (result.model_used && result.processing_time) {
-        console.log(`🤖 ${result.model_used} responded in ${result.processing_time.toFixed(2)}s`);
+        console.log(`🤖 Wingman Brain (${result.model_used}): Responded in ${result.processing_time.toFixed(2)}s`);
       }
       
       return result.response;
       
     } catch (error) {
-      console.error('AI Error:', error);
-      return "I'm having trouble thinking right now. Please try again in a moment!";
+      console.error('🤖 Wingman AI Error:', error);
+      return "Boss, my AI brain is taking a quick break! Your faithful Wingman is still here though. Please try again in a moment! 🧠";
     } finally {
       setLoading(false);
+    }
+  };
+
+  const clearChatHistory = async () => {
+    const userId = getCurrentUserId();
+    if (!userId) return;
+
+    try {
+      await window.electronAPI.db.clearChatHistory(userId);
+      setMessages(initialMessages);
+      console.log("✅ Wingman: Chat history cleared as requested, boss!");
+    } catch (error) {
+      console.error("🤖 Wingman: Failed to clear chat history:", error);
     }
   };
 
@@ -209,70 +206,132 @@ const ChatBot = () => {
 
     checkAIStatus();
     
-    // Check status every 30 seconds
     const interval = setInterval(checkAIStatus, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  const getStatusText = () => {
+    switch(aiStatus) {
+      case 'checking': return "Booting up for duty...";
+      case 'online': return "Ready to serve, boss!";
+      case 'offline': return "AI brain offline - manual mode";
+      default: return "Status unknown";
+    }
+  };
+
   return (
-    <section className="chatbot p-6 bg-dark rounded-lg shadow-md hover-glow-tile">
-      <h1 className="text-light text-2xl font-semibold mb-4 flex items-center gap-3">
-        <img
-          src={moodIcons[wingmanMood]}
-          alt={`Wingman in ${moodLabels[wingmanMood]} mood`}
-          className="mood-icon"
-          style={{ width: "32px", height: "32px" }}
-        />
-        Wingman
-      </h1>
-      <div className="ai-status">
-        <span className={`status-dot ${aiStatus}`}></span>
-        <span className="status-text">
-          {aiStatus === 'checking' && "🔄 Wingman's sweating it out..."}
-          {aiStatus === 'online' && "🤖 Wingman's at your command!"}
-          {aiStatus === 'offline' && "⚠️ Wingman's Sleeping..."}
-        </span>
-      </div>
-      <HumorSetting humor={humor} setHumor={setHumor} />
-      <div ref={chatBoxRef} className="chatbot-messages">
-        {messages.map((message) => (
-          <MessageBubble
-            key={message.id}
-            sender={message.sender}
-            text={message.text}
-          />
-        ))}
-        {loading && (
-          <div className="loading-message">
-            <MessageBubble
-              sender="wingman"
-              text="Cooking... 🤔"
+    <div className="chatbot-container">
+      {/* ✅ UPDATED: Chat Header with Wingman personality */}
+      <div className="chatbot-header">
+        <div className="chatbot-header-left">
+          <div className="wingman-avatar-container">
+            <img
+              src={moodIcons[wingmanMood]}
+              alt={`Your loyal Wingman in ${moodLabels[wingmanMood]} mood`}
+              className="wingman-mood-icon"
             />
           </div>
-        )}
-        <div ref={chatEndRef} />
+          <div className="wingman-info">
+            <h1 className="wingman-title">Your Wingman</h1>
+            <div className="ai-status">
+              <span className={`status-dot ${aiStatus}`}></span>
+              <span className="status-text">
+                {getStatusText()}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="chatbot-header-actions">
+          <button
+            className={`header-action-btn ${showHistory ? 'active' : ''}`}
+            onClick={() => setShowHistory(!showHistory)}
+            title="Configure your Wingman"
+          >
+            ⚙️
+          </button>
+          <button
+            className="header-action-btn"
+            onClick={clearChatHistory}
+            title="Clear our conversation history"
+          >
+            🗑️
+          </button>
+        </div>
       </div>
-      <QuickReplies onQuickReply={handleSend} />
-      <form
-        className="chatbot-input-row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend(input);
-        }}
-      >
-        <input
-          className="chatbot-input"
-          type="text"
-          placeholder="Wingman's at your command..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={loading}
-        />
-        <button type="submit" className="chatbot-send-btn" disabled={loading || !input.trim()}>
-          {loading ? "Hold on..." : "Send"}
-        </button>
-      </form>
-    </section>
+
+      {/* ✅ UPDATED: Settings Panel with Wingman tone */}
+      {showHistory && (
+        <div className="chatbot-settings-panel">
+          <HumorSetting humor={humor} setHumor={setHumor} />
+          <div className="chat-stats">
+            <span className="stat-item">
+              💬 {messages.length} exchanges
+            </span>
+            <span className="stat-item">
+              🤖 {messages.filter(m => m.sender === 'wingman').length} responses served
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ ENHANCED: Main Chat Area */}
+      <div className="chatbot-main">
+        <div ref={chatBoxRef} className="chatbot-messages">
+          {messages.map((message) => (
+            <MessageBubble
+              key={message.id}
+              sender={message.sender}
+              text={message.text}
+            />
+          ))}
+          {loading && (
+            <div className="loading-message">
+              <MessageBubble
+                sender="wingman"
+                text="🧠 Processing your command, boss..."
+              />
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* ✅ ENHANCED: Quick Replies */}
+        <QuickReplies onQuickReply={handleSend} />
+
+        {/* ✅ UPDATED: Input Area with Wingman personality */}
+        <div className="chatbot-input-area">
+          <form
+            className="chatbot-input-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend(input);
+            }}
+          >
+            <div className="input-wrapper">
+              <input
+                ref={inputRef}
+                className="chatbot-input"
+                type="text"
+                placeholder="Give me your command, boss..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={loading}
+                autoFocus
+              />
+              <button 
+                type="submit" 
+                className={`chatbot-send-btn ${loading || !input.trim() ? 'disabled' : ''}`}
+                disabled={loading || !input.trim()}
+                title="Send command to your Wingman"
+              >
+                {loading ? '⏳' : '🚀'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 

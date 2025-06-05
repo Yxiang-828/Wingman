@@ -119,12 +119,14 @@ const Sidebar: React.FC = () => {
       title: "Wingman",
       path: "/chatbot",
       icon: (
-        <WingmanAvatar
-          size="small"
-          mood={getAvatarMood(wingmanMood)}
-          context="sidebar"
-          showMessage={false}
-        />
+        <div className="sidebar-wingman-icon">
+          <WingmanAvatar
+            size="small"
+            mood={getAvatarMood(wingmanMood)}
+            context="sidebar"
+            showMessage={false}
+          />
+        </div>
       ),
       badge: 1,
     },

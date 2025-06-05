@@ -46,6 +46,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     clearChatHistory: (userId) => 
       ipcRenderer.invoke('db:clearChatHistory', userId),
 
+    // ✅ NEW: Quick Prompts operations
+    getQuickPrompts: (userId) => 
+      ipcRenderer.invoke('db:getQuickPrompts', userId),
+    saveQuickPrompt: (userId, promptText) => 
+      ipcRenderer.invoke('db:saveQuickPrompt', userId, promptText),
+    deleteQuickPrompt: (promptId) => 
+      ipcRenderer.invoke('db:deleteQuickPrompt', promptId),
+    updateQuickPromptUsage: (promptId) => 
+      ipcRenderer.invoke('db:updateQuickPromptUsage', promptId),
+
     // ═══════════════════════════════════════════════════════════════
     // 🎯 **UTILITY OPERATIONS**
     // ═══════════════════════════════════════════════════════════════

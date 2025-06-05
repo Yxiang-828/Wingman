@@ -29,7 +29,7 @@ class LLMService {
       const currentUserId = userId || getCurrentUserId();
       
       if (!currentUserId) {
-        throw new Error('User not authenticated');
+        throw new Error('Boss needs to authenticate first!');
       }
 
       const response = await fetch(`${this.baseURL}/`, {
@@ -40,27 +40,27 @@ class LLMService {
         body: JSON.stringify({
           user_id: currentUserId,
           message: message,
-          date: new Date().toISOString().split('T')[0] // Today's date
+          date: new Date().toISOString().split('T')[0]
         })
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`Wingman communication error: HTTP ${response.status}`);
       }
 
       const result: LLMResponse = await response.json();
       
       // Log performance metrics for debugging
-      console.log(`🤖 AI Response (${result.model_used}): ${result.processing_time?.toFixed(2)}s`);
+      console.log(`🤖 Wingman Brain (${result.model_used}): Mission completed in ${result.processing_time?.toFixed(2)}s`);
       
       return result;
 
     } catch (error) {
-      console.error('LLM Service Error:', error);
+      console.error('🤖 Wingman Service Error:', error);
       
-      // Return fallback response
+      // Return faithful wingman fallback response
       return {
-        response: "I'm having trouble connecting to my AI brain right now. Please try again in a moment!",
+        response: "Boss, my AI brain is taking a quick coffee break! Your loyal Wingman is still here in manual mode. Please try again in a moment! ☕🤖",
         success: false,
         context_used: false,
         fallback_used: true
@@ -76,19 +76,19 @@ class LLMService {
       const response = await fetch(`${this.baseURL}/status`);
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`Wingman status check failed: HTTP ${response.status}`);
       }
 
       return await response.json();
 
     } catch (error) {
-      console.error('LLM Status Check Error:', error);
+      console.error('🤖 Wingman Status Check Error:', error);
       return {
         status: 'error',
         available: false,
         models: [],
-        system_info: {}, // ✅ FIX: Add missing system_info property
-        error: error instanceof Error ? error.message : 'Unknown error'
+        system_info: {},
+        error: error instanceof Error ? error.message : 'Unknown error - Wingman investigating!'
       };
     }
   }
@@ -101,8 +101,8 @@ class LLMService {
       const response = await fetch(`${this.baseURL}/models`);
       return await response.json();
     } catch (error) {
-      console.error('Get Models Error:', error);
-      return { models: {}, error: error instanceof Error ? error.message : 'Unknown error' };
+      console.error('🤖 Wingman Get Models Error:', error);
+      return { models: {}, error: error instanceof Error ? error.message : 'Wingman brain models unavailable' };
     }
   }
 
@@ -121,8 +121,8 @@ class LLMService {
       
       return await response.json();
     } catch (error) {
-      console.error('Pull Model Error:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      console.error('🤖 Wingman Pull Model Error:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Wingman failed to download brain upgrade' };
     }
   }
 }

@@ -558,74 +558,40 @@ async function setupDatabaseIPC() {
       }
     });
 
-    // ✅ UTILITY HANDLERS
-    ipcMain.handle('db:getStorageStats', async (event, userId) => {
+    // ✅ QUICK PROMPTS HANDLERS
+    ipcMain.handle('db:getQuickPrompts', async (event, userId) => {
       try {
-        console.log(`🔄 IPC: Getting storage stats for user ${userId}`);
-        if (!dataManager) {
-          throw new Error('DataManager is not initialized');
-        }
-        const stats = dataManager.getStorageStats(userId);
-        console.log('✅ IPC: Storage stats retrieved:', stats);
-        return stats;
+        return dataManager.getQuickPrompts(userId);
       } catch (error) {
-        console.error('❌ IPC: Error getting storage stats:', error);
-        throw new Error(`Failed to get storage stats: ${error.message}`);
+        console.error('❌ IPC Error - getQuickPrompts:', error);
+        return [];
       }
     });
 
-    // ✅ ADDITIONAL SYSTEM HANDLERS
-    ipcMain.handle('open-external', async (event, url) => {
+    ipcMain.handle('db:saveQuickPrompt', async (event, userId, promptText) => {
       try {
-        await shell.openExternal(url);
-        return { success: true };
+        return dataManager.saveQuickPrompt(userId, promptText);
       } catch (error) {
-        console.error('❌ Error opening external URL:', error);
-        throw new Error(`Failed to open URL: ${error.message}`);
+        console.error('❌ IPC Error - saveQuickPrompt:', error);
+        throw error;
       }
     });
 
-    ipcMain.handle('get-version', async () => {
-      return app.getVersion();
-    });
-
-    ipcMain.handle('select-file', async (event, options) => {
+    ipcMain.handle('db:deleteQuickPrompt', async (event, promptId) => {
       try {
-        const result = await dialog.showOpenDialog(options);
-        return result;
+        return dataManager.deleteQuickPrompt(promptId);
       } catch (error) {
-        console.error('❌ Error in file dialog:', error);
-        throw new Error(`File dialog failed: ${error.message}`);
+        console.error('❌ IPC Error - deleteQuickPrompt:', error);
+        throw error;
       }
     });
 
-    ipcMain.handle('save-file', async (event, options) => {
+    ipcMain.handle('db:updateQuickPromptUsage', async (event, promptId) => {
       try {
-        const result = await dialog.showSaveDialog(options);
-        return result;
+        return dataManager.updateQuickPromptUsage(promptId);
       } catch (error) {
-        console.error('❌ Error in save dialog:', error);
-        throw new Error(`Save dialog failed: ${error.message}`);
-      }
-    });
-
-    ipcMain.handle('read-file', async (event, filePath) => {
-      try {
-        const data = fs.readFileSync(filePath, 'utf8');
-        return data;
-      } catch (error) {
-        console.error('❌ Error reading file:', error);
-        throw new Error(`Failed to read file: ${error.message}`);
-      }
-    });
-
-    ipcMain.handle('write-file', async (event, filePath, data) => {
-      try {
-        fs.writeFileSync(filePath, data, 'utf8');
-        return { success: true };
-      } catch (error) {
-        console.error('❌ Error writing file:', error);
-        throw new Error(`Failed to write file: ${error.message}`);
+        console.error('❌ IPC Error - updateQuickPromptUsage:', error);
+        throw error;
       }
     });
 

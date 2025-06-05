@@ -71,6 +71,16 @@ CREATE TABLE IF NOT EXISTS chat_history (
     is_ai BOOLEAN DEFAULT FALSE
 );
 
+-- ✅ Quick Prompts table
+CREATE TABLE IF NOT EXISTS chat_quick_prompts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    prompt_text TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    usage_count INTEGER DEFAULT 0
+);
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date);
@@ -86,3 +96,5 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id
 CREATE INDEX IF NOT EXISTS idx_chat_messages_user ON chat_messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp);
+CREATE INDEX IF NOT EXISTS idx_chat_quick_prompts_user_id ON chat_quick_prompts(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_quick_prompts_last_used ON chat_quick_prompts(last_used_at);
