@@ -43,8 +43,9 @@ const getMoodLabel = (mood: string): string => {
 
 const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = memo(
   ({ entry, onClose, onEdit, onDelete, clickPosition }) => {
-    // ✅ NEW: Calculate optimal position
-    const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
+    const [popupStyle, setPopupStyle] = useState<React.CSSProperties | null>(
+      null
+    ); // ✅ Start as null
 
     useEffect(() => {
       if (clickPosition) {
@@ -80,8 +81,6 @@ const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = memo(
           top: `${top}px`,
           zIndex: 1000,
         });
-
-        console.log("📍 Popup positioned at:", { left, top, clickPosition });
       }
     }, [clickPosition]);
 
@@ -128,6 +127,11 @@ const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = memo(
       }),
       [entry.mood]
     );
+
+    // ✅ DON'T RENDER until position is calculated
+    if (!popupStyle) {
+      return null;
+    }
 
     return (
       <div
