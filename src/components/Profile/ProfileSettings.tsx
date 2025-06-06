@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { getCurrentUser, getCurrentUserId } from "../../utils/auth";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
-import { useBackground } from "../../context/BackgroundContext";
-import { llmService } from "../../services/llmService";
-import "./Settings.css"; // ✅ USING THE CSS!
-import ModelManager from './ModelManager';
+import { getCurrentUser, getCurrentUserId } from "../../utils/auth";
+import llmService from "../../services/llmService";
+import ModelManager from "./ModelManager";
+import "./Settings.css";
 
 interface AvailableModels {
   models: Record<string, any>;
@@ -16,9 +15,10 @@ interface AvailableModels {
   };
 }
 
+type Theme = "dark" | "light" | "yandere" | "kuudere" | "tsundere" | "dandere";
+
 const ProfileSettings: React.FC = () => {
   const { theme, setTheme } = useTheme();
-  const { background, setBackground } = useBackground();
   const [user, setUser] = useState({
     username: "",
     email: "",
@@ -52,8 +52,7 @@ const ProfileSettings: React.FC = () => {
       
       if (settings) {
         setAiModel(settings.ai_model || 'llama3.2:1b');
-        setTheme(settings.theme || 'dark');
-        setBackground(settings.background || 'default');
+        // Theme is already managed by ThemeContext
       }
     } catch (error) {
       console.error("Failed to load user settings:", error);
@@ -80,50 +79,80 @@ const ProfileSettings: React.FC = () => {
 
   const handleSaveSettings = async () => {
     try {
+      setSaving(true);
       const userId = getCurrentUserId();
-      if (!userId) return;
+      if (!userId) {
+        setMessage("Error: User not authenticated");
+        return;
+      }
 
-     // Map frontend camelCase to database snake_case
-     const settingsToSave = {
-       ai_model: settings.aiModel,
-       ai_model_auto_selected: settings.aiModelAutoSelected,
-       theme: settings.theme,
-       notifications_enabled: settings.notificationsEnabled
-     };
+      // Get current settings
+      const currentSettings = await window.electronAPI.db.getUserSettings(userId);
+      
+      // Update settings
+      const settingsToSave = {
+        ...currentSettings,
+        ai_model: aiModel,
+        theme: theme, // Save current theme
+      };
 
       await window.electronAPI.db.saveUserSettings(userId, settingsToSave);
-      console.log('✅ Settings saved successfully');
+      setMessage("Settings saved successfully!");
+      
+      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
       console.error('Save settings error:', error);
+      setMessage("Error: Failed to save settings");
+      setTimeout(() => setMessage(""), 3000);
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const getThemeDisplayName = (themeValue: Theme) => {
+    const themeNames = {
+      dark: "Dark",
+      light: "Light",
+      yandere: "Yandere 🌸",
+      kuudere: "Kuudere ❄️",
+      tsundere: "Tsundere 🧡",
+      dandere: "Dandere 💜"
+    };
+    return themeNames[themeValue] || themeValue;
+  };
+
+  const getThemeDescription = (themeValue: Theme) => {
+    const descriptions = {
+      dark: "Classic dark theme with blue accents",
+      light: "Soft cream theme with warm yellow tones",
+      yandere: "Passionate pink theme with dark romantic vibes",
+      kuudere: "Cool blue theme with icy, distant aesthetics",
+      tsundere: "Warm orange theme representing conflicted emotions",
+      dandere: "Gentle purple theme with shy, soft aesthetics"
+    };
+    return descriptions[themeValue] || "Custom theme";
   };
 
   const getModelDisplayName = (modelName: string) => {
     const modelMap: Record<string, string> = {
-      // Llama models
       "llama3.2:1b": "Llama 3.2 1B (Fast & Light)",
       "llama3.2:3b": "Llama 3.2 3B (Balanced)",
       "llama3.2:8b": "Llama 3.2 8B (Advanced)",
-      // ✅ NEW: DeepSeek models
       "deepseek-r1:1.5b": "DeepSeek R1 1.5B (Ultra Fast)",
       "deepseek-r1:7b": "DeepSeek R1 7B (Reasoning Pro)",
       "deepseek-r1:14b": "DeepSeek R1 14B (Logic Master)",
-      "deepseek-r1:32b": "DeepSeek R1 32B (Research Elite)",
     };
     return modelMap[modelName] || modelName;
   };
 
   const getModelDescription = (modelName: string) => {
     const descriptions: Record<string, string> = {
-      // Llama models
       "llama3.2:1b": "Fastest responses, lower resource usage. Great for quick tasks and systems with limited RAM.",
       "llama3.2:3b": "Balanced performance and intelligence. Recommended for most users with 8GB+ RAM.",
       "llama3.2:8b": "Most intelligent responses, requires more resources. Best for complex tasks with 16GB+ RAM.",
-      // ✅ NEW: DeepSeek descriptions
       "deepseek-r1:1.5b": "Lightning-fast reasoning model. Excellent for coding, math, and quick problem-solving.",
       "deepseek-r1:7b": "Advanced reasoning capabilities. Superior logic and analytical thinking for complex tasks.",
       "deepseek-r1:14b": "Master-level reasoning model. Exceptional at complex problem-solving and research tasks.",
-      "deepseek-r1:32b": "Elite reasoning model for advanced research, complex analysis, and sophisticated problem-solving.",
     };
     return descriptions[modelName] || "Advanced AI model for intelligent assistance.";
   };
@@ -134,7 +163,6 @@ const ProfileSettings: React.FC = () => {
     const systemInfo = availableModels.system_info;
     const ramGb = systemInfo.total_ram_gb;
     
-    // ✅ UPDATED: RAM requirements for all models
     switch (modelName) {
       case "llama3.2:1b":
       case "deepseek-r1:1.5b":
@@ -147,8 +175,6 @@ const ProfileSettings: React.FC = () => {
         return ramGb >= 8;
       case "deepseek-r1:14b":
         return ramGb >= 12;
-      case "deepseek-r1:32b":
-        return ramGb >= 20;
       default:
         return false;
     }
@@ -172,9 +198,8 @@ const ProfileSettings: React.FC = () => {
     }
   };
 
-  // ✅ GROUP MODELS by provider
   const getModelsByProvider = () => {
-    const allModels = ["llama3.2:1b", "llama3.2:3b", "llama3.2:8b", "deepseek-r1:1.5b", "deepseek-r1:7b", "deepseek-r1:14b", "deepseek-r1:32b"];
+    const allModels = ["llama3.2:1b", "llama3.2:3b", "llama3.2:8b", "deepseek-r1:1.5b", "deepseek-r1:7b", "deepseek-r1:14b"];
     
     return {
       llama: allModels.filter(model => model.startsWith("llama")),
@@ -183,6 +208,7 @@ const ProfileSettings: React.FC = () => {
   };
 
   const modelGroups = getModelsByProvider();
+  const themes: Theme[] = ["dark", "light", "yandere", "kuudere", "tsundere", "dandere"];
 
   return (
     <div className="profile-settings-container">
@@ -193,11 +219,11 @@ const ProfileSettings: React.FC = () => {
         <h3 className="settings-card-title">Account Information</h3>
         <div className="user-info-grid">
           <div className="user-info-item">
-            <span className="user-info-label">Username:</span>
+            <span className="user-info-label">Username</span>
             <span className="user-info-value">{user.username}</span>
           </div>
           <div className="user-info-item">
-            <span className="user-info-label">Email:</span>
+            <span className="user-info-label">Email</span>
             <span className="user-info-value">{user.email}</span>
           </div>
         </div>
@@ -219,11 +245,11 @@ const ProfileSettings: React.FC = () => {
         {availableModels?.system_info && (
           <div className="system-info-card">
             <div className="system-info-row">
-              <span>System RAM:</span>
-              <span>{availableModels.system_info.total_ram_gb.toFixed(1)} GB</span>
+              <span>System RAM</span>
+              <span>{availableModels.system_info.total_ram_gb}GB</span>
             </div>
             <div className="system-info-row">
-              <span>Recommended:</span>
+              <span>Recommended Model</span>
               <span>{getModelDisplayName(availableModels.system_info.recommended_model)}</span>
             </div>
           </div>
@@ -232,54 +258,44 @@ const ProfileSettings: React.FC = () => {
         <div className="setting-group">
           <label className="setting-label">AI Model Selection</label>
           
-          {/* ✅ LLAMA MODELS GROUP */}
           <div className="model-provider-section">
-            <h4 className="model-provider-title">🦙 Meta Llama Models</h4>
+            <h4 className="model-provider-title">Meta Llama Models</h4>
             <div className="model-selection-grid">
-              {modelGroups.llama.map((model) => (
-                <div 
-                  key={model}
-                  className={`model-option ${aiModel === model ? 'selected' : ''} ${!canRunModel(model) ? 'disabled' : ''}`}
-                  onClick={() => canRunModel(model) && setAiModel(model)}
+              {modelGroups.llama.map((modelName) => (
+                <div
+                  key={modelName}
+                  className={`model-option ${aiModel === modelName ? 'selected' : ''} ${!canRunModel(modelName) ? 'disabled' : ''}`}
+                  onClick={() => canRunModel(modelName) && setAiModel(modelName)}
                 >
                   <div className="model-option-header">
-                    <span className="model-name">{getModelDisplayName(model)}</span>
-                    {availableModels?.system_info.recommended_model === model && (
-                      <span className="recommended-badge">Recommended</span>
-                    )}
+                    <span className="model-name">{getModelDisplayName(modelName)}</span>
+                    {modelName === "llama3.2:3b" && <span className="recommended-badge">Recommended</span>}
                   </div>
-                  <p className="model-description">{getModelDescription(model)}</p>
-                  {!canRunModel(model) && (
-                    <div className="model-warning">
-                      Requires more system resources
-                    </div>
+                  <p className="model-description">{getModelDescription(modelName)}</p>
+                  {!canRunModel(modelName) && (
+                    <div className="model-warning">Requires more RAM than available</div>
                   )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ✅ DEEPSEEK MODELS GROUP */}
           <div className="model-provider-section">
-            <h4 className="model-provider-title">🧠 DeepSeek Reasoning Models</h4>
+            <h4 className="model-provider-title">DeepSeek Models</h4>
             <div className="model-selection-grid">
-              {modelGroups.deepseek.map((model) => (
-                <div 
-                  key={model}
-                  className={`model-option ${aiModel === model ? 'selected' : ''} ${!canRunModel(model) ? 'disabled' : ''}`}
-                  onClick={() => canRunModel(model) && setAiModel(model)}
+              {modelGroups.deepseek.map((modelName) => (
+                <div
+                  key={modelName}
+                  className={`model-option ${aiModel === modelName ? 'selected' : ''} ${!canRunModel(modelName) ? 'disabled' : ''}`}
+                  onClick={() => canRunModel(modelName) && setAiModel(modelName)}
                 >
                   <div className="model-option-header">
-                    <span className="model-name">{getModelDisplayName(model)}</span>
-                    {model === "deepseek-r1:7b" && availableModels?.system_info.total_ram_gb >= 6 && (
-                      <span className="recommended-badge">Best Value</span>
-                    )}
+                    <span className="model-name">{getModelDisplayName(modelName)}</span>
+                    {modelName === "deepseek-r1:7b" && <span className="recommended-badge" title="Best Value">⭐ Best Value</span>}
                   </div>
-                  <p className="model-description">{getModelDescription(model)}</p>
-                  {!canRunModel(model) && (
-                    <div className="model-warning">
-                      Requires more system resources
-                    </div>
+                  <p className="model-description">{getModelDescription(modelName)}</p>
+                  {!canRunModel(modelName) && (
+                    <div className="model-warning">Requires more RAM than available</div>
                   )}
                 </div>
               ))}
@@ -296,35 +312,21 @@ const ProfileSettings: React.FC = () => {
         <h3 className="settings-card-title">Appearance</h3>
         
         <div className="setting-group">
-          <label className="setting-label">Theme</label>
-          <div className="theme-selector">
-            <button
-              className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
-              onClick={() => setTheme('dark')}
-            >
-              🌙 Dark
-            </button>
-            <button
-              className={`theme-option ${theme === 'light' ? 'active' : ''}`}
-              onClick={() => setTheme('light')}
-            >
-              ☀️ Light
-            </button>
+          <label className="setting-label">Theme Selection</label>
+          <div className="theme-grid">
+            {themes.map((themeOption) => (
+              <div
+                key={themeOption}
+                className={`theme-option ${theme === themeOption ? 'active' : ''}`}
+                onClick={() => setTheme(themeOption)}
+              >
+                <div className="theme-option-header">
+                  <span className="theme-name">{getThemeDisplayName(themeOption)}</span>
+                </div>
+                <p className="theme-description">{getThemeDescription(themeOption)}</p>
+              </div>
+            ))}
           </div>
-        </div>
-
-        <div className="setting-group">
-          <label className="setting-label">Background</label>
-          <select 
-            className="setting-select"
-            value={background}
-            onChange={(e) => setBackground(e.target.value)}
-          >
-            <option value="default">Default</option>
-            <option value="mountain">Mountain</option>
-            <option value="city">City</option>
-            <option value="space">Space</option>
-          </select>
         </div>
       </div>
 
@@ -342,12 +344,12 @@ const ProfileSettings: React.FC = () => {
           className="save-settings-btn"
         >
           {saving ? (
-            <span className="saving-text">
-              <div className="spinner" />
+            <div className="saving-text">
+              <div className="spinner"></div>
               Saving...
-            </span>
+            </div>
           ) : (
-            'Save Settings'
+            "💾 Save Settings"
           )}
         </button>
       </div>

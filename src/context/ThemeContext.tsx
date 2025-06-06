@@ -5,12 +5,12 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
+import { getCurrentUserId } from '../utils/auth';
 
-type Theme = "dark" | "light" | "auto";
+type Theme = "dark" | "light" | "yandere" | "kuudere" | "tsundere" | "dandere";
 
 interface ThemeContextType {
   theme: Theme;
-  actualTheme: "dark" | "light"; // The resolved theme (auto becomes dark/light)
   setTheme: (theme: Theme) => void;
 }
 
@@ -20,66 +20,75 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [theme, setThemeState] = useState<Theme>("dark");
-  const [actualTheme, setActualTheme] = useState<"dark" | "light">("dark");
 
-  // Load theme from localStorage on mount
+  // Load theme from database on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem("userSettings");
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        if (settings.theme) {
-          setThemeState(settings.theme);
-        }
-      } catch (e) {
-        console.error("Failed to parse saved theme settings:", e);
-      }
-    }
+    loadThemeFromDatabase();
   }, []);
 
-  // Resolve actual theme (handle 'auto' theme)
-  useEffect(() => {
-    let resolvedTheme: "dark" | "light" = "dark";
+  const loadThemeFromDatabase = async () => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) return;
 
-    if (theme === "auto") {
-      // Check system preference
-      const systemPrefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      resolvedTheme = systemPrefersDark ? "dark" : "light";
-    } else {
-      resolvedTheme = theme;
+      const settings = await window.electronAPI.db.getUserSettings(userId);
+      if (settings?.theme) {
+        setThemeState(settings.theme as Theme);
+      }
+    } catch (error) {
+      console.error("Failed to load theme from database:", error);
+      // Fallback to localStorage
+      const savedSettings = localStorage.getItem("userSettings");
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          if (settings.theme) {
+            setThemeState(settings.theme);
+          }
+        } catch (e) {
+          console.error("Failed to parse saved theme settings:", e);
+        }
+      }
     }
+  };
 
-    setActualTheme(resolvedTheme);
-
-    // Apply theme to document
-    const root = document.documentElement;
-    root.className = resolvedTheme === "light" ? "light-theme" : "";
+  // Apply theme to document when theme changes
+  useEffect(() => {
+    const body = document.body;
+    
+    // Remove all existing theme classes
+    body.classList.remove("dark-theme", "light-theme", "yandere-theme", "kuudere-theme", "tsundere-theme", "dandere-theme");
+    
+    // Add new theme class (dark is default, no class needed)
+    if (theme !== "dark") {
+      body.classList.add(`${theme}-theme`);
+    }
+    
+    console.log(`🎨 Theme applied: ${theme}`);
   }, [theme]);
 
-  // Listen for system theme changes when using 'auto'
-  useEffect(() => {
-    if (theme === "auto") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = (e: MediaQueryListEvent) => {
-        setActualTheme(e.matches ? "dark" : "light");
-        const root = document.documentElement;
-        root.className = e.matches ? "" : "light-theme";
-      };
-
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
-    }
-  }, [theme]);
-
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = async (newTheme: Theme) => {
     setThemeState(newTheme);
 
-    // Update localStorage
+    // Save to database
+    try {
+      const userId = getCurrentUserId();
+      if (userId) {
+        const currentSettings = await window.electronAPI.db.getUserSettings(userId);
+        const updatedSettings = {
+          ...currentSettings,
+          theme: newTheme
+        };
+        await window.electronAPI.db.saveUserSettings(userId, updatedSettings);
+        console.log(`💾 Theme saved to database: ${newTheme}`);
+      }
+    } catch (error) {
+      console.error("Failed to save theme to database:", error);
+    }
+
+    // Fallback: Save to localStorage
     const savedSettings = localStorage.getItem("userSettings");
     let settings = {};
-
     if (savedSettings) {
       try {
         settings = JSON.parse(savedSettings);
@@ -96,14 +105,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
   };
 
-  const value: ThemeContextType = {
-    theme,
-    actualTheme,
-    setTheme,
-  };
-
   return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
   );
 };
 

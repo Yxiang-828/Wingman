@@ -10,7 +10,7 @@ import { NotificationsProvider } from "./context/NotificationsContext";
 import { DiaryProvider } from "./context/DiaryContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { BackgroundProvider } from "./context/BackgroundContext";
-import Sidebar from "./components/Sidebar/index";
+import Sidebar from "./components/Sidebar/Sidebar";
 import Header from "./components/Header/index";
 import Dashboard from "./components/Dashboard/index";
 import Calendar from "./components/Calendar/index";

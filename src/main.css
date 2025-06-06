@@ -1,155 +1,615 @@
-/* Global CSS Variables and Base Styles Only */
-
+/* ═══════════════════════════════════════════════════════════════
+   🎯 OPTIMIZED BASE VARIABLES - No lag, smooth performance
+   ═══════════════════════════════════════════════════════════════ */
 :root {
-  /* Default: Dark Theme */
-  --color-bg-body: #121212;
-  --color-bg-card: #1e1e1e;
-  --color-bg-hover: #2a2a2a;
-  --color-bg-secondary: #252525;
-  --color-bg-main-secondary: rgba(20, 20, 35, 0.95);
-  --color-bg-main-secondary-fade: rgba(20, 20, 35, 0.7);
-  --color-bg-card-secondary: rgba(25, 25, 45, 0.7);
-  --color-text-primary: #fff;
-  --color-text-secondary: #e0e0e0; /* For less prominent text */
-  --color-text: #fff; /* General text color */
-  --color-text-contrast: #fff;
-  --color-accent-primary: #646cff;
-  --color-accent-secondary: #535bf2;
-  --color-accent-tertiary: #7c7fff;
-  --color-accent-primary-border: rgba(100, 108, 255, 0.2);
-  --color-accent-primary-glow: rgba(100, 108, 255, 0.2);
-  --color-glow-primary: rgba(100, 108, 255, 0.5);
-  --color-glow-secondary: rgba(83, 91, 242, 0.3);
-  --color-glow-tertiary: rgba(124, 127, 255, 0.7);
-  --color-shadow: rgba(0, 0, 0, 0.25);
-  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.15);
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-light: rgba(255, 255, 255, 0.05);
-  --color-button-text: #fff;
-  --color-text-on-accent: #ffffff;
+  /* Performance optimizations */
+  --transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 0.1s ease;
+  --will-change: transform, opacity, background-color;
+  
+  /* Layout & Spacing */
+  --border-radius: 8px;
+  --border-radius-large: 16px;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Typography */
+  --font-family-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+
+  /* Base Shadows - Optimized for performance */
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-large: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🌙 DARK THEME (Default) - Enhanced
+   ═══════════════════════════════════════════════════════════════ */
+:root,
+.dark-theme {
+  /* Deep space backgrounds */
+  --color-bg-body: #0a0a0f;
+  --color-bg-main: #161620;
+  --color-bg-card: #1e1e2e;
+  --color-bg-hover: #252535;
+  --color-bg-input: #1a1a26;
+  --color-bg-input-focus: #202030;
+  --color-bg-sidebar: linear-gradient(145deg, #161620 0%, #1a1a26 50%, #161620 100%);
+
+  /* Crisp text hierarchy */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b8b8d1;
+  --color-text-muted: #8888aa;
+  --color-text-inverse: #0a0a0f;
+
+  /* Tech blue accents */
+  --color-accent-primary: #5865f2;
+  --color-accent-secondary: #4752c4;
+  --color-accent-hover: #6c7ae0;
+  --color-accent-glow: rgba(88, 101, 242, 0.3);
+
+  /* Status colors */
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
+  --color-info: #3b82f6;
 
-  /* Warning/Today highlight colors */
-  --color-warning-light: #ffd966aa;
-  --color-warning-fade: #ffd96655;
-  --color-warning-dark: #23232b;
-
-  /* Shadow effects */
-  --shadow-red: rgba(196, 70, 70, 0.3);
-  --shadow-red-hover: rgba(196, 70, 70, 0.4);
-  --accent-primary-fade: rgba(100, 108, 255, 0.3);
-  --color-text-inverse: white;
-
-  /* Profile-specific colors */
-  --color-profile-accent-primary: #8a2be2;
-  --color-profile-accent-secondary: #9b59b6;
-  --color-profile-accent-shadow: rgba(138, 43, 226, 0.3);
-  --color-profile-accent-bg: rgba(138, 43, 226, 0.1);
-  /* Sidebar-specific colors */
-  --color-bg-sidebar: linear-gradient(
-    165deg,
-    rgba(26, 26, 46, 1) 0%,
-    rgba(18, 18, 32, 1) 100%
-  );
-  --color-bg-sidebar-toggle: linear-gradient(
-    135deg,
-    rgba(53, 53, 99, 1) 0%,
-    rgba(30, 30, 56, 1) 100%
-  );
-  --color-accent-gradient: linear-gradient(
-    135deg,
-    rgba(157, 158, 255, 1),
-    rgba(100, 108, 255, 1)
-  );
-
-  /* Notification-specific colors */
-  --color-text-muted: rgba(255, 255, 255, 0.6);
-  --color-danger: rgba(255, 150, 150, 0.8);
-  --color-success-bg: rgba(74, 222, 128, 0.15);
-  --color-success-light: #a7f3c1;
-  --color-success-hover: rgba(74, 222, 128, 0.3);
-  --color-accent-bg: rgba(100, 108, 255, 0.15);
-  --color-accent-light: #c4c6ff;
+  /* Borders with subtle glow */
+  --color-border: rgba(136, 136, 170, 0.2);
+  --color-border-focus: rgba(88, 101, 242, 0.5);
+  --color-border-hover: rgba(136, 136, 170, 0.3);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   ☀️ LIGHT THEME - Warm & Inviting
+   ═══════════════════════════════════════════════════════════════ */
 .light-theme {
-  --color-bg-body: #f4f6f8;
-  --color-bg-card: #ffffff;
-  --color-bg-hover: #e9ecef;
-  --color-bg-secondary: #f8f9fa;
-  --color-bg-main-secondary: rgba(248, 249, 250, 0.95);
-  --color-bg-main-secondary-fade: rgba(248, 249, 250, 0.7);
-  --color-bg-card-secondary: rgba(255, 255, 255, 0.9);
-  --color-text-primary: #212529;
-  --color-text-secondary: #495057;
-  --color-text: #212529; /* General text color for light theme */
-  --color-text-contrast: #ffffff;
-  --color-accent-primary: #007bff;
-  --color-accent-secondary: #0056b3;
-  --color-accent-tertiary: #58a6ff;
-  --color-accent-primary-border: rgba(0, 123, 255, 0.2);
-  --color-accent-primary-glow: rgba(0, 123, 255, 0.2);
-  --color-glow-primary: rgba(0, 123, 255, 0.4);
-  --color-glow-secondary: rgba(0, 86, 179, 0.25);
-  --color-glow-tertiary: rgba(88, 166, 255, 0.6);
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --color-border: rgba(0, 0, 0, 0.15);
-  --color-border-light: rgba(0, 0, 0, 0.08);
-  --color-button-text: #ffffff; /* Text on primary accent buttons, can be #212529 for light buttons */
-  --color-text-on-accent: #ffffff;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  /* Warm cream backgrounds */
+  --color-bg-body: #fefdf8;
+  --color-bg-main: #ffffff;
+  --color-bg-card: #faf9f4;
+  --color-bg-hover: #f5f4ef;
+  --color-bg-input: #f8f7f2;
+  --color-bg-input-focus: #ffffff;
+  --color-bg-sidebar: linear-gradient(145deg, #faf9f4 0%, #f5f4ef 50%, #faf9f4 100%);
 
-  /* Warning/Today highlight colors (light theme) */
-  --color-warning-light: #f59e0b;
-  --color-warning-fade: rgba(245, 158, 11, 0.3);
-  --color-warning-dark: #374151;
+  /* Rich readable text */
+  --color-text-primary: #2d2d2d;
+  --color-text-secondary: #4a4a4a;
+  --color-text-muted: #757575;
+  --color-text-inverse: #ffffff;
 
-  /* Shadow effects (light theme) */
-  --shadow-red: rgba(220, 38, 38, 0.2);
-  --shadow-red-hover: rgba(220, 38, 38, 0.3);
-  --accent-primary-fade: rgba(0, 123, 255, 0.2);
-  --color-text-inverse: #212529;
+  /* Warm golden accents */
+  --color-accent-primary: #c4976c;
+  --color-accent-secondary: #b8885a;
+  --color-accent-hover: #d4a67c;
+  --color-accent-glow: rgba(196, 151, 108, 0.3);
 
-  /* Profile-specific colors */
-  --color-profile-accent-primary: #6366f1;
-  --color-profile-accent-secondary: #4f46e5;
-  --color-profile-accent-shadow: rgba(99, 102, 241, 0.2);
-  --color-profile-accent-bg: rgba(99, 102, 241, 0.05);
-  /* Sidebar-specific colors */
-  --color-bg-sidebar: linear-gradient(
-    165deg,
-    rgba(248, 249, 250, 1) 0%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  --color-bg-sidebar-toggle: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.1) 0%,
-    rgba(67, 56, 202, 0.05) 100%
-  );
-  --color-accent-gradient: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 1),
-    rgba(67, 56, 202, 1)
-  );
+  /* Natural status colors */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
 
-  /* Notification-specific colors for light theme */
-  --color-text-muted: rgba(73, 80, 87, 0.6);
-  --color-danger: rgba(220, 38, 38, 0.8);
-  --color-success-bg: rgba(34, 197, 94, 0.1);
-  --color-success-light: #059669;
-  --color-success-hover: rgba(34, 197, 94, 0.2);
-  --color-accent-bg: rgba(99, 102, 241, 0.1);
-  --color-accent-light: #6366f1;
+  /* Soft borders */
+  --color-border: rgba(45, 45, 45, 0.15);
+  --color-border-focus: rgba(196, 151, 108, 0.5);
+  --color-border-hover: rgba(45, 45, 45, 0.25);
 }
 
-/* Global styles */
+/* ═══════════════════════════════════════════════════════════════
+   🌸 YANDERE THEME - Obsessive Romance (Enhanced)
+   ═══════════════════════════════════════════════════════════════ */
+.yandere-theme {
+  /* Deep romantic darkness */
+  --color-bg-body: #0e0a0d;
+  --color-bg-main: #1a0f17;
+  --color-bg-card: #2d1a26;
+  --color-bg-hover: #3d2436;
+  --color-bg-input: #2d1a26;
+  --color-bg-input-focus: #3d2436;
+  --color-bg-sidebar: linear-gradient(145deg, #2d1a26 0%, #1a0f17 50%, #2d1a26 100%);
+
+  /* Pink-tinted romance */
+  --color-text-primary: #ffe6f2;
+  --color-text-secondary: #e6b8d6;
+  --color-text-muted: #cc99bb;
+  --color-text-inverse: #0e0a0d;
+
+  /* Passionate pink accents */
+  --color-accent-primary: #ff6bb3;
+  --color-accent-secondary: #e91e63;
+  --color-accent-hover: #ff8cc8;
+  --color-accent-glow: rgba(255, 107, 179, 0.4);
+
+  /* Love-struck status colors */
+  --color-success: #ff6bb3;
+  --color-warning: #ffab40;
+  --color-error: #ff1744;
+  --color-info: #e91e63;
+
+  /* Glowing pink borders */
+  --color-border: rgba(255, 107, 179, 0.25);
+  --color-border-focus: rgba(255, 107, 179, 0.6);
+  --color-border-hover: rgba(255, 107, 179, 0.35);
+
+  /* Yandere atmosphere */
+  --yandere-heart: #ff6bb3;
+  --yandere-blush: #ffb3d9;
+  --yandere-obsession: #8b0051;
+  --yandere-knife: rgba(192, 192, 192, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🧡 TSUNDERE THEME - Fiery Emotions (Enhanced)
+   ═══════════════════════════════════════════════════════════════ */
+.tsundere-theme {
+  /* Fiery passionate backgrounds */
+  --color-bg-body: #1a0e0a;
+  --color-bg-main: #2d1a15;
+  --color-bg-card: #3d2620;
+  --color-bg-hover: #4d3228;
+  --color-bg-input: #2d1a15;
+  --color-bg-input-focus: #3d2620;
+  --color-bg-sidebar: linear-gradient(145deg, #3d2620 0%, #2d1a15 50%, #3d2620 100%);
+
+  /* Warm conflicted text */
+  --color-text-primary: #ffe6d9;
+  --color-text-secondary: #ffccb3;
+  --color-text-muted: #e6a885;
+  --color-text-inverse: #1a0e0a;
+
+  /* Fierce orange-pink accents */
+  --color-accent-primary: #ff6b42;
+  --color-accent-secondary: #ff4500;
+  --color-accent-hover: #ff8566;
+  --color-accent-glow: rgba(255, 107, 66, 0.4);
+
+  /* Hot-tempered status colors */
+  --color-success: #22c55e;
+  --color-warning: #ff8f00;
+  --color-error: #ff1744;
+  --color-info: #ff6b42;
+
+  /* Heated borders */
+  --color-border: rgba(255, 107, 66, 0.3);
+  --color-border-focus: rgba(255, 107, 66, 0.7);
+  --color-border-hover: rgba(255, 107, 66, 0.4);
+
+  /* Tsundere energy */
+  --tsundere-fire: #ff4500;
+  --tsundere-blush: #ffb399;
+  --tsundere-denial: #cc5500;
+  --tsundere-spark: rgba(255, 140, 0, 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ❄️ KUUDERE THEME - Ice Queen (Enhanced)
+   ═══════════════════════════════════════════════════════════════ */
+.kuudere-theme {
+  /* Glacial environments */
+  --color-bg-body: #0a0f1a;
+  --color-bg-main: #15202d;
+  --color-bg-card: #1e2938;
+  --color-bg-hover: #253544;
+  --color-bg-input: #15202d;
+  --color-bg-input-focus: #1e2938;
+  --color-bg-sidebar: linear-gradient(145deg, #1e2938 0%, #15202d 50%, #1e2938 100%);
+
+  /* Crystal clear text */
+  --color-text-primary: #e6f3ff;
+  --color-text-secondary: #b3d9ff;
+  --color-text-muted: #80bfff;
+  --color-text-inverse: #0a0f1a;
+
+  /* Ice crystal accents */
+  --color-accent-primary: #4da6ff;
+  --color-accent-secondary: #0080ff;
+  --color-accent-hover: #66b3ff;
+  --color-accent-glow: rgba(77, 166, 255, 0.3);
+
+  /* Cool status colors */
+  --color-success: #22c55e;
+  --color-warning: #60a5fa;
+  --color-error: #3b82f6;
+  --color-info: #4da6ff;
+
+  /* Frost borders */
+  --color-border: rgba(77, 166, 255, 0.25);
+  --color-border-focus: rgba(77, 166, 255, 0.6);
+  --color-border-hover: rgba(77, 166, 255, 0.35);
+
+  /* Kuudere essence */
+  --kuudere-ice: #4da6ff;
+  --kuudere-frost: #e6f3ff;
+  --kuudere-crystal: #b3d9ff;
+  --kuudere-cold: rgba(128, 191, 255, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   💜 DANDERE THEME - Shy Beauty (Enhanced)
+   ═══════════════════════════════════════════════════════════════ */
+.dandere-theme {
+  /* Gentle twilight backgrounds */
+  --color-bg-body: #0f0a1a;
+  --color-bg-main: #1a152d;
+  --color-bg-card: #2a2438;
+  --color-bg-hover: #342d44;
+  --color-bg-input: #1a152d;
+  --color-bg-input-focus: #2a2438;
+  --color-bg-sidebar: linear-gradient(145deg, #2a2438 0%, #1a152d 50%, #2a2438 100%);
+
+  /* Soft lavender text */
+  --color-text-primary: #f0ebff;
+  --color-text-secondary: #d1c4ff;
+  --color-text-muted: #b19eff;
+  --color-text-inverse: #0f0a1a;
+
+  /* Gentle purple accents */
+  --color-accent-primary: #9d7bff;
+  --color-accent-secondary: #7c3aed;
+  --color-accent-hover: #b794ff;
+  --color-accent-glow: rgba(157, 123, 255, 0.3);
+
+  /* Soft status colors */
+  --color-success: #22c55e;
+  --color-warning: #c084fc;
+  --color-error: #f472b6;
+  --color-info: #9d7bff;
+
+  /* Whisper borders */
+  --color-border: rgba(157, 123, 255, 0.2);
+  --color-border-focus: rgba(157, 123, 255, 0.5);
+  --color-border-hover: rgba(157, 123, 255, 0.3);
+
+  /* Dandere spirit */
+  --dandere-purple: #9d7bff;
+  --dandere-lavender: #d1c4ff;
+  --dandere-whisper: #f0ebff;
+  --dandere-shy: rgba(177, 158, 255, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🌙🌸 ENHANCED BACKGROUND ATMOSPHERES (Optimized)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Yandere - Romantic Obsession */
+.yandere-theme body {
+  background: 
+    /* Floating hearts */
+    radial-gradient(ellipse at 20% 30%, rgba(255, 107, 179, 0.12) 15px, transparent 16px),
+    radial-gradient(ellipse at 80% 20%, rgba(233, 30, 99, 0.1) 12px, transparent 13px),
+    radial-gradient(ellipse at 35% 80%, rgba(255, 139, 200, 0.08) 18px, transparent 19px),
+    
+    /* Knife glints - very subtle */
+    linear-gradient(35deg, transparent 49%, rgba(255, 255, 255, 0.1) 50%, transparent 51%),
+    linear-gradient(-35deg, transparent 49%, rgba(255, 255, 255, 0.08) 50%, transparent 51%),
+    
+    /* Love letters - paper texture */
+    radial-gradient(circle at 60% 70%, rgba(255, 240, 245, 0.03) 8px, transparent 9px),
+    
+    /* Base romantic gradient */
+    radial-gradient(ellipse at center, #1a0f17 0%, #0e0a0d 70%);
+  
+  background-size: 
+    200px 200px, 150px 150px, 250px 250px,
+    100px 100px, 120px 120px,
+    40px 40px,
+    100% 100%;
+  
+  background-position: 
+    0% 0%, 70% 30%, 20% 80%,
+    40% 60%, 80% 40%,
+    30% 50%,
+    center;
+  
+  background-attachment: fixed;
+  animation: yandere-pulse 8s ease-in-out infinite;
+}
+
+@keyframes yandere-pulse {
+  0%, 100% { filter: brightness(1) hue-rotate(0deg); }
+  50% { filter: brightness(1.05) hue-rotate(2deg); }
+}
+
+/* Tsundere - Fiery Passion */
+.tsundere-theme body {
+  background: 
+    /* Cherry blossoms */
+    radial-gradient(circle at 25% 25%, rgba(255, 107, 66, 0.15) 8px, transparent 9px),
+    radial-gradient(circle at 75% 30%, rgba(255, 69, 0, 0.12) 6px, transparent 7px),
+    radial-gradient(circle at 40% 80%, rgba(255, 140, 0, 0.1) 10px, transparent 11px),
+    
+    /* Fire sparks */
+    radial-gradient(circle at 15% 60%, rgba(255, 69, 0, 0.2) 2px, transparent 3px),
+    radial-gradient(circle at 85% 70%, rgba(255, 140, 0, 0.15) 3px, transparent 4px),
+    
+    /* Anger marks */
+    linear-gradient(45deg, transparent 48%, rgba(255, 69, 0, 0.2) 49%, transparent 52%),
+    
+    /* Base fiery gradient */
+    radial-gradient(ellipse at center, #2d1a15 0%, #1a0e0a 70%);
+  
+  background-size: 
+    120px 120px, 80px 80px, 160px 160px,
+    15px 15px, 20px 20px,
+    60px 60px,
+    100% 100%;
+  
+  background-position: 
+    0% 0%, 60% 40%, 20% 70%,
+    30% 20%, 80% 80%,
+    50% 50%,
+    center;
+  
+  background-attachment: fixed;
+  animation: tsundere-flicker 6s ease-in-out infinite;
+}
+
+@keyframes tsundere-flicker {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  25% { filter: brightness(1.1) saturate(1.1); }
+  75% { filter: brightness(0.95) saturate(1.05); }
+}
+
+/* Kuudere - Ice Kingdom */
+.kuudere-theme body {
+  background: 
+    /* Ice crystals */
+    radial-gradient(circle at 30% 20%, rgba(77, 166, 255, 0.12) 6px, transparent 7px),
+    radial-gradient(circle at 70% 40%, rgba(179, 217, 255, 0.08) 4px, transparent 5px),
+    radial-gradient(circle at 20% 80%, rgba(128, 191, 255, 0.1) 8px, transparent 9px),
+    
+    /* Snowflakes */
+    linear-gradient(0deg, transparent 49%, rgba(230, 243, 255, 0.15) 50%, transparent 51%),
+    linear-gradient(60deg, transparent 49%, rgba(230, 243, 255, 0.1) 50%, transparent 51%),
+    linear-gradient(-60deg, transparent 49%, rgba(230, 243, 255, 0.1) 50%, transparent 51%),
+    
+    /* Frost patterns */
+    radial-gradient(circle at 50% 50%, rgba(179, 217, 255, 0.05) 20px, transparent 21px),
+    
+    /* Base ice gradient */
+    radial-gradient(ellipse at center, #15202d 0%, #0a0f1a 70%);
+  
+  background-size: 
+    100px 100px, 60px 60px, 140px 140px,
+    50px 50px, 50px 50px, 50px 50px,
+    300px 300px,
+    100% 100%;
+  
+  background-position: 
+    0% 0%, 50% 50%, 80% 20%,
+    20% 60%, 20% 60%, 20% 60%,
+    center,
+    center;
+  
+  background-attachment: fixed;
+  animation: kuudere-frost 10s ease-in-out infinite;
+}
+
+@keyframes kuudere-frost {
+  0%, 100% { filter: brightness(1) blur(0px); }
+  50% { filter: brightness(1.02) blur(0.5px); }
+}
+
+/* Dandere - Shy Garden */
+.dandere-theme body {
+  background: 
+    /* Flower petals */
+    radial-gradient(circle at 25% 35%, rgba(157, 123, 255, 0.08) 5px, transparent 6px),
+    radial-gradient(circle at 75% 25%, rgba(209, 196, 255, 0.06) 4px, transparent 5px),
+    radial-gradient(circle at 45% 75%, rgba(177, 158, 255, 0.1) 6px, transparent 7px),
+    
+    /* Twinkling stars */
+    radial-gradient(circle at 15% 15%, rgba(240, 235, 255, 0.15) 1px, transparent 2px),
+    radial-gradient(circle at 85% 85%, rgba(240, 235, 255, 0.12) 1px, transparent 2px),
+    radial-gradient(circle at 30% 60%, rgba(240, 235, 255, 0.1) 1px, transparent 2px),
+    
+    /* Shy blush clouds */
+    ellipse at 60% 30%, rgba(157, 123, 255, 0.04) 40px, transparent 60px),
+    
+    /* Base shy gradient */
+    radial-gradient(ellipse at center, #1a152d 0%, #0f0a1a 70%);
+  
+  background-size: 
+    80px 80px, 60px 60px, 100px 100px,
+    30px 30px, 35px 35px, 25px 25px,
+    200px 150px,
+    100% 100%;
+  
+  background-position: 
+    0% 0%, 40% 30%, 70% 60%,
+    20% 80%, 90% 20%, 60% 40%,
+    center,
+    center;
+  
+  background-attachment: fixed;
+  animation: dandere-shimmer 12s ease-in-out infinite;
+}
+
+@keyframes dandere-shimmer {
+  0%, 100% { filter: brightness(1) opacity(1); }
+  50% { filter: brightness(1.03) opacity(0.98); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎯 ENHANCED COMPONENT STYLING - All Themes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Cards with theme-appropriate glows */
+.dashboard-card,
+.settings-card,
+.diary-card,
+.calendar-card,
+.profile-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-card), 0 0 20px var(--color-accent-glow);
+  transition: var(--transition-smooth);
+  will-change: var(--will-change);
+}
+
+.dashboard-card:hover,
+.settings-card:hover,
+.diary-card:hover,
+.calendar-card:hover,
+.profile-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-large), 0 0 25px var(--color-accent-glow);
+  transform: translateY(-2px);
+}
+
+/* Enhanced buttons */
+.btn-primary,
+.save-settings-btn,
+.diary-save-btn,
+.theme-toggle-btn {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1.5rem;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  box-shadow: 0 2px 8px var(--color-accent-glow);
+  will-change: var(--will-change);
+}
+
+.btn-primary:hover,
+.save-settings-btn:hover,
+.diary-save-btn:hover,
+.theme-toggle-btn:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover), var(--color-accent-primary));
+  box-shadow: 0 4px 12px var(--color-accent-glow);
+  transform: translateY(-1px);
+}
+
+/* Enhanced inputs */
+input,
+textarea,
+select {
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  font-family: var(--font-family-primary);
+  transition: var(--transition-smooth);
+  will-change: var(--will-change);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  background: var(--color-bg-input-focus);
+  border-color: var(--color-border-focus);
+  outline: none;
+  box-shadow: 0 0 10px var(--color-accent-glow);
+}
+
+/* Enhanced sidebar */
+.sidebar {
+  background: var(--color-bg-sidebar);
+  backdrop-filter: blur(10px);
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3), 0 0 20px var(--color-accent-glow);
+}
+
+/* Enhanced sidebar toggle */
+.sidebar-toggle {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  box-shadow: 0 0 15px var(--color-accent-glow);
+  border-radius: 0 25px 25px 0;
+}
+
+.sidebar-toggle:hover {
+  box-shadow: 0 0 20px var(--color-accent-glow);
+}
+
+/* Enhanced text hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+p, span, label {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🚀 PERFORMANCE OPTIMIZATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* GPU acceleration for smooth animations */
+.sidebar,
+.sidebar-toggle,
+.dashboard-card,
+.btn-primary,
+.theme-toggle-btn {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📱 RESPONSIVE LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+.main-content-wrapper {
+  transition: var(--transition-smooth);
+  width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  will-change: margin-left;
+}
+
+.main-content-wrapper.sidebar-visible {
+  margin-left: 280px;
+  width: calc(100vw - 280px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .main-content-wrapper.sidebar-visible {
+    margin-left: 0;
+    width: 100vw;
+  }
+  
+  .sidebar {
+    width: 100vw;
+    left: -100vw;
+  }
+  
+  .sidebar.visible {
+    left: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎨 GLOBAL BASE STYLES
+   ═══════════════════════════════════════════════════════════════ */
 * {
   margin: 0;
   padding: 0;
@@ -157,46 +617,16 @@
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: var(--color-bg-body);
+  font-family: var(--font-family-primary);
+  background: var(--color-bg-body);
   color: var(--color-text-primary);
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  transition: var(--transition-smooth);
+  overflow-x: hidden;
+  font-weight: var(--font-weight-normal);
 }
 
-/* Basic Typography */
-h1 {
-  font-size: 2.5rem;
-  line-height: 1.1;
-  margin-bottom: 1rem;
-  color: var(--color-text-primary); /* Ensure headers use theme color */
-}
-
-h2 {
-  font-size: 1.8rem;
-  margin-bottom: 0.8rem;
-  color: var(--color-text-primary); /* Ensure headers use theme color */
-}
-
-h3 {
-  font-size: 1.5rem;
-  margin-bottom: 0.6rem;
-  color: var(--color-text-primary); /* Ensure headers use theme color */
-}
-
-a {
-  font-weight: 500;
-  color: var(--color-accent-primary);
-  text-decoration: inherit;
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: var(--color-accent-secondary);
-}
-
-/* Base Button Styles */
+/* Base Button Styles - PRESERVED as requested */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -204,10 +634,10 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--color-bg-card); /* Default button background */
+  background-color: var(--color-bg-card);
   cursor: pointer;
   transition: all 0.25s ease;
-  color: var(--color-text-primary); /* Default button text color */
+  color: var(--color-text-primary);
 }
 
 button:hover {
@@ -218,493 +648,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 2px solid var(--color-accent-primary);
-}
-
-/* Form element base styles */
-input,
-textarea,
-select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 1rem;
-  background-color: var(--color-bg-card);
-  color: var(--color-text-primary);
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 5px var(--color-glow-secondary);
-}
-
-/* Basic container */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-/* Utility classes */
-/* Margin utilities */
-.mt-1 {
-  margin-top: 0.25rem;
-}
-.mt-2 {
-  margin-top: 0.5rem;
-}
-.mt-4 {
-  margin-top: 1rem;
-}
-.mb-1 {
-  margin-bottom: 0.25rem;
-}
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-.mb-4 {
-  margin-bottom: 1rem;
-}
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-.m-0 {
-  margin: 0;
-}
-
-/* Padding utilities */
-.p-3 {
-  padding: 0.75rem;
-}
-.p-4 {
-  padding: 1rem;
-}
-.p-6 {
-  padding: 1.5rem;
-}
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-/* Flex utilities */
-.flex {
-  display: flex;
-}
-.flex-col {
-  flex-direction: column;
-}
-.flex-1 {
-  flex: 1 1 0%;
-}
-.items-center {
-  align-items: center;
-}
-.justify-between {
-  justify-content: space-between;
-}
-.justify-center {
-  justify-content: center;
-}
-.gap-2 {
-  gap: 0.5rem;
-}
-.gap-4 {
-  gap: 1rem;
-}
-
-/* Common layout utilities */
-.text-center {
-  text-align: center;
-}
-.h-screen {
-  height: 100vh;
-}
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-.rounded-full {
-  border-radius: 9999px;
-}
-.shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-.overflow-auto {
-  overflow: auto;
-}
-.overflow-hidden {
-  overflow: hidden;
-}
-
-/* main.css or a global stylesheet */
-.logout-btn-red {
-  background: #dc2626 !important; /* Kept as is, can be themed if needed */
-  color: white !important;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.logout-btn-red:hover {
-  background: #b91c1c !important;
-}
-/* Global animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-/* Background Feature Styles - Enhanced MVP */
-.bg-default {
-  background: var(--color-bg-body);
-  transition: background 0.3s ease;
-}
-
-.bg-mountain {
-  background: 
-    /* Mountain Range Layer 1 (Far) */ linear-gradient(
-      to bottom,
-      transparent 0%,
-      transparent 35%,
-      #2d3748 35%,
-      #1a202c 70%,
-      transparent 70%
-    ),
-    /* Mountain Range Layer 2 (Mid) */
-      linear-gradient(
-        105deg,
-        transparent 0%,
-        transparent 40%,
-        #4a5568 40%,
-        #2d3748 65%,
-        transparent 65%
-      ),
-    /* Mountain Range Layer 3 (Near) */
-      linear-gradient(
-        95deg,
-        transparent 0%,
-        transparent 50%,
-        #1a202c 50%,
-        #0f1419 80%,
-        transparent 80%
-      ),
-    /* Sky gradient */
-      linear-gradient(to bottom, #1a365d 0%, #2d3748 50%, #1a202c 100%);
-  background-size: 100% 100%, 120% 100%, 110% 100%, 100% 100%;
-  background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
-  background-attachment: fixed;
-  animation: mountainShift 25s ease-in-out infinite;
-}
-
-@keyframes mountainShift {
-  0% {
-    background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
-  }
-  50% {
-    background-position: 2% 0%, -8% 0%, 7% 0%, 0% 0%;
-  }
-  100% {
-    background-position: 0% 0%, -10% 0%, 5% 0%, 0% 0%;
-  }
-}
-
-.bg-city {
-  background: 
-    /* City Skyline Buildings */ linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 60%,
-      #2d3748 60%,
-      #2d3748 90%,
-      transparent 90%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 65%,
-      #1a202c 65%,
-      #1a202c 85%,
-      transparent 85%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 55%,
-      #4a5568 55%,
-      #4a5568 95%,
-      transparent 95%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 70%,
-      #2d3748 70%,
-      #2d3748 80%,
-      transparent 80%
-    ),
-    linear-gradient(
-      to top,
-      transparent 0%,
-      transparent 50%,
-      #1a202c 50%,
-      #1a202c 88%,
-      transparent 88%
-    ),
-    /* Building Windows (lights) */
-      repeating-linear-gradient(
-        90deg,
-        transparent 0px,
-        transparent 8px,
-        rgba(255, 215, 0, 0.3) 8px,
-        rgba(255, 215, 0, 0.3) 10px
-      ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 12px,
-      rgba(0, 191, 255, 0.2) 12px,
-      rgba(0, 191, 255, 0.2) 14px
-    ),
-    /* Night Sky */
-      linear-gradient(to bottom, #0f172a 0%, #1e293b 30%, #334155 100%);
-  background-size: 15% 100%, 25% 100%, 20% 100%, 18% 100%, 22% 100%, 100% 100%,
-    100% 100%, 100% 100%;
-  background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-    80% bottom, 0% 60%, 0% 50%, 0% 0%;
-  background-attachment: fixed;
-  animation: cityLights 20s ease-in-out infinite;
-}
-
-@keyframes cityLights {
-  0%,
-  100% {
-    filter: brightness(1) contrast(1);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, 0% 60%, 0% 50%, 0% 0%;
-  }
-  25% {
-    filter: brightness(1.1) contrast(1.05);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, -2% 60%, -1% 50%, 0% 0%;
-  }
-  50% {
-    filter: brightness(0.95) contrast(1.1);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, 1% 60%, 2% 50%, 0% 0%;
-  }
-  75% {
-    filter: brightness(1.05) contrast(0.95);
-    background-position: 10% bottom, 25% bottom, 45% bottom, 65% bottom,
-      80% bottom, -1% 60%, 1% 50%, 0% 0%;
-  }
-}
-
-.bg-space {
-  background: 
-    /* Stars - Small */ radial-gradient(
-      circle at 20% 20%,
-      rgba(255, 255, 255, 0.8) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 80% 30%,
-      rgba(255, 255, 255, 0.6) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 40% 70%,
-      rgba(255, 255, 255, 0.9) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 90% 80%,
-      rgba(255, 255, 255, 0.7) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 10% 90%,
-      rgba(255, 255, 255, 0.5) 1px,
-      transparent 1px
-    ),
-    /* Stars - Medium */
-      radial-gradient(
-        circle at 60% 10%,
-        rgba(255, 255, 255, 0.8) 2px,
-        transparent 2px
-      ),
-    radial-gradient(
-      circle at 30% 60%,
-      rgba(255, 255, 255, 0.6) 2px,
-      transparent 2px
-    ),
-    radial-gradient(
-      circle at 85% 50%,
-      rgba(255, 255, 255, 0.7) 2px,
-      transparent 2px
-    ),
-    /* Nebula Effects */
-      radial-gradient(
-        ellipse at 75% 25%,
-        rgba(138, 43, 226, 0.3) 0%,
-        transparent 50%
-      ),
-    radial-gradient(
-      ellipse at 25% 75%,
-      rgba(30, 144, 255, 0.2) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 50% 50%,
-      rgba(255, 20, 147, 0.15) 0%,
-      transparent 70%
-    ),
-    /* Deep Space Background */
-      linear-gradient(
-        135deg,
-        #0a0a0f 0%,
-        #1a0a1f 25%,
-        #0f0a1a 50%,
-        #1f0a0f 75%,
-        #0a0f1a 100%
-      );
-  background-size: 300px 300px, 400px 400px, 250px 250px, 350px 350px,
-    200px 200px, 500px 500px, 450px 450px, 380px 380px, 800px 800px, 700px 700px,
-    900px 900px, 100% 100%;
-  background-position: 0% 0%, 50% 20%, 80% 60%, 20% 80%, 70% 40%, 30% 70%,
-    90% 10%, 10% 30%, 0% 0%, 100% 100%, 50% 50%, 0% 0%;
-  background-attachment: fixed;
-  animation: spaceTwinkle 15s ease-in-out infinite;
-}
-
-@keyframes spaceTwinkle {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: brightness(1) hue-rotate(0deg);
-  }
-  25% {
-    opacity: 0.8;
-    transform: scale(1.02);
-    filter: brightness(1.1) hue-rotate(5deg);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(0.98);
-    filter: brightness(0.9) hue-rotate(-5deg);
-  }
-  75% {
-    opacity: 1.1;
-    transform: scale(1.01);
-    filter: brightness(1.05) hue-rotate(3deg);
-  }
-}
-
-/* Light theme background variants */
-.light-theme.bg-mountain {
-  background: linear-gradient(
-      135deg,
-      rgba(248, 249, 250, 0.9) 0%,
-      rgba(255, 255, 255, 0.95) 100%
-    ),
-    linear-gradient(
-      45deg,
-      #ecf0f1 0%,
-      #bdc3c7 25%,
-      #ecf0f1 50%,
-      #bdc3c7 75%,
-      #ecf0f1 100%
-    );
-  background-attachment: fixed;
-}
-
-.light-theme.bg-city {
-  background: linear-gradient(
-      135deg,
-      rgba(248, 249, 250, 0.9) 0%,
-      rgba(255, 255, 255, 0.95) 100%
-    ),
-    linear-gradient(
-      90deg,
-      #f8f9fa 0%,
-      #e9ecef 25%,
-      #dee2e6 50%,
-      #e9ecef 75%,
-      #f8f9fa 100%
-    );
-  background-attachment: fixed;
-}
-
-.light-theme.bg-space {
-  background: linear-gradient(
-      135deg,
-      rgba(248, 249, 250, 0.9) 0%,
-      rgba(255, 255, 255, 0.95) 100%
-    ),
-    radial-gradient(
-      circle at 20% 80%,
-      rgba(99, 102, 241, 0.1) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 20%,
-      rgba(79, 70, 229, 0.1) 0%,
-      transparent 50%
-    );
-  background-attachment: fixed;
-}
-
-/* Content overlay for background readability */
-.bg-mountain .main-content,
-.bg-city .main-content,
-.bg-space .main-content {
-  position: relative;
-}
-
-.bg-mountain .main-content::before,
-.bg-city .main-content::before,
-.bg-space .main-content::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Enhanced background visibility */
-.bg-mountain,
-.bg-city,
-.bg-space {
-  min-height: 100vh;
-  position: relative;
-}
-
-/* Ensure background covers full viewport */
-body.bg-mountain,
-body.bg-city,
-body.bg-space {
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
 }
