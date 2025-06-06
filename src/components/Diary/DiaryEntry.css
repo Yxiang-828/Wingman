@@ -765,11 +765,8 @@
   transform: translateY(-2px);
 }
 
-/* Add candle theme elements */
-.candle-theme {
-  position: relative;
-}
-
+/* ❌ COMMENTED OUT: Candle glow effect */
+/*
 .candle-glow {
   position: fixed;
   top: 0;
@@ -803,6 +800,7 @@
     opacity: 0.7;
   }
 }
+*/
 
 /* Responsive design */
 @media (max-width: 768px) {
@@ -902,21 +900,7 @@ body.immersive-mode::before {
   animation: subtle-flicker 8s infinite alternate;
 }
 
-/* Animated floating particles */
-body.immersive-mode::after {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url("/assets/particles-light.png");
-  background-size: cover;
-  opacity: 0.08;
-  z-index: 5;
-  pointer-events: none;
-  animation: float-particles 60s linear infinite;
-}
+
 
 @keyframes subtle-flicker {
   0% {
