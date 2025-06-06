@@ -258,79 +258,139 @@ class LocalDataManager {
       return [];
     }
   }
-
-  // ✅ FIXED: Complete saveTask implementation with correct parameter order
-  saveTask(task) {
-    try {
-      const stmt = this.db.prepare(`
-        INSERT INTO tasks (user_id, title, task_date, task_time, completed, failed, task_type, due_date, urgency_level, status, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-      `);
-      
-      const result = stmt.run(
-        task.user_id,
-        task.title,
-        task.task_date,
-        task.task_time || null,
-        task.completed || false,
-        task.failed || false,
-        task.task_type || null,
-        task.due_date || null,
-        task.urgency_level || null,
-        task.status || null
-      );
-      
-      console.log(`✅ saveTask: Task "${task.title}" saved with ID ${result.lastInsertRowid}`);
-      return { id: result.lastInsertRowid, success: true };
-      
-    } catch (error) {
-      console.error('❌ saveTask error:', error);
-      throw error;
+// ✅ ADD: Helper function to sanitize data for SQLite
+sanitizeForSQLite(data) {
+  const sanitized = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    if (typeof value === 'boolean') {
+      // Convert boolean to integer
+      sanitized[key] = value ? 1 : 0;
+    } else if (value === undefined) {
+      // Convert undefined to null
+      sanitized[key] = null;
+    } else if (typeof value === 'object' && value !== null) {
+      // Convert objects/arrays to JSON strings (if needed)
+      sanitized[key] = JSON.stringify(value);
+    } else {
+      // Keep primitives as-is (string, number, null)
+      sanitized[key] = value;
     }
   }
+  
+  return sanitized;
+}
+ saveTask(task) {
+  try {
+    console.log('💾 SAVE TASK: Attempting to save task:', task);
+    
+    // ✅ CRITICAL: Convert data types for SQLite compatibility
+    const sanitizedTask = {
+      user_id: task.user_id || null,
+      title: task.title || null,
+      task_date: task.task_date || null,
+      task_time: task.task_time || null,
+      // ✅ CONVERT: Boolean to INTEGER (0/1)
+      completed: task.completed ? 1 : 0,
+      failed: task.failed ? 1 : 0,
+      // ✅ CONVERT: undefined to null
+      task_type: task.task_type || null,
+      due_date: task.due_date || null,
+      last_reset_date: task.last_reset_date || null,
+      urgency_level: task.urgency_level || null,
+      status: task.status || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
-  // ✅ FIXED: Complete updateTask implementation that properly handles 'failed' field
+    console.log('🔧 SANITIZED TASK:', sanitizedTask);
+
+    const stmt = this.db.prepare(`
+      INSERT INTO tasks (
+        user_id, title, task_date, task_time, completed, failed,
+        task_type, due_date, last_reset_date, urgency_level, status,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      sanitizedTask.user_id,
+      sanitizedTask.title,
+      sanitizedTask.task_date,
+      sanitizedTask.task_time,
+      sanitizedTask.completed,
+      sanitizedTask.failed,
+      sanitizedTask.task_type,
+      sanitizedTask.due_date,
+      sanitizedTask.last_reset_date,
+      sanitizedTask.urgency_level,
+      sanitizedTask.status,
+      sanitizedTask.created_at,
+      sanitizedTask.updated_at
+    );
+
+    console.log('✅ SAVE TASK: Success - ID:', result.lastInsertRowid);
+    return { id: result.lastInsertRowid, ...sanitizedTask };
+
+  } catch (error) {
+    console.error('❌ SAVE TASK ERROR:', error);
+    console.error('❌ PROBLEMATIC TASK DATA:', task);
+    throw error;
+  }
+}
+
   updateTask(id, updates) {
-    try {
-      const allowedFields = ['title', 'task_date', 'task_time', 'completed', 'failed', 'task_type', 'due_date', 'urgency_level', 'status'];
-      const updateFields = [];
-      const values = [];
-      
-      Object.keys(updates).forEach(key => {
-        if (allowedFields.includes(key)) {
-          updateFields.push(`${key} = ?`);
-          values.push(updates[key]);
-        }
-      });
-      
-      if (updateFields.length === 0) {
-        throw new Error('No valid fields to update');
-      }
-      
-      updateFields.push('updated_at = datetime(\'now\')');
-      values.push(id);
-      
-      const stmt = this.db.prepare(`
-        UPDATE tasks 
-        SET ${updateFields.join(', ')} 
-        WHERE id = ?
-      `);
-      
-      const result = stmt.run(...values);
-      
-      if (result.changes > 0) {
-        console.log(`✅ updateTask: Task ${id} updated successfully`);
-        return { success: true, changes: result.changes };
+  try {
+    console.log('🔄 UPDATE TASK: Attempting to update task ID:', id, 'with:', updates);
+
+    // ✅ SANITIZE: Convert all values for SQLite compatibility
+    const sanitizedUpdates = {};
+    
+    for (const [key, value] of Object.entries(updates)) {
+      if (key === 'completed' || key === 'failed') {
+        // Convert boolean to integer
+        sanitizedUpdates[key] = value ? 1 : 0;
+      } else if (value === undefined) {
+        // Convert undefined to null
+        sanitizedUpdates[key] = null;
       } else {
-        console.log(`⚠️ updateTask: No task found with ID ${id}`);
-        return { success: false, error: 'Task not found' };
+        sanitizedUpdates[key] = value;
       }
-      
-    } catch (error) {
-      console.error('❌ updateTask error:', error);
-      throw error;
     }
+
+    // Always update the timestamp
+    sanitizedUpdates.updated_at = new Date().toISOString();
+
+    console.log('🔧 SANITIZED UPDATES:', sanitizedUpdates);
+
+    const setClause = Object.keys(sanitizedUpdates)
+      .map(key => `${key} = ?`)
+      .join(', ');
+
+    const stmt = this.db.prepare(`
+      UPDATE tasks 
+      SET ${setClause}
+      WHERE id = ?
+    `);
+
+    const values = [...Object.values(sanitizedUpdates), id];
+    console.log('📝 SQL VALUES:', values);
+
+    const result = stmt.run(...values);
+
+    if (result.changes === 0) {
+      throw new Error(`No task found with ID: ${id}`);
+    }
+
+    console.log('✅ UPDATE TASK: Success - Changes:', result.changes);
+    return { id, ...sanitizedUpdates };
+
+  } catch (error) {
+    console.error('❌ UPDATE TASK ERROR:', error);
+    console.error('❌ PROBLEMATIC ID:', id, 'UPDATES:', updates);
+    throw error;
   }
+}
 
   // ✅ FIXED: Complete deleteTask implementation
   deleteTask(id) {
@@ -367,29 +427,48 @@ class LocalDataManager {
     }
   }
 
-  // ✅ FIXED: Complete saveEvent implementation
-  saveEvent(event) {
-    try {
-      const stmt = this.db.prepare(`
-        INSERT INTO calendar_events (user_id, title, event_date, event_time, type, description, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
-      `);
-      
-      const result = stmt.run(
-        event.user_id,
-        event.title,
-        event.event_date,
-        event.event_time || null,
-        event.type || null,
-        event.description || null
-      );
-      
-      return { id: result.lastInsertRowid, success: true };
-    } catch (error) {
-      console.error('Error saving event:', error);
-      throw error;
-    }
+ saveEvent(event) {
+  try {
+    console.log('💾 SAVE EVENT: Attempting to save event:', event);
+    
+    // ✅ SANITIZE: Use helper function
+    const sanitizedEvent = this.sanitizeForSQLite({
+      user_id: event.user_id || null,
+      title: event.title || null,
+      event_date: event.event_date || null,
+      event_time: event.event_time || null,
+      type: event.type || null,
+      description: event.description || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+
+    const stmt = this.db.prepare(`
+      INSERT INTO calendar_events (
+        user_id, title, event_date, event_time, type, description,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const result = stmt.run(
+      sanitizedEvent.user_id,
+      sanitizedEvent.title,
+      sanitizedEvent.event_date,
+      sanitizedEvent.event_time,
+      sanitizedEvent.type,
+      sanitizedEvent.description,
+      sanitizedEvent.created_at,
+      sanitizedEvent.updated_at
+    );
+
+    console.log('✅ SAVE EVENT: Success - ID:', result.lastInsertRowid);
+    return { id: result.lastInsertRowid, ...sanitizedEvent };
+
+  } catch (error) {
+    console.error('❌ SAVE EVENT ERROR:', error);
+    throw error;
   }
+}
 
   // ✅ FIXED: Complete deleteEvent implementation
   deleteEvent(id) {
