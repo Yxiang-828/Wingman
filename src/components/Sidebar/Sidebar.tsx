@@ -1,12 +1,11 @@
+/* filepath: c:\Users\xiang\checker\Wingman\src\components\Sidebar\Sidebar.tsx */
+
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import MiniCalendar from "./MiniCalendar";
-import NavSection from "./NavSection";
-import type { MenuItem } from "./NavSection";
-import WingmanAvatar from "../Common/WingmanAvatar";
 import { useTheme } from "../../context/ThemeContext";
 import { useNotifications } from "../../context/NotificationsContext";
-import { getTodayDateString } from "../../utils/timeUtils";
+import { getCurrentUserId } from "../../utils/auth";
 import "../../main.css";
 import "./Sidebar.css";
 
@@ -17,20 +16,90 @@ const ProfileIcon = () => <span className="icon-rotate">👤</span>;
 
 type Theme = "dark" | "light" | "yandere" | "kuudere" | "tsundere" | "dandere";
 
+// ✅ SIMPLIFIED: MenuItem interface
+interface MenuItem {
+  title: string;
+  path: string;
+  icon: React.ReactNode;
+  submenu?: { title: string; path: string }[];
+  badge?: number | string;
+  onClick?: () => void;
+}
+
 const Sidebar: React.FC = () => {
-  const [wingmanMood, setWingmanMood] = useState<"productive" | "moody">(
-    "productive"
-  );
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(false); // ✅ PINNED state
+  const [isHoverExpanded, setIsHoverExpanded] = useState(false); // ✅ HOVER state
+  const [openSubmenus, setOpenSubmenus] = useState<Set<string>>(new Set());
+  const [userAvatar, setUserAvatar] = useState<string | null>(null); // ✅ NEW: User's avatar
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme(); // ✅ USE: Full theme system
+  const { theme, setTheme } = useTheme();
   const { unreadCount } = useNotifications();
 
-  // ✅ FIXED: Theme rotation function - cycles through all 6 themes
+  // ✅ LOAD USER AVATAR: Get from database
+  useEffect(() => {
+    loadUserAvatar();
+  }, []);
+
+  const loadUserAvatar = async () => {
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) return;
+
+      const settings = await window.electronAPI.db.getUserSettings(userId);
+      if (settings?.avatar_image) {
+        setUserAvatar(settings.avatar_image);
+      }
+    } catch (error) {
+      console.error("Failed to load user avatar:", error);
+    }
+  };
+
+  // ✅ HOVER HANDLERS: Toggle button triggers expansion
+  const handleToggleHover = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(true);
+    }
+  };
+
+  const handleToggleLeave = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(false);
+    }
+  };
+
+  // ✅ SIDEBAR HOVER HANDLERS: Keep sidebar open when hovering
+  const handleSidebarMouseEnter = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(true);
+    }
+  };
+
+  const handleSidebarMouseLeave = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(false);
+    }
+  };
+
+  // ✅ CLICK HANDLER: Pin/unpin sidebar
+  const toggleSidebar = () => {
+    const newVisibility = !isVisible;
+    setIsVisible(newVisibility);
+
+    if (!newVisibility) {
+      setIsHoverExpanded(false);
+    }
+
+    const event = new CustomEvent("toggle-sidebar", {
+      detail: { visible: newVisibility },
+    });
+    window.dispatchEvent(event);
+  };
+
+  // ✅ THEME FUNCTIONS: Cycle through all themes
   const toggleTheme = () => {
     const themes: Theme[] = [
       "dark",
-      "light",
+      "light", 
       "yandere",
       "kuudere",
       "tsundere",
@@ -41,7 +110,6 @@ const Sidebar: React.FC = () => {
     setTheme(themes[nextIndex]);
   };
 
-  // ✅ FIXED: Get theme emoji for display
   const getThemeEmoji = () => {
     switch (theme) {
       case "dark":
@@ -61,7 +129,7 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  // Dashboard refresh function
+  // ✅ DASHBOARD REFRESH: Special function with event dispatch
   const handleDashboardRefresh = async () => {
     console.log("🔄 DASHBOARD REFRESH: Navigating to dashboard");
     navigate("/");
@@ -72,47 +140,20 @@ const Sidebar: React.FC = () => {
     console.log("✅ DASHBOARD REFRESH: Completed");
   };
 
-  // Map wingman mood to avatar mood
-  const getAvatarMood = (wingmanMood: "productive" | "moody") => {
-    return wingmanMood === "productive" ? "happy" : "neutral";
-  };
-
-  useEffect(() => {
-    if (window.electronAPI?.onMoodChange) {
-      window.electronAPI.onMoodChange((mood: string) => {
-        if (mood === "productive" || mood === "moody") {
-          setWingmanMood(mood as "productive" | "moody");
-        }
-      });
-    }
-  }, []);
-
-  // Listen for toggle-sidebar events
-  useEffect(() => {
-    const handleToggle = (event: CustomEvent) => {
-      setIsVisible(event.detail.visible);
-    };
-
-    window.addEventListener("toggle-sidebar", handleToggle as EventListener);
-
-    return () => {
-      window.removeEventListener(
-        "toggle-sidebar",
-        handleToggle as EventListener
-      );
-    };
-  }, []);
-
-  const toggleSidebar = () => {
-    const newVisibility = !isVisible;
-    setIsVisible(newVisibility);
-
-    const event = new CustomEvent("sidebar-visibility-change", {
-      detail: { isVisible: newVisibility },
+  // ✅ SUBMENU TOGGLE: Expand/collapse submenu items
+  const toggleSubmenu = (title: string) => {
+    setOpenSubmenus((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(title)) {
+        newSet.delete(title);
+      } else {
+        newSet.add(title);
+      }
+      return newSet;
     });
-    window.dispatchEvent(event);
   };
 
+  // ✅ MENU ITEMS: Complete navigation structure
   const menuItems: MenuItem[] = [
     {
       title: "Dashboard",
@@ -143,16 +184,7 @@ const Sidebar: React.FC = () => {
     {
       title: "Wingman",
       path: "/chatbot",
-      icon: (
-        <div className="sidebar-wingman-icon">
-          <WingmanAvatar
-            size="small"
-            mood={getAvatarMood(wingmanMood)}
-            context="sidebar"
-            showMessage={false}
-          />
-        </div>
-      ),
+      icon: <span className="icon-rotate">🤖</span>,
       badge: 1,
     },
     {
@@ -177,53 +209,129 @@ const Sidebar: React.FC = () => {
     },
   ];
 
+  // ✅ LIFECYCLE: Listen for external sidebar toggle events
+  useEffect(() => {
+    const handleToggle = (event: CustomEvent) => {
+      const newVisibility = event.detail.visible;
+      setIsVisible(newVisibility);
+    };
+
+    window.addEventListener("toggle-sidebar", handleToggle as EventListener);
+
+    return () => {
+      window.removeEventListener("toggle-sidebar", handleToggle as EventListener);
+    };
+  }, []);
+
+  // ✅ LISTEN FOR AVATAR UPDATES: Reload when user changes avatar
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      loadUserAvatar();
+    };
+
+    window.addEventListener("avatar-updated", handleAvatarUpdate);
+
+    return () => {
+      window.removeEventListener("avatar-updated", handleAvatarUpdate);
+    };
+  }, []);
+
+  // ✅ COMPLETE RENDER: Full sidebar with all functionality
   return (
     <>
-      {/* Toggle button that's always visible */}
+      {/* ✅ SIMPLIFIED TOGGLE BUTTON: Use user's selected avatar */}
       <button
-        className={`sidebar-toggle ${isVisible ? "open" : ""}`}
+        className={`sidebar-toggle ${isVisible ? "pinned" : ""}`}
         onClick={toggleSidebar}
+        onMouseEnter={handleToggleHover}
+        onMouseLeave={handleToggleLeave}
         aria-label="Toggle sidebar"
       >
         <div className="sidebar-toggle-avatar">
-          <WingmanAvatar
-            size="toggle"
-            mood={getAvatarMood(wingmanMood)}
-            context="sidebar"
-            showMessage={false}
-          />
+          {userAvatar ? (
+            <img 
+              src={userAvatar} 
+              alt="User Avatar" 
+              onError={() => setUserAvatar(null)} // ✅ FALLBACK: Remove broken images
+            />
+          ) : (
+            <span style={{ fontSize: '20px', color: 'rgba(255, 255, 255, 0.7)' }}>👤</span>
+          )}
         </div>
       </button>
 
-      {/* Sidebar that slides in/out */}
-      <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
-        {/* Logo Header with Avatar */}
+      {/* ✅ SIDEBAR: Expands on button hover OR sidebar hover, stays when pinned */}
+      <aside
+        className={`sidebar ${isVisible ? "visible" : ""} ${
+          isHoverExpanded ? "hover-expanded" : ""
+        }`}
+        onMouseEnter={handleSidebarMouseEnter}
+        onMouseLeave={handleSidebarMouseLeave}
+      >
+        {/* ✅ HEADER: Compact title and theme toggle */}
         <div className="sidebar-header">
-          <WingmanAvatar
-            size="medium"
-            mood={getAvatarMood(wingmanMood)}
-            context="sidebar"
-            showMessage={isVisible && Math.random() > 0.7}
-            onClick={() => navigate("/chatbot")}
-            className="wingman-avatar--sidebar"
-          />
-          <div className="sidebar-header-content">
-            <h1 className="sidebar-title">Wingman</h1>
-            <button
-              className="theme-toggle-btn"
-              onClick={toggleTheme}
-              title={`Current: ${theme} - Click to cycle themes`}
-            >
-              {getThemeEmoji()}
-            </button>
-          </div>
+          <h1 className="sidebar-title">Wingman</h1>
+          <button
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            title={`Current: ${theme} - Click to cycle themes`}
+          >
+            {getThemeEmoji()}
+          </button>
         </div>
 
-        {/* Mini Calendar */}
+        {/* ✅ MINI CALENDAR: Compact calendar widget */}
         <MiniCalendar />
 
-        {/* Navigation Section */}
-        <NavSection items={menuItems} />
+        {/* ✅ NAVIGATION: Full menu with submenus */}
+        <nav className="sidebar-nav">
+          {menuItems.map((item) => (
+            <div key={item.title} className="nav-item">
+              <Link
+                to={item.path}
+                className={`sidebar-link ${
+                  item.submenu ? "has-submenu" : ""
+                } ${openSubmenus.has(item.title) ? "active" : ""}`}
+                onClick={(e) => {
+                  if (item.submenu) {
+                    e.preventDefault();
+                    toggleSubmenu(item.title);
+                  } else if (item.onClick) {
+                    item.onClick();
+                  }
+                }}
+              >
+                <span className="sidebar-icon">{item.icon}</span>
+                <span className="sidebar-text">{item.title}</span>
+                {item.badge && (
+                  <span className="sidebar-badge">{item.badge}</span>
+                )}
+                {item.submenu && (
+                  <span className="submenu-arrow">▶</span>
+                )}
+              </Link>
+
+              {/* ✅ SUBMENU: Animated expansion */}
+              {item.submenu && (
+                <div
+                  className={`sidebar-submenu ${
+                    openSubmenus.has(item.title) ? "open" : ""
+                  }`}
+                >
+                  {item.submenu.map((subItem) => (
+                    <Link
+                      key={subItem.title}
+                      to={subItem.path}
+                      className="sidebar-submenu-item"
+                    >
+                      {subItem.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
       </aside>
     </>
   );

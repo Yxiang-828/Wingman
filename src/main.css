@@ -60,6 +60,11 @@
   --color-border: rgba(136, 136, 170, 0.2);
   --color-border-focus: rgba(88, 101, 242, 0.5);
   --color-border-hover: rgba(136, 136, 170, 0.3);
+
+  /* Add theme-specific variables for notifications */
+  --theme-scan-animation: mission-scan;
+  --color-mission-primary: #87ceeb;
+  --color-mission-glow: rgba(135, 206, 235, 0.4);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -385,17 +390,6 @@ p, span, label {
    🚀 PERFORMANCE OPTIMIZATIONS
    ═══════════════════════════════════════════════════════════════ */
 
-/* GPU acceleration for smooth animations */
-.sidebar,
-.sidebar-toggle,
-.dashboard-card,
-.btn-primary,
-.theme-toggle-btn {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -410,34 +404,27 @@ p, span, label {
 /* ═══════════════════════════════════════════════════════════════
    📱 RESPONSIVE LAYOUT
    ═══════════════════════════════════════════════════════════════ */
+/* ✅ KEEP: Always 100% of available space */
 .main-content-wrapper {
-  transition: var(--transition-smooth);
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
-  will-change: margin-left;
+  display: flex;
+  flex-direction: column;
+  /* ✅ KEY: Remove any transforms that push content */
+  will-change: width, max-width;
+  transform: translateZ(0);
 }
 
 .main-content-wrapper.sidebar-visible {
-  margin-left: 280px;
-  width: calc(100vw - 280px);
+  width: calc(100% - 280px);
+  max-width: calc(100vw - 280px);
 }
 
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .main-content-wrapper.sidebar-visible {
-    margin-left: 0;
-    width: 100vw;
-  }
-  
-  .sidebar {
-    width: 100vw;
-    left: -100vw;
-  }
-  
-  .sidebar.visible {
-    left: 0;
-  }
+/* ✅ ENSURE: Content adjusts smoothly */
+.main-content-wrapper > * {
+  transition: none;
+  max-width: 100%;
+  overflow-x: hidden; /* ✅ PREVENT: Horizontal overflow */
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -512,4 +499,30 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 2px solid var(--color-accent-primary);
+}
+
+/* Add theme-specific variables for notifications */
+:root,
+.dark-theme {
+  --theme-scan-animation: mission-scan;
+  --color-mission-primary: #87ceeb;
+  --color-mission-glow: rgba(135, 206, 235, 0.4);
+}
+
+.yandere-theme {
+  --theme-scan-animation: yandere-heart-scan;
+  --color-mission-primary: var(--yandere-heart);
+  --color-mission-glow: var(--yandere-blush);
+}
+
+.tsundere-theme {
+  --theme-scan-animation: tsundere-fire-sweep;
+  --color-mission-primary: #ff6b35;
+  --color-mission-glow: rgba(255, 107, 53, 0.4);
+}
+
+.kuudere-theme {
+  --theme-scan-animation: kuudere-ice-formation;
+  --color-mission-primary: #7dd3fc;
+  --color-mission-glow: rgba(125, 211, 252, 0.4);
 }
