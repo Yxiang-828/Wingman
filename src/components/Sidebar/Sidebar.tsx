@@ -241,7 +241,7 @@ const Sidebar: React.FC = () => {
     <>
       {/* ✅ SIMPLIFIED TOGGLE BUTTON: Use user's selected avatar */}
       <button
-        className={`sidebar-toggle ${isVisible ? "pinned" : ""}`}
+        className={`sidebar-toggle ${isVisible ? "open" : ""}`}
         onClick={toggleSidebar}
         onMouseEnter={handleToggleHover}
         onMouseLeave={handleToggleLeave}
@@ -301,8 +301,14 @@ const Sidebar: React.FC = () => {
                   }
                 }}
               >
-                <span className="sidebar-icon">{item.icon}</span>
-                <span className="sidebar-text">{item.title}</span>
+                <div className="sidebar-link-content">
+                  <span className="sidebar-icon">{item.icon}</span>
+                  <span className="sidebar-text">{item.title}</span>
+                </div>
+                
+                {item.badge && (
+                  <span className="sidebar-badge">{item.badge}</span>
+                )}
                 
                 {item.submenu && (
                   <span className="submenu-arrow">▶</span>

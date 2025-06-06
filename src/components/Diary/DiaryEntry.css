@@ -111,7 +111,7 @@
   border-radius: 10px;
   width: 100%;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   background: var(--color-bg-input, rgba(40, 40, 60, 0.4));
   border: 2px solid
     var(--color-accent-primary-border, rgba(100, 108, 255, 0.25));

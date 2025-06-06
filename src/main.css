@@ -256,7 +256,7 @@
 }
 
 /* ✅ ALL OTHER BUTTONS: Single tone pale white-yellow with black text */
-.light-theme button:not(.dashboard-card button):not(.header button),
+.light-theme button:not(.dashboard-card button):not(.header button):not(.sidebar-toggle),
 .light-theme .btn:not(.dashboard-card .btn):not(.header .btn),
 .light-theme .action-btn:not(.dashboard-card .action-btn):not(.header .action-btn),
 .light-theme .task-btn,
@@ -285,7 +285,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
-.light-theme button:not(.dashboard-card button):not(.header button):hover,
+.light-theme button:not(.dashboard-card button):not(.header button):not(.sidebar-toggle):hover,
 .light-theme .btn:not(.dashboard-card .btn):not(.header .btn):hover,
 .light-theme .action-btn:not(.dashboard-card .action-btn):not(.header .action-btn):hover,
 .light-theme .diary-save-btn:hover,

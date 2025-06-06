@@ -9,7 +9,7 @@
   backdrop-filter: blur(12px);
   border-right: 1px solid rgba(100, 108, 255, 0.2);
   z-index: 100;
-  transition: left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); /* ✅ SMOOTH: Clean transition */
+  transition: left 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); /* ✅ MUCH SLOWER: Very smooth expansion */
   padding: 1rem; /* ✅ COMPACT: Reduced padding */
   overflow: hidden; /* ✅ HIDDEN: No scrollbar by default */
   box-shadow: none;
@@ -44,73 +44,101 @@
   margin-left: 280px;
 }
 
-/* NOT TOUCHING: Sidebar toggle button - keeping as requested */
-/* Updated sidebar toggle button - wider but keeping round icon */
+/* Sidebar Toggle Button - Clean Default Version */
 .sidebar-toggle {
   position: fixed;
-  left: -25px; /* ✅ FIXED: Much more visible, only slightly hidden */
-  top: 36vh;
-  width: 50px; /* ✅ SIMPLIFIED: Standard width */
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
   height: 80px;
-  border-radius: 0 25px 25px 0; /* ✅ ADJUSTED: Proportional to new width */
+  border: none;
+  border-radius: 0 50px 50px 0;
   cursor: pointer;
   z-index: 101;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  /* ✅ WHITE STYLING: Highly visible white theme */
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 240, 0.98));
-  backdrop-filter: blur(8px);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 
-      0 4px 20px rgba(0, 0, 0, 0.15), 
-      0 0 15px rgba(255, 255, 255, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  
-  transform: translateY(-50%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* ✅ FLOATING ANIMATION: Gentle vertical movement */
-  animation: sidebar-float 3s ease-in-out infinite;
+  background: transparent;
+  overflow: visible;
+  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+  animation: float-vertical 8s ease-in-out infinite alternate;
+  will-change: top;
 }
 
-/* ✅ FLOATING ANIMATION: Smooth vertical movement */
-@keyframes sidebar-float {
-  0%, 100% { 
-      transform: translateY(-50%) translateX(0); 
+/* Floating animation */
+@keyframes float-vertical {
+  0% {
+    top: 20vh;
   }
-  50% { 
-      transform: translateY(-50%) translateX(0) translateY(-3px); 
+  100% {
+    top: 80vh;
   }
 }
 
-/* ✅ HOVER STATE: Expand and brighten */
+/* Toggle button background */
+.sidebar-toggle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(53, 53, 99, 1) 0%, rgba(30, 30, 56, 1) 100%);
+  border-radius: 0 50px 50px 0;
+  z-index: -1;
+}
+
+/* When sidebar is open */
+.sidebar-toggle.open {
+  left: 280px;
+  animation: float-vertical 8s ease-in-out infinite alternate;
+}
+
+/* Hover effect */
 .sidebar-toggle:hover {
-  left: -15px; /* ✅ MOVE INWARD: Slides further into view */
-  width: 60px; /* ✅ SLIGHT EXPANSION */
-  background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(248, 248, 248, 1));
-  box-shadow: 
-      0 6px 25px rgba(0, 0, 0, 0.2), 
-      0 0 25px rgba(100, 108, 255, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 1);
-  border-color: rgba(100, 108, 255, 0.6);
-  
-  /* ✅ PAUSE ANIMATION: Stop floating on hover for stability */
-  animation-play-state: paused;
+  transform: translateY(-50%) scale(1.1);
 }
 
-/* ✅ PINNED STATE: Clear visual feedback when sidebar is open */
-.sidebar-toggle.pinned {
-  left: -10px; /* ✅ MOST VISIBLE: When sidebar is pinned open */
-  background: linear-gradient(135deg, rgba(100, 108, 255, 0.95), rgba(120, 120, 255, 0.98));
-  color: white;
-  box-shadow: 
-      0 6px 25px rgba(100, 108, 255, 0.4),
-      0 0 30px rgba(100, 108, 255, 0.6);
-  border-color: rgba(100, 108, 255, 0.8);
-  animation: none; /* ✅ NO ANIMATION: When pinned, keep it stable */
+/* Avatar container in toggle */
+.sidebar-toggle-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: bounce 2s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Avatar image styling */
+.sidebar-toggle-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Fallback icon */
+.sidebar-toggle-avatar:empty::before {
+  content: "👤";
+  font-size: 20px;
+  color: rgba(60, 60, 60, 0.8);
+}
+
+/* Bounce animation */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 /* ✅ AVATAR STYLING: White theme compatible */
@@ -139,11 +167,7 @@
   }
 }
 
-/* ✅ STOP AVATAR ANIMATION: On hover for stability */
-.sidebar-toggle:hover .sidebar-toggle-avatar {
-  animation-play-state: paused;
-  transform: scale(1.05);
-}
+
 
 /* ✅ AVATAR IMAGE: Clean styling */
 .sidebar-toggle-avatar img {
@@ -163,6 +187,388 @@
 }
 
 /* ✅ RESPONSIVE: Better mobile positioning */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -260px;
+    width: 260px;
+  }
+  
+  .sidebar.hover-expanded,
+  .sidebar.visible {
+    left: 0;
+  }
+  
+  .sidebar-toggle {
+    left: -20px;
+    width: 45px;
+    height: 70px;
+    top: 30vh;
+  }
+  
+  .sidebar-toggle:hover {
+    left: -10px;
+    width: 50px;
+  }
+  
+  .sidebar-toggle.pinned {
+    left: -5px;
+  }
+}
+
+/* ✅ ACCESSIBILITY: Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-toggle {
+    animation: none;
+  }
+  
+  .sidebar-toggle-avatar {
+    animation: none;
+  }
+  
+  .sidebar-toggle:hover {
+    animation: none;
+  }
+}
+
+/* ✅ COMPACT: Sidebar header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  position: relative;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+  margin: 0;
+  background: linear-gradient(135deg, #646cff, #7c7aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ✅ COMPACT: Theme button */
+.theme-toggle-btn {
+  background: rgba(100, 108, 255, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  color: var(--color-text-secondary, #b8b8d1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+/* ✅ COMPACT: Navigation items */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-text-secondary, #b8b8d1);
+  transition: all 0.2s ease;
+  position: relative;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+}
+
+.sidebar-link:hover {
+  background: rgba(100, 108, 255, 0.15);
+  color: var(--color-text-primary, #ffffff);
+  border-color: rgba(100, 108, 255, 0.3);
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.1);
+}
+
+.sidebar-icon {
+  margin-right: 0.6rem;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-link:hover .sidebar-icon {
+  transform: scale(1.1);
+}
+
+/* ✅ IMPROVED: Compact sub-menu */
+.sidebar-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  margin-left: 1.5rem;
+  border-left: 2px solid rgba(100, 108, 255, 0.2);
+  padding-left: 0.5rem;
+}
+
+.sidebar-submenu.open {
+  max-height: 200px;
+  padding: 0.3rem 0;
+}
+
+.sidebar-submenu-item {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--color-text-muted, #8888aa);
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  margin-bottom: 0.2rem;
+}
+
+.sidebar-submenu-item:hover {
+  background: rgba(100, 108, 255, 0.1);
+  color: var(--color-text-secondary, #b8b8d1);
+  transform: translateX(2px);
+  border-left: 2px solid var(--color-accent-primary, #646cff);
+}
+
+/* ✅ IMPROVED: Submenu arrow */
+.submenu-arrow {
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+  color: var(--color-text-muted, #8888aa);
+}
+
+.sidebar-link.has-submenu:hover .submenu-arrow,
+.sidebar-link.active .submenu-arrow {
+  transform: rotate(90deg);
+  color: var(--color-accent-primary, #646cff);
+}
+
+/* ✅ SMOOTH: Scrollbar */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(20, 20, 35, 0.3);
+  border-radius: 2px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.4);
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 108, 255, 0.6);
+}
+
+/* ✅ RESPONSIVE: Mobile behavior */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -260px;
+    width: 260px;
+  }
+  
+  .sidebar.hover-expanded,
+  .sidebar.visible {
+    left: 0;
+  }
+  
+  .sidebar-toggle {
+    left: -20px;
+    width: 45px;
+    height: 70px;
+    top: 30vh;
+  }
+  
+  .sidebar-toggle:hover {
+    left: -10px;
+    width: 50px;
+  }
+  
+  .sidebar-toggle.pinned {
+    left: -5px;
+  }
+}
+
+/* ✅ ACCESSIBILITY: Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-toggle {
+    animation: none;
+  }
+  
+  .sidebar-toggle-avatar {
+    animation: none;
+  }
+  
+  .sidebar-toggle:hover {
+    animation: none;
+  }
+}
+
+/* ✅ COMPACT: Sidebar header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.15);
+  position: relative;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+  margin: 0;
+  background: linear-gradient(135deg, #646cff, #7c7aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ✅ COMPACT: Theme button */
+.theme-toggle-btn {
+  background: rgba(100, 108, 255, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  color: var(--color-text-secondary, #b8b8d1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+/* ✅ COMPACT: Navigation items */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-text-secondary, #b8b8d1);
+  transition: all 0.2s ease;
+  position: relative;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+}
+
+.sidebar-link:hover {
+  background: rgba(100, 108, 255, 0.15);
+  color: var(--color-text-primary, #ffffff);
+  border-color: rgba(100, 108, 255, 0.3);
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.1);
+}
+
+.sidebar-icon {
+  margin-right: 0.6rem;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-link:hover .sidebar-icon {
+  transform: scale(1.1);
+}
+
+/* ✅ IMPROVED: Compact sub-menu */
+.sidebar-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  margin-left: 1.5rem;
+  border-left: 2px solid rgba(100, 108, 255, 0.2);
+  padding-left: 0.5rem;
+}
+
+.sidebar-submenu.open {
+  max-height: 200px;
+  padding: 0.3rem 0;
+}
+
+.sidebar-submenu-item {
+  display: block;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--color-text-muted, #8888aa);
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  margin-bottom: 0.2rem;
+}
+
+.sidebar-submenu-item:hover {
+  background: rgba(100, 108, 255, 0.1);
+  color: var(--color-text-secondary, #b8b8d1);
+  transform: translateX(2px);
+  border-left: 2px solid var(--color-accent-primary, #646cff);
+}
+
+/* ✅ IMPROVED: Submenu arrow */
+.submenu-arrow {
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+  color: var(--color-text-muted, #8888aa);
+}
+
+.sidebar-link.has-submenu:hover .submenu-arrow,
+.sidebar-link.active .submenu-arrow {
+  transform: rotate(90deg);
+  color: var(--color-accent-primary, #646cff);
+}
+
+/* ✅ SMOOTH: Scrollbar */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(20, 20, 35, 0.3);
+  border-radius: 2px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.4);
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 108, 255, 0.6);
+}
+
+/* ✅ RESPONSIVE: Mobile behavior */
 @media (max-width: 768px) {
   .sidebar {
     left: -260px;
