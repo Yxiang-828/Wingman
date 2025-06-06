@@ -70,38 +70,486 @@
 /* ═══════════════════════════════════════════════════════════════
    ☀️ LIGHT THEME - Warm & Inviting
    ═══════════════════════════════════════════════════════════════ */
-.light-theme {
-  /* Warm cream backgrounds */
-  --color-bg-body: #fefdf8;
-  --color-bg-main: #ffffff;
-  --color-bg-card: #faf9f4;
-  --color-bg-hover: #f5f4ef;
-  --color-bg-input: #f8f7f2;
-  --color-bg-input-focus: #ffffff;
-  --color-bg-sidebar: linear-gradient(145deg, #faf9f4 0%, #f5f4ef 50%, #faf9f4 100%);
+/* ═══════════════════════════════════════════════════════════════
+   ☀️ LIGHT THEME - Complete with Single Tone Updates
+   ═══════════════════════════════════════════════════════════════ */
 
-  /* Rich readable text */
-  --color-text-primary: #2d2d2d;
-  --color-text-secondary: #4a4a4a;
-  --color-text-muted: #757575;
-  --color-text-inverse: #ffffff;
+.light-theme .dashboard-card,
+.light-theme .sidebar,
+.light-theme .header,
+.light-theme .modal,
+.light-theme .popup,
+.light-theme .settings-card,
+.light-theme .diary-card,
+.light-theme .calendar-card,
+.light-theme .profile-card,
+.light-theme .task-card,
+.light-theme .event-card,
+.light-theme .summary-card,
+.light-theme .stats-card,
+.light-theme .notification-card,
+.light-theme .chat-card,
+.light-theme .model-card,
+.light-theme .user-info-card,
+.light-theme .system-info-card,
+.light-theme .download-progress,
+.light-theme .diary-popup-content,
+.light-theme .dropdown-menu,
+.light-theme .context-menu,
+.light-theme .tooltip,
+.light-theme .loading-screen,
+.light-theme .error-boundary,
+.light-theme .welcome-popup,
+.light-theme .onboarding-card {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.3) !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(196, 151, 108, 0.2) !important;
+}
 
-  /* Warm golden accents */
-  --color-accent-primary: #c4976c;
-  --color-accent-secondary: #b8885a;
-  --color-accent-hover: #d4a67c;
-  --color-accent-glow: rgba(196, 151, 108, 0.3);
+/* ✅ HOVER: All containers get enhanced glow on hover */
+.light-theme .dashboard-card:hover,
+.light-theme .sidebar:hover,
+.light-theme .modal:hover,
+.light-theme .settings-card:hover,
+.light-theme .diary-card:hover,
+.light-theme .calendar-card:hover,
+.light-theme .profile-card:hover,
+.light-theme .task-card:hover,
+.light-theme .event-card:hover,
+.light-theme .summary-card:hover,
+.light-theme .stats-card:hover,
+.light-theme .notification-card:hover,
+.light-theme .chat-card:hover,
+.light-theme .model-card:hover,
+.light-theme .user-info-card:hover,
+.light-theme .system-info-card:hover {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.9) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  border-color: rgba(196, 151, 108, 0.5) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 0 25px rgba(196, 151, 108, 0.3) !important;
+}
 
-  /* Natural status colors */
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-error: #dc2626;
-  --color-info: #2563eb;
+/* ✅ HEADERS: All h1, h2, h3 get your gradient text styling */
+.light-theme h1,
+.light-theme h2,
+.light-theme h3,
+.light-theme .dashboard-card-header h2,
+.light-theme .settings-card-title,
+.light-theme .diary-card-header h2,
+.light-theme .calendar-card-header h2,
+.light-theme .profile-card-header h2,
+.light-theme .task-card-header h2,
+.light-theme .event-card-header h2,
+.light-theme .summary-card-header h2,
+.light-theme .notification-card-header h2,
+.light-theme .chat-card-header h2,
+.light-theme .modal-title,
+.light-theme .popup-title,
+.light-theme .section-title,
+.light-theme .model-title h4,
+.light-theme .sidebar-title,
+.light-theme .header-title,
+.light-theme .welcome-title,
+.light-theme .mission-title,
+.light-theme .category-title,
+.light-theme .settings-main-title,
+.light-theme .diary-popup-title,
+.light-theme .page-title {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  background: linear-gradient(90deg, #7b671d, #ff2020) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
 
-  /* Soft borders */
-  --color-border: rgba(45, 45, 45, 0.15);
-  --color-border-focus: rgba(196, 151, 108, 0.5);
-  --color-border-hover: rgba(45, 45, 45, 0.25);
+/* ✅ TEXT: All text follows your light text on cream pattern */
+.light-theme p, 
+.light-theme span, 
+.light-theme label,
+.light-theme .text-primary,
+.light-theme .text-secondary,
+.light-theme .item-title,
+.light-theme .task-title,
+.light-theme .event-title,
+.light-theme .diary-entry-title,
+.light-theme .model-name,
+.light-theme .user-info-value,
+.light-theme .status-text,
+.light-theme .navigation-text,
+.light-theme .menu-text,
+.light-theme .button-text {
+  color: rgba(0, 0, 0, 0.8) !important;
+  font-weight: var(--font-weight-normal) !important;
+}
+
+.light-theme body {
+  color: #7c0606 !important;
+}
+
+/* ✅ SPECIFIC: Individual component containers */
+.light-theme .sidebar {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+}
+
+.light-theme .sidebar.visible,
+.light-theme .sidebar.hover-expanded {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+}
+
+.light-theme .header {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* ✅ INPUTS: Form elements with cream styling */
+.light-theme select,
+.light-theme .task-input,
+.light-theme .event-input,
+.light-theme .search-input,
+.light-theme .form-input {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6) 0%, rgba(0, 0, 0, 0.1) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.3) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 6px !important;
+  padding: 0.75rem !important;
+  transition: all 0.25s ease !important;
+}
+
+
+
+/* ✅ BUTTONS: Dashboard and Header keep original gradient styling */
+.light-theme .dashboard-card button,
+.light-theme .dashboard-card .btn,
+.light-theme .dashboard-card .action-btn,
+.light-theme .dashboard-card .card-action-btn,
+.light-theme .dashboard-card .view-more-btn,
+.light-theme .header button,
+.light-theme .header .btn,
+.light-theme .header .action-btn,
+.light-theme .header .header-btn {
+  background: linear-gradient(145deg, #7c772e 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.3) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 8px !important;
+  padding: 0.6em 1.2em !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .dashboard-card button:hover,
+.light-theme .dashboard-card .btn:hover,
+.light-theme .dashboard-card .action-btn:hover,
+.light-theme .dashboard-card .card-action-btn:hover,
+.light-theme .dashboard-card .view-more-btn:hover,
+.light-theme .header button:hover,
+.light-theme .diary-entry-preview,
+.light-theme .header .btn:hover,
+.light-theme .header .action-btn:hover,
+.light-theme .header .header-btn:hover {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.9) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  border-color: rgba(196, 151, 108, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(196, 151, 108, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ✅ ALL OTHER BUTTONS: Single tone pale white-yellow with black text */
+.light-theme button:not(.dashboard-card button):not(.header button),
+.light-theme .btn:not(.dashboard-card .btn):not(.header .btn),
+.light-theme .action-btn:not(.dashboard-card .action-btn):not(.header .action-btn),
+.light-theme .task-btn,
+.light-theme .event-btn,
+.light-theme .calendar-btn,
+.light-theme .mission-btn,
+.light-theme .sidebar-link,
+.light-theme .theme-toggle-btn,
+.light-theme .nav-btn,
+.light-theme .form-btn,
+.light-theme .chatbot-quick-reply,
+.light-theme .quick-reply-btn,
+.light-theme .chat-quick-prompts,
+.light-theme .quick-reply,
+.light-theme .chat-send-btn,
+.light-theme .send-button,
+.light-theme .chatbot-send {
+  background: #f8f8f0 !important;
+  border: 1px solid rgba(240, 240, 220, 0.5) !important;
+  color: #000000 !important;
+  border-radius: 8px !important;
+  padding: 0.6em 1.2em !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.25s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme button:not(.dashboard-card button):not(.header button):hover,
+.light-theme .btn:not(.dashboard-card .btn):not(.header .btn):hover,
+.light-theme .action-btn:not(.dashboard-card .action-btn):not(.header .action-btn):hover,
+.light-theme .diary-save-btn:hover,
+.light-theme .task-btn:hover,
+.light-theme .event-btn:hover,
+.light-theme .calendar-btn:hover,
+.light-theme .mission-btn:hover,
+.light-theme .sidebar-link:hover,
+.light-theme .theme-toggle-btn:hover,
+.light-theme .nav-btn:hover,
+.light-theme .form-btn:hover,
+.light-theme .chatbot-quick-reply:hover,
+.light-theme .quick-reply-btn:hover,
+.light-theme .chat-quick-prompts:hover,
+.light-theme .quick-reply:hover,
+.light-theme .chat-send-btn:hover,
+.light-theme .send-button:hover,
+.light-theme .chatbot-send:hover {
+  background: #ffffff !important;
+  border-color: rgba(240, 240, 220, 0.8) !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ✅ CHAT BUBBLES: Single tone pale white-yellow with black text */
+.light-theme .chat-message,
+.light-theme .chatbot-bubble,
+.light-theme .chatbot-message,
+.light-theme .user-message,
+.light-theme .wingman-message {
+  background: #f8f8f0 !important;
+  border: 1px solid rgba(240, 240, 220, 0.5) !important;
+  color: #000000 !important;
+  border-radius: 12px !important;
+  padding: 0.8rem 1rem !important;
+  margin-bottom: 0.5rem !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .chat-message:hover,
+.light-theme .chatbot-bubble:hover,
+.light-theme .chatbot-message:hover,
+.light-theme .user-message:hover,
+.light-theme .wingman-message:hover {
+  background: #ffffff !important;
+  border-color: rgba(240, 240, 220, 0.7) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ✅ MESSAGE TEXT: Black text for readability */
+.light-theme .message-text,
+.light-theme .chat-text,
+.light-theme .chatbot-message-text {
+  color: #000000 !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+/* ✅ LISTS: Dashboard items, diary entries, etc. */
+.light-theme .dashboard-item,
+.light-theme .task-item,
+.light-theme .event-item,
+.light-theme .calendar-event,
+.light-theme .notification-item,
+.light-theme .list-item,
+.light-theme .menu-item {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.7) 0%, rgba(0, 0, 0, 0.1) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.2) !important;
+  border-radius: 8px !important;
+  margin-bottom: 0.5rem !important;
+  transition: all 0.25s ease !important;
+}
+
+.light-theme .dashboard-item:hover,
+.light-theme .diary-entry-preview:hover,
+.light-theme .task-item:hover,
+.light-theme .event-item:hover,
+.light-theme .calendar-event:hover,
+.light-theme .notification-item:hover,
+.light-theme .list-item:hover,
+.light-theme .menu-item:hover {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.8) 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border-color: rgba(196, 151, 108, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(196, 151, 108, 0.2) !important;
+  transform: translateX(2px) !important;
+}
+
+/* ✅ SPECIFIC: Calendar styling */
+.light-theme .react-calendar--small {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 12px 0 rgba(196, 151, 108, 0.3) !important;
+}
+
+.light-theme .react-calendar--small .react-calendar__navigation {
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ✅ NOTIFICATIONS: Mission cards */
+.light-theme .mission-control-header,
+.light-theme .mission-item,
+.light-theme .mission-tab,
+.light-theme .mission-card {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.3) !important;
+}
+
+/* ✅ SCROLLBARS: Golden theme */
+.light-theme ::-webkit-scrollbar-thumb {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.3) !important;
+}
+
+.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.9) 0%, rgba(0, 0, 0, 0.25) 100%) !important;
+}
+
+.light-theme ::-webkit-scrollbar-track {
+  background: rgba(193, 191, 162, 0.2) !important;
+}
+.light-theme .sidebar-submenu-item {
+    display: block;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #ffffff;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    margin-bottom: 0.2rem;
+}
+
+/* ✅ BADGES: Status indicators */
+.light-theme .badge,
+.light-theme .notification-badge,
+.light-theme .count-badge,
+.light-theme .status-dot,
+.light-theme .mood-indicator {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.2) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.4) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ✅ TOOLTIPS: Hover information */
+.light-theme .tooltip,
+.light-theme [title]:hover::after {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.4) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ✅ PROGRESS: Loading and progress bars */
+.light-theme .progress-bar,
+.light-theme .progress-fill,
+.light-theme .loading-bar {
+  background: linear-gradient(90deg, #c1bfa2 0%, rgba(196, 151, 108, 0.8) 100%) !important;
+  box-shadow: 0 0 10px rgba(196, 151, 108, 0.4) !important;
+}
+
+/* ✅ DROPDOWNS: Select menus and context menus */
+.light-theme .dropdown-menu,
+.light-theme .context-menu,
+.light-theme .select-menu {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 30px rgba(196, 151, 108, 0.3) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* ✅ TABS: Navigation tabs */
+.light-theme .tab,
+.light-theme .nav-tab,
+.light-theme .mission-tab {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6) 0%, rgba(0, 0, 0, 0.1) 100%) !important;
+  border: 1px solid rgba(196, 151, 108, 0.2) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.light-theme .tab.active,
+.light-theme .nav-tab.active,
+.light-theme .mission-tab.active {
+  background: linear-gradient(145deg, #c1bfa2 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+  border-color: rgba(196, 151, 108, 0.5) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 2px 8px rgba(196, 151, 108, 0.3) !important;
+}
+
+/* ✅ LIGHT THEME: Time display elements */
+.light-theme .item-time {
+    background: rgb(224 189 157 / 60%) !important;
+    padding: 0.1rem 0.3rem !important;
+    border-radius: 3px !important;
+    font-size: 0.7rem !important;
+    flex-shrink: 0 !important;
+}
+
+.light-theme .stat-item {
+    font-size: 0.75rem !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    background: linear-gradient(145deg, #7c772e 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 4px !important;
+}
+
+.light-theme .stat-number {
+    font-size: 2.8rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(90deg, #c9691d, #2e251f) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.light-theme .leader-text {
+    font-size: 1.4rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(90deg, #c9691d, #2e251f) !important;
+    background-size: 300% 300% !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    text-shadow: 0 0 15px rgba(196, 151, 108, 0.4) !important;
+    position: relative !important;
+    animation: welcomeZoom 1.2s ease-out forwards !important;
+    transform-origin: left center !important;
+}
+
+.light-theme .datetime-display {
+    text-align: center !important;
+    padding: 0.5rem 0.8rem !important;
+    background: linear-gradient(145deg, #7c772e 0%, rgba(0, 0, 0, 0.15) 100%) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(196, 151, 108, 0.3) !important;
+    backdrop-filter: blur(8px) !important;
+    transition: all 0.3s ease !important;
+    min-width: 180px !important;
+}
+
+.light-theme .date-text {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: rgb(98 20 20 / 90%) !important;
+    margin-bottom: 0.1rem !important;
+    letter-spacing: 0.3px !important;
+}
+
+.light-theme .time-text {
+    font-size: 0.7rem !important;
+    color: rgb(80 10 10 / 60%) !important;
+    font-weight: 400 !important;
+}
+
+/* ✅ LIGHT THEME: Chat Container Background */
+.light-theme .chat-container,
+.light-theme .chatbot-container,
+.light-theme .messages-container {
+  background: url('./assets/backgrounds/light-theme.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -250,7 +698,7 @@
   --color-text-primary: #f0ebff;
   --color-text-secondary: #d1c4ff;
   --color-text-muted: #b19eff;
-  --color-text-inverse: #0f0a1a;
+  --color-text-inverse: #0f0a0d;
 
   /* Gentle purple accents */
   --color-accent-primary: #9d7bff;
@@ -525,4 +973,100 @@ button:focus-visible {
   --theme-scan-animation: kuudere-ice-formation;
   --color-mission-primary: #7dd3fc;
   --color-mission-glow: rgba(125, 211, 252, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎯 LIGHT THEME: Enhanced Diary Entry Toolbar
+   ═══════════════════════════════════════════════════════════════ */
+/* ✅ LIGHT THEME: Diary Entry Toolbar Prompts */
+.light-theme .diary-tools,
+.light-theme .diary-tools-section,
+.light-theme .writing-prompts,
+.light-theme .quick-entries {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(200, 200, 200, 0.3) !important;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.light-theme .diary-tools-title,
+.light-theme .diary-tools-section h3 {
+  color: rgb(80, 60, 40) !important;
+  background: linear-gradient(135deg, rgb(120, 100, 80), rgb(100, 80, 60)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+}
+
+.light-theme .writing-prompt,
+.light-theme .quick-entry-btn {
+  background: rgba(252, 248, 240, 0.9) !important;
+  color: rgb(60, 40, 20) !important;
+  border: 1px solid rgba(200, 180, 160, 0.4) !important;
+  font-weight: 500 !important;
+}
+
+.light-theme .writing-prompt:hover,
+.light-theme .quick-entry-btn:hover {
+  background: rgba(248, 244, 236, 1) !important;
+  color: rgb(40, 20, 10) !important;
+  border-color: rgba(180, 160, 140, 0.6) !important;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 12px rgba(255, 200, 100, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+.light-theme .diary-tools-toggle {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: rgb(60, 40, 20) !important;
+  border: 2px solid rgba(200, 180, 160, 0.5) !important;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(255, 200, 100, 0.2) !important;
+}
+
+.light-theme .diary-tools-toggle:hover {
+  background: rgba(248, 244, 236, 1) !important;
+  border-color: rgba(180, 160, 140, 0.7) !important;
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.15),
+    0 0 25px rgba(255, 200, 100, 0.4) !important;
+}
+
+.light-theme .tools-toggle-text {
+  color: rgb(60, 40, 20) !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .refresh-prompts-btn {
+  background: rgba(252, 248, 240, 0.9) !important;
+  color: rgb(60, 40, 20) !important;
+  border: 1px solid rgba(200, 180, 160, 0.4) !important;
+}
+
+.light-theme .refresh-prompts-btn:hover {
+  background: rgba(248, 244, 236, 1) !important;
+  color: rgb(40, 20, 10) !important;
+  border-color: rgba(180, 160, 140, 0.6) !important;
+}
+
+/* ✅ LIGHT THEME: Diary Tools Scrollbar */
+.light-theme .diary-tools::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.light-theme .diary-tools::-webkit-scrollbar-track {
+  background: rgba(240, 230, 220, 0.5) !important;
+}
+
+.light-theme .diary-tools::-webkit-scrollbar-thumb {
+  background: rgba(180, 160, 140, 0.6) !important;
+  border-radius: 3px !important;
+}
+
+.light-theme .diary-tools::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 140, 120, 0.8) !important;
 }
