@@ -57,7 +57,9 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
   const [showTools, setShowTools] = useState(false);
 
   // Add this state to track selection
-  const [hasSelection, setHasSelection] = useState(!!initialMood && initialMood !== "neutral");
+  const [hasSelection, setHasSelection] = useState(
+    !!initialMood && initialMood !== "neutral"
+  );
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
@@ -318,16 +320,18 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
   return (
     <div className="diary-entry-container candle-theme">
       {/* Vertical mood selector on the left */}
-      <div className={`mood-selector ${hasSelection ? 'has-selection' : ''}`}>
+      <div className={`mood-selector ${hasSelection ? "has-selection" : ""}`}>
         <div className="mood-selector-label">pick carefully</div>
         {moodOptions.map((moodOption) => (
           <div
             key={moodOption.value}
-            className={`mood-option ${mood === moodOption.value ? "selected" : ""}`}
+            className={`mood-option ${
+              mood === moodOption.value ? "selected" : ""
+            }`}
             onClick={() => {
               setMood(moodOption.value);
               setHasSelection(true);
-              if (typeof updateMoodStyles === 'function') {
+              if (typeof updateMoodStyles === "function") {
                 updateMoodStyles(moodOption.value);
               }
             }}

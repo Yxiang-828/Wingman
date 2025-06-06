@@ -8,38 +8,44 @@ import "./ViewEntries.css";
 const ViewEntries: React.FC = () => {
   const navigate = useNavigate();
   const { entries, loading, deleteEntry } = useDiary();
-  
-  // ✅ SIMPLIFIED: Only 2 state variables needed
+
+  // ✅ EXISTING: Your state variables
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
 
-  // ✅ SIMPLIFIED: Pure computation - no state needed
+  // ✅ NEW: Only adding click position tracking
+  const [clickPosition, setClickPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // ✅ EXISTING: Your computation logic - UNTOUCHED
   const groupedEntries = useMemo(() => {
     const grouped: Record<string, any[]> = {};
-    
+
     entries.forEach((entry) => {
       const date = new Date(entry.created_at || entry.entry_date || entry.date);
       const monthKey = format(date, "yyyy-MM");
       const monthName = format(date, "MMMM yyyy");
-      
+
       if (!grouped[monthKey]) {
         grouped[monthKey] = { monthName, entries: [] };
       }
       grouped[monthKey].entries.push(entry);
     });
 
-    // Sort entries within each month (newest first)
-    Object.keys(grouped).forEach(key => {
-      grouped[key].entries.sort((a: any, b: any) => 
-        new Date(b.created_at || b.entry_date || b.date).getTime() - 
-        new Date(a.created_at || a.entry_date || a.date).getTime()
+    Object.keys(grouped).forEach((key) => {
+      grouped[key].entries.sort(
+        (a: any, b: any) =>
+          new Date(b.created_at || b.entry_date || b.date).getTime() -
+          new Date(a.created_at || a.entry_date || a.date).getTime()
       );
     });
 
     return grouped;
   }, [entries]);
 
-  // ✅ SIMPLIFIED: Auto-expand most recent month
+  // ✅ EXISTING: Your month logic - UNTOUCHED
   const sortedMonths = useMemo(() => {
     const months = Object.keys(groupedEntries).sort().reverse();
     if (months.length > 0 && !expandedMonth) {
@@ -48,6 +54,7 @@ const ViewEntries: React.FC = () => {
     return months;
   }, [groupedEntries, expandedMonth]);
 
+  // ✅ EXISTING: Your functions - UNTOUCHED
   const toggleMonth = (monthKey: string) => {
     setExpandedMonth(expandedMonth === monthKey ? null : monthKey);
   };
@@ -59,12 +66,17 @@ const ViewEntries: React.FC = () => {
   const handleDelete = async (id: number) => {
     await deleteEntry(id);
     setSelectedEntry(null);
+    setClickPosition(null); // ✅ NEW: Clear position on delete
   };
 
   const getMoodEmoji = (mood: string) => {
     const moods: Record<string, string> = {
-      happy: "😊", sad: "😢", excited: "😃", 
-      angry: "😡", relaxed: "😌", neutral: "😐"
+      happy: "😊",
+      sad: "😢",
+      excited: "😃",
+      angry: "😡",
+      relaxed: "😌",
+      neutral: "😐",
     };
     return moods[mood] || "😐";
   };
@@ -77,6 +89,25 @@ const ViewEntries: React.FC = () => {
     }
   };
 
+  // ✅ NEW: Click handler with position tracking
+  const handleEntryClick = (entry: any, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const scrollX = window.scrollX || document.documentElement.scrollLeft;
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+    const clickX = rect.left + scrollX + rect.width / 2;
+    const clickY = rect.top + scrollY + rect.height / 2;
+
+    setClickPosition({ x: clickX, y: clickY });
+    setSelectedEntry(entry);
+  };
+
+  // ✅ NEW: Close handler
+  const handleClosePopup = () => {
+    setSelectedEntry(null);
+    setClickPosition(null);
+  };
+
   if (loading) {
     return (
       <div className="view-entries-container">
@@ -87,17 +118,16 @@ const ViewEntries: React.FC = () => {
 
   return (
     <div className="view-entries-container">
-      {/* ✅ CLEAN: Simple header */}
       <div className="view-entries-header">
         <h2>Diary Entries ({entries.length})</h2>
         <div className="view-entries-actions">
-          <button 
+          <button
             className="search-entries-btn"
             onClick={() => navigate("/diary/search")}
           >
             Search
           </button>
-          <button 
+          <button
             className="write-entry-btn"
             onClick={() => navigate("/diary/write")}
           >
@@ -106,38 +136,43 @@ const ViewEntries: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ SIMPLIFIED: Clean month grouping */}
       {entries.length > 0 ? (
         <div className="entries-by-month">
           {sortedMonths.map((monthKey) => {
             const monthData = groupedEntries[monthKey];
             const isExpanded = expandedMonth === monthKey;
-            
+
             return (
               <div key={monthKey} className="month-group">
-                <div 
-                  className={`month-header ${isExpanded ? 'expanded' : ''}`}
+                <div
+                  className={`month-header ${isExpanded ? "expanded" : ""}`}
                   onClick={() => toggleMonth(monthKey)}
                 >
                   <h3>{monthData.monthName}</h3>
                   <div className="month-info">
-                    <span className="entry-count">{monthData.entries.length}</span>
+                    <span className="entry-count">
+                      {monthData.entries.length}
+                    </span>
                     <span className="expand-indicator">▼</span>
                   </div>
                 </div>
-                
+
                 {isExpanded && (
                   <div className="month-entries">
                     {monthData.entries.map((entry: any) => (
-                      <div 
+                      <div
                         key={entry.id}
                         className="diary-entry-preview"
-                        onClick={() => setSelectedEntry(entry)}
+                        onClick={(event) => handleEntryClick(entry, event)}
                       >
                         <div className="entry-preview-header">
                           <div className="entry-preview-date-mood">
                             <span className="entry-preview-date">
-                              {formatDateDisplay(entry.created_at || entry.entry_date || entry.date)}
+                              {formatDateDisplay(
+                                entry.created_at ||
+                                  entry.entry_date ||
+                                  entry.date
+                              )}
                             </span>
                             <span className="entry-preview-mood">
                               {getMoodEmoji(entry.mood)}
@@ -145,7 +180,7 @@ const ViewEntries: React.FC = () => {
                           </div>
                           <h4 className="entry-preview-title">{entry.title}</h4>
                         </div>
-                        
+
                         <p className="entry-preview-content">
                           {entry.content?.substring(0, 120)}
                           {entry.content?.length > 120 && "..."}
@@ -162,7 +197,7 @@ const ViewEntries: React.FC = () => {
         <div className="diary-empty-state">
           <div className="diary-empty-icon">📝</div>
           <p>No diary entries yet</p>
-          <button 
+          <button
             className="write-entry-btn"
             onClick={() => navigate("/diary/write")}
           >
@@ -171,12 +206,14 @@ const ViewEntries: React.FC = () => {
         </div>
       )}
 
-      {selectedEntry && (
+      {/* ✅ NEW: Positioned popup */}
+      {selectedEntry && clickPosition && (
         <DiaryDetailPopup
           entry={selectedEntry}
-          onClose={() => setSelectedEntry(null)}
+          onClose={handleClosePopup}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          clickPosition={clickPosition}
         />
       )}
     </div>

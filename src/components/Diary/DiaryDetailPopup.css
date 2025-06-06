@@ -1,63 +1,81 @@
 .diary-popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--color-overlay, rgba(0, 0, 0, 0.7));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-  animation: fadeIn 0.2s ease-out;
+  position: fixed !important; /* ✅ FORCE: Override any conflicting styles */
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  
+  /* ✅ KILL FLEXBOX: Disable all centering */
+  display: block !important;
+  justify-content: unset !important;
+  align-items: unset !important;
+  align-content: unset !important;
+  flex-direction: unset !important;
+  
+  /* ✅ FORCE: Manual positioning only */
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(3px) !important;
+  z-index: 999 !important;
 }
 
-.diary-popup {
-  background: var(--color-bg-modal, rgba(25, 25, 45, 0.95));
-  border-radius: 16px;
-  padding: 1.5rem;
-  min-width: 350px;
-  max-width: 90vw;
-  width: 600px;
-  position: relative;
-  box-shadow: 0 10px 25px var(--color-shadow-modal, rgba(0, 0, 0, 0.3));
-  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
-  animation: slideUp 0.3s ease-out;
-  max-height: 80vh;
-  overflow-y: auto;
+/* ✅ POSITIONED: Popup content - MAXIMUM specificity */
+.diary-popup-content {
+  background: var(--color-bg-card, #232323) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  width: 600px !important;
+  max-width: 90vw !important;
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1)) !important;
+  
+  /* ✅ FORCE: Absolute positioning only */
+  position: absolute !important;
+  /* position, left, top set by React component */
 }
 
 .diary-popup-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: var(--color-bg-card-secondary, rgba(40, 40, 60, 0.5));
-  border: none;
-  width: 32px;
-  height: 32px;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 50%;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
-  font-size: 1.5rem;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
-  line-height: 1;
-  z-index: 2;
+  color: var(--color-error, #ef4444);
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 
 .diary-popup-close:hover {
-  background: var(--color-danger-bg, rgba(255, 77, 77, 0.2));
-  transform: rotate(90deg);
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .diary-popup-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+}
+
+.diary-popup-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
+  margin: 0 0 0.4rem 0;
+}
+
+.diary-popup-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  color: var(--color-text-secondary, #a0a0a0);
+  font-size: 0.85rem;
 }
 
 .diary-popup-date {
@@ -69,29 +87,18 @@
 }
 
 .diary-popup-mood {
-  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
-.diary-popup-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0 0 1.5rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
-  color: var(--color-text-primary, white);
-}
-
-.diary-popup-content {
-  font-size: 1.05rem;
-  color: var(--color-text-content, rgba(255, 255, 255, 0.85));
-  line-height: 1.7;
-  margin-bottom: 2rem;
+.diary-popup-content-text {
+  color: var(--color-text-primary, #ffffff);
+  line-height: 1.5;
+  font-size: 0.95rem;
   white-space: pre-wrap;
-}
-
-.diary-popup-content p {
-  margin-bottom: 1rem;
+  word-wrap: break-word;
+  margin: 0;
 }
 
 .diary-popup-actions {
@@ -99,58 +106,68 @@
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
-  border-top: 1px solid
-    var(--color-accent-primary-border-light, rgba(100, 108, 255, 0.15));
-  padding-top: 1.2rem;
+  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+  padding-top: 1rem;
 }
 
 .diary-action-btn {
-  padding: 0.7rem 1.2rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  border: none;
 }
 
 .diary-action-btn.edit {
-  background: var(--color-accent-primary-bg-light, rgba(100, 108, 255, 0.15));
-  color: var(--color-accent-secondary, #b8baff);
-  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
-}
-
-.diary-action-btn.edit:hover {
-  background: var(--color-accent-primary-bg, rgba(100, 108, 255, 0.25));
-  transform: translateY(-2px);
+  background: rgba(100, 108, 255, 0.15);
+  color: #b8baff;
 }
 
 .diary-action-btn.delete {
-  background: var(--color-danger-bg-light, rgba(255, 77, 77, 0.15));
-  color: var(--color-danger-text, #ffb5b5);
-  border: 1px solid var(--color-danger-border, rgba(255, 77, 77, 0.3));
+  background: rgba(255, 77, 77, 0.15);
+  color: #ffb5b5;
 }
 
-.diary-action-btn.delete:hover {
-  background: var(--color-danger-bg, rgba(255, 77, 77, 0.25));
-  transform: translateY(-2px);
+.diary-action-btn:hover {
+  opacity: 0.8;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+/* ✅ SCROLLBAR: Minimal styling */
+.diary-popup-content::-webkit-scrollbar {
+  width: 3px;
+}
+
+.diary-popup-content::-webkit-scrollbar-track {
+  background: rgba(20, 20, 35, 0.1);
+}
+
+.diary-popup-content::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.3);
+  border-radius: 2px;
+}
+
+/* ✅ RESPONSIVE: Mobile adjustments */
+@media (max-width: 768px) {
+  .diary-popup-content {
+    width: 95vw !important;
+    left: 2.5vw !important;
+    top: 5vh !important;
+    max-height: 90vh;
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+/* ✅ ACCESSIBILITY: Respect motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .diary-popup-overlay,
+  .diary-popup-content {
+    animation: none;
   }
 }
+
+/* ✅ CRITICAL: Override any conflicting styles from other files */
+.diary-popup-overlay * {
+  box-sizing: border-box;
+}
+
+/* ✅ REMOVE: All @keyframes animations that may interfere */

@@ -225,3 +225,68 @@
   -webkit-box-orient: vertical;
   word-break: break-word;
 }
+
+/* ✅ REMOVED: All custom diary card styling that differs from standard dashboard cards */
+/* The diary card should now inherit all styling from Dashboard.css */
+
+/* ✅ ONLY KEEP: Diary-specific content styling that doesn't override card behavior */
+.diary-entry-preview {
+  background: rgba(25, 25, 40, 0.6);
+  border-radius: 8px;
+  padding: 0.8rem;
+  margin-bottom: 0.4rem;
+  border-left: 3px solid rgba(100, 108, 255, 0.5);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.diary-entry-preview:hover {
+  background: rgba(35, 35, 55, 0.8);
+  border-left-color: rgba(100, 108, 255, 0.8);
+  transform: translateX(3px);
+  box-shadow: 0 2px 12px rgba(100, 108, 255, 0.15);
+}
+
+.diary-entry-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.diary-entry-title {
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
+  font-size: 0.9rem;
+  margin: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diary-entry-mood {
+  font-size: 1.1rem;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.diary-entry-content {
+  color: var(--color-text-secondary, #b8b8d1);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diary-entry-date {
+  color: var(--color-text-muted, #8888aa);
+  font-size: 0.7rem;
+  margin-top: 0.3rem;
+}
+
+/* ✅ REMOVE: All .diary-card specific hover behaviors - let Dashboard.css handle it */

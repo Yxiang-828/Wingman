@@ -1,36 +1,70 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDiary } from "../../context/DiaryContext";
 import { format } from "date-fns";
 import DiaryDetailPopup from "../Diary/DiaryDetailPopup";
 import "./Dashboard.css";
-import "./DiaryCard.css";
+
+interface DiaryEntry {
+  id: number;
+  title: string;
+  content: string;
+  mood: string;
+  entry_date: string;
+  created_at: string;
+}
 
 interface DiaryCardProps {
-  entries?: any[]; // Optional prop entries
+  entries?: DiaryEntry[];
 }
 
 const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
   const navigate = useNavigate();
   const { entries: contextEntries, loading, deleteEntry } = useDiary();
-  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
+  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // ✅ ADD: Missing dashboardRef declaration
   const dashboardRef = useRef<HTMLElement | null>(null);
 
-  // ✅ SIMPLIFIED: Just use context entries, ignore props
   const displayEntries = contextEntries.slice(0, 5);
 
-  // Set container for modal
+  // ✅ FIXED: Set container for modal
   useEffect(() => {
-    dashboardRef.current =
-      document.querySelector(".dashboard") || document.body;
+    dashboardRef.current = document.querySelector(".dashboard") || document.body;
   }, []);
 
-  const handleEntryClick = (entry: any) => setSelectedEntry(entry);
-  const handleDelete = (id: number) => {
+  // Handle entry click with position tracking
+  const handleEntryClick = useCallback((entry: DiaryEntry, event: React.MouseEvent) => {
+    // Get the clicked element's position
+    const rect = event.currentTarget.getBoundingClientRect();
+    const scrollX = window.scrollX || document.documentElement.scrollLeft;
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    
+    // Calculate center of clicked entry
+    const clickX = rect.left + scrollX + (rect.width / 2);
+    const clickY = rect.top + scrollY + (rect.height / 2);
+    
+    console.log('📍 Click position:', { clickX, clickY, rect });
+    
+    setClickPosition({ x: clickX, y: clickY });
+    setSelectedEntry(entry);
+  }, []);
+
+  const handleClosePopup = useCallback(() => {
+    setSelectedEntry(null);
+    setClickPosition(null);
+  }, []);
+
+  const handleDelete = useCallback((id: number) => {
     deleteEntry(id);
     setSelectedEntry(null);
-  };
-  const handleEdit = (id: number) => navigate(`/diary/edit?id=${id}`);
+    setClickPosition(null);
+  }, [deleteEntry]);
+
+  const handleEdit = useCallback((id: number) => {
+    navigate(`/diary/edit?id=${id}`);
+  }, [navigate]);
 
   const formatDateDisplay = (dateStr: string) => {
     try {
@@ -40,95 +74,102 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
     }
   };
 
-  const truncateTextDisplay = (text: string, maxLength = 40) =>
-    text?.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-
   const getMoodEmoji = (mood: string) => {
-    switch (mood) {
-      case "happy":
-        return "😊";
-      case "sad":
-        return "😢";
-      case "excited":
-        return "😃";
-      case "angry":
-        return "😡";
-      case "relaxed":
-        return "😌";
-      default:
-        return "😐";
-    }
+    const moods: Record<string, string> = {
+      happy: "😊",
+      sad: "😔",
+      neutral: "😐",
+      excited: "🤩",
+      anxious: "😰",
+    };
+    return moods[mood] || "😐";
   };
 
+  if (loading) {
+    return (
+      <div className="dashboard-card">
+        <div className="dashboard-card-header">
+          <h2>📝 Today's Thoughts</h2>
+        </div>
+        <div className="dashboard-card-content">
+          <div className="diary-loading">Loading your thoughts...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="dashboard-card diary-card">
-      <div className="dashboard-card-header">
-        <h2>Recent Diary</h2>
-        <button
-          className="card-action-btn"
-          onClick={() => navigate("/diary/view")}
-        >
-          View All
-        </button>
-      </div>
+    <>
+      <div className="dashboard-card">
+        <div className="dashboard-card-header">
+          <h2>📝 Today's Thoughts</h2>
+          <button
+            className="card-action-btn"
+            onClick={() => navigate("/diary/write")}
+          >
+            Write
+          </button>
+        </div>
 
-      <div className="dashboard-card-content">
-        {loading ? (
-          <div className="dashboard-loading">Loading entries...</div>
-        ) : displayEntries.length > 0 ? (
+        <div className="dashboard-card-content">
           <div className="dashboard-list">
-            {displayEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className="dashboard-item diary-entry"
-                onClick={() => handleEntryClick(entry)}
-              >
-                <div className="dc-entry-content">
-                  <h3 className="dc-entry-title">{entry.title}</h3>
-                  {entry.content && (
-                    <div className="dc-entry-preview">
-                      - {truncateTextDisplay(entry.content)}
-                    </div>
-                  )}
+            {displayEntries.length > 0 ? (
+              displayEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="diary-entry-preview"
+                  onClick={(event) => handleEntryClick(entry, event)}
+                >
+                  <div className="diary-entry-meta">
+                    <h4 className="diary-entry-title">
+                      {entry.title || "Untitled"}
+                    </h4>
+                    <span className="diary-entry-mood">
+                      {getMoodEmoji(entry.mood)}
+                    </span>
+                  </div>
+                  <p className="diary-entry-content">{entry.content}</p>
+                  <div className="diary-entry-date">
+                    {formatDateDisplay(entry.created_at || entry.entry_date)}
+                  </div>
                 </div>
-
-                <div className="dc-entry-meta">
-                  <span className="dc-entry-mood">
-                    {getMoodEmoji(entry.mood)}
-                  </span>
-                  <span className="dc-entry-date">
-                    {formatDateDisplay(
-                      entry.created_at || entry.entry_date || entry.date
-                    )}
-                  </span>
-                </div>
+              ))
+            ) : (
+              <div className="dashboard-empty">
+                <div className="dashboard-empty-icon">📝</div>
+                <p>No thoughts captured today</p>
+                <button
+                  className="action-btn"
+                  onClick={() => navigate("/diary/write")}
+                >
+                  Start Writing
+                </button>
               </div>
-            ))}
+            )}
           </div>
-        ) : (
-          <div className="dashboard-empty">
-            <div className="dashboard-empty-icon">📝</div>
-            <p>No diary entries yet</p>
+
+          {displayEntries.length > 0 && (
             <button
-              className="action-btn"
-              onClick={() => navigate("/diary/write")}
+              className="view-more-btn"
+              onClick={() => navigate("/diary/view")}
             >
-              Write First Entry
+              View All Entries
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {selectedEntry && (
+      {/* Popup positioned at click location */}
+      {selectedEntry && clickPosition && (
         <DiaryDetailPopup
           entry={selectedEntry}
-          onClose={() => setSelectedEntry(null)}
+          onClose={handleClosePopup}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          container={dashboardRef.current || undefined}
+          clickPosition={clickPosition}
         />
       )}
-    </div>
+    </>
   );
 };
 

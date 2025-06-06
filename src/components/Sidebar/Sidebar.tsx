@@ -303,9 +303,7 @@ const Sidebar: React.FC = () => {
               >
                 <span className="sidebar-icon">{item.icon}</span>
                 <span className="sidebar-text">{item.title}</span>
-                {item.badge && (
-                  <span className="sidebar-badge">{item.badge}</span>
-                )}
+                
                 {item.submenu && (
                   <span className="submenu-arrow">▶</span>
                 )}

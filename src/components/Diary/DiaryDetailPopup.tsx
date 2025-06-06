@@ -1,106 +1,197 @@
-import React, { useRef, useEffect } from 'react';
-import type { DiaryEntry } from '../../api/Diary';
-import Portal from '../Common/Portal';
-import { formatSafeDate } from '../../utils/dateUtils';
-import './DiaryDetailPopup.css';
+import React, { useEffect, useCallback, memo, useState } from "react";
+import { format } from "date-fns";
+import "./DiaryDetailPopup.css";
+
+interface DiaryEntry {
+  id: number;
+  title: string;
+  content: string;
+  mood: string;
+  entry_date: string;
+  created_at: string;
+}
 
 interface DiaryDetailPopupProps {
   entry: DiaryEntry;
   onClose: () => void;
   onEdit?: (id: number) => void;
   onDelete?: (id: number) => void;
-  container?: HTMLElement | undefined; // Allow explicit undefined
+  clickPosition?: { x: number; y: number }; // ✅ NEW: Click position
 }
 
-const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({ 
-  entry, 
-  onClose,
-  onEdit,
-  onDelete,
-  container
-}) => {
-  const popupRef = useRef<HTMLDivElement>(null);
-  
-  // Close popup when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        onClose();
+const getMoodEmoji = (mood: string): string => {
+  const moods: Record<string, string> = {
+    happy: "😊",
+    sad: "😔",
+    neutral: "😐",
+    excited: "🤩",
+    anxious: "😰",
+  };
+  return moods[mood] || "😐";
+};
+
+const getMoodLabel = (mood: string): string => {
+  const labels: Record<string, string> = {
+    happy: "Happy",
+    sad: "Sad",
+    neutral: "Neutral",
+    excited: "Excited",
+    anxious: "Anxious",
+  };
+  return labels[mood] || "Unknown";
+};
+
+const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = memo(
+  ({ entry, onClose, onEdit, onDelete, clickPosition }) => {
+    // ✅ NEW: Calculate optimal position
+    const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
+
+    useEffect(() => {
+      if (clickPosition) {
+        const popupWidth = 600;
+        const popupHeight = 400;
+        const margin = 20;
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const scrollX = window.scrollX;
+        const scrollY = window.scrollY;
+
+        // Calculate initial position (centered on click)
+        let left = clickPosition.x - popupWidth / 2;
+        let top = clickPosition.y - popupHeight / 2;
+
+        // Adjust if popup would go off-screen
+        if (left < scrollX + margin) {
+          left = scrollX + margin;
+        } else if (left + popupWidth > scrollX + viewportWidth - margin) {
+          left = scrollX + viewportWidth - popupWidth - margin;
+        }
+
+        if (top < scrollY + margin) {
+          top = scrollY + margin;
+        } else if (top + popupHeight > scrollY + viewportHeight - margin) {
+          top = scrollY + viewportHeight - popupHeight - margin;
+        }
+
+        setPopupStyle({
+          position: "absolute",
+          left: `${left}px`,
+          top: `${top}px`,
+          zIndex: 1000,
+        });
+
+        console.log("📍 Popup positioned at:", { left, top, clickPosition });
       }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClose]);
-  
-  // Get mood emoji
-  const getMoodEmoji = (mood: string = 'neutral') => {
-    const moods: Record<string, string> = {
-      happy: "😊",
-      neutral: "😐",
-      sad: "😔",
-      excited: "🤩",
-      tired: "😴",
-    };
-    return moods[mood] || "😐";
-  };
-  
-  const handleEdit = () => {
-    if (onEdit && entry.id) {
-      onEdit(entry.id);
-      onClose();
-    }
-  };
-  
-  const handleDelete = () => {
-    if (onDelete && entry.id && confirm('Are you sure you want to delete this diary entry?')) {
-      onDelete(entry.id);
-      onClose();
-    }
-  };
-  
-  const popupContent = (
-    <div className="diary-popup-overlay" onClick={onClose}>
-      <div ref={popupRef} className="diary-popup" onClick={e => e.stopPropagation()}>
-        <button className="diary-popup-close" onClick={onClose}>×</button>
-        
-        <div className="diary-popup-header">
-          <span className="diary-popup-date">
-            {formatSafeDate(entry.date, 'full')}
-          </span>
-          {entry.mood && (
-            <span className="diary-popup-mood">{getMoodEmoji(entry.mood)}</span>
-          )}
-        </div>
-        
-        <h2 className="diary-popup-title">{entry.title}</h2>
-        
-        <div className="diary-popup-content">
-          {entry.content.split('\n').map((paragraph, i) => (
-            <p key={i}>{paragraph}</p>
-          ))}
-        </div>
-        
-        <div className="diary-popup-actions">
-          {onEdit && (
-            <button className="diary-action-btn edit" onClick={handleEdit}>
-              Edit Entry
-            </button>
-          )}
-          {onDelete && (
-            <button className="diary-action-btn delete" onClick={handleDelete}>
-              Delete Entry
-            </button>
+    }, [clickPosition]);
+
+    const handleEscape = useCallback(
+      (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          onClose();
+        }
+      },
+      [onClose]
+    );
+
+    const handleOverlayClick = useCallback(
+      (e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      },
+      [onClose]
+    );
+
+    useEffect(() => {
+      document.addEventListener("keydown", handleEscape, { passive: true });
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        document.removeEventListener("keydown", handleEscape);
+        document.body.style.overflow = "unset";
+      };
+    }, [handleEscape]);
+
+    const formattedDate = React.useMemo(() => {
+      try {
+        return format(new Date(entry.entry_date), "EEEE, MMMM d, yyyy");
+      } catch {
+        return entry.entry_date || "Unknown date";
+      }
+    }, [entry.entry_date]);
+
+    const moodData = React.useMemo(
+      () => ({
+        emoji: getMoodEmoji(entry.mood),
+        label: getMoodLabel(entry.mood),
+      }),
+      [entry.mood]
+    );
+
+    return (
+      <div
+        className="diary-popup-overlay"
+        onClick={handleOverlayClick}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="diary-popup-title"
+      >
+        {/* ✅ POSITIONED: Popup appears over clicked entry */}
+        <div className="diary-popup-content" style={popupStyle}>
+          <button
+            className="diary-popup-close"
+            onClick={onClose}
+            aria-label="Close diary entry"
+            type="button"
+          >
+            ×
+          </button>
+
+          <div className="diary-popup-header">
+            <h2 id="diary-popup-title" className="diary-popup-title">
+              {entry.title || "Untitled Entry"}
+            </h2>
+
+            <div className="diary-popup-meta">
+              <span className="diary-popup-date">{formattedDate}</span>
+              <div className="diary-popup-mood">
+                <span>{moodData.emoji}</span>
+                <span>{moodData.label}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="diary-popup-content-text">
+            {entry.content || "No content available."}
+          </div>
+
+          {(onEdit || onDelete) && (
+            <div className="diary-popup-actions">
+              {onEdit && (
+                <button
+                  className="diary-action-btn edit"
+                  onClick={() => onEdit(entry.id)}
+                >
+                  Edit
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  className="diary-action-btn delete"
+                  onClick={() => onDelete(entry.id)}
+                >
+                  Delete
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
-    </div>
-  );
-  
-  // Render using Portal to avoid positioning constraints
-  return <Portal container={container}>{popupContent}</Portal>;
-};
+    );
+  }
+);
+
+DiaryDetailPopup.displayName = "DiaryDetailPopup";
 
 export default DiaryDetailPopup;

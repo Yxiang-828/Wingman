@@ -34,8 +34,12 @@
   flex-direction: column;
 }
 
-/* ✅ GENTLE: Card hover effects like diary card */
-.dashboard-card:hover {
+/* ✅ CONSISTENT: Gentle hover for ALL cards (diary, tasks, events, completed) */
+.dashboard-card:hover,
+.diary-card:hover,
+.tasks-card:hover,
+.events-card:hover,
+.completed-tasks-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
   border-color: rgba(100, 108, 255, 0.25);
@@ -161,7 +165,7 @@
   border-left: 3px solid rgba(100, 108, 255, 0.5);
   transition: all 0.3s ease;
   cursor: pointer;
-  padding: 0.6rem 0.8rem;
+  padding: 0.8rem;
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -171,16 +175,16 @@
   box-sizing: border-box;
 }
 
-/* ✅ GENTLE: Dashboard item hover like diary card */
-.dashboard-item:hover {
-  background: rgba(30, 30, 50, 0.6);
-  transform: translateX(2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-left-color: rgba(100, 108, 255, 0.7);
-}
-
-.dashboard-item:last-child {
-  margin-bottom: 0;
+/* ✅ CONSISTENT: Item hover effects for ALL cards */
+.dashboard-item:hover,
+.diary-card .dashboard-item:hover,
+.tasks-card .dashboard-item:hover,
+.events-card .dashboard-item:hover,
+.completed-tasks-card .dashboard-item:hover {
+  background: rgba(35, 35, 55, 0.8);
+  border-left-color: rgba(100, 108, 255, 0.8);
+  transform: translateX(3px);
+  box-shadow: 0 2px 12px rgba(100, 108, 255, 0.15);
 }
 
 /* Task-specific styling */
@@ -228,11 +232,14 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.item-status:hover {
+/* ✅ CONSISTENT: Status indicator hovers for ALL cards */
+.item-status:hover,
+.diary-card .item-status:hover,
+.tasks-card .item-status:hover,
+.events-card .item-status:hover,
+.completed-tasks-card .item-status:hover {
   transform: scale(1.05);
-  border-color: rgba(100, 108, 255, 0.8);
-  box-shadow: 0 0 4px rgba(100, 108, 255, 0.2);
-  background: rgba(100, 108, 255, 0.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .item-status.completed {
@@ -589,3 +596,6 @@
   box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
   transition: all 0.2s ease;
 }
+
+/* ✅ REMOVE: Any diary-card specific styling that differs from standard */
+/* Delete any .diary-card rules that override the standard dashboard-card behavior */
