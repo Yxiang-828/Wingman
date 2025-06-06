@@ -9,7 +9,6 @@ import { DataProvider } from "./context/DataContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
 import { DiaryProvider } from "./context/DiaryContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { BackgroundProvider } from "./context/BackgroundContext";
 import Sidebar from "./components/Sidebar/Sidebar";
 import Header from "./components/Header/index";
 import Dashboard from "./components/Dashboard/index";
@@ -226,7 +225,6 @@ const App = () => {
       {isAuthenticated ? (
         <ErrorBoundary>
           <ThemeProvider>
-            <BackgroundProvider>
               <DiaryProvider>
                 <DataProvider>
                   <NotificationsProvider>
@@ -234,7 +232,6 @@ const App = () => {
                   </NotificationsProvider>
                 </DataProvider>
               </DiaryProvider>
-            </BackgroundProvider>
           </ThemeProvider>
         </ErrorBoundary>
       ) : (

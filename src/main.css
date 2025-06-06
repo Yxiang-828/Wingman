@@ -34,13 +34,9 @@
 :root,
 .dark-theme {
   /* Deep space backgrounds */
-  --color-bg-body: #0a0a0f;
-  --color-bg-main: #161620;
-  --color-bg-card: #1e1e2e;
-  --color-bg-hover: #252535;
-  --color-bg-input: #1a1a26;
-  --color-bg-input-focus: #202030;
-  --color-bg-sidebar: linear-gradient(145deg, #161620 0%, #1a1a26 50%, #161620 100%);
+  --color-bg-body: transparent; /* Let PNG show through */
+  --color-bg-main: rgba(22, 22, 30, 0.85); /* Semi-transparent overlays */
+  --color-bg-card: rgba(30, 30, 45, 0.9);
 
   /* Crisp text hierarchy */
   --color-text-primary: #ffffff;
@@ -455,12 +451,43 @@ p, span, label {
 
 body {
   font-family: var(--font-family-primary);
-  background: var(--color-bg-body);
+  background: #0a0a0f; /* Fallback color */
+  background-image: url('./assets/backgrounds/dark-theme.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--color-text-primary);
   line-height: 1.6;
-  transition: var(--transition-smooth);
+  transition: background-image 0.5s ease-in-out;
   overflow-x: hidden;
   font-weight: var(--font-weight-normal);
+}
+
+/* Theme-specific backgrounds */
+body.light-theme {
+  background-image: url('./assets/backgrounds/light-theme.png');
+  background-color: #fefdf8; /* Fallback */
+}
+
+body.yandere-theme {
+  background-image: url('./assets/backgrounds/yandere-theme.png');
+  background-color: #0e0a0d; /* Fallback */
+}
+
+body.kuudere-theme {
+  background-image: url('./assets/backgrounds/kuudere-theme.png');
+  background-color: #0a0d12; /* Fallback */
+}
+
+body.tsundere-theme {
+  background-image: url('./assets/backgrounds/tsundere-theme.png');
+  background-color: #1a0f0a; /* Fallback */
+}
+
+body.dandere-theme {
+  background-image: url('./assets/backgrounds/dandere-theme.png');
+  background-color: #0f0a12; /* Fallback */
 }
 
 /* Base Button Styles - PRESERVED as requested */
