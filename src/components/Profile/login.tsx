@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import productiveIcon from "../../assets/productive.png";
-import moodyIcon from "../../assets/moody.png";
+import productiveIcon from "../../assets/icons/productive.png";
+import moodyIcon from "../../assets/icons/moody.png";
 import { Auth } from "../../utils/AuthStateManager";
 import "./login.css";
 import darkVideo from "../../assets/backgrounds/videos/dark-theme.mp4";
@@ -182,6 +182,18 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Health check before registration
+    try {
+      const healthCheck = await fetch("http://localhost:8080/health");
+      if (!healthCheck.ok) {
+        throw new Error("Backend service unavailable");
+      }
+    } catch (err) {
+      setError("Unable to reach the registration service. Please try again later.");
+      setLoading(false);
+      return;
+    }
 
     if (!email.includes("@")) {
       setError("Please enter a valid email address.");

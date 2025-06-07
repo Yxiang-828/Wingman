@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import productiveIcon from "../../assets/productive.png";
-import moodyIcon from "../../assets/moody.png";
+import productiveIcon from "../../assets/icons/productive.png";
+import moodyIcon from "../../assets/icons/moody.png";
 import "./WelcomePopup.css";
 
 const moodIcons: Record<string, string> = {
@@ -120,16 +120,18 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
               <li>📝 Smart diary with mood tracking</li>
               <li>📅 Intelligent calendar with time blocking</li>
               <li>🤖 AI assistant powered by Ollama</li>
-              <li>🎨 6 beautiful themes (Dark, Light, Yandere, Kuudere, Tsundere, Dandere)</li>
+              <li>
+                🎨 6 beautiful themes (Dark, Light, Yandere, Kuudere, Tsundere,
+                Dandere)
+              </li>
               <li>🔐 Hybrid architecture: Local data + Cloud auth</li>
               <li>📱 Complete offline functionality</li>
             </ul>
 
             <div className="pro-tip">
               <p className="tip-text">
-                💡{" "}
-                <strong>Pro Tip:</strong> Press <kbd>Ctrl + -</kbd> to make the app
-                smaller if it looks too big!
+                💡 <strong>Pro Tip:</strong> Press <kbd>Ctrl + -</kbd> to make
+                the app smaller if it looks too big!
               </p>
             </div>
           </div>

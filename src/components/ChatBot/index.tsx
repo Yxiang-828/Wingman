@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import productiveIcon from "../../assets/productive.png";
-import moodyIcon from "../../assets/moody.png";
+import productiveIcon from "../../assets/icons/productive.png";
+import moodyIcon from "../../assets/icons/moody.png";
 import HumorSetting from "./HumorSetting";
 import MessageBubble from "./MessageBubble";
 import QuickReplies from "./QuickReplies";
 import { getCurrentUserId } from "../../utils/auth";
-import llmService from '../../services/llmService';
+import llmService from "../../services/llmService";
 import "./ChatBot.css";
 
 const moodIcons = {
@@ -36,12 +36,16 @@ const initialMessages: Message[] = [
 ];
 
 const ChatBot = () => {
-  const [wingmanMood, setWingmanMood] = useState<"productive" | "moody">("productive");
+  const [wingmanMood, setWingmanMood] = useState<"productive" | "moody">(
+    "productive"
+  );
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [humor, setHumor] = useState<"serious" | "funny">("serious");
   const [loading, setLoading] = useState(false);
-  const [aiStatus, setAiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [aiStatus, setAiStatus] = useState<"checking" | "online" | "offline">(
+    "checking"
+  );
   const [showHistory, setShowHistory] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatBoxRef = useRef<HTMLDivElement>(null);
@@ -59,7 +63,7 @@ const ChatBot = () => {
   const loadChatHistory = async (userId: string) => {
     try {
       console.log("🤖 Wingman: Loading your conversation history, boss...");
-      
+
       const history = await window.electronAPI.db.getChatHistory(userId, 50);
 
       if (history && history.length > 0) {
@@ -161,20 +165,26 @@ const ChatBot = () => {
     }
   };
 
-  const generateAIResponse = async (message: string, userId: string): Promise<string> => {
+  const generateAIResponse = async (
+    message: string,
+    userId: string
+  ): Promise<string> => {
     try {
       setLoading(true);
-      
+
       const result = await llmService.sendMessage(message, userId);
-      
+
       if (result.model_used && result.processing_time) {
-        console.log(`🤖 Wingman Brain (${result.model_used}): Responded in ${result.processing_time.toFixed(2)}s`);
+        console.log(
+          `🤖 Wingman Brain (${
+            result.model_used
+          }): Responded in ${result.processing_time.toFixed(2)}s`
+        );
       }
-      
+
       return result.response;
-      
     } catch (error) {
-      console.error('🤖 Wingman AI Error:', error);
+      console.error("🤖 Wingman AI Error:", error);
       return "Boss, my AI brain is taking a quick break! Your faithful Wingman is still here though. Please try again in a moment! 🧠";
     } finally {
       setLoading(false);
@@ -198,24 +208,28 @@ const ChatBot = () => {
     const checkAIStatus = async () => {
       try {
         const status = await llmService.getStatus();
-        setAiStatus(status.available ? 'online' : 'offline');
+        setAiStatus(status.available ? "online" : "offline");
       } catch (error) {
-        setAiStatus('offline');
+        setAiStatus("offline");
       }
     };
 
     checkAIStatus();
-    
+
     const interval = setInterval(checkAIStatus, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const getStatusText = () => {
-    switch(aiStatus) {
-      case 'checking': return "Booting up for duty...";
-      case 'online': return "Ready to serve, boss!";
-      case 'offline': return "AI brain offline - manual mode";
-      default: return "Status unknown";
+    switch (aiStatus) {
+      case "checking":
+        return "Booting up for duty...";
+      case "online":
+        return "Ready to serve, boss!";
+      case "offline":
+        return "AI brain offline - manual mode";
+      default:
+        return "Status unknown";
     }
   };
 
@@ -235,16 +249,14 @@ const ChatBot = () => {
             <h1 className="wingman-title">Your Wingman</h1>
             <div className="ai-status">
               <span className={`status-dot ${aiStatus}`}></span>
-              <span className="status-text">
-                {getStatusText()}
-              </span>
+              <span className="status-text">{getStatusText()}</span>
             </div>
           </div>
         </div>
-        
+
         <div className="chatbot-header-actions">
           <button
-            className={`header-action-btn ${showHistory ? 'active' : ''}`}
+            className={`header-action-btn ${showHistory ? "active" : ""}`}
             onClick={() => setShowHistory(!showHistory)}
             title="Configure your Wingman"
           >
@@ -265,11 +277,10 @@ const ChatBot = () => {
         <div className="chatbot-settings-panel">
           <HumorSetting humor={humor} setHumor={setHumor} />
           <div className="chat-stats">
+            <span className="stat-item">💬 {messages.length} exchanges</span>
             <span className="stat-item">
-              💬 {messages.length} exchanges
-            </span>
-            <span className="stat-item">
-              🤖 {messages.filter(m => m.sender === 'wingman').length} responses served
+              🤖 {messages.filter((m) => m.sender === "wingman").length}{" "}
+              responses served
             </span>
           </div>
         </div>
@@ -319,13 +330,15 @@ const ChatBot = () => {
                 disabled={loading}
                 autoFocus
               />
-              <button 
-                type="submit" 
-                className={`chatbot-send-btn ${loading || !input.trim() ? 'disabled' : ''}`}
+              <button
+                type="submit"
+                className={`chatbot-send-btn ${
+                  loading || !input.trim() ? "disabled" : ""
+                }`}
                 disabled={loading || !input.trim()}
                 title="Send command to your Wingman"
               >
-                {loading ? '⏳' : '🚀'}
+                {loading ? "⏳" : "🚀"}
               </button>
             </div>
           </form>

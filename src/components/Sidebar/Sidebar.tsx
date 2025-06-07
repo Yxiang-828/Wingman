@@ -1,10 +1,10 @@
-/* filepath: c:\Users\xiang\checker\Wingman\src\components\Sidebar\Sidebar.tsx */
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MiniCalendar from "./MiniCalendar";
 import { useTheme } from "../../context/ThemeContext";
 import { useNotifications } from "../../context/NotificationsContext";
+import WingmanAvatar from "../Common/WingmanAvatar";
 import { getCurrentUserId } from "../../utils/auth";
 import "../../main.css";
 import "./Sidebar.css";
@@ -250,21 +250,19 @@ const Sidebar: React.FC = () => {
         onMouseLeave={handleToggleLeave}
         aria-label="Toggle sidebar"
       >
-        <div className="sidebar-toggle-avatar">
-          {userAvatar ? (
-            <img
-              src={userAvatar}
-              alt="User Avatar"
-              onError={() => setUserAvatar(null)} // ✅ FALLBACK: Remove broken images
-            />
-          ) : (
-            <span
-              style={{ fontSize: "20px", color: "rgba(255, 255, 255, 0.7)" }}
-            >
-              👤
-            </span>
-          )}
-        </div>
+       <div className="sidebar-toggle-avatar">
+        {userAvatar ? (
+          <img
+            src={userAvatar}
+            alt="User Avatar"
+            onError={() => setUserAvatar(null)}
+          />
+        ) : (
+          <span style={{ fontSize: "20px", color: "rgba(255, 255, 255, 0.7)" }}>
+            👤
+          </span>
+        )}
+      </div>
       </button>
 
       {/* ✅ SIDEBAR: Expands on button hover OR sidebar hover, stays when pinned */}

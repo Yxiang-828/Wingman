@@ -84,13 +84,13 @@
         "to": "python-dist"
       },
       {
-        "from": "assets",
+        "from": "src/assets/",
         "to": "assets"
       }
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icons/wingman-productive.ico"
+      "icon": "src/assets/icons/productive.ico"
     }
   },
   "type": "commonjs"

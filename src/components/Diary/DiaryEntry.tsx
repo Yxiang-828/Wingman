@@ -412,36 +412,6 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Floating icons */}
-      <div className="diary-floating-icons">
-        <img
-          src="/assets/pen-icon.png"
-          className="floating-icon icon-1"
-          alt=""
-        />
-        <img
-          src="/assets/book-icon.png"
-          className="floating-icon icon-2"
-          alt=""
-        />
-        <img
-          src="/assets/thought-icon.png"
-          className="floating-icon icon-3"
-          alt=""
-        />
-        <img
-          src="/assets/heart-icon.png"
-          className="floating-icon icon-4"
-          alt=""
-        />
-        <img
-          src="/assets/moon-icon.png"
-          className="floating-icon icon-5"
-          alt=""
-        />
-      </div>
-
       {/* Candle glow effect */}
       <div className="candle-glow"></div>
     </div>

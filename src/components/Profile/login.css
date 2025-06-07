@@ -6,9 +6,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  
   /* ✅ DEFAULT: Dark theme PNG background */
-  background:url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
 }
 
 .login-bg-video {

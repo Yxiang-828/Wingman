@@ -102,11 +102,20 @@ if %errorlevel% neq 0 (
 )
 echo [DEBUG] ✅ Native dependencies rebuilt
 
-REM Prepare backend for packaging
+REM Prepare backend for packaging (SELECTIVE)
 echo [DEBUG] Step 9: Preparing backend files...
 if not exist "python-dist" mkdir "python-dist"
-robocopy Wingman-backend python-dist\backend /E /XO /NDL /NJH /NJS
-echo [DEBUG] ✅ Backend files prepared
+if not exist "python-dist\backend" mkdir "python-dist\backend"
+
+REM Copy ONLY essential files
+copy "Wingman-backend\main.py" "python-dist\backend\"
+copy "Wingman-backend\requirements.txt" "python-dist\backend\"
+copy "Wingman-backend\.env" "python-dist\backend\" 2>nul || echo No .env found
+
+REM Copy app directory structure
+robocopy "Wingman-backend\app" "python-dist\backend\app" /E /XD __pycache__ .git /XF *.pyc *.pyo
+
+echo [DEBUG] ✅ Backend files prepared (optimized)
 
 REM Build frontend
 echo [DEBUG] Step 10: Building frontend...
