@@ -112,7 +112,7 @@
   transform: translateY(-50%) scale(1.1);
 }
 
-/* Avatar container in toggle - WHITE THEME COMPATIBLE */
+
 .sidebar-toggle-avatar {
   width: 35px;
   height: 35px;
@@ -122,21 +122,8 @@
   align-items: center;
   justify-content: center;
   background: rgba(100, 108, 255, 0.1);
-  
-  /* SUBTLE ANIMATION: Only when not hovered */
-  animation: avatar-gentle-float 4s ease-in-out infinite;
-  will-change: transform;
 }
 
-/* AVATAR ANIMATION: Gentle floating */
-@keyframes avatar-gentle-float {
-  0%, 100% { 
-    transform: scale(1) rotate(0deg); 
-  }
-  50% { 
-    transform: scale(1.02) rotate(1deg); 
-  }
-}
 
 /* Avatar image styling */
 .sidebar-toggle-avatar img {

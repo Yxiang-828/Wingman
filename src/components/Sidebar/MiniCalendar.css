@@ -187,7 +187,7 @@
 
 /* Base calendar container - Light theme */
 .light-theme .react-calendar--small {
-  background: linear-gradient(145deg, rgba(248, 248, 240, 0.95), rgba(255, 255, 250, 0.98));
+  background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
   border: 1px solid rgba(184, 134, 11, 0.3);
   box-shadow: 0 2px 12px rgba(184, 134, 11, 0.15);
   color: #600a0a;

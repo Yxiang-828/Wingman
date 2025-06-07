@@ -179,10 +179,14 @@
 .light-theme .month-cell,
 .light-theme .compact-event-item,
 .light-theme .compact-task-item,
+.light-theme  .model-manager,
 .light-theme .sidebar,
 .light-theme .sidebar-container,
 .light-theme .header,
 .light-theme .header-container,
+.light-theme .week-day-compact,
+.light-theme .week-header-compact,
+.light-theme .month-entries,
 .light-theme .dashboard-card,
 .light-theme .navbar,
 .light-theme .nav-container,
@@ -195,7 +199,6 @@
 .light-theme .search-form,
 .light-theme .detail-popup,
 .light-theme .chatbot-bubble.wingman,
-.light-theme .quote-box,
 .light-theme .datetime-display,
 .light-theme .wingman-avatar-container,
 .light-theme .avatar-message,
@@ -246,24 +249,18 @@
 }
 
 .light-theme .quote-box {
-  background: var(--color-accent-primary) !important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-accent-secondary) !important;
-  border-radius: 12px !important;
-  padding: 1.5rem !important;
+    background: #b97c6d4a !important;
+    color: black !important;
+    border: 1px solid var(--color-accent-secondary) !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
 }
 
 .light-theme .datetime-display {
   background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
 }
 
-.light-theme .day-stat-card {
-  background: var(--color-accent-primary) !important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-accent-secondary) !important;
-  border-radius: 8px !important;
-  padding: 1rem !important;
-}
+
 
 .light-theme .dashboard-item {
   background: rgb(218 163 75 / 53%) !important;
@@ -286,7 +283,9 @@
   border-color: var(--light-accent-primary) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
 }
-
+.light-theme .month-header{
+  background: linear-gradient(  270deg, #b9660726,#c1bfa2) !important;
+}
 /* ═══════════════════════════════════════════════════════════════
    🎨 ZONE 3: TEXT, INPUTS, BUTTONS & INTERACTIVE ELEMENTS
    ═══════════════════════════════════════════════════════════════ */
@@ -314,6 +313,7 @@
 .light-theme .header-title,
 .light-theme .welcome-text,
 .light-theme .leader-text,
+.light-theme .week-day-header-compact,
 .light-theme .settings-title,
 .light-theme .profile-title,
 .light-theme .chat-title,
@@ -353,17 +353,20 @@
 .light-theme .chatbot-input,
 .light-theme .time-input,
 .light-theme .date-input,
+.light-theme .ms-btn,
 .light-theme .day-form-input,
 .light-theme .day-form-select,
 .light-theme .model-select,
 .light-theme .theme-select,
 .light-theme .diary-entry-input,
 .light-theme .mood-select,
+.light-theme .today-btn-compact,
 .light-theme .date-separator,
 .light-theme .clear-filters-btn,
 .light-theme .search-button,
 .light-theme .event-time,
-.light-theme .day-view-tab  {
+.light-theme .day-view-tab,
+.light-theme .day-stat-card  {
   color: #600a0a !important;
   -webkit-text-fill-color: #600a0a !important;
   background: rgb(122 77 42 / 50%) !important;
@@ -382,8 +385,13 @@
 
 /* All Primary Buttons - Translucent Golden Base */
 .light-theme .btn-primary,
+.light-theme .action-btn,
+.light-theme .search-entries-btn,
+.light-theme .write-entry-btn,
+.light-theme .view-more-btn,
 .light-theme .header-btn,
 .light-theme .save-settings-btn,
+.light-theme .card-action-btn,
 .light-theme .diary-save-btn,
 .light-theme .search-button,
 .light-theme .login-action-btn,
@@ -889,7 +897,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--color-bg-card);
+  background-color: rgba(184, 134, 11, 0.15) !important;
   cursor: pointer;
   transition: all 0.25s ease;
   color: var(--color-text-primary);
