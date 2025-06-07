@@ -99,7 +99,7 @@ const Sidebar: React.FC = () => {
   const toggleTheme = () => {
     const themes: Theme[] = [
       "dark",
-      "light", 
+      "light",
       "yandere",
       "kuudere",
       "tsundere",
@@ -219,7 +219,10 @@ const Sidebar: React.FC = () => {
     window.addEventListener("toggle-sidebar", handleToggle as EventListener);
 
     return () => {
-      window.removeEventListener("toggle-sidebar", handleToggle as EventListener);
+      window.removeEventListener(
+        "toggle-sidebar",
+        handleToggle as EventListener
+      );
     };
   }, []);
 
@@ -249,13 +252,17 @@ const Sidebar: React.FC = () => {
       >
         <div className="sidebar-toggle-avatar">
           {userAvatar ? (
-            <img 
-              src={userAvatar} 
-              alt="User Avatar" 
+            <img
+              src={userAvatar}
+              alt="User Avatar"
               onError={() => setUserAvatar(null)} // ✅ FALLBACK: Remove broken images
             />
           ) : (
-            <span style={{ fontSize: '20px', color: 'rgba(255, 255, 255, 0.7)' }}>👤</span>
+            <span
+              style={{ fontSize: "20px", color: "rgba(255, 255, 255, 0.7)" }}
+            >
+              👤
+            </span>
           )}
         </div>
       </button>
@@ -289,9 +296,9 @@ const Sidebar: React.FC = () => {
             <div key={item.title} className="nav-item">
               <Link
                 to={item.path}
-                className={`sidebar-link ${
-                  item.submenu ? "has-submenu" : ""
-                } ${openSubmenus.has(item.title) ? "active" : ""}`}
+                className={`sidebar-link ${item.submenu ? "has-submenu" : ""} ${
+                  openSubmenus.has(item.title) ? "active" : ""
+                }`}
                 onClick={(e) => {
                   if (item.submenu) {
                     e.preventDefault();
@@ -305,14 +312,12 @@ const Sidebar: React.FC = () => {
                   <span className="sidebar-icon">{item.icon}</span>
                   <span className="sidebar-text">{item.title}</span>
                 </div>
-                
+
                 {item.badge && (
                   <span className="sidebar-badge">{item.badge}</span>
                 )}
-                
-                {item.submenu && (
-                  <span className="submenu-arrow">▶</span>
-                )}
+
+                {item.submenu && <span className="submenu-arrow">▶</span>}
               </Link>
 
               {/* ✅ SUBMENU: Animated expansion */}

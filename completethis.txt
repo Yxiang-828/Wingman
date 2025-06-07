@@ -1,0 +1,1895 @@
+/* ═══════════════════════════════════════════════════════════════
+   ☀️ LIGHT THEME - COMPLETE INVERSION & CONTRAST SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme {
+  /* ✅ CORE VARIABLES - Complete color inversion */
+  --color-bg-body: transparent;
+  --color-bg-main: rgba(248, 248, 240, 0.95);
+  --color-bg-card: rgba(255, 255, 250, 0.95);
+  --color-bg-secondary: rgba(250, 250, 245, 0.9);
+  --color-bg-tertiary: rgba(245, 245, 240, 0.85);
+  --color-bg-input: rgba(255, 255, 255, 0.9);
+  --color-bg-input-focus: rgba(255, 255, 255, 0.95);
+  --color-bg-hover: rgba(240, 240, 235, 0.9);
+  --color-bg-sidebar: rgba(255, 255, 250, 0.98);
+
+  /* ✅ TEXT COLORS - Dark text for light backgrounds */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #2d2d2d;
+  --color-text-tertiary: #4a4a4a;
+  --color-text-muted: #666666;
+  --color-text-inverse: #ffffff;
+
+  /* ✅ WARM ACCENT COLORS */
+  --color-accent-primary: #b8860b;
+  --color-accent-secondary: #daa520;
+  --color-accent-hover: #cd853f;
+  --color-accent-glow: rgba(184, 134, 11, 0.3);
+
+  /* ✅ STATUS COLORS */
+  --color-success: #228b22;
+  --color-warning: #ff8c00;
+  --color-error: #dc143c;
+  --color-info: #4169e1;
+
+  /* ✅ BORDERS - Light browns for contrast */
+  --color-border: rgba(200, 180, 160, 0.4);
+  --color-border-focus: rgba(184, 134, 11, 0.6);
+  --color-border-hover: rgba(200, 180, 160, 0.6);
+  --color-border-subtle: rgba(220, 200, 180, 0.3);
+  --color-border-normal: rgba(200, 180, 160, 0.5);
+  --color-border-strong: rgba(180, 160, 140, 0.7);
+
+  /* ✅ SHADOWS - Soft shadows for light theme */
+  --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.16);
+
+  /* ✅ MISSION CONTROL COLORS */
+  --color-mission-primary: var(--color-accent-primary);
+  --color-mission-glow: var(--color-accent-glow);
+  --theme-scan-animation: light-golden-scan;
+
+  /* ✅ NOTIFICATION COLORS */
+  --color-notification-bg: var(--color-bg-secondary);
+  --color-notification-border: var(--color-border-normal);
+  --color-notification-text: var(--color-text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🏠 LIGHT THEME: BODY & MAIN CONTAINERS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme body {
+  background: var(--color-bg-body) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .main-content-wrapper,
+.light-theme .app-container,
+.light-theme .page-container {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📊 LIGHT THEME: ALL CARDS & CONTAINERS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .dashboard-card,
+.light-theme .summary-card,
+.light-theme .diary-card,
+.light-theme .calendar-card,
+.light-theme .profile-card,
+.light-theme .task-card,
+.light-theme .event-card,
+.light-theme .stats-card,
+.light-theme .notification-card,
+.light-theme .chat-card,
+.light-theme .settings-card,
+.light-theme .mission-card,
+.light-theme .home-card,
+.light-theme .week-card,
+.light-theme .day-card {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--color-text-secondary) !important;
+  border-radius: 12px !important;
+}
+
+.light-theme .dashboard-card:hover,
+.light-theme .summary-card:hover,
+.light-theme .settings-card:hover,
+.light-theme .mission-card:hover {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border-strong) !important;
+  box-shadow: var(--shadow-large) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎯 LIGHT THEME: HEADERS & NAVIGATION
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .header,
+.light-theme .header-container,
+.light-theme .navbar,
+.light-theme .nav-container {
+  background: var(--color-bg-card) !important;
+  border-bottom: 1px solid var(--color-border-normal) !important;
+  box-shadow: var(--shadow-subtle) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .welcome-text {
+  color: var(--color-text-tertiary) !important;
+}
+
+.light-theme .leader-text {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+}
+
+.light-theme .header-actions,
+.light-theme .nav-actions {
+  background: transparent !important;
+}
+
+.light-theme .notification-btn,
+.light-theme .user-menu-btn,
+.light-theme .header-action-btn {
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.light-theme .notification-btn:hover,
+.light-theme .user-menu-btn:hover,
+.light-theme .header-action-btn:hover,
+.light-theme .header-action-btn.active {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-accent-secondary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+/* ✅ FIX: SIDEBAR TOGGLE - NO BACKGROUND */
+.light-theme .sidebar-toggle {
+  background: transparent !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: 0 12px 12px 0 !important;
+  padding: 0.5rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.light-theme .sidebar-toggle:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: var(--shadow-subtle) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📝 LIGHT THEME: ALL INPUTS & FORMS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme input,
+.light-theme textarea,
+.light-theme select,
+.light-theme .search-input,
+.light-theme .diary-textarea,
+.light-theme .diary-title,
+.light-theme .date-input,
+.light-theme .mood-select,
+.light-theme .wingman-name-input,
+.light-theme .chatbot-input,
+.light-theme .message-input,
+.light-theme .day-form-input,
+.light-theme .day-form-select,
+.light-theme .time-input,
+.light-theme .event-title-input,
+.light-theme .event-description-input,
+.light-theme .task-title-input,
+.light-theme .model-select,
+.light-theme .ai-model-select,
+.light-theme .login-input,
+.light-theme .password-input,
+.light-theme .username-input {
+  background: var(--color-bg-input) !important;
+  border: 2px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.95rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.light-theme input:focus,
+.light-theme textarea:focus,
+.light-theme select:focus,
+.light-theme .search-input:focus,
+.light-theme .diary-textarea:focus,
+.light-theme .diary-title:focus,
+.light-theme .date-input:focus,
+.light-theme .mood-select:focus,
+.light-theme .wingman-name-input:focus,
+.light-theme .chatbot-input:focus,
+.light-theme .message-input:focus,
+.light-theme .day-form-input:focus,
+.light-theme .day-form-select:focus,
+.light-theme .login-input:focus,
+.light-theme .password-input:focus,
+.light-theme .username-input:focus {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.15) !important;
+  background: var(--color-bg-input-focus) !important;
+  outline: none !important;
+}
+
+.light-theme input::placeholder,
+.light-theme textarea::placeholder,
+.light-theme .search-input::placeholder,
+.light-theme .diary-textarea::placeholder,
+.light-theme .diary-title::placeholder,
+.light-theme .date-input::placeholder,
+.light-theme .chatbot-input::placeholder,
+.light-theme .message-input::placeholder,
+.light-theme .login-input::placeholder,
+.light-theme .password-input::placeholder,
+.light-theme .username-input::placeholder {
+  color: var(--color-text-muted) !important;
+  opacity: 0.7 !important;
+}
+
+/* ✅ SELECT DROPDOWN OPTIONS */
+.light-theme select option,
+.light-theme .day-form-select option,
+.light-theme .mood-select option,
+.light-theme .model-select option {
+  background: var(--color-bg-input) !important;
+  color: var(--color-text-primary) !important;
+  padding: 0.5rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎨 LIGHT THEME: ALL TITLES & HEADINGS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme h1,
+.light-theme h2,
+.light-theme h3,
+.light-theme h4,
+.light-theme h5,
+.light-theme h6,
+.light-theme .settings-card-title,
+.light-theme .settings-main-title,
+.light-theme .mission-title,
+.light-theme .category-title,
+.light-theme .diary-search-header h1,
+.light-theme .view-entries-header h2,
+.light-theme .diary-date,
+.light-theme .chatbot-title,
+.light-theme .quick-replies-title,
+.light-theme .week-title,
+.light-theme .day-view-date,
+.light-theme .home-title {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📄 LIGHT THEME: TEXT CONTENT
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ✅ FIX: TEXT CONTRAST - Ensure all spans have proper contrast */
+.light-theme p,
+.light-theme span,
+.light-theme label,
+.light-theme .task-title,
+.light-theme .event-title,
+.light-theme .setting-label,
+.light-theme .user-info-label,
+.light-theme .home-subtitle,
+.light-theme .week-subtitle {
+  color: var(--color-text-secondary) !important;
+  font-weight: 500 !important;
+}
+
+.light-theme .item-title,
+.light-theme .model-name,
+.light-theme .user-info-value,
+.light-theme .entry-preview-title,
+.light-theme .result-header h4,
+.light-theme .compact-record-title,
+.light-theme .week-day-date,
+.light-theme .event-time-value,
+.light-theme .task-status {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .item-meta,
+.light-theme .mission-meta,
+.light-theme .entry-preview-content,
+.light-theme .result-preview,
+.light-theme .compact-record-preview,
+.light-theme .model-description,
+.light-theme .theme-description,
+.light-theme .week-day-name,
+.light-theme .event-meta,
+.light-theme .task-meta,
+.light-theme .status-text,
+.light-theme .home-list,
+.light-theme .text-muted {
+  color: var(--color-text-muted) !important;
+  font-weight: 500 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔘 LIGHT THEME: ALL BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Primary Action Buttons */
+.light-theme .dashboard-card button,
+.light-theme .summary-card button,
+.light-theme .header button,
+.light-theme .save-settings-btn,
+.light-theme .mission-tracker-btn,
+.light-theme .search-button,
+.light-theme .search-entries-btn,
+.light-theme .write-entry-btn,
+.light-theme .clear-filters-btn,
+.light-theme .btn-primary,
+.light-theme .diary-save-btn,
+.light-theme .theme-toggle-btn,
+.light-theme .login-action-btn {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.light-theme .dashboard-card button:hover,
+.light-theme .summary-card button:hover,
+.light-theme .header button:hover,
+.light-theme .save-settings-btn:hover,
+.light-theme .search-button:hover,
+.light-theme .search-entries-btn:hover,
+.light-theme .write-entry-btn:hover,
+.light-theme .clear-filters-btn:hover,
+.light-theme .btn-primary:hover,
+.light-theme .diary-save-btn:hover,
+.light-theme .theme-toggle-btn:hover,
+.light-theme .login-action-btn:hover {
+  background: linear-gradient(135deg, var(--color-accent-hover), var(--color-accent-primary)) !important;
+  box-shadow: var(--shadow-large) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Secondary/Form Buttons */
+.light-theme .calendar-btn,
+.light-theme .mission-btn,
+.light-theme .task-btn,
+.light-theme .event-btn,
+.light-theme .day-form-btn,
+.light-theme .day-nav-btn,
+.light-theme .hour-btn,
+.light-theme .view-more-btn,
+.light-theme .refresh-prompts-btn,
+.light-theme button:not(.dashboard-card button):not(.header button):not(.save-settings-btn):not(.search-button):not(.btn-primary):not(.login-action-btn) {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.light-theme .calendar-btn:hover,
+.light-theme .mission-btn:hover,
+.light-theme .day-form-btn:hover,
+.light-theme .day-nav-btn:hover,
+.light-theme .hour-btn:hover,
+.light-theme .view-more-btn:hover,
+.light-theme .refresh-prompts-btn:hover,
+.light-theme button:not(.dashboard-card button):not(.header button):not(.save-settings-btn):not(.search-button):not(.btn-primary):not(.login-action-btn):hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-strong) !important;
+  box-shadow: var(--shadow-subtle) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Special State Buttons */
+.light-theme .calendar-btn.today-btn {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+.light-theme .mission-tracker-btn.active,
+.light-theme .mission-tab.active {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-accent-secondary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📋 LIGHT THEME: LIST ITEMS & CARDS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .task-item,
+.light-theme .event-item,
+.light-theme .mission-item,
+.light-theme .dashboard-item,
+.light-theme .notification-item,
+.light-theme .diary-entry-preview,
+.light-theme .month-group,
+.light-theme .search-result-item,
+.light-theme .compact-record-item,
+.light-theme .recent-records-container,
+.light-theme .week-event-item,
+.light-theme .week-task-item,
+.light-theme .week-day,
+.light-theme .home-stat-card {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  color: var(--color-text-secondary) !important;
+  padding: 1rem !important;
+  margin-bottom: 0.75rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.light-theme .task-item:hover,
+.light-theme .event-item:hover,
+.light-theme .mission-item:hover,
+.light-theme .dashboard-item:hover,
+.light-theme .diary-entry-preview:hover,
+.light-theme .search-result-item:hover,
+.light-theme .compact-record-item:hover,
+.light-theme .week-event-item:hover,
+.light-theme .week-task-item:hover,
+.light-theme .week-day:hover,
+.light-theme .home-stat-card:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border-normal) !important;
+  box-shadow: var(--shadow-subtle) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Special States */
+.light-theme .week-day.today {
+  border: 2px solid var(--color-accent-primary) !important;
+  background: var(--color-bg-tertiary) !important;
+  box-shadow: 0 0 12px rgba(184, 134, 11, 0.2) !important;
+}
+
+.light-theme .task-item.completed,
+.light-theme .week-task-item.completed {
+  border-left: 3px solid var(--color-success) !important;
+  background: rgba(34, 139, 34, 0.1) !important;
+  opacity: 0.8 !important;
+}
+
+.light-theme .task-item.failed {
+  border-left: 3px solid var(--color-error) !important;
+  background: rgba(220, 20, 60, 0.1) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📅 LIGHT THEME: CALENDAR COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .calendar-week-view,
+.light-theme .day-view-container {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.light-theme .week-header,
+.light-theme .day-view-header {
+  border-bottom: 1px solid var(--color-border-normal) !important;
+  background: var(--color-bg-secondary) !important;
+  padding: 1rem !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.light-theme .week-days-grid,
+.light-theme .day-view-content {
+  background: transparent !important;
+}
+
+.light-theme .week-day-header,
+.light-theme .day-section-header {
+  background: var(--color-bg-tertiary) !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  padding: 0.5rem !important;
+}
+
+.light-theme .day-view-section,
+.light-theme .day-form,
+.light-theme .day-list {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+}
+
+.light-theme .day-section-title {
+  color: var(--color-text-primary) !important;
+}
+
+/* ✅ FIX: DAY STAT CARDS - Brown/White alternating */
+.light-theme .day-stat-card {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .day-stat-card:nth-child(even) {
+  background: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-normal) !important;
+}
+
+.light-theme .event-time,
+.light-theme .task-time,
+.light-theme .entry-preview-date,
+.light-theme .result-date,
+.light-theme .compact-record-date {
+  color: var(--color-text-muted) !important;
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 4px !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.85rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📊 LIGHT THEME: DASHBOARD SPECIFIC
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .dashboard-container,
+.light-theme .dashboard,
+.light-theme .dashboard-list {
+  background: transparent !important;
+}
+
+.light-theme .dashboard-item {
+  border-left: 3px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .dashboard-item:hover {
+  border-left-color: var(--color-accent-secondary) !important;
+  transform: translateX(2px) !important;
+}
+
+.light-theme .summary-stats,
+.light-theme .stat-item {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+}
+
+/* ✅ FIX: STAT NUMBERS - Brown theme colors */
+.light-theme .stat-number {
+  color: var(--color-accent-primary) !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   💬 LIGHT THEME: CHAT & MESSAGE COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .chatbot-container,
+.light-theme .chatbot-header,
+.light-theme .chatbot-settings-panel,
+.light-theme .chatbot-messages,
+.light-theme .chatbot-input-container,
+.light-theme .quick-replies-container {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-subtle) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .message-bubble.user {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border-radius: 18px 18px 4px 18px !important;
+  padding: 0.75rem 1rem !important;
+  max-width: 70% !important;
+  margin-left: auto !important;
+}
+
+.light-theme .message-bubble.ai {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: 18px 18px 18px 4px !important;
+  padding: 0.75rem 1rem !important;
+  max-width: 70% !important;
+}
+
+.light-theme .chatbot-quick-reply {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-secondary) !important;
+  border-radius: 16px !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0.25rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.light-theme .chatbot-quick-reply:hover {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-accent-primary) !important;
+  color: var(--color-text-primary) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ⚙️ LIGHT THEME: SETTINGS COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ✅ FIX: SETTINGS CONTAINER - Brown/White theme */
+.light-theme .settings-container {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--color-text-primary) !important;
+  padding: 2rem !important;
+}
+
+/* ✅ FIX: SETTINGS SECTION - Brown background with white text */
+.light-theme .settings-section {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.light-theme .profile-settings-container,
+.light-theme .model-selection-grid,
+.light-theme .theme-grid,
+.light-theme .user-info-grid {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-subtle) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .model-option,
+.light-theme .theme-option {
+  background: var(--color-bg-secondary) !important;
+  border: 2px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.light-theme .model-option:hover,
+.light-theme .theme-option:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .model-option.selected,
+.light-theme .theme-option.active {
+  background: rgba(184, 134, 11, 0.1) !important;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.15) !important;
+}
+
+.light-theme .ai-status-indicator,
+.light-theme .system-info-card {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+}
+
+.light-theme .system-info-row {
+  color: var(--color-text-secondary) !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  padding: 0.5rem 0 !important;
+}
+
+.light-theme .system-info-row:last-child {
+  border-bottom: none !important;
+}
+
+.light-theme .system-info-row span:last-child {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🚨 LIGHT THEME: MISSION CONTROL/NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .mission-control-container {
+  background: linear-gradient(145deg, var(--color-bg-card) 0%, var(--color-bg-secondary) 100%) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card) !important;
+  padding: 2rem !important;
+}
+
+.light-theme .mission-control-header {
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%) !important;
+  border: 2px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .mission-control-header:hover {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: var(--shadow-card) !important;
+  transform: translateY(-1px) !important;
+}
+
+.light-theme .mission-summary {
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .mission-count {
+  background: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+  font-size: 1.2rem !important;
+}
+
+.light-theme .mission-tabs {
+  background: transparent !important;
+  border-bottom: 1px solid var(--color-border-normal) !important;
+  padding-bottom: 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.light-theme .mission-tab {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+  margin-right: 0.5rem !important;
+  color: var(--color-text-secondary) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.light-theme .mission-tab:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-accent-primary) !important;
+  color: var(--color-text-primary) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .mission-tab.active {
+  background: linear-gradient(145deg, var(--color-accent-primary) 0%, var(--color-accent-secondary) 100%) !important;
+  border-color: var(--color-accent-secondary) !important;
+  color: var(--color-text-inverse) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.light-theme .tab-text {
+  color: inherit !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .mission-tab.active .tab-text {
+  color: var(--color-text-inverse) !important;
+}
+
+.light-theme .mission-badge {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  padding: 0.25rem 0.75rem !important;
+  font-size: 0.85rem !important;
+}
+
+.light-theme .mission-tab.active .mission-badge {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.light-theme .mission-operations-list {
+  background: transparent !important;
+}
+
+.light-theme .mission-item {
+  border-left: 3px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .mission-item:hover {
+  border-left-color: var(--color-accent-secondary) !important;
+  transform: translateX(4px) !important;
+}
+
+.light-theme .mission-item.active-mission {
+  border-left-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .mission-item.completed-mission {
+  border-left-color: var(--color-success) !important;
+  background: rgba(34, 139, 34, 0.05) !important;
+}
+
+.light-theme .mission-item.failed-mission {
+  border-left-color: var(--color-error) !important;
+  background: rgba(220, 20, 60, 0.05) !important;
+}
+
+.light-theme .mission-item.event {
+  border-left-color: var(--color-info) !important;
+}
+
+.light-theme .mission-objective {
+  color: var(--color-text-primary) !important;
+  font-weight: 500 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.light-theme .mission-objective.completed {
+  color: var(--color-text-muted) !important;
+  text-decoration: line-through !important;
+}
+
+.light-theme .mission-objective.failed {
+  color: var(--color-error) !important;
+}
+
+/* ✅ STATUS INDICATORS */
+.light-theme .mission-status.active {
+  background: rgba(184, 134, 11, 0.15) !important;
+  color: var(--color-accent-primary) !important;
+  border: 1px solid rgba(184, 134, 11, 0.3) !important;
+}
+
+.light-theme .mission-status.completed {
+  background: rgba(34, 139, 34, 0.15) !important;
+  color: var(--color-success) !important;
+  border: 1px solid rgba(34, 139, 34, 0.3) !important;
+}
+
+.light-theme .mission-status.failed {
+  background: rgba(220, 20, 60, 0.15) !important;
+  color: var(--color-error) !important;
+  border: 1px solid rgba(220, 20, 60, 0.3) !important;
+}
+
+/* ✅ FIX: MISSION CATEGORY HEADER - Brown theme */
+.light-theme .mission-category-header {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+  border-bottom: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 1.5rem 2rem !important;
+}
+
+/* ✅ FIX: MISSION CATEGORY EMPTY - White background with brown text */
+.light-theme .mission-category-empty {
+  background: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  padding: 2rem !important;
+  text-align: center !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📝 LIGHT THEME: DIARY COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .diary-search-container,
+.light-theme .view-entries-container,
+.light-theme .diary-entry-container,
+.light-theme .diary-main {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-subtle) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .diary-tools,
+.light-theme .diary-tools-section,
+.light-theme .writing-prompts,
+.light-theme .quick-entries {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-subtle) !important;
+  padding: 1.5rem !important;
+}
+
+.light-theme .diary-tools-title,
+.light-theme .diary-tools-section h3 {
+  color: var(--color-text-primary) !important;
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+  margin-bottom: 1rem !important;
+}
+
+.light-theme .writing-prompt,
+.light-theme .quick-entry-btn {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.light-theme .writing-prompt:hover,
+.light-theme .quick-entry-btn:hover {
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-accent-primary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .diary-tools-toggle {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .diary-tools-toggle:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: var(--shadow-card) !important;
+  transform: translateY(-1px) !important;
+}
+
+.light-theme .tools-toggle-text {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🏠 LIGHT THEME: HOME PAGE COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .home-container {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .home-hero {
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .home-list {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .home-list li {
+  color: var(--color-text-secondary) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.light-theme .home-list b {
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .home-footer {
+  color: var(--color-text-primary) !important;
+  background: var(--color-bg-tertiary) !important;
+  padding: 1rem !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  margin-top: 2rem !important;
+}
+
+.light-theme .home-footer span {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* ✅ FIX: QUOTE BOX - Brown background with white text */
+.light-theme .quote-box {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  box-shadow: var(--shadow-subtle) !important;
+  text-align: center !important;
+  font-style: italic !important;
+}
+
+/* ✅ FIX: DATETIME DISPLAY - White background with brown text */
+.light-theme .datetime-display {
+  background: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  box-shadow: var(--shadow-subtle) !important;
+  text-align: center !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔐 LIGHT THEME: LOGIN COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .login-card {
+  background: rgba(255, 255, 250, 0.95) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  box-shadow: var(--shadow-large) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .login-card h1 {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.light-theme .login-card p {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .text-accent-primary {
+  color: var(--color-accent-primary) !important;
+}
+
+.light-theme .password-count {
+  color: var(--color-text-muted) !important;
+}
+
+.light-theme .login-card > div:last-child {
+  color: var(--color-text-muted) !important;
+  border-top-color: var(--color-border-subtle) !important;
+}
+
+.light-theme .login-card > div:last-child span {
+  color: var(--color-text-secondary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎨 LIGHT THEME: MODALS & POPUPS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+.light-theme .modal-content,
+.light-theme .search-results-popup {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: var(--shadow-large) !important;
+  border-radius: 12px !important;
+}
+
+.light-theme .modal-header,
+.light-theme .search-popup-header {
+  border-bottom-color: var(--color-border-subtle) !important;
+}
+
+.light-theme .modal-title,
+.light-theme .search-popup-header h3 {
+  color: var(--color-text-primary) !important;
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.light-theme .modal-close-btn,
+.light-theme .close-popup-btn {
+  color: var(--color-text-muted) !important;
+  background: transparent !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .modal-close-btn:hover,
+.light-theme .close-popup-btn:hover {
+  color: var(--color-text-primary) !important;
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .modal-body {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .modal-details {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .modal-details strong {
+  color: var(--color-text-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎯 LIGHT THEME: AVATAR COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .wingman-avatar-container {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 50% !important;
+}
+
+.light-theme .avatar-message {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+}
+
+.light-theme .sidebar-toggle-avatar {
+  background: var(--color-bg-secondary) !important;
+  border: 2px solid var(--color-border-normal) !important;
+  border-radius: 50% !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔧 LIGHT THEME: SCROLLBARS & SPECIAL ELEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .diary-main::-webkit-scrollbar,
+.light-theme .search-results-list::-webkit-scrollbar,
+.light-theme .compact-records-list::-webkit-scrollbar,
+.light-theme .chatbot-messages::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.light-theme .diary-main::-webkit-scrollbar-track,
+.light-theme .search-results-list::-webkit-scrollbar-track,
+.light-theme .compact-records-list::-webkit-scrollbar-track,
+.light-theme .chatbot-messages::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary) !important;
+}
+
+.light-theme .diary-main::-webkit-scrollbar-thumb,
+.light-theme .search-results-list::-webkit-scrollbar-thumb,
+.light-theme .compact-records-list::-webkit-scrollbar-thumb,
+.light-theme .chatbot-messages::-webkit-scrollbar-thumb {
+  background: var(--color-accent-primary) !important;
+  border-radius: 3px !important;
+}
+
+.light-theme .diary-main::-webkit-scrollbar-thumb:hover,
+.light-theme .search-results-list::-webkit-scrollbar-thumb:hover,
+.light-theme .compact-records-list::-webkit-scrollbar-thumb:hover,
+.light-theme .chatbot-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-hover) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🏷️ LIGHT THEME: BADGES & INDICATORS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .record-count,
+.light-theme .usage-badge,
+.light-theme .recommended-badge {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border-radius: 12px !important;
+  padding: 0.25rem 0.75rem !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .entry-preview-mood,
+.light-theme .result-mood,
+.light-theme .compact-record-mood {
+  filter: contrast(1.2) brightness(0.8) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🌟 LIGHT THEME: EMPTY STATES & LOADING
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .diary-empty-state,
+.light-theme .no-results,
+.light-theme .no-records,
+.light-theme .diary-loading,
+.light-theme .mission-loading {
+  color: var(--color-text-muted) !important;
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 2rem !important;
+  text-align: center !important;
+}
+
+.light-theme .diary-empty-icon,
+.light-theme .no-results-icon,
+.light-theme .no-records-icon {
+  color: var(--color-text-muted) !important;
+  opacity: 0.6 !important;
+  font-size: 3rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.light-theme .loading-spinner {
+  border-color: rgba(184, 134, 11, 0.3) !important;
+  border-top-color: var(--color-accent-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ✅ LIGHT THEME: MESSAGES & NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .settings-message.success {
+  background: rgba(34, 139, 34, 0.1) !important;
+  color: var(--color-success) !important;
+  border: 1px solid rgba(34, 139, 34, 0.3) !important;
+}
+
+.light-theme .settings-message.error {
+  background: rgba(220, 20, 60, 0.1) !important;
+  color: var(--color-error) !important;
+  border: 1px solid rgba(220, 20, 60, 0.3) !important;
+}
+
+.light-theme .settings-message.warning {
+  background: rgba(255, 140, 0, 0.1) !important;
+  color: var(--color-warning) !important;
+  border: 1px solid rgba(255, 140, 0, 0.3) !important;
+}
+
+.light-theme .settings-message.info {
+  background: rgba(65, 105, 225, 0.1) !important;
+  color: var(--color-info) !important;
+  border: 1px solid rgba(65, 105, 225, 0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎭 LIGHT THEME: BORDER FIXES & FINAL OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .month-header,
+.light-theme .diary-header,
+.light-theme .search-form,
+.light-theme .diary-footer,
+.light-theme .calendar-header,
+.light-theme .week-header,
+.light-theme .day-header {
+  border-color: var(--color-border-normal) !important;
+}
+
+/* ✅ FOCUS STATES FOR ACCESSIBILITY */
+.light-theme *:focus {
+  outline: 2px solid var(--color-accent-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.light-theme *:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+/* ✅ ENSURE ALL INTERACTIVE ELEMENTS HAVE PROPER HOVER */
+.light-theme button:not([disabled]):hover,
+.light-theme .clickable:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+/* ✅ RESPONSIVE ADJUSTMENTS */
+@media (max-width: 768px) {
+  .light-theme .mission-control-container {
+    padding: 1rem !important;
+  }
+  
+  .light-theme .mission-tab {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .light-theme .mission-item {
+    padding: 0.75rem !important;
+  }
+  
+  .light-theme .dashboard-card,
+  .light-theme .diary-card,
+  .light-theme .calendar-card {
+    padding: 1rem !important;
+  }
+}
+
+/* ✅ ANIMATIONS FOR LIGHT THEME */
+.light-theme .animate-fade-in {
+  animation: lightFadeIn 0.5s ease-in-out;
+}
+
+@keyframes lightFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* ═══════════════════════════════════════════════════════════════
+   🌍 GLOBAL COLOR FIXES - PALE COLORS FOR BETTER AESTHETICS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ✅ GLOBAL: Current Model Display - More Pale Color */
+.current-model-display {
+  background: rgba(180, 200, 220, 0.1) !important;
+  border: 1px solid rgba(180, 200, 220, 0.3) !important;
+  color: #4a5568 !important;
+}
+
+/* ✅ GLOBAL: System Info Banner - More Pale Color */
+.system-info-banner {
+  background: rgba(160, 180, 200, 0.1) !important;
+  border: 1px solid rgba(160, 180, 200, 0.3) !important;
+  color: #4a5568 !important;
+}
+
+/* ✅ GLOBAL: Selection Feedback - More Pale Color */
+.selection-feedback {
+  background: rgba(200, 180, 160, 0.1) !important;
+  border: 1px solid rgba(200, 180, 160, 0.3) !important;
+  color: #4a5568 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎯 LIGHT THEME: AVATAR PAGE COMPLETE STYLING
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .profile-container,
+.light-theme .avatar-page-container,
+.light-theme .wingman-designer-container {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--color-text-primary) !important;
+  padding: 2rem !important;
+}
+
+.light-theme .profile-header,
+.light-theme .avatar-preview-section,
+.light-theme .wingman-preview {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .profile-avatar,
+.light-theme .wingman-avatar-large,
+.light-theme .current-avatar {
+  border: 3px solid var(--color-accent-primary) !important;
+  box-shadow: 0 0 20px var(--color-accent-glow) !important;
+}
+
+.light-theme .profile-name,
+.light-theme .wingman-name,
+.light-theme .avatar-section-title {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+}
+
+.light-theme .profile-email,
+.light-theme .wingman-description,
+.light-theme .avatar-section-description {
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .profile-stats,
+.light-theme .wingman-traits,
+.light-theme .avatar-stats {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+}
+
+.light-theme .profile-stat,
+.light-theme .trait-tag,
+.light-theme .avatar-stat {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .profile-stat:nth-child(even),
+.light-theme .trait-tag:nth-child(even) {
+  background: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+}
+
+.light-theme .stat-count,
+.light-theme .stat-number {
+  color: var(--color-accent-primary) !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+}
+
+.light-theme .stat-label {
+  color: var(--color-text-muted) !important;
+}
+
+.light-theme .avatar-options,
+.light-theme .personality-grid,
+.light-theme .customization-panel {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .avatar-option,
+.light-theme .personality-card {
+  background: var(--color-bg-tertiary) !important;
+  border: 2px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.light-theme .avatar-option:hover,
+.light-theme .personality-card:hover {
+  background: var(--color-bg-card) !important;
+  border-color: var(--color-accent-primary) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .avatar-option.selected,
+.light-theme .personality-card.selected {
+  background: rgba(184, 134, 11, 0.1) !important;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.2) !important;
+}
+
+.light-theme .wingman-example,
+.light-theme .sample-message,
+.light-theme .wingman-bubble {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .wingman-usage-info {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  color: var(--color-text-secondary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔔 LIGHT THEME: NOTIFICATIONS PAGE COMPLETE STYLING
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .notifications-container,
+.light-theme .notifications-page {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--color-text-primary) !important;
+  padding: 2rem !important;
+}
+
+.light-theme .notifications-header {
+  background: var(--color-bg-secondary) !important;
+  border-bottom: 1px solid var(--color-border-normal) !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 1.5rem 2rem !important;
+}
+
+.light-theme .notifications-title {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+}
+
+.light-theme .notifications-stats,
+.light-theme .notification-summary {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.light-theme .notification-item,
+.light-theme .mission-item {
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  color: var(--color-text-secondary) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  margin-bottom: 0.75rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.light-theme .notification-item:hover,
+.light-theme .mission-item:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-accent-primary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .notification-item.unread {
+  border-left: 3px solid var(--color-accent-primary) !important;
+  background: rgba(184, 134, 11, 0.05) !important;
+}
+
+.light-theme .notification-item.read {
+  opacity: 0.8 !important;
+  border-left: 3px solid var(--color-border-normal) !important;
+}
+
+.light-theme .notification-title,
+.light-theme .mission-objective {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .notification-message,
+.light-theme .notification-meta,
+.light-theme .mission-meta {
+  color: var(--color-text-muted) !important;
+}
+
+.light-theme .notification-time,
+.light-theme .mission-time {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-muted) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 4px !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.85rem !important;
+}
+
+.light-theme .notification-actions,
+.light-theme .mission-actions {
+  background: transparent !important;
+}
+
+.light-theme .notification-btn,
+.light-theme .mission-action-btn {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: 6px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.light-theme .notification-btn:hover,
+.light-theme .mission-action-btn:hover {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-accent-secondary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .notification-btn.mark-read {
+  background: var(--color-success) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-success) !important;
+}
+
+.light-theme .notification-btn.delete {
+  background: var(--color-error) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-error) !important;
+}
+
+.light-theme .notifications-empty,
+.light-theme .no-notifications {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 2rem !important;
+  text-align: center !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎪 LIGHT THEME: SIDEBAR COMPLETE STYLING (NO DUPLICATES)
+   ═══════════════════════════════════════════════════════════════ */
+
+.light-theme .sidebar {
+  background: var(--color-bg-sidebar) !important;
+  border-right: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.light-theme .sidebar-header {
+  background: var(--color-bg-secondary) !important;
+  border-bottom: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .sidebar-title {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 700 !important;
+}
+
+.light-theme .sidebar-link {
+  color: var(--color-text-secondary) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.light-theme .sidebar-link:hover {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-accent-primary) !important;
+  transform: translateX(2px) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.light-theme .sidebar-link.active {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: var(--color-text-primary) !important;
+  border-left: 3px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .sidebar-badge {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border-radius: 10px !important;
+  padding: 0.2rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+
+.light-theme .sidebar-submenu {
+  background: var(--color-bg-tertiary) !important;
+  border-left: 2px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .sidebar-submenu-item {
+  color: var(--color-text-muted) !important;
+  border-radius: 6px !important;
+}
+
+.light-theme .sidebar-submenu-item:hover {
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
+  border-left: 2px solid var(--color-accent-primary) !important;
+}
+
+.light-theme .theme-toggle-btn {
+  background: var(--color-bg-tertiary) !important;
+  border: 1px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: 6px !important;
+  padding: 0.3rem 0.6rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.light-theme .theme-toggle-btn:hover {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border-color: var(--color-accent-secondary) !important;
+  transform: scale(1.05) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🏠 LIGHT THEME: BODY BACKGROUND OVERRIDE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ✅ CRITICAL: Login page should show light theme background */
+body.light-theme.login-page {
+  background: url('./assets/backgrounds/light-theme.png') center center / cover no-repeat fixed !important;
+}
+
+body.light-theme:not(.login-page) {
+  background: url('./assets/backgrounds/light-theme.png') center center / cover no-repeat fixed !important;
+}
+
+/* ✅ ENSURE: Light theme always shows correct background */
+.light-theme .login-bg {
+  background: url('./assets/backgrounds/light-theme.png') center center / cover no-repeat fixed !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔍 LIGHT THEME: FINAL FIXES & POLISH
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ✅ ANIMATIONS: Light theme compatible */
+.light-theme .animate-pulse {
+  animation: lightPulse 2s infinite;
+}
+
+@keyframes lightPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(184, 134, 11, 0.3);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 16px rgba(184, 134, 11, 0.5);
+  }
+}
+
+/* ✅ GOLDEN SCAN ANIMATION for light theme */
+@keyframes light-golden-scan {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+.light-theme .mission-scan {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(184, 134, 11, 0.3),
+    transparent
+  );
+  animation: light-golden-scan 2s infinite;
+}
+
+/* ✅ HIGH CONTRAST: Ensure readability */
+.light-theme .text-contrast {
+  color: var(--color-text-primary) !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ✅ FINAL OVERRIDE: Important states */
+.light-theme .hidden {
+  display: none !important;
+}
+
+.light-theme .visible {
+  display: block !important;
+}
+
+.light-theme .disabled {
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📱 LIGHT THEME: RESPONSIVE MOBILE ADJUSTMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .light-theme .dashboard-card,
+  .light-theme .summary-card,
+  .light-theme .settings-card {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .light-theme .sidebar {
+    width: 280px !important;
+    left: -280px !important;
+  }
+  
+  .light-theme .sidebar-toggle {
+    background: var(--color-bg-tertiary) !important;
+    border: 1px solid var(--color-border-normal) !important;
+    border-radius: 0 8px 8px 0 !important;
+  }
+  
+  .light-theme .main-content-wrapper.sidebar-visible {
+    margin-left: 0 !important;
+  }
+  
+  .light-theme .mission-control-container {
+    padding: 1rem !important;
+  }
+  
+  .light-theme .notification-item {
+    padding: 0.75rem !important;
+  }
+  
+  .light-theme .task-item,
+  .light-theme .event-item {
+    padding: 0.75rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ✅ LIGHT THEME: COMPLETION MARKER
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 🎉 LIGHT THEME COMPLETE: All components styled with brown/white theme
+   - Cards: White backgrounds with brown accents
+   - Text: Dark text on light backgrounds for contrast
+   - Buttons: Brown gradient primary, white secondary
+   - Inputs: White with brown focus states
+   - Headers: Brown gradient text
+   - Sidebar: Fixed toggle and proper styling
+   - Avatar: Complete styling added
+   - Notifications: Complete styling added
+   - Settings: Brown sections with proper contrast
+   - All containers: Proper brown/white alternating
+   - Global fixes: Pale colors applied
+   - Mobile: Responsive adjustments included
+*/
+
+/* End of Light Theme Implementation */

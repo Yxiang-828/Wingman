@@ -9,6 +9,21 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   ├── Task.ts
 │   └── user.ts
 ├── assets/
+│   ├── backgrounds/
+│   │   ├── videos/
+│   │   │   ├── dandere-theme.mp4
+│   │   │   ├── dark-theme.mp4
+│   │   │   ├── kuudere-theme.mp4
+│   │   │   ├── light-theme.mp4
+│   │   │   ├── tsundere-theme.mp4
+│   │   │   └── yandere-theme.mp4
+│   │   ├── dandere-theme.png
+│   │   ├── dark-theme.png
+│   │   ├── kuudere-theme.png
+│   │   ├── light-theme.png
+│   │   ├── tsundere-theme.png
+│   │   ├── tsundere1.png
+│   │   └── yandere-theme.png
 │   ├── moody.icns
 │   ├── moody.ico
 │   ├── moody.png
@@ -103,7 +118,6 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   ├── WelcomePopup.css
 │   │   └── WelcomePopup.tsx
 │   ├── Sidebar/
-│   │   ├── index.tsx
 │   │   ├── MiniCalendar.css
 │   │   ├── MiniCalendar.tsx
 │   │   ├── NavSection.tsx
@@ -120,7 +134,6 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   └── llmConfig.ts
 ├── context/
 │   ├── AuthContext.tsx
-│   ├── BackgroundContext.tsx
 │   ├── ChatContext.tsx
 │   ├── DataContext.tsx
 │   ├── DiaryContext.tsx
@@ -171,6 +184,7 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   ├── api.ts
 │   ├── auth.ts
 │   ├── AuthStateManager.ts
+│   ├── colorUtils.ts
 │   ├── dateUtils.ts
 │   ├── debounce.ts
 │   ├── debug.ts
