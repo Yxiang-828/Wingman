@@ -161,8 +161,8 @@
 .light-theme .task-item,
 .light-theme .event-item,
 .light-theme .page-container,
-.light-theme .mission-item,
 .light-theme .notification-item,
+.light-theme .mission-control-header,
 .light-theme .day-card,
 .light-theme .settings-container,
 .light-theme .mission-control-container,
@@ -192,7 +192,6 @@
 .light-theme .nav-container,
 .light-theme .login-card,
 .light-theme .settings-section,
-.light-theme .mission-category-header,
 .light-theme .mission-category-empty,
 .light-theme .recent-records-container,
 .light-theme .compact-record-item,
@@ -215,10 +214,14 @@
 .light-theme .tooltip-container,
 .light-theme .floating-panel,
 .light-theme .floating-view-selector,
+.light-theme .mission-standby,
 .light-theme .sidebar-toggle::before {
   background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
 }
-
+.light-theme .mission-category-header,
+.light-theme .mission-item{
+  background: #c1bfa2 !important;
+}
 /* Specialized Container Overrides */
 .light-theme .settings-section {
   background: var(--color-accent-primary) !important;
@@ -230,13 +233,6 @@
 .light-theme .item-time {
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.7);
-}
-
-.light-theme .mission-category-header {
-  background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
-  color: var(--color-text-inverse) !important;
-  border-bottom: 1px solid var(--color-accent-secondary) !important;
-  padding: 1.5rem 2rem !important;
 }
 
 .light-theme .mission-category-empty {
@@ -331,6 +327,7 @@
 .light-theme .day-view-date,
 .light-theme .settings-main-title,
 .light-theme .settings-card-title,
+.light-theme .mission-objective,
 .light-theme .model-provider-title,
 .light-theme .theme-option-title,
 .light-theme .item-title {
@@ -358,6 +355,7 @@
 .light-theme .day-form-select,
 .light-theme .model-select,
 .light-theme .theme-select,
+.light-theme .mission-timer,
 .light-theme .diary-entry-input,
 .light-theme .mood-select,
 .light-theme .today-btn-compact,
@@ -365,6 +363,7 @@
 .light-theme .clear-filters-btn,
 .light-theme .search-button,
 .light-theme .event-time,
+.light-theme .mission-category-content,
 .light-theme .day-view-tab,
 .light-theme .day-stat-card  {
   color: #600a0a !important;
@@ -897,7 +896,6 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: rgba(184, 134, 11, 0.15) !important;
   cursor: pointer;
   transition: all 0.25s ease;
   color: var(--color-text-primary);
