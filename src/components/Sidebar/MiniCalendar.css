@@ -1,62 +1,105 @@
 /* MiniCalendar.css */
 
-/* Shrink size */
+/* ═══════════════════════════════════════════════════════════════
+   📅 MINI CALENDAR - DUAL THEME SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════
+   🌙 DEFAULT DARK THEME BASE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base calendar container */
 .react-calendar--small {
   font-size: 10px;
   max-width: 220px;
   overflow: visible;
-  background: transparent;
+  background: linear-gradient(145deg, rgba(15, 15, 25, 0.85), rgba(25, 25, 40, 0.9));
   border-radius: 12px;
-  box-shadow: 0 2px 12px 0 var(--shadow-red, rgba(196, 70, 70, 0.3));
+  box-shadow: 0 2px 12px rgba(100, 108, 255, 0.15);
+  border: 1px solid rgba(100, 108, 255, 0.2);
   padding: 10px 0 12px 0;
-  transition: transform 0.15s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
 }
 
 .react-calendar--small:hover {
-  box-shadow: 0 4px 16px 0 var(--shadow-red-hover, rgba(196, 70, 70, 0.4));
+  box-shadow: 0 4px 16px rgba(100, 108, 255, 0.25);
+  transform: translateY(-2px);
+  border-color: rgba(100, 108, 255, 0.3);
 }
 
-/* Optional: adjust tile padding for compactness */
+/* Calendar tiles (day cells) */
 .react-calendar--small .react-calendar__tile {
   padding: 8px 6px;
   position: relative;
   overflow: visible;
   box-sizing: border-box;
   background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-/* Tremble animation on hover */
+/* Tile hover effects */
 .react-calendar--small .react-calendar__tile:hover,
 .react-calendar--small .react-calendar__tile:active,
 .react-calendar--small .react-calendar__tile:focus {
-  box-shadow: 0 0 12px 2px var(--accent-primary, #646cff),
-    0 0 2px 1px var(--accent-secondary, #535bf2);
-  animation: tremble 0.25s ease-in-out;
-  cursor: pointer;
+  background: rgba(100, 108, 255, 0.15);
+  color: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 8px rgba(100, 108, 255, 0.4);
+  animation: gentle-tremble 0.3s ease-in-out;
   z-index: 2;
   position: relative;
 }
 
-/* Ensure days are visible */
+/* Days grid container */
 .react-calendar--small .react-calendar__month-view__days {
   overflow: visible;
 }
 
-/* Navigation styles */
+/* Navigation header */
 .react-calendar--small .react-calendar__navigation {
-  background: var(--color-bg-card, #1e1e1e);
+  background: rgba(20, 20, 35, 0.6);
   z-index: 3;
   position: relative;
   overflow: visible;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
+  /* CENTERING NAVIGATION */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 4px 8px !important;
 }
 
-/* Navigation label styles */
+/* Navigation buttons */
+.react-calendar--small .react-calendar__navigation button {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 4px 8px;
+  
+}
+
+.react-calendar--small .react-calendar__navigation button:hover {
+  background: rgba(100, 108, 255, 0.15);
+  color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+/* Navigation label (month/year) */
 .react-calendar--small .react-calendar__navigation__label {
   margin-left: 4px;
   margin-right: 4px;
   margin-bottom: 4px;
-  font-size: 0.6rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
   border-radius: 6px;
   background: none;
   box-shadow: none;
@@ -65,23 +108,39 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  color: var(--color-text) !important;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
 }
 
-/* Today highlight */
+/* Week day names */
+.react-calendar--small .react-calendar__month-view__weekdays {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.react-calendar--small .react-calendar__month-view__weekdays__weekday {
+  padding: 4px;
+  text-align: center;
+}
+
+/* Today highlight - Dark theme */
 .today-highlight {
-  color: var(--color-text-inverse, #23232b) !important;
-  border-radius: 4px !important;
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.3), rgba(100, 108, 255, 0.2));
+  color: rgba(255, 255, 255, 1) !important;
+  border-radius: 6px !important;
   font-weight: bold;
-  box-shadow: 0 0 0 1px var(--color-warning-light, #ffd966aa),
-    0 0 1px 0.5px var(--color-warning-fade, #ffd96655);
+  box-shadow: 0 0 12px rgba(100, 108, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(100, 108, 255, 0.5);
   box-sizing: border-box;
   position: relative;
   z-index: 1;
   overflow: visible;
 }
 
-/* ✅ SIMPLIFIED: Single ping indicator */
+/* Activity indicators */
 .day-ping {
   position: absolute;
   top: 2px;
@@ -95,21 +154,19 @@
   height: 8px;
   border-radius: 50%;
   background: linear-gradient(45deg, #646cff, #4ade80);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0; /* Hide text by default */
+  font-size: 0;
   font-weight: 600;
   line-height: 1;
-  box-shadow: 
-    0 0 6px rgba(100, 108, 255, 0.6),
-    0 1px 3px rgba(0, 0, 0, 0.4);
-  animation: activityPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(100, 108, 255, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+  animation: activity-pulse 2s ease-in-out infinite;
   transition: all 0.2s ease;
 }
 
-/* ✅ HOVER: Expand and show count on tile hover */
+/* Hover expand activity indicator */
 .react-calendar--small .react-calendar__tile:hover .activity-ping {
   width: 16px;
   height: 16px;
@@ -117,16 +174,120 @@
   color: white;
   transform: scale(1.1);
   z-index: 10;
-  animation: none; /* Stop pulsing on hover */
+  animation: none;
 }
 
-/* ✅ HOVER: Show actual count on hover */
 .react-calendar--small .react-calendar__tile:hover .activity-ping::after {
   content: attr(data-count);
 }
 
-/* ✅ PULSE: Gentle animation for active days */
-@keyframes activityPulse {
+/* ═══════════════════════════════════════════════════════════════
+   ☀️ LIGHT THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Base calendar container - Light theme */
+.light-theme .react-calendar--small {
+  background: linear-gradient(145deg, rgba(248, 248, 240, 0.95), rgba(255, 255, 250, 0.98));
+  border: 1px solid rgba(184, 134, 11, 0.3);
+  box-shadow: 0 2px 12px rgba(184, 134, 11, 0.15);
+  color: #600a0a;
+}
+
+.light-theme .react-calendar--small:hover {
+  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.25);
+  border-color: rgba(184, 134, 11, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Calendar tiles - Light theme */
+.light-theme .react-calendar--small .react-calendar__tile {
+  color: rgba(96, 10, 10, 0.8);
+  background: transparent;
+}
+
+.light-theme .react-calendar--small .react-calendar__tile:hover,
+.light-theme .react-calendar--small .react-calendar__tile:active,
+.light-theme .react-calendar--small .react-calendar__tile:focus {
+  background: rgba(184, 134, 11, 0.15);
+  color: rgba(96, 10, 10, 1);
+  box-shadow: 0 0 8px rgba(184, 134, 11, 0.4);
+}
+
+/* Navigation - Light theme */
+.light-theme .react-calendar--small .react-calendar__navigation {
+  background: rgba(245, 245, 235, 0.8);
+  border-bottom: 1px solid rgba(184, 134, 11, 0.2);
+}
+
+.light-theme .react-calendar--small .react-calendar__navigation button {
+  color: rgba(96, 10, 10, 0.8);
+}
+
+.light-theme .react-calendar--small .react-calendar__navigation button:hover {
+  background: rgba(184, 134, 11, 0.15);
+  color: rgba(96, 10, 10, 1);
+}
+
+/* Navigation label - Light theme */
+.light-theme .react-calendar--small .react-calendar__navigation__label {
+  color: #600a0a;
+  font-weight: 700;
+}
+
+/* Week day names - Light theme */
+.light-theme .react-calendar--small .react-calendar__month-view__weekdays {
+  color: rgba(96, 10, 10, 0.6);
+}
+
+/* Today highlight - Light theme */
+.light-theme .today-highlight {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.25), rgba(218, 163, 75, 0.2)) !important;
+  color: #600a0a !important;
+  border: 1px solid rgba(184, 134, 11, 0.5) !important;
+  box-shadow: 0 0 12px rgba(184, 134, 11, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  font-weight: bold;
+}
+
+/* Activity indicators - Light theme */
+.light-theme .activity-ping {
+  background: linear-gradient(45deg, #b8860b, #daa520);
+  border: 1px solid rgba(96, 10, 10, 0.5);
+  box-shadow: 0 0 6px rgba(184, 134, 11, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Adjacent month days - muted styling */
+.react-calendar--small .react-calendar__month-view__days__day--neighboringMonth {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.light-theme .react-calendar--small .react-calendar__month-view__days__day--neighboringMonth {
+  color: rgba(96, 10, 10, 0.3);
+}
+
+/* Weekend styling */
+.react-calendar--small .react-calendar__month-view__days__day--weekend {
+  color: rgba(255, 180, 180, 0.9);
+}
+
+.light-theme .react-calendar--small .react-calendar__month-view__days__day--weekend {
+  color: rgba(139, 69, 19, 0.8);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎨 ANIMATIONS & EFFECTS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Gentle tremble animation */
+@keyframes gentle-tremble {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-0.5px); }
+  50% { transform: translateX(0.5px); }
+  75% { transform: translateX(-0.5px); }
+  100% { transform: translateX(0); }
+}
+
+/* Activity pulse animation */
+@keyframes activity-pulse {
   0%, 100% { 
     transform: scale(1);
     box-shadow: 
@@ -141,11 +302,96 @@
   }
 }
 
-/* Tremble keyframes */
-@keyframes tremble {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-1px); }
-  50% { transform: translateX(1px); }
-  75% { transform: translateX(-1px); }
-  100% { transform: translateX(0); }
+/* Light theme activity pulse */
+.light-theme .activity-ping {
+  animation: light-activity-pulse 2s ease-in-out infinite;
+}
+
+@keyframes light-activity-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 
+      0 0 6px rgba(184, 134, 11, 0.4),
+      0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+  50% { 
+    transform: scale(1.15);
+    box-shadow: 
+      0 0 10px rgba(184, 134, 11, 0.6),
+      0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   📱 RESPONSIVE DESIGN
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .react-calendar--small {
+    max-width: 200px;
+    font-size: 9px;
+  }
+  
+  .react-calendar--small .react-calendar__tile {
+    padding: 6px 4px;
+  }
+  
+  .react-calendar--small .react-calendar__navigation__label {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ♿ ACCESSIBILITY & PERFORMANCE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .react-calendar--small .react-calendar__tile:hover {
+    animation: none;
+  }
+  
+  .activity-ping,
+  .light-theme .activity-ping {
+    animation: none;
+  }
+  
+  .react-calendar--small:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .react-calendar--small {
+    border-width: 2px;
+  }
+  
+  .today-highlight {
+    border-width: 2px !important;
+  }
+  
+  .light-theme .today-highlight {
+    border-width: 2px !important;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.react-calendar--small .react-calendar__tile:focus {
+  outline: 2px solid var(--color-accent-primary, #646cff);
+  outline-offset: 2px;
+}
+
+.light-theme .react-calendar--small .react-calendar__tile:focus {
+  outline-color: rgba(184, 134, 11, 0.8);
+}
+
+/* Performance optimizations */
+.react-calendar--small .react-calendar__tile {
+  will-change: transform, background-color;
+}
+
+.activity-ping {
+  will-change: transform;
 }

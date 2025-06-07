@@ -71,7 +71,15 @@
    ☀️ LIGHT THEME - COMPLETE INVERSION
    ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   ☀️ LIGHT THEME - COMPLETE COMPREHENSIVE COVERAGE
+   ═══════════════════════════════════════════════════════════════ */
+
 .light-theme {
+  /* ═══════════════════════════════════════════════════════════════
+     🎨 ZONE 1: CORE VARIABLES & BASE STYLING
+     ═══════════════════════════════════════════════════════════════ */
+  
   /* Core Variables */
   --color-bg-body: transparent;
   --color-bg-main: rgba(248, 248, 240, 0.95);
@@ -121,16 +129,17 @@
   --theme-scan-animation: light-golden-scan;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   🎨 ZONE 2: COMPONENT CONTAINERS & LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+
 /* Body & Main Containers */
 .light-theme body {
   background: var(--color-bg-body) !important;
   color: var(--color-text-primary) !important;
 }
 
-
-
-/* All Cards & Containers */
-
+/* All Cards & Major Containers */
 .light-theme .summary-card,
 .light-theme .diary-card,
 .light-theme .calendar-card,
@@ -145,19 +154,15 @@
 .light-theme .home-card,
 .light-theme .week-card,
 .light-theme .day-view-header,
-.light-theme .day-stat-card:nth-child(1),
-.light-theme .day-stat-card:nth-child(even),
-.light-theme .day-stat-card:nth-child(3),
+.light-theme .day-stat-card,
 .light-theme .main-content-wrapper,
 .light-theme .app-container,
 .light-theme .day-form,
 .light-theme .task-item,
 .light-theme .event-item,
 .light-theme .page-container,
-.light-theme .event-item,
-.light-theme .task-item,
 .light-theme .mission-item,
-.light-theme .notification-item
+.light-theme .notification-item,
 .light-theme .day-card,
 .light-theme .settings-container,
 .light-theme .mission-control-container,
@@ -168,38 +173,50 @@
 .light-theme .diary-main,
 .light-theme .notifications-container,
 .light-theme .profile-container,
-.light-theme .avatar-page-container {
-  background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
-  border: 1px solid var(--color-border-normal) !important;
-  box-shadow: var(--shadow-card) !important;
-  color: var(--color-text-secondary) !important;
-  border-radius: 12px !important;
+.light-theme .avatar-page-container,
+.light-theme .calendar-week-view,
+.light-theme .week-day,
+.light-theme .month-cell,
+.light-theme .compact-event-item,
+.light-theme .compact-task-item,
+.light-theme .sidebar,
+.light-theme .sidebar-container,
+.light-theme .header,
+.light-theme .header-container,
+.light-theme .dashboard-card,
+.light-theme .navbar,
+.light-theme .nav-container,
+.light-theme .login-card,
+.light-theme .settings-section,
+.light-theme .mission-category-header,
+.light-theme .mission-category-empty,
+.light-theme .recent-records-container,
+.light-theme .compact-record-item,
+.light-theme .search-form,
+.light-theme .detail-popup,
+.light-theme .chatbot-bubble.wingman,
+.light-theme .quote-box,
+.light-theme .datetime-display,
+.light-theme .wingman-avatar-container,
+.light-theme .avatar-message,
+.light-theme .sidebar-toggle-avatar,
+.light-theme .mission-tab,
+.light-theme .profile-settings-container,
+.light-theme .home-stat-card,
+.light-theme .loading-screen,
+.light-theme .error-boundary,
+.light-theme .modal-overlay,
+.light-theme .modal-content,
+.light-theme .popup-container,
+.light-theme .dropdown-menu,
+.light-theme .tooltip-container,
+.light-theme .floating-panel,
+.light-theme .floating-view-selector,
+.light-theme .sidebar-toggle::before {
+  background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
 }
-.light-theme h1, .light-theme h2, .light-theme h3, .light-theme h4, .light-theme h5, .light-theme h6,
-.light-theme .day-stat-value,
-.light-theme .event-title,
-.light-theme input,
-.light-theme textarea,
-.light-theme select,
-.light-theme .diary-textarea,
-.light-theme .login-input {
-    color: #600a0a !important;
-}
-.day-form-select,
-.light-theme .message-input,
-.light-theme .chatbot-input,
-.light-theme .search-input,
-.light-theme .diary-search-input,
-.light-theme .diary-entry-input,
-.light-theme .time-input,
-.light-theme .day-form-input
-{
-  background: rgb(122 77 42 / 50%) !important;
-  color: #600a0a !important;
-}
-.day-view-date {
-  -webkit-text-fill-color: #600a0a !important;
-}
+
+/* Specialized Container Overrides */
 .light-theme .settings-section {
   background: var(--color-accent-primary) !important;
   color: var(--color-text-inverse) !important;
@@ -207,9 +224,13 @@
   border-radius: 12px !important;
   padding: 1.5rem !important;
 }
+.light-theme .item-time {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+}
 
 .light-theme .mission-category-header {
-  background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
+  background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
   color: var(--color-text-inverse) !important;
   border-bottom: 1px solid var(--color-accent-secondary) !important;
   padding: 1.5rem 2rem !important;
@@ -224,35 +245,131 @@
   text-align: center !important;
 }
 
-/* Headers & Navigation */
-.light-theme .header,
-.light-theme .header-container,
-.light-theme .navbar,
-.light-theme .nav-container {
-  background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
+.light-theme .quote-box {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
 }
 
-/* Sidebar */
-.light-theme .sidebar,
-.chatbot-messages  {
- background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
+.light-theme .datetime-display {
+  background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
 }
-.logout-btn::before {
-    background: linear-gradient(135deg, rgb(127 12 12), rgb(159 16 16));
+
+.light-theme .day-stat-card {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
 }
-.light-theme .sidebar-toggle {
-  background: transparent !important;
+
+.light-theme .dashboard-item {
+  background: rgb(218 163 75 / 53%) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+}
+
+.light-theme .diary-entry-preview {
+  background: rgb(218 163 75 / 53%) !important;
+}
+
+.light-theme .home-stat-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid var(--light-border-normal) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.light-theme .home-stat-card:hover {
+  background: rgba(255, 255, 255, 1.0) !important;
+  border-color: var(--light-accent-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🎨 ZONE 3: TEXT, INPUTS, BUTTONS & INTERACTIVE ELEMENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* All Headings & Title Elements */
+.light-theme h1, 
+.light-theme h2, 
+.light-theme h3, 
+.light-theme h4, 
+.light-theme h5, 
+.light-theme h6,
+.light-theme .sidebar-submenu-item,
+.light-theme .day-stat-value,
+.light-theme .event-title,
+.light-theme .task-title,
+.light-theme .mission-title,
+.light-theme .diary-title,
+.light-theme .page-title,
+.light-theme .section-title,
+.light-theme .card-title,
+.light-theme .modal-title,
+.light-theme .popup-title,
+.light-theme .sidebar-title,
+.light-theme .nav-title,
+.light-theme .header-title,
+.light-theme .welcome-text,
+.light-theme .leader-text,
+.light-theme .settings-title,
+.light-theme .profile-title,
+.light-theme .chat-title,
+.light-theme .notification-title,
+.light-theme .calendar-title,
+.light-theme .week-title,
+.light-theme .day-title,
+.light-theme .entry-title,
+.light-theme .result-title,
+.light-theme .compact-record-title,
+.light-theme .search-title,
+.light-theme .category-title,
+.light-theme .mission-category-title,
+.light-theme .week-title,
+.light-theme .day-view-date,
+.light-theme .settings-main-title,
+.light-theme .settings-card-title,
+.light-theme .model-provider-title,
+.light-theme .theme-option-title,
+.light-theme .item-title {
+  color: #600a0a !important;
+  -webkit-text-fill-color: #600a0a !important;
+  background: none !important;
+}
+
+/* All Input Elements */
+.light-theme input,
+.light-theme textarea,
+.light-theme select,
+.light-theme .diary-textarea,
+.light-theme .login-input,
+.light-theme .password-input,
+.light-theme .username-input,
+.light-theme .search-input,
+.light-theme .diary-search-input,
+.light-theme .message-input,
+.light-theme .chatbot-input,
+.light-theme .time-input,
+.light-theme .date-input,
+.light-theme .day-form-input,
+.light-theme .day-form-select,
+.light-theme .model-select,
+.light-theme .theme-select,
+.light-theme .diary-entry-input,
+.light-theme .mood-select,
+.light-theme .date-separator,
+.light-theme .clear-filters-btn,
+.light-theme .search-button,
+.light-theme .event-time,
+.light-theme .day-view-tab  {
+  color: #600a0a !important;
+  -webkit-text-fill-color: #600a0a !important;
+  background: rgb(122 77 42 / 50%) !important;
   border: 1px solid var(--color-border-normal) !important;
-  color: var(--color-text-primary) !important;
-  border-radius: 0 12px 12px 0 !important;
-  padding: 0.5rem !important;
+  border-radius: 8px !important;
 }
-
-.light-theme .sidebar-toggle:hover {
-  background: var(--color-bg-tertiary) !important;
-  border-color: var(--color-accent-primary) !important;
-}
-
 
 .light-theme input:focus,
 .light-theme textarea:focus,
@@ -263,144 +380,114 @@
   outline: none !important;
 }
 
-
-.light-theme .mission-deadline {
-  color: var(--color-text-primary) !important; /* Dark text for light theme */
-  background: rgba(200, 180, 160, 0.15) !important; /* Subtle light background */
-}
-.light-theme .mission-summary {
-  background: var(--color-bg-card) !important; /* Light background */
-  color: var(--color-text-primary) !important; /* Dark text */
-  border-color: var(--color-border-normal) !important; /* Light theme borders */
-}
-.light-theme .diary-date {
-  background: none !important; /* Remove gradient */
-  -webkit-background-clip: unset !important;
-  background-clip: unset !important;
-  -webkit-text-fill-color: var(--color-text-primary) !important; /* Solid black text */
-  color: var(--color-text-primary) !important; /* Fallback */
-}
-.light-theme .recent-records-container {
-  background: var(--color-bg-secondary) !important;
-  border: 1px solid var(--color-border-normal) !important;
-  color: var(--color-text-secondary) !important;
-}
-.light-theme .compact-record-item {
-  background: var(--color-bg-tertiary) !important;
-  border: 1px solid var(--color-border-subtle) !important;
-  color: var(--color-text-primary) !important;
-}
-.light-theme .compact-record-date {
-  background: var(--color-bg-card) !important;
-  color: var(--color-text-muted) !important;
-  border: 1px solid var(--color-border-subtle) !important;
-}
-.light-theme .diary-entry-preview {
-    background: rgb(218 163 75 / 53%) !important;
-}
-.light-theme .search-form {
-  background: var(--color-bg-secondary) !important;
-  border: 1px solid var(--color-border-normal) !important;
-  color: var(--color-text-primary) !important;
-}
-.light-theme .item-time {
-  background: var(--color-bg-tertiary) !important;
-  color: var(--color-text-muted) !important;
-  border: 1px solid var(--color-border-subtle) !important;
-}
-.light-theme .dashboard-item {
-  background: rgb(218 163 75 / 53%) !important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-accent-secondary) !important;
-}
-.light-theme .detail-popup {
-  background: rgba(210, 180, 140, 0.95) !important;
-  border: 2px solid rgba(160, 130, 100, 0.6) !important;
-  color: var(--color-text-primary) !important;
-  box-shadow: var(--shadow-large) !important;
-}
-.light-theme .detail-popup-title {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: var(--color-text-primary) !important;
-}
-/* Text Content with Proper Contrast */
-.light-theme p,
-.light-theme span,
-.light-theme label {
-  color: var(--color-text-secondary) !important;
-  font-weight: 500 !important;
-}
-.light-theme .dashboard-card {
-  background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
-}
-/* All Buttons */
+/* All Primary Buttons - Translucent Golden Base */
 .light-theme .btn-primary,
+.light-theme .header-btn,
 .light-theme .save-settings-btn,
 .light-theme .diary-save-btn,
 .light-theme .search-button,
-.light-theme .login-action-btn {
-  background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-border-strong) !important;
+.light-theme .login-action-btn,
+.light-theme .calendar-btn,
+.light-theme .day-form-btn,
+.light-theme .day-nav-btn,
+.light-theme .hour-btn,
+.light-theme .task-btn,
+.light-theme .event-btn,
+.light-theme .view-btn,
+.light-theme .theme-toggle-btn,
+.light-theme .refresh-data-btn,
+.light-theme .day-refresh-btn,
+.light-theme .load-more-btn,
+.light-theme .chatbot-quick-reply.custom-prompt  {
+  /* Base translucent golden background */
+  background: rgba(184, 134, 11, 0.15) !important;
+  color: rgba(139, 69, 19, 0.9) !important; /* Warm brown text */
+  border: 1px solid rgba(184, 134, 11, 0.3) !important;
   border-radius: 8px !important;
   padding: 0.75rem 1.5rem !important;
+  font-weight: 500 !important;
+  box-shadow: 
+    0 2px 8px rgba(184, 134, 11, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-.light-theme button:not(.btn-primary):not(.save-settings-btn):not(.search-button):not(.login-action-btn) {
-  background: var(--color-bg-secondary) !important;
-  border: 1px solid var(--color-border-normal) !important;
-  color: var(--color-text-primary) !important;
-  border-radius: 6px !important;
-  padding: 0.5rem 1rem !important;
+.light-theme .sidebar-toggle:hover {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-accent-primary) !important;
 }
 
-
-.light-theme .day-stat-card {
-  background: var(--color-accent-primary) !important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-accent-secondary) !important;
-  border-radius: 8px !important;
-  padding: 1rem !important;
-}
-
-
-.light-theme .datetime-display {
-background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
-}
-
-.light-theme .quote-box {
-  background: var(--color-accent-primary) !important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-accent-secondary) !important;
-  border-radius: 12px !important;
-  padding: 1.5rem !important;
-}
-
-.light-theme .stat-number {
-  color: var(--color-accent-primary) !important;
-  font-weight: 700 !important;
-  font-size: 1.5rem !important;
-}
+/* Labels and Secondary Text */
+.light-theme label,
+.light-theme .form-label,
+.light-theme .input-label,
+.light-theme .field-label,
+.light-theme .setting-label,
+.light-theme .mission-label,
+.light-theme .task-label,
+.light-theme .event-label,
+.light-theme p,
+.light-theme span,
 .light-theme .date-text,
-.time-text{
-  color: black !important;
+.light-theme .time-text,
+.light-theme .item-time,
+.light-theme .compact-record-date,
+.light-theme .compact-event-time,
+.light-theme .event-time,
+.light-theme .task-time,
+.light-theme .stat-label {
+  color: #600a0a !important;
+  font-weight: 500 !important;
 }
-.leader-text {
-  -webkit-text-fill-color: black;
+
+/* Gradient Text Elements Override */
+.light-theme .day-view-date,
+.light-theme .stat-number,
+.light-theme .mission-count,
+.light-theme .record-count,
+.light-theme .usage-count,
+.light-theme .notification-count {
+  -webkit-text-fill-color: #600a0a !important;
+  background: none !important;
+  color: #600a0a !important;
 }
-.stat-number {
-  -webkit-text-fill-color: #d18518;
-}
-/* Avatar Components */
-.light-theme .wingman-avatar-container,
-.light-theme .avatar-message,
-.light-theme .sidebar-toggle-avatar {
-  background: var(--color-bg-secondary) !important;
-  border: 1px solid var(--color-border-normal) !important;
+
+/* Special Text Elements */
+.light-theme .mission-deadline {
   color: var(--color-text-primary) !important;
+  background: rgba(200, 180, 160, 0.15) !important;
+}
+
+.light-theme .mission-summary {
+  background: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border-normal) !important;
+}
+
+.light-theme .diary-date {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Interactive Elements */
+.light-theme .sidebar-link,
+.light-theme .nav-link,
+.light-theme .menu-item,
+.light-theme .dropdown-item {
+  color: var(--color-text-secondary) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+}
+
+.light-theme .sidebar-link:hover,
+.light-theme .nav-link:hover {
+  background: var(--color-bg-tertiary) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-accent-primary) !important;
 }
 
 /* Chat Components */
@@ -415,7 +502,7 @@ background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
   border: 1px solid var(--color-border-normal) !important;
 }
 
-/* Mission Control */
+/* Mission Control Elements */
 .light-theme .mission-tab {
   background: var(--color-bg-secondary) !important;
   border: 1px solid var(--color-border-normal) !important;
@@ -430,15 +517,88 @@ background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
   border-color: var(--color-accent-secondary) !important;
 }
 
-/* Login Components */
-.light-theme .login-card {
-  background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
+/* Status Indicators */
+.light-theme .status-badge,
+.light-theme .sidebar-badge,
+.light-theme .notification-badge {
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border: 1px solid var(--color-accent-secondary) !important;
 }
-.light-theme .item-title {
-    color: rgb(0 0 0 / 90%);
+
+.light-theme .status-badge.completed {
+  background: var(--color-success) !important;
+  color: white !important;
 }
-.light-theme element.style {
-  color: rgb(177 0 0 / 50%);
+
+.light-theme .status-badge.pending {
+  background: var(--color-warning) !important;
+  color: white !important;
+}
+
+.light-theme .status-badge.error {
+  background: var(--color-error) !important;
+  color: white !important;
+}
+
+/* Calendar Specific Elements */
+.light-theme .week-day {
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+}
+
+.light-theme .week-day:hover {
+  background: var(--color-bg-hover) !important;
+  border-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .week-day.today {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 10px var(--color-accent-glow) !important;
+}
+
+.light-theme .event-item.meeting {
+  border-left-color: #4169e1 !important;
+}
+
+.light-theme .event-item.personal {
+  border-left-color: #228b22 !important;
+}
+
+.light-theme .event-item.reminder {
+  border-left-color: #dc143c !important;
+}
+
+/* Diary Elements */
+.light-theme .mood-option {
+  background: var(--color-bg-card) !important;
+  border: 2px solid var(--color-border-normal) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.light-theme .mood-option:hover {
+  border-color: var(--color-accent-primary) !important;
+  background: var(--color-bg-hover) !important;
+}
+
+.light-theme .mood-option.selected {
+  border-color: var(--color-accent-primary) !important;
+  background: var(--color-accent-primary) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+/* Profile Elements */
+.light-theme .avatar-option {
+  border: 2px solid var(--color-border-normal) !important;
+}
+
+.light-theme .avatar-option:hover {
+  border-color: var(--color-accent-primary) !important;
+}
+
+.light-theme .avatar-option.selected {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 15px var(--color-accent-glow) !important;
 }
 
 /* Animations */
@@ -452,6 +612,32 @@ background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
   animation: light-golden-scan 2s infinite;
 }
 
+/* Logout Button Special Styling */
+.logout-btn::before {
+  background: linear-gradient(135deg, rgb(127 12 12), rgb(159 16 16));
+}
+
+/* Special Elements */
+.light-theme .detail-popup {
+  background: rgba(210, 180, 140, 0.95) !important;
+  border: 2px solid rgba(160, 130, 100, 0.6) !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: var(--shadow-large) !important;
+}
+
+.light-theme .detail-popup-title {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  color: var(--color-text-inverse) !important;
+}
+
+/* Home Page Special */
+.light-theme .home-title {
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .light-theme .sidebar-toggle {
@@ -463,8 +649,6 @@ background: linear-gradient(145deg,#c1bfa2,#00000026)!important;
     padding: 1rem !important;
   }
 }
-
-
 /* ═══════════════════════════════════════════════════════════════
    🎯 ENHANCED COMPONENT STYLING - All Themes
    ═══════════════════════════════════════════════════════════════ */
