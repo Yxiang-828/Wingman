@@ -26,21 +26,20 @@
 .login-card {
   background: rgba(25, 25, 40, 0.95);
   border-radius: 24px; /* ✅ INCREASED: More rounded corners */
-  padding: 3.5rem 3rem; /* ✅ INCREASED: Much more padding */
+  padding: 2rem 2rem; /* ✅ REDUCED: From 3.5rem 3rem */
   width: 100%;
-  max-width: 480px; /* ✅ INCREASED: Wider card */
-  min-height: 500px; /* ✅ NEW: Minimum height for spaciousness */
+  max-width: 420px; /* ✅ REDUCED: From 480px */
+  min-height: 420px; /* ✅ REDUCED: From 500px */
   border: 1px solid rgba(100, 108, 255, 0.2);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(100, 108, 255, 0.1);
   position: relative;
   z-index: 2;
-  margin: 2rem auto; /* ✅ INCREASED: More margin */
+  margin: 1.5rem auto; /* ✅ INCREASED: More margin */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center; /* ✅ NEW: Center content vertically */
-  gap: 1.5rem; /* ✅ NEW: Consistent spacing between elements */
-  backdrop-filter: blur(12px); /* ✅ NEW: Enhanced glass effect */
+  gap: 1rem; /* ✅ NEW: Consistent spacing between elements */
 }
 
 
@@ -65,15 +64,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem; /* ✅ INCREASED: More space below header */
 }
 
 /* ✅ LOGO: Enhanced logo styling */
 .login-card .logo-img {
   width: 64px; /* ✅ INCREASED: Larger logo */
   height: 64px;
-  margin-bottom: 1rem;
   filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3)); /* ✅ NEW: Glow effect */
 }
 
@@ -102,14 +98,14 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem; /* ✅ INCREASED: More space between form elements */
+  gap: 0.4rem;
   width: 100%;
   max-width: 320px; /* ✅ CONSTRAINED: Form width */
 }
 
 /* ✅ ENHANCED: Input styling */
 .login-input {
-  padding: 1rem 1.5rem; /* ✅ INCREASED: More input padding */
+  padding: 0.4rem 0.4rem;
   border-radius: 12px; /* ✅ INCREASED: More rounded inputs */
   background: rgba(35, 35, 50, 0.8);
   border: 1px solid rgba(100, 108, 255, 0.2);

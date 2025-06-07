@@ -255,35 +255,30 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
     // Set CSS variables based on mood
     switch (moodValue) {
       case "happy":
-        // Remove these lines:
-        // root.style.setProperty("--mood-glow-color", "rgba(255, 180, 50, 0.15)");
-        // root.style.setProperty("--mood-inner-glow", "rgba(255, 140, 50, 0.1)");
+      
         break;
 
       case "sad":
-        // Remove similar lines for sad mood
+      
         break;
 
       case "neutral":
-        // Remove similar lines for neutral mood
+       
         break;
 
       case "excited":
-        // Remove similar lines for excited mood
+    
         break;
 
       case "tired":
-        // Remove similar lines for tired mood
+ 
         break;
 
       case "relaxed":
-        // Remove similar lines for relaxed mood
+
         break;
 
       default:
-      // Remove these lines:
-      // root.style.setProperty("--mood-glow-color", "rgba(255, 180, 50, 0.15)");
-      // root.style.setProperty("--mood-inner-glow", "rgba(255, 140, 50, 0.1)");
     }
   };
 

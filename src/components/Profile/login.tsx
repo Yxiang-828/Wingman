@@ -257,6 +257,8 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     return () => clearTimeout(tiltTimer);
   }, [currentTheme]); // Reset timer when theme changes
 
+  // In your form rendering section, update the structure:
+
   return (
     <div className={`login-bg ${videoLoaded ? "has-video" : ""}`}>
       {themeVideos[currentTheme] && (
@@ -276,134 +278,133 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       <div
         className={`login-card animate-fade-in ${autoTilt ? "auto-tilt" : ""}`}
       >
-        <div className="mb-6 flex flex-col items-center">
+        <div className="login-header">
           <img src={moodIcons[mood]} alt="Logo" className="logo-img" />
-          <h1 className="text-3xl font-bold mb-1">Wingman</h1>
-          <p className="text-accent-primary font-medium mb-2">
-            {step === "login" ? "Welcome back, Leader!" : "Join the Crew!"}
+          <h1 className="login-title">Wingman</h1>
+          <p className="login-subtitle">
+            Your advanced digital companion with AI integration
           </p>
         </div>
+
         {step === "login" ? (
-          <form onSubmit={handleLogin} className="w-72 flex flex-col gap-4">
+          <form onSubmit={handleLogin} className="login-form">
             <input
               type="text"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+              className="login-input"
             />
+            
             <div className="password-field">
               <input
                 type="password"
-                placeholder="Password (max 6 ints)"
+                placeholder="Password (4-6 chars)"
                 value={password}
                 onChange={handlePasswordChange}
                 required
+                className="login-input"
                 maxLength={6}
-                className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition w-full"
               />
-              <div className="password-count">{password.length}/6</div>
+              <span className="password-count">{password.length}/6</span>
             </div>
+            
+            {error && (
+              <div className="login-error">
+                {error}
+              </div>
+            )}
+            
             <button
               type="submit"
-              className="login-action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-2 rounded transition-all"
               disabled={loading}
+              className="login-action-btn"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
-            <button
-              type="button"
-              className="login-action-btn text-accent-primary hover:underline mt-2"
-              onClick={() => setStep("register")}
-            >
-              New user? Register
-            </button>
-            {error && (
-              <div className="error text-red-400 text-center">{error}</div>
-            )}
           </form>
         ) : (
-          <form onSubmit={handleRegister} className="w-72 flex flex-col gap-4">
+          // ✅ COMPLETE REGISTRATION FORM - This was truncated
+          <form onSubmit={handleRegister} className="login-form">
             <input
               type="text"
-              placeholder="Your Name (optional)"
+              placeholder="Full Name (optional)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+              className="login-input"
             />
+            
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="login-input"
+            />
+            
             <input
               type="email"
-              placeholder="Email"
+              placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
+              className="login-input"
             />
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
-            />
+            
             <div className="password-field">
               <input
                 type="password"
-                placeholder="Password (6 chars max)"
+                placeholder="Password (4-6 chars)"
                 value={password}
                 onChange={handlePasswordChange}
                 required
+                className="login-input"
                 maxLength={6}
-                className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition w-full"
               />
-              <div className="password-count">{password.length}/6</div>
+              <span className="password-count">{password.length}/6</span>
             </div>
+            
+            {error && (
+              <div className="login-error">
+                {error}
+              </div>
+            )}
+            
             <button
               type="submit"
-              className="login-action-btn bg-accent-primary hover:bg-accent-secondary text-white font-bold py-2 rounded transition-all"
               disabled={loading}
+              className="login-action-btn"
             >
-              {loading ? "Registering..." : "Register"}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
-            <button
-              type="button"
-              className="login-action-btn text-accent-primary hover:underline mt-2"
-              onClick={() => setStep("login")}
-            >
-              Back to Login
-            </button>
-            {error && (
-              <div className="error text-red-400 text-center">{error}</div>
-            )}
           </form>
         )}
 
-        {/* ✅ THEME INDICATOR: Show current theme */}
-        <div
-          style={{
-            marginTop: "1rem",
-            padding: "0.5rem",
-            textAlign: "center",
-            fontSize: "0.8rem",
-            color: "rgba(255,255,255,0.5)",
-            borderTop: "1px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          Theme:{" "}
-          <span
-            style={{
-              textTransform: "capitalize",
-              color: "rgba(255,255,255,0.8)",
-            }}
+        <div className="login-switch">
+          <p className="login-switch-text">
+            {step === "login" 
+              ? "Don't have an account?" 
+              : "Already have an account?"
+            }
+          </p>
+          <button
+            type="button"
+            onClick={() => setStep(step === "login" ? "register" : "login")}
+            className="text-accent-primary"
           >
-            {currentTheme}
-          </span>
+            {step === "login" ? "Create Account" : "Sign In"}
+          </button>
+        </div>
+
+        <div className="login-theme-indicator">
+          <span>Theme:</span>
+          <span className="theme-name">{currentTheme}</span>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default Login;
