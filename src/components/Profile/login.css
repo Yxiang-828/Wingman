@@ -1,16 +1,17 @@
+/* ✅ KEEP: login-bg for positioning (USED in TSX) */
 .login-bg {
   min-height: 100vh;
   min-width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: linear-gradient(135deg, #12121f 0%, #2d2f6c 100%);
-  background-size: 100% 200px;
-  background-position: 0% 100%;
-  animation: gradient 16s ease infinite;
   position: relative;
+  
+  /* ✅ DEFAULT: Dark theme PNG background */
+  background: #0a0a0f url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
 }
 
+/* ✅ ANIMATIONS: Keep existing animations */
 @keyframes gradient {
   0% {
     background-position: 0% 100%;
@@ -23,20 +24,23 @@
   }
 }
 
+/* ✅ BASE: login-card styling (NO duplicates) */
 .login-card {
-  background: rgba(22, 22, 40, 0.98);
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.3);
-  transition: transform 0.5s cubic-bezier(0.4, 2, 0.6, 1), box-shadow 0.4s;
-  min-width: 260px;
-  max-width: 90vw;
+  background: rgba(25, 25, 40, 0.95);
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(100, 108, 255, 0.1);
+  backdrop-filter: blur(20px);
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   margin: 0 auto;
-  padding: 1.5rem 1.2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-blend-mode: multiply;
-  position: relative;
 }
 
 .login-card:hover {
@@ -59,7 +63,7 @@
   }
 }
 
-/* Center glow with Wingman accent color */
+/* ✅ EFFECTS: Center glow blob */
 .blob {
   position: absolute;
   top: 50%;
@@ -70,7 +74,7 @@
   background: #232347;
   border-radius: 50%;
   filter: blur(50px);
-  opacity: 0.05; /* Very dim glow */
+  opacity: 0.05;
   animation: blob 16s ease infinite;
   pointer-events: none;
   z-index: 0;
@@ -88,15 +92,16 @@
   }
 }
 
+/* ✅ BUTTONS: Login action buttons */
 .login-action-btn {
-  background-color: #1e1e38; /* Dark button */
+  background-color: #1e1e38;
   color: #fff;
-  border: 1px solid rgba(100, 108, 255, 0.3); /* Subtle border */
+  border: 1px solid rgba(100, 108, 255, 0.3);
   font-weight: 600;
   border-radius: 0.7rem;
   padding: 0.85rem 0;
   margin-top: 0.5rem;
-  box-shadow: none; /* No shadow by default */
+  box-shadow: none;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
@@ -109,8 +114,7 @@
 .login-action-btn:hover {
   background-color: #292957;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5),
-              0 0 15px rgba(100, 108, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(100, 108, 255, 0.2);
   border-color: rgba(100, 108, 255, 0.5);
 }
 
@@ -119,21 +123,23 @@
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
+/* ✅ TEXT: Accent styling */
 .text-accent-primary {
-  color: #8186ff; /* Slightly lighter to be visible against dark bg */
+  color: #8186ff;
 }
 
 .text-accent-primary:hover {
   color: #646cff;
 }
 
+/* ✅ LOGO: Image styling */
 .login-card .logo-img {
   width: 48px;
   height: 48px;
   margin-bottom: 0.5rem;
 }
 
-/* Add to Login.css */
+/* ✅ PASSWORD: Field with counter */
 .password-field {
   position: relative;
 }
@@ -145,4 +151,55 @@
   transform: translateY(-50%);
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
+}
+
+/* ✅ THEME BACKGROUNDS: Use body theme classes */
+.light-theme .login-bg {
+  background: #fefdf8 url('../../assets/backgrounds/light-theme.png') center center / cover no-repeat fixed !important;
+}
+
+.light-theme .login-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(200, 180, 140, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 40px rgba(200, 180, 140, 0.2) !important;
+}
+
+.yandere-theme .login-bg {
+  background: #0e0a0d url('../../assets/backgrounds/yandere-theme.png') center center / cover no-repeat fixed !important;
+}
+
+.yandere-theme .login-card {
+  background: rgba(45, 26, 38, 0.95) !important;
+  border-color: rgba(255, 107, 179, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 107, 179, 0.2) !important;
+}
+
+.kuudere-theme .login-bg {
+  background: #0a0d12 url('../../assets/backgrounds/kuudere-theme.png') center center / cover no-repeat fixed !important;
+}
+
+.kuudere-theme .login-card {
+  background: rgba(26, 35, 45, 0.95) !important;
+  border-color: rgba(130, 180, 220, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(130, 180, 220, 0.2) !important;
+}
+
+.tsundere-theme .login-bg {
+  background: #1a0f0a url('../../assets/backgrounds/tsundere-theme.png') center center / cover no-repeat fixed !important;
+}
+
+.tsundere-theme .login-card {
+  background: rgba(61, 38, 32, 0.95) !important;
+  border-color: rgba(255, 107, 66, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 107, 66, 0.2) !important;
+}
+
+.dandere-theme .login-bg {
+  background: #0f0a12 url('../../assets/backgrounds/dandere-theme.png') center center / cover no-repeat fixed !important;
+}
+
+.dandere-theme .login-card {
+  background: rgba(35, 26, 45, 0.95) !important;
+  border-color: rgba(180, 130, 220, 0.3) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(180, 130, 220, 0.2) !important;
 }

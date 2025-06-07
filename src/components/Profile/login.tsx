@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
 import { Auth } from "../../utils/AuthStateManager";
-import "./Login.css";
+import "./login.css";
 
 const moodIcons: Record<string, string> = {
   productive: productiveIcon,
@@ -19,15 +19,14 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mood, setMood] = useState<"productive" | "moody">("productive");
+  const [currentTheme, setCurrentTheme] = useState<string>("dark");
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Maintain a reference to the callback function
     const handleMoodChange = (mood: string) => {
       if (mood === "productive" || mood === "moody") setMood(mood);
     };
 
-    // Register listener and store the cleanup function
     let cleanup: (() => void) | undefined;
     if (window.electronAPI?.onMoodChange) {
       const result = window.electronAPI.onMoodChange(handleMoodChange);
@@ -36,11 +35,47 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       }
     }
 
-    // Return the cleanup function for useEffect
     return () => {
       if (cleanup) cleanup();
     };
-  }, []); // Empty dependency array is fine here
+  }, []);
+
+  // ✅ APPLY THEME: Read from localStorage and apply to body
+  useEffect(() => {
+    const loadSavedTheme = () => {
+      try {
+        const savedSettings = localStorage.getItem("userSettings");
+        if (savedSettings) {
+          const settings = JSON.parse(savedSettings);
+          if (settings.theme) {
+            console.log(`🎨 Login: Applying saved theme: ${settings.theme}`);
+            setCurrentTheme(settings.theme);
+
+            // Apply theme class to body (matching ThemeContext behavior)
+            const body = document.body;
+            body.classList.remove(
+              "dark-theme",
+              "light-theme",
+              "yandere-theme",
+              "kuudere-theme",
+              "tsundere-theme",
+              "dandere-theme"
+            );
+
+            if (settings.theme !== "dark") {
+              body.classList.add(`${settings.theme}-theme`);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load saved theme:", e);
+      }
+    };
+
+    loadSavedTheme();
+    // Also try after a short delay in case localStorage is still loading
+    setTimeout(loadSavedTheme, 100);
+  }, []);
 
   // Password change handler with length validation
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,7 +239,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="p-3 rounded ... "
+              className="p-3 rounded bg-gray-900 border border-gray-700 focus:border-accent-primary focus:outline-none transition"
             />
             <div className="password-field">
               <input
@@ -292,6 +327,28 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             )}
           </form>
         )}
+
+        {/* ✅ THEME INDICATOR: Show current theme */}
+        <div
+          style={{
+            marginTop: "1rem",
+            padding: "0.5rem",
+            textAlign: "center",
+            fontSize: "0.8rem",
+            color: "rgba(255,255,255,0.5)",
+            borderTop: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          Theme:{" "}
+          <span
+            style={{
+              textTransform: "capitalize",
+              color: "rgba(255,255,255,0.8)",
+            }}
+          >
+            {currentTheme}
+          </span>
+        </div>
       </div>
     </div>
   );
