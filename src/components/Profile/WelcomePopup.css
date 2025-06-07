@@ -55,29 +55,158 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.popup-overlay.visible {
+  opacity: 1;
 }
 
 .popup-card {
-  background: var(--bg-card, #1e1e1e);
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 16px rgba(100, 108, 255, 0.15);
-  padding: 2rem;
-  min-width: 320px;
+  background: linear-gradient(135deg, rgba(25, 25, 45, 0.95), rgba(35, 35, 60, 0.98));
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(100, 108, 255, 0.2);
+  padding: 2.5rem;
+  min-width: 400px;
   max-width: 90%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transform: translateY(0);
-  animation: popup-appear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateY(20px) scale(0.95);
+  animation: popup-appear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ✅ NEW: Registration popup specific styling */
+.popup-card.registration-popup {
+  min-width: 500px;
+  background: linear-gradient(135deg, rgba(20, 35, 50, 0.95), rgba(30, 45, 65, 0.98));
+  border: 2px solid rgba(100, 108, 255, 0.4);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px rgba(100, 108, 255, 0.3);
+}
+
+.popup-card.registration-popup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(100, 108, 255, 0.1), transparent);
+}
+
+/* ✅ NEW: Welcome header for registration */
+.welcome-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #646cff, #7c7aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.welcome-subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+/* ✅ NEW: Registration info section */
+.registration-info {
+  background: rgba(15, 25, 40, 0.6);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.info-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.feature-list li {
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.feature-list li:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.feature-list li:last-child {
+  border-bottom: none;
+}
+
+/* ✅ NEW: Enhanced popup icon */
+.popup-icon {
+  filter: drop-shadow(0 4px 12px rgba(100, 108, 255, 0.4));
+}
+
+
+/* ✅ NEW: Enhanced popup message */
+.popup-message {
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+/* ✅ NEW: Enhanced action button */
+.action-btn {
+  position: relative;
+  z-index: 1;
+  font-size: 1.1rem;
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.action-btn:hover::before {
+  left: 100%;
 }
 
 @keyframes popup-appear {
   0% {
     opacity: 0;
-    transform: translateY(20px) scale(0.96);
+    transform: translateY(30px) scale(0.9);
   }
   100% {
     opacity: 1;
@@ -86,9 +215,97 @@
 }
 
 .logo-img {
-  transition: transform 0.3s;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3));
 }
 
 .logo-img:hover {
-  transform: rotate(15deg) scale(1.1);
+  transform: rotate(5deg) scale(1.05);
+}
+
+/* ✅ NEW: Theme-specific styling */
+.yandere-theme .popup-card {
+  background: linear-gradient(135deg, rgba(45, 26, 38, 0.95), rgba(55, 36, 48, 0.98)) !important;
+  border-color: rgba(255, 107, 179, 0.4) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 107, 179, 0.3) !important;
+}
+
+.kuudere-theme .popup-card {
+  background: linear-gradient(135deg, rgba(26, 35, 45, 0.95), rgba(36, 45, 55, 0.98)) !important;
+  border-color: rgba(130, 180, 220, 0.4) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(130, 180, 220, 0.3) !important;
+}
+
+.tsundere-theme .popup-card {
+  background: linear-gradient(135deg, rgba(61, 38, 32, 0.95), rgba(71, 48, 42, 0.98)) !important;
+  border-color: rgba(255, 107, 66, 0.4) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 107, 66, 0.3) !important;
+}
+
+.dandere-theme .popup-card {
+  background: linear-gradient(135deg, rgba(35, 26, 45, 0.95), rgba(45, 36, 55, 0.98)) !important;
+  border-color: rgba(180, 130, 220, 0.4) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(180, 130, 220, 0.3) !important;
+}
+
+/* Pro tip section styling */
+.pro-tip {
+  background: rgba(100, 108, 255, 0.1);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.tip-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  margin: 0;
+  text-align: center;
+}
+
+.tip-text kbd {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile responsiveness for pro tip */
+@media (max-width: 768px) {
+  .tip-text {
+    font-size: 0.8rem;
+  }
+  
+  .tip-text kbd {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
+  }
+}
+
+/* ✅ NEW: Mobile responsiveness */
+@media (max-width: 768px) {
+  .popup-card {
+    min-width: 320px;
+    margin: 1rem;
+    padding: 2rem;
+  }
+  
+  .popup-card.registration-popup {
+    min-width: 350px;
+  }
+  
+  .welcome-title {
+    font-size: 1.6rem;
+  }
+  
+  .feature-list {
+    font-size: 0.9rem;
+  }
 }

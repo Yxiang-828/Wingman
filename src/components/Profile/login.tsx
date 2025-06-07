@@ -10,6 +10,7 @@ import yandereVideo from "../../assets/backgrounds/videos/yandere-theme.mp4";
 import kuudereVideo from "../../assets/backgrounds/videos/kuudere-theme.mp4";
 import tsundereVideo from "../../assets/backgrounds/videos/tsundere-theme.mp4";
 import dandereVideo from "../../assets/backgrounds/videos/dandere-theme.mp4";
+import WelcomePopup from "./WelcomePopup";
 
 const moodIcons: Record<string, string> = {
   productive: productiveIcon,
@@ -28,6 +29,8 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [currentTheme, setCurrentTheme] = useState<string>("dark");
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [autoTilt, setAutoTilt] = useState(false); // Add this state for auto-tilt
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [welcomeMessage, setWelcomeMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -194,12 +197,12 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
     try {
       const userData = {
-        name: name || undefined, // optional
+        name: name || undefined,
         email,
         password,
-        username, // required
+        username,
       };
-      // Use absolute URL for all fetch calls
+
       const apiUrl = "http://localhost:8080/api/v1/user/register";
 
       const response = await fetch(apiUrl, {
@@ -223,17 +226,30 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       // Store user data
       localStorage.setItem("user", JSON.stringify(result));
 
-      // Call the onLogin callback
-      onLogin(result);
-
-      // Navigate to profile setup
-      navigate("/profile", { state: { showSetup: true } });
+      // Show enhanced welcome popup with app introduction
+      const displayName = name || username || "New User";
+      setWelcomeMessage(
+        `Registration successful! 🎉\n\nYour Wingman account is ready. Let's explore all the amazing features together!`
+      );
+      setShowWelcomePopup(true);
     } catch (err: any) {
       console.error("Registration error:", err);
       setError("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ NEW: Handle welcome popup close
+  const handleWelcomeClose = () => {
+    setShowWelcomePopup(false);
+
+    // Now proceed with login flow
+    const userData = JSON.parse(localStorage.getItem("user") || "{}");
+    onLogin(userData);
+
+    // Navigate to profile setup
+    navigate("/profile", { state: { showSetup: true } });
   };
 
   // Add handlers
@@ -296,7 +312,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               required
               className="login-input"
             />
-            
+
             <div className="password-field">
               <input
                 type="password"
@@ -309,13 +325,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               />
               <span className="password-count">{password.length}/6</span>
             </div>
-            
-            {error && (
-              <div className="login-error">
-                {error}
-              </div>
-            )}
-            
+
+            {error && <div className="login-error">{error}</div>}
+
             <button
               type="submit"
               disabled={loading}
@@ -334,7 +346,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               onChange={(e) => setName(e.target.value)}
               className="login-input"
             />
-            
+
             <input
               type="text"
               placeholder="Username"
@@ -343,7 +355,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               required
               className="login-input"
             />
-            
+
             <input
               type="email"
               placeholder="Email Address"
@@ -352,7 +364,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               required
               className="login-input"
             />
-            
+
             <div className="password-field">
               <input
                 type="password"
@@ -365,13 +377,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               />
               <span className="password-count">{password.length}/6</span>
             </div>
-            
-            {error && (
-              <div className="login-error">
-                {error}
-              </div>
-            )}
-            
+
+            {error && <div className="login-error">{error}</div>}
+
             <button
               type="submit"
               disabled={loading}
@@ -384,10 +392,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
         <div className="login-switch">
           <p className="login-switch-text">
-            {step === "login" 
-              ? "Don't have an account?" 
-              : "Already have an account?"
-            }
+            {step === "login"
+              ? "Don't have an account?"
+              : "Already have an account?"}
           </p>
           <button
             type="button"
@@ -403,8 +410,19 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
           <span className="theme-name">{currentTheme}</span>
         </div>
       </div>
+
+      {/* ✅ NEW: Welcome Popup */}
+      {showWelcomePopup && (
+        <WelcomePopup
+          message={welcomeMessage}
+          onClose={handleWelcomeClose}
+          icon="🎉"
+          type="registration"
+          username={name || username}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default Login;
