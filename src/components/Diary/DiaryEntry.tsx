@@ -255,56 +255,35 @@ const DiaryEntry: React.FC<DiaryEntryProps> = ({
     // Set CSS variables based on mood
     switch (moodValue) {
       case "happy":
-        root.style.setProperty("--mood-glow-color", "rgba(255, 220, 100, 0.2)");
-        root.style.setProperty(
-          "--mood-inner-glow",
-          "rgba(255, 200, 100, 0.15)"
-        );
+        // Remove these lines:
+        // root.style.setProperty("--mood-glow-color", "rgba(255, 180, 50, 0.15)");
+        // root.style.setProperty("--mood-inner-glow", "rgba(255, 140, 50, 0.1)");
         break;
+
       case "sad":
-        root.style.setProperty(
-          "--mood-glow-color",
-          "rgba(100, 150, 255, 0.18)"
-        );
-        root.style.setProperty("--mood-inner-glow", "rgba(80, 130, 255, 0.15)");
+        // Remove similar lines for sad mood
         break;
+
       case "neutral":
-        root.style.setProperty(
-          "--mood-glow-color",
-          "rgba(200, 200, 255, 0.15)"
-        );
-        root.style.setProperty(
-          "--mood-inner-glow",
-          "rgba(180, 180, 255, 0.12)"
-        );
+        // Remove similar lines for neutral mood
         break;
+
       case "excited":
-        root.style.setProperty(
-          "--mood-glow-color",
-          "rgba(255, 100, 100, 0.18)"
-        );
-        root.style.setProperty("--mood-inner-glow", "rgba(255, 80, 80, 0.15)");
+        // Remove similar lines for excited mood
         break;
+
       case "tired":
-        root.style.setProperty(
-          "--mood-glow-color",
-          "rgba(100, 180, 180, 0.16)"
-        );
-        root.style.setProperty("--mood-inner-glow", "rgba(80, 160, 160, 0.13)");
+        // Remove similar lines for tired mood
         break;
+
       case "relaxed":
-        root.style.setProperty(
-          "--mood-glow-color",
-          "rgba(150, 255, 180, 0.17)"
-        );
-        root.style.setProperty(
-          "--mood-inner-glow",
-          "rgba(130, 235, 160, 0.14)"
-        );
+        // Remove similar lines for relaxed mood
         break;
+
       default:
-        root.style.setProperty("--mood-glow-color", "rgba(255, 180, 50, 0.15)");
-        root.style.setProperty("--mood-inner-glow", "rgba(255, 140, 50, 0.1)");
+      // Remove these lines:
+      // root.style.setProperty("--mood-glow-color", "rgba(255, 180, 50, 0.15)");
+      // root.style.setProperty("--mood-inner-glow", "rgba(255, 140, 50, 0.1)");
     }
   };
 

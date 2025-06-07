@@ -1,4 +1,3 @@
-
 /* ✅ KEEP: login-bg for positioning (USED in TSX) */
 .login-bg {
   min-height: 100vh;
@@ -11,6 +10,7 @@
   /* ✅ DEFAULT: Dark theme PNG background */
   background:url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
 }
+
 .login-bg-video {
   position: absolute;
   top: 0;
@@ -22,31 +22,31 @@
   opacity: 1.0;
 }
 
-
-
-/* ✅ BASE: login-card styling (NO duplicates) */
+/* ✅ ENHANCED: More spacious login card */
 .login-card {
   background: rgba(25, 25, 40, 0.95);
-  border-radius: 20px;
-  padding: 2.5rem;
+  border-radius: 24px; /* ✅ INCREASED: More rounded corners */
+  padding: 3.5rem 3rem; /* ✅ INCREASED: Much more padding */
   width: 100%;
-  max-width: 420px;
+  max-width: 480px; /* ✅ INCREASED: Wider card */
+  min-height: 500px; /* ✅ NEW: Minimum height for spaciousness */
   border: 1px solid rgba(100, 108, 255, 0.2);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(100, 108, 255, 0.1);
   position: relative;
   z-index: 2;
-  margin: 0 auto;
+  margin: 2rem auto; /* ✅ INCREASED: More margin */
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* ✅ NEW: Center content vertically */
+  gap: 1.5rem; /* ✅ NEW: Consistent spacing between elements */
+  backdrop-filter: blur(12px); /* ✅ NEW: Enhanced glass effect */
 }
 
-.login-card:hover {
-  box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22;
-}
+
 
 .animate-fade-in {
-  animation: fadeIn 1.2s;
+  animation: fadeIn 0.3s;
 }
 
 @keyframes fadeIn {
@@ -60,80 +60,161 @@
   }
 }
 
-/*
-.blob {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
-  background: #232347;
-  border-radius: 50%;
-  filter: blur(50px);
-  opacity: 0.05;
-  animation: blob 16s ease infinite;
-  pointer-events: none;
-  z-index: 0;
+/* ✅ ENHANCED: Header section with better spacing */
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem; /* ✅ INCREASED: More space below header */
 }
 
-@keyframes blob {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-  }
+/* ✅ LOGO: Enhanced logo styling */
+.login-card .logo-img {
+  width: 64px; /* ✅ INCREASED: Larger logo */
+  height: 64px;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3)); /* ✅ NEW: Glow effect */
 }
-*/
-/* ✅ BUTTONS: Login action buttons */
+
+/* ✅ ENHANCED: Title styling */
+.login-title {
+  font-size: 2.2rem; /* ✅ INCREASED: Larger title */
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #646cff, #7c7aff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
+}
+
+/* ✅ ENHANCED: Subtitle styling */
+.login-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ✅ ENHANCED: Form styling with better spacing */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* ✅ INCREASED: More space between form elements */
+  width: 100%;
+  max-width: 320px; /* ✅ CONSTRAINED: Form width */
+}
+
+/* ✅ ENHANCED: Input styling */
+.login-input {
+  padding: 1rem 1.5rem; /* ✅ INCREASED: More input padding */
+  border-radius: 12px; /* ✅ INCREASED: More rounded inputs */
+  background: rgba(35, 35, 50, 0.8);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  color: white;
+  font-size: 1rem;
+}
+
+
+
+.login-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ✅ ENHANCED: Button styling with more space */
 .login-action-btn {
-  background-color: #1e1e38;
+  background: linear-gradient(135deg, #646cff, #7c7aff); 
   color: #fff;
-  border: 1px solid rgba(100, 108, 255, 0.3);
+  border: none;
   font-weight: 600;
-  border-radius: 0.7rem;
-  padding: 0.85rem 0;
-  margin-top: 0.5rem;
-  box-shadow: none;
+  border-radius: 12px;
+  padding: 1.2rem 2rem; 
+  margin-top: 1rem; 
+  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
   display: block;
   width: 100%;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.yandere-theme .login-action-btn{
+  background: linear-gradient(135deg, #1f1f24, #712706) !important;
+}
+
+.kuudere-theme .login-action-btn {
+  background: linear-gradient(135deg, #1a2332, #2c4a6b) !important;
+}
+
+
+.tsundere-theme .login-action-btn {
+  background: linear-gradient(135deg, #3d2620, #8b4513) !important;
+}
+
+
+.dandere-theme .login-action-btn {
+  background: linear-gradient(135deg, #231a2d, #4a2c5a) !important;
+}
+
+.login-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.login-action-btn:hover::before {
+  left: 100%;
 }
 
 .login-action-btn:hover {
-  background-color: #292957;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(100, 108, 255, 0.2);
-  border-color: rgba(100, 108, 255, 0.5);
+  box-shadow: 0 8px 20px rgba(100, 108, 255, 0.4);
 }
 
 .login-action-btn:active {
   transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
-/* ✅ TEXT: Accent styling */
+/* ✅ ENHANCED: Loading state */
+.login-action-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ✅ ENHANCED: Switch button styling */
+.login-switch {
+  margin-top: 2rem; /* ✅ INCREASED: More space above switch */
+  text-align: center;
+}
+
+.login-switch-text {
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 1rem;
+}
+
 .text-accent-primary {
   color: #8186ff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  padding: 0.5rem 1rem; /* ✅ NEW: More clickable area */
+  border-radius: 6px;
+  display: inline-block;
 }
 
 .text-accent-primary:hover {
   color: #646cff;
-}
-
-/* ✅ LOGO: Image styling */
-.login-card .logo-img {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 0.5rem;
+  background: rgba(100, 108, 255, 0.1); /* ✅ NEW: Hover background */
 }
 
 /* ✅ PASSWORD: Field with counter */
@@ -143,28 +224,52 @@
 
 .password-count {
   position: absolute;
-  right: 10px;
+  right: 1rem; /* ✅ ADJUSTED: Better positioning */
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
 }
 
+/* ✅ ENHANCED: Error message styling */
+.login-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
 
+/* ✅ ENHANCED: Theme indicator */
+.login-theme-indicator {
+  margin-top: 2rem;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.theme-name {
+  color: rgba(100, 108, 255, 0.8);
+  font-weight: 600;
+  text-transform: capitalize;
+}
 
 /* ✅ THEME BACKGROUNDS: Use body theme classes */
-
-
-
-
-
 .yandere-theme .login-card {
   background: rgba(45, 26, 38, 0.95) !important;
   border-color: rgba(255, 107, 179, 0.3) !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 107, 179, 0.2) !important;
 }
-
-
 
 .kuudere-theme .login-card {
   background: rgba(26, 35, 45, 0.95) !important;
@@ -172,14 +277,11 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(130, 180, 220, 0.2) !important;
 }
 
-
 .tsundere-theme .login-card {
   background: rgba(61, 38, 32, 0.95) !important;
   border-color: rgba(255, 107, 66, 0.3) !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 107, 66, 0.2) !important;
 }
-
-
 
 .dandere-theme .login-card {
   background: rgba(35, 26, 45, 0.95) !important;
@@ -189,21 +291,32 @@
 
 /* ✅ AUTO-TILT: Login card tilts automatically after video ends */
 .login-card.auto-tilt {
-  transform: rotate(3deg) scale(1.02) !important;
+  transform: rotate(1deg) scale(1.02) !important;
   box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22 !important;
-  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* ✅ KEEP: Original hover effect still works */
-.login-card:hover {
-  transform: rotate(1deg) scale(1.02);
-  box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22;
-}
 
 /* ✅ PRIORITY: Manual hover overrides auto-tilt */
 .login-card.auto-tilt:hover {
-  transform: rotate(-1deg) scale(1.03) !important;
+  transform: rotate(-0.2deg) scale(1.03) !important;
   box-shadow: 0 12px 32px 0 rgba(100, 108, 255, 0.2), 0 4px 12px 0 #23234a33 !important;
 }
 
 
+/* ✅ RESPONSIVE: Mobile adjustments */
+@media (max-width: 768px) {
+  .login-card {
+    max-width: 360px;
+    padding: 2.5rem 2rem;
+    margin: 1rem auto;
+  }
+
+  .login-title {
+    font-size: 1.8rem;
+  }
+
+  .login-form {
+    max-width: 280px;
+  }
+}

@@ -222,18 +222,7 @@
 .light-theme .mission-item{
   background: #c1bfa2 !important;
 }
-/* Specialized Container Overrides */
-.light-theme .settings-section {
-  background: var(--color-accent-primary) !important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-accent-secondary) !important;
-  border-radius: 12px !important;
-  padding: 1.5rem !important;
-}
-.light-theme .item-time {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
-}
+
 
 .light-theme .mission-category-empty {
   background: var(--color-bg-card) !important;
@@ -354,12 +343,15 @@
 .light-theme .day-form-input,
 .light-theme .day-form-select,
 .light-theme .model-select,
+.light-theme .detail-action-btn.retry,
+.light-theme .detail-action-btn.view,
 .light-theme .theme-select,
 .light-theme .mission-timer,
 .light-theme .diary-entry-input,
 .light-theme .mood-select,
 .light-theme .today-btn-compact,
 .light-theme .date-separator,
+.light-theme .settings-btn.primary,
 .light-theme .clear-filters-btn,
 .light-theme .search-button,
 .light-theme .event-time,
@@ -438,7 +430,8 @@
 .light-theme span,
 .light-theme .date-text,
 .light-theme .time-text,
-.light-theme .item-time,
+.light-theme .detail-text,
+.light-theme .detail-date,
 .light-theme .compact-record-date,
 .light-theme .compact-event-time,
 .light-theme .event-time,
@@ -447,7 +440,14 @@
   color: #600a0a !important;
   font-weight: 500 !important;
 }
-
+.detail-type,
+.detail-status{
+  color: #600a0a !important;
+  background-color: rgb(142, 122, 122) !important;
+}
+.light-theme .item-time{
+  background: rgb(180 186 132 / 60%);
+}
 /* Gradient Text Elements Override */
 .light-theme .day-view-date,
 .light-theme .stat-number,
@@ -633,7 +633,6 @@
 }
 
 .light-theme .detail-popup-title {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
   color: var(--color-text-inverse) !important;
 }
 
@@ -890,15 +889,15 @@ body.login-page {
 
 /* Base Button Styles - PRESERVED as requested */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  color: var(--color-text-primary);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: #763333;
 }
 
 button:hover {

@@ -469,7 +469,7 @@
 }
 
 .customize-toggle {
-  background: var(--color-profile-accent-primary);
+  background: rgb(131, 56, 56);
   color: var(--color-text-on-accent);
   border: none;
   padding: 0.8rem 1.5rem;
@@ -480,8 +480,8 @@
 }
 
 .customize-toggle:hover {
-  background: var(--color-profile-accent-secondary);
   transform: translateY(-2px);
+  background: rgb(131, 56, 56);
 }
 
 .customize-toggle.active {

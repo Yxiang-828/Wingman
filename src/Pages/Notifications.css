@@ -761,10 +761,7 @@
   flex: 1;
   text-shadow: 0 0 15px rgba(135, 206, 235, 0.3);
 }
-.light-theme .mission-control-header::before {
-  background: linear-gradient(90deg, transparent, rgba(184, 134, 11, 0.3), transparent) !important;
-  animation: light-golden-scan 2s infinite linear !important;
-}
+
 .category-count {
   background: rgba(64, 120, 192, 0.3);
   color: #87ceeb;
