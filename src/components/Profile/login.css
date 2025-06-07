@@ -8,21 +8,20 @@
   position: relative;
   
   /* ✅ DEFAULT: Dark theme PNG background */
-  background: #0a0a0f url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
+  background:url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
+}
+.login-bg-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+  opacity: 1.0;
 }
 
-/* ✅ ANIMATIONS: Keep existing animations */
-@keyframes gradient {
-  0% {
-    background-position: 0% 100%;
-  }
-  50% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 0% 100%;
-  }
-}
+
 
 /* ✅ BASE: login-card styling (NO duplicates) */
 .login-card {
@@ -33,10 +32,8 @@
   max-width: 420px;
   border: 1px solid rgba(100, 108, 255, 0.2);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(100, 108, 255, 0.1);
-  backdrop-filter: blur(20px);
   position: relative;
   z-index: 2;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -44,7 +41,6 @@
 }
 
 .login-card:hover {
-  transform: rotate(1deg) scale(1.02);
   box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22;
 }
 
@@ -63,7 +59,7 @@
   }
 }
 
-/* ✅ EFFECTS: Center glow blob */
+/*
 .blob {
   position: absolute;
   top: 50%;
@@ -91,7 +87,7 @@
     transform: translate(-50%, -50%) scale(1);
   }
 }
-
+*/
 /* ✅ BUTTONS: Login action buttons */
 .login-action-btn {
   background-color: #1e1e38;
@@ -153,10 +149,10 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+
+
 /* ✅ THEME BACKGROUNDS: Use body theme classes */
-.light-theme .login-bg {
-  background: #fefdf8 url('../../assets/backgrounds/light-theme.png') center center / cover no-repeat fixed !important;
-}
+
 
 .light-theme .login-card {
   background: rgba(255, 255, 255, 0.95) !important;
@@ -164,9 +160,6 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 40px rgba(200, 180, 140, 0.2) !important;
 }
 
-.yandere-theme .login-bg {
-  background: #0e0a0d url('../../assets/backgrounds/yandere-theme.png') center center / cover no-repeat fixed !important;
-}
 
 .yandere-theme .login-card {
   background: rgba(45, 26, 38, 0.95) !important;
@@ -174,9 +167,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 107, 179, 0.2) !important;
 }
 
-.kuudere-theme .login-bg {
-  background: #0a0d12 url('../../assets/backgrounds/kuudere-theme.png') center center / cover no-repeat fixed !important;
-}
+
 
 .kuudere-theme .login-card {
   background: rgba(26, 35, 45, 0.95) !important;
@@ -184,9 +175,6 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(130, 180, 220, 0.2) !important;
 }
 
-.tsundere-theme .login-bg {
-  background: #1a0f0a url('../../assets/backgrounds/tsundere-theme.png') center center / cover no-repeat fixed !important;
-}
 
 .tsundere-theme .login-card {
   background: rgba(61, 38, 32, 0.95) !important;
@@ -194,12 +182,31 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 107, 66, 0.2) !important;
 }
 
-.dandere-theme .login-bg {
-  background: #0f0a12 url('../../assets/backgrounds/dandere-theme.png') center center / cover no-repeat fixed !important;
-}
+
 
 .dandere-theme .login-card {
   background: rgba(35, 26, 45, 0.95) !important;
   border-color: rgba(180, 130, 220, 0.3) !important;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(180, 130, 220, 0.2) !important;
 }
+
+/* ✅ AUTO-TILT: Login card tilts automatically after video ends */
+.login-card.auto-tilt {
+  transform: rotate(3deg) scale(1.02) !important;
+  box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22 !important;
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+/* ✅ KEEP: Original hover effect still works */
+.login-card:hover {
+  transform: rotate(1deg) scale(1.02);
+  box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22;
+}
+
+/* ✅ PRIORITY: Manual hover overrides auto-tilt */
+.login-card.auto-tilt:hover {
+  transform: rotate(-1deg) scale(1.03) !important;
+  box-shadow: 0 12px 32px 0 rgba(100, 108, 255, 0.2), 0 4px 12px 0 #23234a33 !important;
+}
+
+

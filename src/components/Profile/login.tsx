@@ -4,6 +4,12 @@ import productiveIcon from "../../assets/productive.png";
 import moodyIcon from "../../assets/moody.png";
 import { Auth } from "../../utils/AuthStateManager";
 import "./login.css";
+import darkVideo from "../../assets/backgrounds/videos/dark-theme.mp4";
+import lightVideo from "../../assets/backgrounds/videos/light-theme.mp4";
+import yandereVideo from "../../assets/backgrounds/videos/yandere-theme.mp4";
+import kuudereVideo from "../../assets/backgrounds/videos/kuudere-theme.mp4";
+import tsundereVideo from "../../assets/backgrounds/videos/tsundere-theme.mp4";
+import dandereVideo from "../../assets/backgrounds/videos/dandere-theme.mp4";
 
 const moodIcons: Record<string, string> = {
   productive: productiveIcon,
@@ -20,6 +26,8 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
   const [mood, setMood] = useState<"productive" | "moody">("productive");
   const [currentTheme, setCurrentTheme] = useState<string>("dark");
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [autoTilt, setAutoTilt] = useState(false); // Add this state for auto-tilt
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,7 +84,15 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     // Also try after a short delay in case localStorage is still loading
     setTimeout(loadSavedTheme, 100);
   }, []);
-
+  // ADD: Video paths
+  const themeVideos: Record<string, string> = {
+    dark: darkVideo,
+    light: lightVideo,
+    yandere: yandereVideo,
+    kuudere: kuudereVideo,
+    tsundere: tsundereVideo,
+    dandere: dandereVideo,
+  };
   // Password change handler with length validation
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
@@ -220,10 +236,46 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     }
   };
 
+  // Add handlers
+  const handleVideoLoad = () => {
+    setVideoLoaded(true);
+    console.log(`🎬 Video loaded for ${currentTheme}`);
+  };
+
+  const handleVideoError = () => {
+    setVideoLoaded(false);
+    console.log(`🎬 Video failed for ${currentTheme}, using PNG fallback`);
+  };
+
+  // Add this useEffect to trigger tilt after 5 seconds
+  useEffect(() => {
+    const tiltTimer = setTimeout(() => {
+      setAutoTilt(true);
+      console.log("🎬 Video ended - triggering auto-tilt");
+    }, 5000); // 5 seconds
+
+    return () => clearTimeout(tiltTimer);
+  }, [currentTheme]); // Reset timer when theme changes
+
   return (
-    <div className="login-bg">
+    <div className={`login-bg ${videoLoaded ? "has-video" : ""}`}>
+      {themeVideos[currentTheme] && (
+        <video
+          className="login-bg-video"
+          autoPlay
+          muted
+          playsInline
+          onLoadedData={handleVideoLoad}
+          onError={handleVideoError}
+          key={currentTheme}
+        >
+          <source src={themeVideos[currentTheme]} type="video/mp4" />
+        </video>
+      )}
       <div className="blob"></div>
-      <div className="login-card animate-fade-in">
+      <div
+        className={`login-card animate-fade-in ${autoTilt ? "auto-tilt" : ""}`}
+      >
         <div className="mb-6 flex flex-col items-center">
           <img src={moodIcons[mood]} alt="Logo" className="logo-img" />
           <h1 className="text-3xl font-bold mb-1">Wingman</h1>
@@ -244,7 +296,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             <div className="password-field">
               <input
                 type="password"
-                placeholder="Password (6 chars max)"
+                placeholder="Password (max 6 ints)"
                 value={password}
                 onChange={handlePasswordChange}
                 required
