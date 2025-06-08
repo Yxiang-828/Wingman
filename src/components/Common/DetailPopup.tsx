@@ -43,6 +43,7 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
      * Navigates to calendar view with item highlighting
      * Your Wingman provides seamless navigation between contexts
      */
+
     const viewInCalendar = useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -50,7 +51,10 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
         const date = isTask
           ? item.task_date
           : (item as CalendarEvent).event_date;
-        navigate(`/calendar/day?date=${date}&highlight=${type}-${item.id}`);
+        const tab = isTask ? "tasks" : "events";
+        navigate(
+          `/calendar/day?date=${date}&tab=${tab}&highlight=${type}-${item.id}`
+        );
         onClose();
       },
       [isTask, item, navigate, onClose]
@@ -142,7 +146,7 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
 
             {isTask ? (
               <>
-                <h2 className="detail-popup-title">Mission Details</h2>
+                <h2 className="detail-popup-title">Task Details</h2>
                 <div className="detail-popup-content">
                   <div className="detail-popup-header">
                     <div

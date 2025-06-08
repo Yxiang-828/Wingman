@@ -19,6 +19,27 @@
   --calendar-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   --calendar-shadow-hover: 0 6px 15px rgba(100, 108, 255, 0.25);
 }
+.day-form-select {
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  background: var(--color-bg-card, rgba(35, 35, 50, 0.8));
+  border: 1px solid var(--color-border, rgba(100, 108, 255, 0.2));
+  color: var(--color-text-primary, #ffffff);
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.day-form-select:focus {
+  border-color: var(--color-accent-primary, #646cff);
+  box-shadow: 0 0 8px rgba(100, 108, 255, 0.3);
+  outline: none;
+}
+
+.day-form-select option {
+  background: var(--color-bg-card, #232323);
+  color: var(--color-text-primary, #ffffff);
+}
 
 /* Base container with viewport optimization */
 .calendar-week-view {

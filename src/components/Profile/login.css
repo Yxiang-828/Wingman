@@ -40,24 +40,17 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  
-  /* ✅ CRITICAL: Optimized rendering for text during transforms */
-  backface-visibility: hidden;
-  perspective: 1000px;
-  transform-style: preserve-3d;
-  
-  /* ✅ REMOVED: backdrop-filter to prevent GPU layer conflicts */
-  /* backdrop-filter: blur(12px); */
 }
 
-/* ✅ FIXED: Text-specific anti-aliasing optimization */
-.login-card * {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  
-  /* ✅ CRITICAL: Prevent text from creating separate GPU layers */
+/* simple gpu accel*/
+.login-card *,
+.login-title,
+.login-subtitle,
+.login-input,
+.login-action-btn {
+  transform: none;
   will-change: auto;
+  backface-visibility: visible;
 }
 
 /* Smooth entrance animation for login card */

@@ -345,12 +345,12 @@
 }
 
 .mission-objective.completed {
-  color: #5fb3a3;
+  color: #ecf4f2;
   text-decoration: line-through;
 }
 
 .mission-objective.failed {
-  color: var(--color-text-failed, #d71a1a);
+  color: var(--color-text-failed, #f6f3f3);
 }
 
 .mission-meta {

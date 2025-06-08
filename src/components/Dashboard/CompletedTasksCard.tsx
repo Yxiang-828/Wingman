@@ -88,10 +88,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
         <h2>Completed Today ({totalCompletedTasks})</h2>
         <button
           className="card-action-btn"
-          onClick={() => {
-            const today = formatDateToString(new Date());
-            navigate(`/completed-tasks?date=${today}`);
-          }}
+          onClick={() => navigate("/notifications?tab=completed")}
         >
           View All
         </button>
@@ -133,10 +130,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
             {hasMore && (
               <button
                 className="view-more-btn"
-                onClick={() => {
-                  const today = formatDateToString(new Date());
-                  navigate(`/completed-tasks?date=${today}`);
-                }}
+                onClick={() => navigate("/notifications?tab=completed")}
               >
                 View All {totalCompletedTasks} Completed →
               </button>

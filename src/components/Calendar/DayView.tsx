@@ -435,9 +435,8 @@ const DayView: React.FC = () => {
   const navigateToCompletedTasks = (
     event: React.MouseEvent<HTMLDivElement>
   ) => {
-    event.preventDefault();
-    const dateStr = date ? format(date, "yyyy-MM-dd") : getTodayDateString();
-    navigate(`/completed-tasks?date=${dateStr}`);
+    event.stopPropagation();
+    navigate("/notifications?tab=completed");
   };
 
   const cancelEdit = () => {
@@ -649,7 +648,7 @@ const DayView: React.FC = () => {
           <div className="day-stat-icon">✅</div>
           <div className="day-stat-content">
             <div className="day-stat-value">{stats.completedTasks}</div>
-            <div className="day-stat-label">Completed Tasks</div>
+            <div className="day-stat-label">Completed</div>
           </div>
         </div>
       </div>
