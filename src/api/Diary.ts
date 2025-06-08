@@ -1,24 +1,30 @@
-// ✅ HYBRID ARCHITECTURE: Diary entries now handled by SQLite via DataContext
-// This file now only provides type definitions and utilities
+/**
+ * Diary API - Hybrid Architecture Migration
+ * Diary entries now handled by SQLite via DataContext for improved performance
+ * This file provides type definitions and migration utilities
+ */
 
-// ✅ DiaryEntry interface - matches both Supabase schema and SQLite schema
+/**
+ * DiaryEntry interface - Compatible with both Supabase and SQLite schemas
+ * Represents a personal journal entry with mood tracking
+ */
 export interface DiaryEntry {
   id: number;
-  user_id: string;         // ✅ Based on schema - diary_entries.user_id is "uuid" type
-  entry_date: string;      // ✅ Based on schema - diary_entries.entry_date is "date" type
-  title: string;           // ✅ Based on schema - diary_entries.title is "text" type
-  content: string;         // ✅ Based on schema - diary_entries.content is "text" type
-  mood: string;            // ✅ Based on schema - diary_entries.mood is "text" type
-  created_at?: string;     // ✅ Based on schema - auto-generated timestamp
-  updated_at?: string;     // ✅ Based on schema - auto-generated timestamp
+  user_id: string;         // User identifier - diary_entries.user_id
+  entry_date: string;      // Date in YYYY-MM-DD format - diary_entries.entry_date
+  title: string;           // Entry title - diary_entries.title
+  content: string;         // Entry content - diary_entries.content
+  mood: string;            // Mood indicator - diary_entries.mood
+  created_at?: string;     // Auto-generated timestamp
+  updated_at?: string;     // Auto-generated timestamp
   
   // Legacy frontend field for backward compatibility
   date?: string;           // Maps to entry_date for existing components
 }
 
-// ✅ DEPRECATED NOTICE: All data operations moved to DataContext + SQLite
-console.warn('📢 MIGRATION NOTICE: Diary API operations moved to DataContext + SQLite');
-console.info('📝 USE INSTEAD: useDataContext() with window.electronAPI.db.getDiaryEntries(), saveDiaryEntry()');
+// Migration notice for developers
+console.warn('MIGRATION NOTICE: Diary API operations moved to DataContext + SQLite');
+console.info('USE INSTEAD: useDataContext() with window.electronAPI.db.getDiaryEntries(), saveDiaryEntry()');
 
 // ✅ LEGACY API FUNCTIONS - DEPRECATED
 // These functions now throw errors to guide migration to DataContext

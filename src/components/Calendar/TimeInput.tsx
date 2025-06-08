@@ -8,10 +8,16 @@ interface TimeInputProps {
   className?: string;
 }
 
+/**
+ * TimeInput Component
+ * Enhanced time picker with both manual input and interactive numpad
+ * Supports 24-hour format with real-time validation and formatting
+ * Features touch-friendly numpad for mobile devices
+ */
 const TimeInput: React.FC<TimeInputProps> = ({
   value,
   onChange,
-  placeholder = "24h time (HH:MM)", // Updated placeholder text
+  placeholder = "Enter time (HH:MM)",
   className = "",
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
@@ -20,15 +26,22 @@ const TimeInput: React.FC<TimeInputProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const iconButtonRef = useRef<HTMLButtonElement>(null);
 
+  /**
+   * Synchronizes internal state with external value prop
+   * Ensures component stays in sync with parent state changes
+   */
   useEffect(() => {
     if (value !== inputValue) {
       setInputValue(value);
     }
   }, [value]);
 
+  /**
+   * Handles click outside numpad to close it
+   * Excludes clicks on the toggle button to prevent immediate reopening
+   */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Only close if click is outside numpad AND outside the icon button
       if (
         numpadRef.current &&
         !numpadRef.current.contains(event.target as Node) &&
@@ -43,37 +56,38 @@ const TimeInput: React.FC<TimeInputProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  /**
+   * Handles manual input with real-time validation and formatting
+   * Restricts input to valid time format and enforces 24-hour constraints
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow digits and colon
     let filtered = "";
     const input = e.target.value;
-
-    // ✅ RESTRICTED: Max 4 digits total (HHMM format)
     let digitCount = 0;
 
+    // Process each character, allowing only digits and colon
     for (let i = 0; i < input.length && i < 5; i++) {
       const char = input[i];
 
       if (char === ":" && filtered.length === 2 && digitCount === 2) {
         filtered += ":";
       } else if (/[0-9]/.test(char) && digitCount < 4) {
-        // ✅ MAX 4 DIGITS
         filtered += char;
         digitCount++;
       }
     }
 
-    // ✅ AUTO-FORMAT: Add colon after 2 digits if not present
+    // Auto-format: add colon after 2 digits
     if (/^\d{2}$/.test(filtered)) {
       filtered = filtered + ":";
     }
 
-    // Validate hours (0-23) and minutes (0-59)
+    // Validate and enforce time constraints
     if (/^\d{4}$/.test(filtered)) {
       const hours = parseInt(filtered.substring(0, 2));
       const minutes = parseInt(filtered.substring(2, 4));
 
-      // Enforce valid ranges
+      // Enforce valid hour and minute ranges
       if (hours > 23) filtered = "23" + filtered.substring(2);
       if (minutes > 59) filtered = filtered.substring(0, 2) + "59";
 
@@ -83,19 +97,23 @@ const TimeInput: React.FC<TimeInputProps> = ({
       const hours = parseInt(filtered.substring(0, 2));
       const minutes = parseInt(filtered.substring(3, 5));
 
-      // Enforce valid ranges
+      // Enforce valid ranges for complete time
       if (hours > 23) filtered = "23" + filtered.substring(2);
       if (minutes > 59) filtered = filtered.substring(0, 3) + "59";
     }
 
     setInputValue(filtered);
 
-    // Format and validate if we have all 4 digits
+    // Trigger onChange for complete time entries
     if (/^\d{4}$/.test(filtered) || /^\d{2}:\d{2}$/.test(filtered)) {
       formatAndValidateTime(filtered);
     }
   };
 
+  /**
+   * Validates and formats time input for parent component
+   * Ensures only valid 24-hour format times are propagated
+   */
   const formatAndValidateTime = (rawInput: string) => {
     let formattedTime = "";
 
@@ -126,6 +144,10 @@ const TimeInput: React.FC<TimeInputProps> = ({
     }
   };
 
+  /**
+   * Handles numpad button interactions
+   * Supports number input, special commands, and minute presets
+   */
   const handleNumpadClick = (value: string) => {
     if (value === "clear") {
       setInputValue("");
@@ -147,11 +169,9 @@ const TimeInput: React.FC<TimeInputProps> = ({
       return;
     }
 
-    // Handle 5-minute interval selections
+    // Handle minute preset selections
     if (value.startsWith("min")) {
       const minuteValue = value.substring(3);
-
-      // Format and validate after selecting minutes
       const newValue =
         inputValue.length < 2
           ? "00" + minuteValue
@@ -162,11 +182,11 @@ const TimeInput: React.FC<TimeInputProps> = ({
       return;
     }
 
-    // Handle number input
+    // Handle individual digit input
     if (/^\d$/.test(value)) {
       let newValue = inputValue;
 
-      // Only add digits if we have less than 4 characters (or 5 with colon)
+      // Add digits respecting format constraints
       if (inputValue.includes(":")) {
         if (inputValue.length < 5) {
           newValue += value;
@@ -179,7 +199,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
 
       setInputValue(newValue);
 
-      // Format and validate if we have enough digits
+      // Auto-validate complete time entries
       if (
         (newValue.includes(":") && newValue.length === 5) ||
         (!newValue.includes(":") && newValue.length === 4)
@@ -189,8 +209,11 @@ const TimeInput: React.FC<TimeInputProps> = ({
     }
   };
 
+  /**
+   * Handles input blur with auto-completion
+   * Automatically completes partial time entries
+   */
   const handleBlur = () => {
-    // Format on blur
     if (/^\d{4}$/.test(inputValue)) {
       const hours = inputValue.substring(0, 2);
       const minutes = inputValue.substring(2, 4);
@@ -198,7 +221,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
       setInputValue(formatted);
       formatAndValidateTime(inputValue);
     } else if (/^\d{1,2}$/.test(inputValue)) {
-      // If only hours were entered, add zeros for minutes
+      // Auto-complete with :00 for hour-only entries
       const hours = inputValue.padStart(2, "0");
       const formatted = `${hours}:00`;
       setInputValue(formatted);
@@ -206,7 +229,10 @@ const TimeInput: React.FC<TimeInputProps> = ({
     }
   };
 
-  // Generate minute preset buttons
+  /**
+   * Generates minute preset buttons in 5-minute intervals
+   * Provides quick selection for common minute values
+   */
   const generateMinutePresets = () => {
     const presets = [];
     for (let i = 0; i < 60; i += 5) {
@@ -225,7 +251,9 @@ const TimeInput: React.FC<TimeInputProps> = ({
     return presets;
   };
 
-  // Toggle numpad visibility
+  /**
+   * Toggles numpad visibility with event propagation control
+   */
   const toggleNumpad = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowNumpad(!showNumpad);
@@ -243,7 +271,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
         placeholder={placeholder}
         autoComplete="off"
         maxLength={5}
-        // Removed onClick handler that was opening the numpad
+        aria-label="Time input field"
       />
       <button
         ref={iconButtonRef}
@@ -251,41 +279,66 @@ const TimeInput: React.FC<TimeInputProps> = ({
         className="time-input-toggle"
         onClick={toggleNumpad}
         aria-label="Toggle time picker"
+        aria-expanded={showNumpad}
       >
         <span className="time-icon">🕒</span>
       </button>
 
       {showNumpad && (
-        <div ref={numpadRef} className="time-numpad time-numpad-compact">
+        <div
+          ref={numpadRef}
+          className="time-numpad"
+          role="dialog"
+          aria-label="Time picker"
+        >
           <div className="time-numpad-header">
             <div className="time-numpad-title">Select Time</div>
             <div className="time-numpad-value">{inputValue || "00:00"}</div>
             <button
               className="time-numpad-close"
               onClick={() => setShowNumpad(false)}
+              aria-label="Close time picker"
             >
               ×
             </button>
           </div>
 
+          {/* Number input grid */}
           <div className="time-numpad-grid">
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("1")}>1</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("2")}>2</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("3")}>3</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("4")}>4</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("5")}>5</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("6")}>6</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("7")}>7</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("8")}>8</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("9")}>9</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("clear")}>C</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("0")}>0</button>
-            <button className="time-numpad-button" onClick={() => handleNumpadClick("backspace")}>←</button>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+              <button
+                key={num}
+                className="time-numpad-button"
+                onClick={() => handleNumpadClick(num.toString())}
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              className="time-numpad-button"
+              onClick={() => handleNumpadClick("clear")}
+            >
+              C
+            </button>
+            <button
+              className="time-numpad-button"
+              onClick={() => handleNumpadClick("0")}
+            >
+              0
+            </button>
+            <button
+              className="time-numpad-button"
+              onClick={() => handleNumpadClick("backspace")}
+            >
+              ←
+            </button>
           </div>
 
-          <div className="time-section-label">Common Minutes</div>
+          {/* Minute presets for quick selection */}
+          <div className="time-section-label">Quick Minutes</div>
           <div className="time-minute-grid">{generateMinutePresets()}</div>
 
+          {/* Action buttons */}
           <div className="time-numpad-actions">
             <button
               className="time-numpad-action-btn"

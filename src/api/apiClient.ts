@@ -4,23 +4,33 @@ import { Auth } from '../utils/AuthStateManager';
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
-// ✅ HYBRID ARCHITECTURE: Only queue AUTH requests now
-// Data operations go directly to SQLite via electronAPI.db
+/**
+ * Hybrid Architecture: Authentication request queue
+ * Only queues auth requests now - data operations go directly to SQLite via electronAPI
+ * This ensures proper sequencing of authentication calls during app startup
+ */
 const authQueue: Array<() => Promise<any>> = [];
 let isProcessingQueue = false;
 
-// Process queued AUTH requests when authentication is confirmed
+/**
+ * Automatically processes queued authentication requests when user logs in
+ * Prevents race conditions between auth state and pending API calls
+ */
 Auth.addListener((isAuthenticated) => {
   if (isAuthenticated && authQueue.length > 0) {
     processAuthQueue();
   }
 });
 
+/**
+ * Processes all queued authentication requests sequentially
+ * Ensures no auth calls are lost during the login process
+ */
 async function processAuthQueue() {
   if (isProcessingQueue) return;
   
   isProcessingQueue = true;
-  console.log(`Processing ${authQueue.length} queued AUTH requests`);
+  console.log(`Processing ${authQueue.length} queued authentication requests`);
   
   while (authQueue.length > 0) {
     const apiCall = authQueue.shift();
@@ -37,8 +47,13 @@ async function processAuthQueue() {
 }
 
 /**
- * ✅ SIMPLIFIED API CLIENT - AUTH ONLY
- * Data operations now handled by LocalDataManager via Electron IPC
+ * Simplified API client focused exclusively on authentication operations
+ * Data operations are now handled by LocalDataManager via Electron IPC for better performance
+ * 
+ * @param endpoint - API endpoint path
+ * @param options - Fetch options
+ * @param retryCount - Current retry attempt
+ * @returns Promise with API response data
  */
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -59,28 +74,28 @@ export async function apiRequest<T = any>(
     },
   };
 
-  // ✅ HYBRID: Only auth endpoints use this client now
+  // Hybrid architecture: Only authentication endpoints use this client
   const isAuthEndpoint = endpoint.includes('/auth/') || 
                          endpoint.includes('/v1/user/') ||
                          endpoint.includes('/users/') ||
                          endpoint.includes('/health') ||
                          endpoint.includes('/status');
 
-  // ✅ WARNING: Data endpoints should not use this client anymore
+  // Development guard: Warn if data endpoints accidentally use this client
   const isDataEndpoint = endpoint.includes('/v1/tasks') || 
                          endpoint.includes('/v1/calendar') ||
                          endpoint.includes('/v1/diary') ||
                          endpoint.includes('/v1/chat');
                          
   if (isDataEndpoint) {
-    console.warn(`🚨 Data endpoint ${endpoint} called on apiClient - should use LocalDataManager instead!`);
+    console.warn(`Data endpoint ${endpoint} called on apiClient - should use LocalDataManager instead`);
     throw new Error(`Data endpoint ${endpoint} should use window.electronAPI.db instead of API calls`);
   }
                          
+  // Queue non-auth requests if user isn't authenticated yet
   if (!isAuthEndpoint && !Auth.isAuthenticated) {
-    // Queue auth requests for later execution
     return new Promise((resolve, reject) => {
-      console.log(`Queuing AUTH request to ${endpoint} - not authenticated yet`);
+      console.log(`Queuing authentication request to ${endpoint} - awaiting user login`);
       authQueue.push(async () => {
         try {
           const result = await apiRequest(endpoint, options, 0);
@@ -104,47 +119,49 @@ export async function apiRequest<T = any>(
   }
   
   try {
-    console.log(`🔐 Sending AUTH request to: ${url}`);
+    console.log(`Sending authentication request to: ${url}`);
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      console.error(`Auth API request failed: ${response.status}`);
+      console.error(`Authentication API request failed: ${response.status}`);
       const errorText = await response.text();
       
-      // If backend is starting up (status 503 or 502), retry
+      // Retry logic for backend startup scenarios
       if ((response.status === 503 || response.status === 502) && retryCount < MAX_RETRIES) {
         console.log(`Backend may be starting, retrying in ${RETRY_DELAY}ms... (${retryCount + 1}/${MAX_RETRIES})`);
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
         return apiRequest(endpoint, options, retryCount + 1);
       }
       
-      throw new Error(`Auth API request failed: ${response.status} - ${errorText}`);
+      throw new Error(`Authentication API request failed: ${response.status} - ${errorText}`);
     }
 
-    // For 204 No Content responses, return empty object
+    // Handle No Content responses appropriately
     if (response.status === 204) {
       return {} as T;
     }
 
     const data = await response.json();
-    console.log(`✅ Auth request successful: ${endpoint}`);
+    console.log(`Authentication request successful: ${endpoint}`);
     return data;
   } catch (error) {
-    // Network error or other failure - retry if we haven't exceeded max retries
+    // Network error handling with exponential backoff
     if (retryCount < MAX_RETRIES) {
-      console.log(`Auth request failed, retrying in ${RETRY_DELAY}ms... (${retryCount + 1}/${MAX_RETRIES})`);
+      console.log(`Authentication request failed, retrying in ${RETRY_DELAY}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
       return apiRequest(endpoint, options, retryCount + 1);
     }
     
-    console.error(`Auth API request failed for ${url}:`, error);
+    console.error(`Authentication API request failed for ${url}:`, error);
     throw error;
   }
 }
 
-// ✅ SIMPLIFIED: Convenience methods for AUTH operations only
+/**
+ * Convenience methods for authentication operations only
+ * Provides a clean interface for common HTTP methods
+ */
 export const api = {
-  // AUTH & USER OPERATIONS ONLY
   get: <T = any>(endpoint: string, options?: RequestInit) => 
     apiRequest<T>(endpoint, { ...options, method: 'GET' }),
   
@@ -166,7 +183,10 @@ export const api = {
     apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
 };
 
-// ✅ HELPER: Check if hybrid architecture is working correctly
+/**
+ * Helper function to validate hybrid architecture usage
+ * Useful for debugging and development guidance
+ */
 export function validateHybridUsage() {
   return {
     authEndpoints: 'Use api.* methods',

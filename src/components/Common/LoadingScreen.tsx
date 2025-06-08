@@ -5,7 +5,14 @@ interface LoadingScreenProps {
   message?: string;
 }
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({ message = 'Loading...' }) => {
+/**
+ * LoadingScreen Component - Your Wingman's Patience Display
+ * Full-screen loading overlay with animated progress indicators
+ * Shows while your faithful assistant prepares the battlefield
+ */
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
+  message = 'Your Wingman is preparing...' 
+}) => {
   return (
     <div className="loading-screen">
       <div className="loading-content">

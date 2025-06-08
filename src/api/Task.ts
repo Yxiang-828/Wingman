@@ -1,17 +1,23 @@
-// ✅ HYBRID ARCHITECTURE: Tasks now handled by SQLite via DataContext
-// This file now only provides type definitions and utilities
+/**
+ * Task API - Hybrid Architecture Migration
+ * Tasks now handled by SQLite via DataContext for improved performance
+ * This file provides type definitions and migration utilities
+ */
 
-// ✅ Task interface - matches both Supabase schema and SQLite schema
+/**
+ * Task interface - Compatible with both Supabase and SQLite schemas
+ * Represents a user task with scheduling and completion tracking
+ */
 export interface Task {
   id: number;
-  title: string;        // ✅ Based on schema - tasks.title is "text" type
-  task_date: string;    // ✅ Based on schema - tasks.task_date is "date" type
-  task_time?: string;   // ✅ Based on schema - tasks.task_time is "time" type
-  completed: boolean;   // ✅ Based on schema - tasks.completed is "bool" type
-  user_id?: string | number; // ✅ Based on schema - tasks.user_id is "uuid" type
-  isProcessing?: boolean; // Frontend-only field for UI state
+  title: string;        // Task title - maps to tasks.title in schema
+  task_date: string;    // Date in YYYY-MM-DD format - maps to tasks.task_date
+  task_time?: string;   // Optional time in HH:MM format - maps to tasks.task_time
+  completed: boolean;   // Completion status - maps to tasks.completed
+  user_id?: string | number; // User identifier - maps to tasks.user_id
+  isProcessing?: boolean; // Frontend-only field for UI loading states
   
-  // Optional fields from extended schema
+  // Extended fields from database schema
   task_type?: string;
   due_date?: string;
   last_reset_date?: string;
@@ -21,15 +27,17 @@ export interface Task {
   updated_at?: string;
 }
 
-// ✅ DEPRECATED NOTICE: All data operations moved to DataContext + SQLite
-console.warn('📢 MIGRATION NOTICE: Task API operations moved to DataContext + SQLite');
-console.info('📋 USE INSTEAD: useDataContext() for createTask, updateTask, deleteTask, toggleTask');
+// Migration notice for developers
+console.warn('MIGRATION NOTICE: Task API operations moved to DataContext + SQLite');
+console.info('USE INSTEAD: useDataContext() for createTask, updateTask, deleteTask, toggleTask');
 
-// ✅ LEGACY API FUNCTIONS - DEPRECATED
-// These functions now throw errors to guide migration to DataContext
+/**
+ * Legacy API functions - All deprecated
+ * These functions throw errors to guide migration to DataContext
+ */
 
 export const fetchTasks = async (date: string): Promise<Task[]> => {
-  const errorMsg = `🚨 fetchTasks() is DEPRECATED. Use DataContext.fetchDayData() instead.
+  const errorMsg = `fetchTasks() is DEPRECATED. Use DataContext.fetchDayData() instead.
   
 BEFORE: fetchTasks('${date}')
 AFTER:  const { fetchDayData } = useDataContext();
@@ -40,7 +48,7 @@ AFTER:  const { fetchDayData } = useDataContext();
 };
 
 export const addTask = async (_task: Omit<Task, "id">): Promise<Task> => {
-  const errorMsg = `🚨 addTask() is DEPRECATED. Use DataContext.createTask() instead.
+  const errorMsg = `addTask() is DEPRECATED. Use DataContext.createTask() instead.
   
 BEFORE: addTask(taskData)
 AFTER:  const { createTask } = useDataContext();
@@ -51,7 +59,7 @@ AFTER:  const { createTask } = useDataContext();
 };
 
 export const updateTask = async (_task: Task): Promise<Task> => {
-  const errorMsg = `🚨 updateTask() is DEPRECATED. Use DataContext.updateTask() instead.
+  const errorMsg = `updateTask() is DEPRECATED. Use DataContext.updateTask() instead.
   
 BEFORE: updateTask(taskData)
 AFTER:  const { updateTask } = useDataContext();
@@ -62,7 +70,7 @@ AFTER:  const { updateTask } = useDataContext();
 };
 
 export const deleteTask = async (id: number): Promise<void> => {
-  const errorMsg = `🚨 deleteTask() is DEPRECATED. Use DataContext.deleteTask() instead.
+  const errorMsg = `deleteTask() is DEPRECATED. Use DataContext.deleteTask() instead.
   
 BEFORE: deleteTask(${id})
 AFTER:  const { deleteTask } = useDataContext();
@@ -73,7 +81,7 @@ AFTER:  const { deleteTask } = useDataContext();
 };
 
 export const toggleTaskCompletion = async (_task: Task): Promise<Task> => {
-  const errorMsg = `🚨 toggleTaskCompletion() is DEPRECATED. Use DataContext.toggleTask() instead.
+  const errorMsg = `toggleTaskCompletion() is DEPRECATED. Use DataContext.toggleTask() instead.
   
 BEFORE: toggleTaskCompletion(task)
 AFTER:  const { toggleTask } = useDataContext();
@@ -83,10 +91,15 @@ AFTER:  const { toggleTask } = useDataContext();
   throw new Error('toggleTaskCompletion() moved to DataContext.toggleTask()');
 };
 
-// ✅ UTILITY FUNCTIONS - Still useful for type checking and validation
+/**
+ * Utility Functions - Still active and useful
+ * These provide validation and helper functionality for task management
+ */
 
 /**
- * Validate a task object has required fields
+ * Validates that a task object contains all required fields
+ * @param task - Partial task object to validate
+ * @returns True if task is valid, false otherwise
  */
 export const validateTask = (task: Partial<Task>): task is Task => {
   return !!(
@@ -98,7 +111,9 @@ export const validateTask = (task: Partial<Task>): task is Task => {
 };
 
 /**
- * Create a default task with current date
+ * Creates a default task object with current date
+ * @param overrides - Optional fields to override defaults
+ * @returns Task object without ID (for creation)
  */
 export const createDefaultTask = (overrides: Partial<Task> = {}): Omit<Task, 'id'> => {
   const today = new Date().toISOString().split('T')[0];
@@ -113,7 +128,9 @@ export const createDefaultTask = (overrides: Partial<Task> = {}): Omit<Task, 'id
 };
 
 /**
- * Check if a task is due today
+ * Checks if a task is scheduled for today
+ * @param task - Task to check
+ * @returns True if task is due today
  */
 export const isTaskDueToday = (task: Task): boolean => {
   const today = new Date().toISOString().split('T')[0];
@@ -121,7 +138,9 @@ export const isTaskDueToday = (task: Task): boolean => {
 };
 
 /**
- * Check if a task is overdue
+ * Determines if a task is overdue
+ * @param task - Task to check
+ * @returns True if task is past due and incomplete
  */
 export const isTaskOverdue = (task: Task): boolean => {
   const today = new Date().toISOString().split('T')[0];
@@ -129,7 +148,9 @@ export const isTaskOverdue = (task: Task): boolean => {
 };
 
 /**
- * Format task time for display
+ * Formats task time for user-friendly display
+ * @param task - Task with time to format
+ * @returns Formatted time string or empty string
  */
 export const formatTaskTime = (task: Task): string => {
   if (!task.task_time) return '';
@@ -143,7 +164,9 @@ export const formatTaskTime = (task: Task): string => {
 };
 
 /**
- * Get task priority based on urgency level
+ * Determines task priority level based on urgency
+ * @param task - Task to evaluate
+ * @returns Priority level string
  */
 export const getTaskPriority = (task: Task): 'low' | 'medium' | 'high' | 'urgent' => {
   if (!task.urgency_level) return 'low';
@@ -154,12 +177,15 @@ export const getTaskPriority = (task: Task): 'low' | 'medium' | 'high' | 'urgent
   return 'low';
 };
 
-// ✅ MIGRATION HELPER - Show current usage guide
+/**
+ * Displays comprehensive migration guide for developers
+ * Shows correct usage patterns for the new DataContext approach
+ */
 export const showMigrationGuide = () => {
   console.info(`
-🔄 TASK API MIGRATION GUIDE
+TASK API MIGRATION GUIDE
 
-✅ NEW PATTERN (DataContext + SQLite):
+NEW PATTERN (DataContext + SQLite):
 import { useDataContext } from '../context/DataContext';
 
 const TaskComponent = () => {
@@ -191,13 +217,13 @@ const TaskComponent = () => {
   const { tasks } = await fetchDayData('2025-06-01');
 };
 
-❌ OLD PATTERN (Deprecated):
+OLD PATTERN (Deprecated):
 import { addTask, updateTask } from '../api/Task';
 // These will throw errors now!
 `);
 };
 
-// ✅ Export type utilities for other files
+// Type utilities for external use
 export type TaskWithoutId = Omit<Task, 'id'>;
 export type TaskUpdate = Partial<Task>;
 export type TaskValidation = {

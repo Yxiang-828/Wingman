@@ -1,19 +1,28 @@
-// ✅ HYBRID ARCHITECTURE: Calendar events now handled by SQLite via DataContext
-// This file now only provides type definitions and utilities
+/**
+ * Calendar API - Hybrid Architecture Migration
+ * Calendar events now handled by SQLite via DataContext for improved performance
+ * This file provides type definitions and migration utilities
+ */
 
-// ✅ CalendarEvent interface - matches both Supabase schema and SQLite schema
+/**
+ * CalendarEvent interface - Compatible with both Supabase and SQLite schemas
+ * Represents a scheduled event with date, time, and metadata
+ */
 export interface CalendarEvent {
   id: number;
-  title: string;        // ✅ Based on schema - calendar_events.title is "text" type
-  event_date: string;   // ✅ Based on schema - calendar_events.event_date is "date" type
-  event_time: string;   // ✅ Based on schema - calendar_events.event_time is "time" type
-  type: string;         // ✅ Based on schema - calendar_events.type is "text" type
-  description: string;  // ✅ Based on schema - calendar_events.description is "text" type
-  user_id: string;      // ✅ Based on schema - calendar_events.user_id is "uuid" type
-  // ✅ OPTIONAL - Database handles automatically
-  created_at?: string;
-  updated_at?: string;
+  title: string;        // Event title - maps to calendar_events.title
+  event_date: string;   // Date in YYYY-MM-DD format - maps to calendar_events.event_date
+  event_time: string;   // Time in HH:MM format - maps to calendar_events.event_time
+  type: string;         // Event category - maps to calendar_events.type
+  description: string;  // Event details - maps to calendar_events.description
+  user_id: string;      // User identifier - maps to calendar_events.user_id
+  created_at?: string;  // Auto-generated timestamp
+  updated_at?: string;  // Auto-generated timestamp
 }
+
+// Migration notice for developers
+console.warn('MIGRATION NOTICE: Calendar API operations moved to DataContext + SQLite');
+console.info('USE INSTEAD: useDataContext() for createEvent, updateEvent, deleteEvent, fetchDayData');
 
 // ✅ DEPRECATED NOTICE: All data operations moved to DataContext + SQLite
 console.warn('📢 MIGRATION NOTICE: Calendar API operations moved to DataContext + SQLite');

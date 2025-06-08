@@ -1,18 +1,27 @@
-// ✅ HYBRID ARCHITECTURE: Chat operations now handled by SQLite via electronAPI
-// This file now only provides type definitions and utilities
+/**
+ * Chat API - Hybrid Architecture Migration
+ * Chat operations now handled by SQLite via electronAPI for local AI integration
+ * This file provides type definitions and utilities for Ollama integration
+ */
 
-// ✅ Enhanced ChatMessage interface - matches SQLite schema and supports AI
+/**
+ * Enhanced ChatMessage interface - Optimized for local AI conversations
+ * Represents a conversation message with AI/user distinction
+ */
 export interface ChatMessage {
   id: number;
-  user_id: string;         // ✅ Based on schema - chat_messages.user_id is "text" type
-  session_id?: number;     // ✅ Based on schema - chat_messages.session_id references chat_sessions
-  is_ai: boolean;          // ✅ Based on schema - chat_messages.is_ai is "boolean" type
-  message: string;         // ✅ Based on schema - chat_messages.message is "text" type
-  timestamp: string;       // ✅ Based on schema - chat_messages.timestamp is "text" type
-  updated_at?: string;     // ✅ Based on schema - auto-generated timestamp
+  user_id: string;         // User identifier - chat_messages.user_id
+  session_id?: number;     // Optional session grouping - chat_messages.session_id
+  is_ai: boolean;          // Message source indicator - chat_messages.is_ai
+  message: string;         // Message content - chat_messages.message
+  timestamp: string;       // Message timestamp - chat_messages.timestamp
+  updated_at?: string;     // Auto-generated timestamp
 }
 
-// ✅ Chat Session interface for session management
+/**
+ * Chat Session interface for conversation management
+ * Groups related messages for context and organization
+ */
 export interface ChatSession {
   id: number;
   user_id: string;
@@ -21,9 +30,9 @@ export interface ChatSession {
   updated_at?: string;
 }
 
-// ✅ DEPRECATED NOTICE: All data operations moved to SQLite via electronAPI
-console.warn('📢 MIGRATION NOTICE: Chat API operations moved to SQLite via electronAPI.db');
-console.info('💬 USE INSTEAD: window.electronAPI.db.getChatHistory(), saveChatMessage(), clearChatHistory()');
+// Migration notice for developers
+console.warn('MIGRATION NOTICE: Chat API operations moved to SQLite via electronAPI.db');
+console.info('USE INSTEAD: window.electronAPI.db.getChatHistory(), saveChatMessage(), clearChatHistory()');
 
 // ✅ LEGACY API FUNCTIONS - DEPRECATED
 // These functions now throw errors to guide migration to direct SQLite calls

@@ -1,4 +1,10 @@
-/* MonthSelector.css */
+/**
+ * Month Selector Component Styles
+ * Interactive grid-based month navigation with enhanced visual feedback
+ * Optimized for touch and mouse interactions with smooth animations
+ */
+
+/* Month selector panel with responsive grid layout */
 .ms-panel {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -8,8 +14,12 @@
   padding: 16px;
   margin-bottom: 24px;
   width: 100%;
+  /* Performance optimization for grid animations */
+  will-change: contents;
+  contain: layout style;
 }
 
+/* Month button with interactive hover and active states */
 .ms-btn {
   background: rgba(30, 30, 50, 0.4);
   color: rgba(255, 255, 255, 0.85);
@@ -19,13 +29,18 @@
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   text-align: center;
   height: 36px;
   position: relative;
+  /* Enhanced interaction feedback */
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Added glow effect on hover */
+/* Enhanced hover effect with glow and subtle rotation */
 .ms-btn:hover {
   background: rgba(40, 40, 70, 0.6);
   color: white;
@@ -33,12 +48,14 @@
   box-shadow: 
     0 6px 15px rgba(0, 0, 0, 0.2), 
     0 0 8px rgba(100, 108, 255, 0.4),
-    0 0 20px rgba(100, 108, 255, 0.3); /* Outer glow */
+    0 0 20px rgba(100, 108, 255, 0.3);
   border-color: rgba(100, 108, 255, 0.3);
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+  /* Performance hint for smooth animations */
+  will-change: transform;
 }
 
-/* Active state with glow */
+/* Active state with persistent glow effect */
 .ms-btn.active {
   background: rgba(100, 108, 255, 0.2);
   color: white;
@@ -46,16 +63,75 @@
   box-shadow: 
     0 0 10px rgba(100, 108, 255, 0.5),
     0 0 20px rgba(100, 108, 255, 0.2);
+  font-weight: 600;
+  position: relative;
 }
 
+/* Active state indicator with pulse animation */
+.ms-btn.active::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.3), rgba(83, 91, 242, 0.2));
+  border-radius: 10px;
+  z-index: -1;
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+/* Pressed state for better touch feedback */
+.ms-btn:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Focus state for keyboard accessibility */
+.ms-btn:focus {
+  outline: none;
+  box-shadow: 
+    0 0 0 2px rgba(100, 108, 255, 0.5),
+    0 0 10px rgba(100, 108, 255, 0.3);
+}
+
+/* Responsive grid adjustments for different screen sizes */
 @media (max-width: 768px) {
   .ms-panel {
     grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 12px;
+  }
+  
+  .ms-btn {
+    height: 32px;
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 480px) {
   .ms-panel {
     grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 10px;
   }
+  
+  .ms-btn {
+    height: 28px;
+    font-size: 0.75rem;
+    padding: 4px 0;
+  }
+  
+  /* Simplified hover effects for mobile */
+  .ms-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Animation for active state pulse effect */
+@keyframes pulse-glow {
+  0% { opacity: 0.7; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.7; transform: scale(0.98); }
 }

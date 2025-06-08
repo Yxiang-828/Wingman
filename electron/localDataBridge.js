@@ -3,31 +3,44 @@ const Database = require('better-sqlite3');
 const fs = require('fs');
 const { app, ipcMain } = require('electron');
 
+/**
+ * LocalDataManager handles all SQLite database operations for Wingman
+ * Manages tasks, events, diary entries, chat history, and user settings
+ * Uses better-sqlite3 for synchronous database operations with better performance
+ */
 class LocalDataManager {
   constructor() {
+    // Determine database location in user data directory
     const userDataPath = app.getPath('userData');
     const dataDir = path.join(userDataPath, 'wingman-data');
     
+    // Ensure data directory exists
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
     this.dbPath = path.join(dataDir, 'wingman.db');
-    console.log(`📦 LocalDataManager initializing database at: ${this.dbPath}`);
+    console.log('LocalDataManager initializing database at:', this.dbPath);
     
     try {
       this.db = new Database(this.dbPath);
       this.initializeDatabase();
-      console.log('✅ SQLite database initialized successfully');
+      console.log('SQLite database initialized successfully');
     } catch (err) {
-      console.error('❌ Error initializing SQLite database:', err);
+      console.error('Error initializing SQLite database:', err);
       throw err;
     }
   }
 
+  /**
+   * Initializes database schema and performs necessary migrations
+   * Attempts to load schema from file, falls back to inline creation
+   */
   initializeDatabase() {
+    // Enable foreign key constraints for data integrity
     this.db.pragma('foreign_keys = ON');
     
+    // Try to load schema from multiple possible locations
     const schemaPaths = [
       path.join(__dirname, '..', 'src', 'storage', 'schema.sql'),
       path.join(__dirname, 'schema.sql'),
@@ -38,7 +51,7 @@ class LocalDataManager {
     
     for (const schemaPath of schemaPaths) {
       if (fs.existsSync(schemaPath)) {
-        console.log(`📋 LocalDataManager: Loading schema from ${schemaPath}`);
+        console.log('Loading schema from', schemaPath);
         const schema = fs.readFileSync(schemaPath, 'utf8');
         this.db.exec(schema);
         schemaLoaded = true;
@@ -46,28 +59,32 @@ class LocalDataManager {
       }
     }
     
+    // Create tables programmatically if no schema file found
     if (!schemaLoaded) {
-      console.log('⚠️ LocalDataManager: No schema file found, creating tables inline');
+      console.log('No schema file found, creating tables inline');
       this.createTablesInline();
     }
 
-    // ✅ CRITICAL: Add migration to ensure 'failed' column exists
+    // Run migrations to ensure all required columns exist
     this.migrateDatabase();
   }
 
-  // ✅ NEW: Database migration method
+  /**
+   * Handles database migrations for schema changes
+   * Adds new columns and tables without affecting existing data
+   */
   migrateDatabase() {
     try {
-      // Check if 'failed' column exists in tasks table
+      // Check if 'failed' column exists in tasks table and add if missing
       const tableInfo = this.db.prepare("PRAGMA table_info(tasks)").all();
       const hasFailedColumn = tableInfo.some(column => column.name === 'failed');
       
       if (!hasFailedColumn) {
-        console.log('🔄 LocalDataManager: Adding failed column to tasks table');
+        console.log('Adding failed column to tasks table');
         this.db.exec('ALTER TABLE tasks ADD COLUMN failed BOOLEAN DEFAULT FALSE');
       }
 
-      // Ensure downloaded_models table exists
+      // Ensure model management tables exist
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS downloaded_models (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,7 +97,7 @@ class LocalDataManager {
         )
       `);
 
-      // Ensure user_settings table exists
+      // Ensure user settings table exists
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS user_settings (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,7 +111,7 @@ class LocalDataManager {
         )
       `);
 
-      // Ensure chat_quick_prompts table exists
+      // Ensure chat quick prompts table exists
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS chat_quick_prompts (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,10 +124,14 @@ class LocalDataManager {
       `);
 
     } catch (error) {
-      console.error('❌ LocalDataManager: Migration error:', error);
+      console.error('Migration error:', error);
     }
   }
 
+  /**
+   * Creates all required database tables programmatically
+   * Used when no schema file is available
+   */
   createTablesInline() {
     const createTasksTable = `
       CREATE TABLE IF NOT EXISTS tasks (
@@ -198,14 +219,20 @@ class LocalDataManager {
       this.db.exec(createChatSessionsTable);
       this.db.exec(createChatMessagesTable);
       this.db.exec(createChatHistoryTable);
-      console.log('✅ LocalDataManager: Tables created inline successfully');
+      console.log('Tables created inline successfully');
     } catch (error) {
-      console.error('❌ LocalDataManager: Error creating tables inline:', error);
+      console.error('Error creating tables inline:', error);
       throw error;
     }
   }
 
-  // ✅ FIXED: Complete getTasks implementation
+  /**
+   * Retrieves tasks for a specific user and date
+   * Automatically marks overdue tasks as failed based on current time
+   * @param {string} userId - The user identifier
+   * @param {string} date - Date in YYYY-MM-DD format
+   * @returns {Array} Array of task objects
+   */
   getTasks(userId, date) {
     try {
       const stmt = this.db.prepare(`
@@ -218,7 +245,7 @@ class LocalDataManager {
       
       const tasks = stmt.all(userId, date);
       
-      // ✅ ENHANCED: Auto-mark overdue tasks as failed
+      // Auto-mark overdue tasks as failed for better user experience
       if (tasks.length > 0) {
         const now = new Date();
         const currentTime = now.toTimeString().slice(0, 8); // HH:MM:SS format
@@ -227,10 +254,10 @@ class LocalDataManager {
         let updatedCount = 0;
         
         tasks.forEach(task => {
-          // Only check tasks for today or past dates
+          // Only check tasks for today or past dates that aren't completed or already failed
           if (task.task_date <= currentDate && 
               !task.completed && !task.failed && task.task_time && 
-              task.task_time !== 'All day' && task.task_time <= currentTime) {  // ✅ CHANGED: <= instead of <
+              task.task_time !== 'All day' && task.task_time <= currentTime) {
             
             // Mark as failed in database
             const updateStmt = this.db.prepare(`
@@ -240,14 +267,14 @@ class LocalDataManager {
             `);
             updateStmt.run(task.id);
             
-            // Update in memory
+            // Update in memory for immediate UI feedback
             task.failed = true;
             updatedCount++;
           }
         });
         
         if (updatedCount > 0) {
-          console.log(`⏰ getTasks: Auto-marked ${updatedCount} tasks as failed for ${date}`);
+          console.log(`Auto-marked ${updatedCount} tasks as failed for ${date}`);
         }
       }
       
@@ -258,161 +285,191 @@ class LocalDataManager {
       return [];
     }
   }
-// ✅ ADD: Helper function to sanitize data for SQLite
-sanitizeForSQLite(data) {
-  const sanitized = {};
-  
-  for (const [key, value] of Object.entries(data)) {
-    if (typeof value === 'boolean') {
-      // Convert boolean to integer
-      sanitized[key] = value ? 1 : 0;
-    } else if (value === undefined) {
-      // Convert undefined to null
-      sanitized[key] = null;
-    } else if (typeof value === 'object' && value !== null) {
-      // Convert objects/arrays to JSON strings (if needed)
-      sanitized[key] = JSON.stringify(value);
-    } else {
-      // Keep primitives as-is (string, number, null)
-      sanitized[key] = value;
-    }
-  }
-  
-  return sanitized;
-}
- saveTask(task) {
-  try {
-    console.log('💾 SAVE TASK: Attempting to save task:', task);
+
+  /**
+   * Sanitizes data for SQLite compatibility
+   * Converts booleans to integers, undefined to null, objects to JSON
+   * @param {Object} data - Raw data object
+   * @returns {Object} Sanitized data object
+   */
+  sanitizeForSQLite(data) {
+    const sanitized = {};
     
-    // ✅ CRITICAL: Convert data types for SQLite compatibility
-    const sanitizedTask = {
-      user_id: task.user_id || null,
-      title: task.title || null,
-      task_date: task.task_date || null,
-      task_time: task.task_time || null,
-      // ✅ CONVERT: Boolean to INTEGER (0/1)
-      completed: task.completed ? 1 : 0,
-      failed: task.failed ? 1 : 0,
-      // ✅ CONVERT: undefined to null
-      task_type: task.task_type || null,
-      due_date: task.due_date || null,
-      last_reset_date: task.last_reset_date || null,
-      urgency_level: task.urgency_level || null,
-      status: task.status || null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    console.log('🔧 SANITIZED TASK:', sanitizedTask);
-
-    const stmt = this.db.prepare(`
-      INSERT INTO tasks (
-        user_id, title, task_date, task_time, completed, failed,
-        task_type, due_date, last_reset_date, urgency_level, status,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(
-      sanitizedTask.user_id,
-      sanitizedTask.title,
-      sanitizedTask.task_date,
-      sanitizedTask.task_time,
-      sanitizedTask.completed,
-      sanitizedTask.failed,
-      sanitizedTask.task_type,
-      sanitizedTask.due_date,
-      sanitizedTask.last_reset_date,
-      sanitizedTask.urgency_level,
-      sanitizedTask.status,
-      sanitizedTask.created_at,
-      sanitizedTask.updated_at
-    );
-
-    console.log('✅ SAVE TASK: Success - ID:', result.lastInsertRowid);
-    return { id: result.lastInsertRowid, ...sanitizedTask };
-
-  } catch (error) {
-    console.error('❌ SAVE TASK ERROR:', error);
-    console.error('❌ PROBLEMATIC TASK DATA:', task);
-    throw error;
-  }
-}
-
-  updateTask(id, updates) {
-  try {
-    console.log('🔄 UPDATE TASK: Attempting to update task ID:', id, 'with:', updates);
-
-    // ✅ SANITIZE: Convert all values for SQLite compatibility
-    const sanitizedUpdates = {};
-    
-    for (const [key, value] of Object.entries(updates)) {
-      if (key === 'completed' || key === 'failed') {
-        // Convert boolean to integer
-        sanitizedUpdates[key] = value ? 1 : 0;
+    for (const [key, value] of Object.entries(data)) {
+      if (typeof value === 'boolean') {
+        // SQLite stores booleans as integers
+        sanitized[key] = value ? 1 : 0;
       } else if (value === undefined) {
-        // Convert undefined to null
-        sanitizedUpdates[key] = null;
+        // Convert undefined to null for database storage
+        sanitized[key] = null;
+      } else if (typeof value === 'object' && value !== null) {
+        // Convert complex objects to JSON strings if needed
+        sanitized[key] = JSON.stringify(value);
       } else {
-        sanitizedUpdates[key] = value;
+        // Keep primitives as-is (string, number, null)
+        sanitized[key] = value;
       }
     }
-
-    // Always update the timestamp
-    sanitizedUpdates.updated_at = new Date().toISOString();
-
-    console.log('🔧 SANITIZED UPDATES:', sanitizedUpdates);
-
-    const setClause = Object.keys(sanitizedUpdates)
-      .map(key => `${key} = ?`)
-      .join(', ');
-
-    const stmt = this.db.prepare(`
-      UPDATE tasks 
-      SET ${setClause}
-      WHERE id = ?
-    `);
-
-    const values = [...Object.values(sanitizedUpdates), id];
-    console.log('📝 SQL VALUES:', values);
-
-    const result = stmt.run(...values);
-
-    if (result.changes === 0) {
-      throw new Error(`No task found with ID: ${id}`);
-    }
-
-    console.log('✅ UPDATE TASK: Success - Changes:', result.changes);
-    return { id, ...sanitizedUpdates };
-
-  } catch (error) {
-    console.error('❌ UPDATE TASK ERROR:', error);
-    console.error('❌ PROBLEMATIC ID:', id, 'UPDATES:', updates);
-    throw error;
+    
+    return sanitized;
   }
-}
 
-  // ✅ FIXED: Complete deleteTask implementation
+  /**
+   * Saves a new task to the database
+   * Handles data type conversion and provides detailed error logging
+   * @param {Object} task - Task object to save
+   * @returns {Object} Saved task with generated ID
+   */
+  saveTask(task) {
+    try {
+      console.log('Attempting to save task:', task);
+      
+      // Convert data types for SQLite compatibility
+      const sanitizedTask = {
+        user_id: task.user_id || null,
+        title: task.title || null,
+        task_date: task.task_date || null,
+        task_time: task.task_time || null,
+        // Convert booleans to integers for SQLite
+        completed: task.completed ? 1 : 0,
+        failed: task.failed ? 1 : 0,
+        // Handle optional fields
+        task_type: task.task_type || null,
+        due_date: task.due_date || null,
+        last_reset_date: task.last_reset_date || null,
+        urgency_level: task.urgency_level || null,
+        status: task.status || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Sanitized task data:', sanitizedTask);
+
+      const stmt = this.db.prepare(`
+        INSERT INTO tasks (
+          user_id, title, task_date, task_time, completed, failed,
+          task_type, due_date, last_reset_date, urgency_level, status,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const result = stmt.run(
+        sanitizedTask.user_id,
+        sanitizedTask.title,
+        sanitizedTask.task_date,
+        sanitizedTask.task_time,
+        sanitizedTask.completed,
+        sanitizedTask.failed,
+        sanitizedTask.task_type,
+        sanitizedTask.due_date,
+        sanitizedTask.last_reset_date,
+        sanitizedTask.urgency_level,
+        sanitizedTask.status,
+        sanitizedTask.created_at,
+        sanitizedTask.updated_at
+      );
+
+      console.log('Task saved successfully with ID:', result.lastInsertRowid);
+      return { id: result.lastInsertRowid, ...sanitizedTask };
+
+    } catch (error) {
+      console.error('Error saving task:', error);
+      console.error('Problematic task data:', task);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates an existing task with new data
+   * Handles partial updates and data type conversion
+   * @param {number} id - Task ID to update
+   * @param {Object} updates - Object containing fields to update
+   * @returns {Object} Updated task data
+   */
+  updateTask(id, updates) {
+    try {
+      console.log('Attempting to update task ID:', id, 'with:', updates);
+
+      // Sanitize all update values for SQLite compatibility
+      const sanitizedUpdates = {};
+      
+      for (const [key, value] of Object.entries(updates)) {
+        if (key === 'completed' || key === 'failed') {
+          // Convert boolean to integer
+          sanitizedUpdates[key] = value ? 1 : 0;
+        } else if (value === undefined) {
+          // Convert undefined to null
+          sanitizedUpdates[key] = null;
+        } else {
+          sanitizedUpdates[key] = value;
+        }
+      }
+
+      // Always update the timestamp for tracking purposes
+      sanitizedUpdates.updated_at = new Date().toISOString();
+
+      console.log('Sanitized updates:', sanitizedUpdates);
+
+      // Build dynamic SQL query for partial updates
+      const setClause = Object.keys(sanitizedUpdates)
+        .map(key => `${key} = ?`)
+        .join(', ');
+
+      const stmt = this.db.prepare(`
+        UPDATE tasks 
+        SET ${setClause}
+        WHERE id = ?
+      `);
+
+      const values = [...Object.values(sanitizedUpdates), id];
+      console.log('SQL values:', values);
+
+      const result = stmt.run(...values);
+
+      if (result.changes === 0) {
+        throw new Error(`No task found with ID: ${id}`);
+      }
+
+      console.log('Task updated successfully, changes:', result.changes);
+      return { id, ...sanitizedUpdates };
+
+    } catch (error) {
+      console.error('Error updating task:', error);
+      console.error('Problematic ID:', id, 'Updates:', updates);
+      throw error;
+    }
+  }
+
+  /**
+   * Deletes a task from the database
+   * @param {number} id - Task ID to delete
+   * @returns {Object} Success status and deletion confirmation
+   */
   deleteTask(id) {
     try {
       const stmt = this.db.prepare('DELETE FROM tasks WHERE id = ?');
       const result = stmt.run(id);
       
       if (result.changes > 0) {
-        console.log(`✅ deleteTask: Task ${id} deleted successfully`);
+        console.log(`Task ${id} deleted successfully`);
         return { success: true, deleted: true };
       } else {
-        console.log(`⚠️ deleteTask: No task found with ID ${id}`);
+        console.log(`No task found with ID ${id}`);
         return { success: false, error: 'Task not found' };
       }
       
     } catch (error) {
-      console.error('❌ deleteTask error:', error);
+      console.error('Error deleting task:', error);
       throw error;
     }
   }
 
-  // ✅ FIXED: Complete getEvents implementation
+  /**
+   * Retrieves calendar events for a specific user and date
+   * @param {string} userId - The user identifier
+   * @param {string} date - Date in YYYY-MM-DD format
+   * @returns {Array} Array of event objects sorted by time
+   */
   getEvents(userId, date) {
     try {
       const stmt = this.db.prepare(`
@@ -427,96 +484,111 @@ sanitizeForSQLite(data) {
     }
   }
 
-updateEvent(event) {
-  try {
-    console.log('🔄 UPDATE EVENT: Attempting to update event ID:', event.id);
-    
-    if (!event.id) {
-      throw new Error('Event ID is required for updates');
+  /**
+   * Updates an existing calendar event
+   * @param {Object} event - Event object with id and updated fields
+   * @returns {Object} Updated event data
+   */
+  updateEvent(event) {
+    try {
+      console.log('Attempting to update event ID:', event.id);
+      
+      if (!event.id) {
+        throw new Error('Event ID is required for updates');
+      }
+
+      const sanitizedEvent = this.sanitizeForSQLite({
+        title: event.title || null,
+        event_date: event.event_date || null,
+        event_time: event.event_time || null,
+        type: event.type || null,
+        description: event.description || null,
+        updated_at: new Date().toISOString()
+      });
+
+      const stmt = this.db.prepare(`
+        UPDATE calendar_events 
+        SET title = ?, event_date = ?, event_time = ?, type = ?, description = ?, updated_at = ?
+        WHERE id = ? AND user_id = ?
+      `);
+
+      const result = stmt.run(
+        sanitizedEvent.title,
+        sanitizedEvent.event_date,
+        sanitizedEvent.event_time,
+        sanitizedEvent.type,
+        sanitizedEvent.description,
+        sanitizedEvent.updated_at,
+        event.id,
+        event.user_id
+      );
+
+      if (result.changes === 0) {
+        throw new Error(`No event found with ID: ${event.id}`);
+      }
+
+      console.log('Event updated successfully, changes:', result.changes);
+      return { id: event.id, ...sanitizedEvent, user_id: event.user_id };
+
+    } catch (error) {
+      console.error('Error updating event:', error);
+      throw error;
     }
+  }
 
-    const sanitizedEvent = this.sanitizeForSQLite({
-      title: event.title || null,
-      event_date: event.event_date || null,
-      event_time: event.event_time || null,
-      type: event.type || null,
-      description: event.description || null,
-      updated_at: new Date().toISOString()
-    });
+  /**
+   * Saves a new calendar event to the database
+   * @param {Object} event - Event object to save
+   * @returns {Object} Saved event with generated ID
+   */
+  saveEvent(event) {
+    try {
+      console.log('Attempting to save event:', event);
+      
+      // Use helper function for data sanitization
+      const sanitizedEvent = this.sanitizeForSQLite({
+        user_id: event.user_id || null,
+        title: event.title || null,
+        event_date: event.event_date || null,
+        event_time: event.event_time || null,
+        type: event.type || null,
+        description: event.description || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
 
-    const stmt = this.db.prepare(`
-      UPDATE calendar_events 
-      SET title = ?, event_date = ?, event_time = ?, type = ?, description = ?, updated_at = ?
-      WHERE id = ? AND user_id = ?
-    `);
+      const stmt = this.db.prepare(`
+        INSERT INTO calendar_events (
+          user_id, title, event_date, event_time, type, description,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
 
-    const result = stmt.run(
-      sanitizedEvent.title,
-      sanitizedEvent.event_date,
-      sanitizedEvent.event_time,
-      sanitizedEvent.type,
-      sanitizedEvent.description,
-      sanitizedEvent.updated_at,
-      event.id,
-      event.user_id
-    );
+      const result = stmt.run(
+        sanitizedEvent.user_id,
+        sanitizedEvent.title,
+        sanitizedEvent.event_date,
+        sanitizedEvent.event_time,
+        sanitizedEvent.type,
+        sanitizedEvent.description,
+        sanitizedEvent.created_at,
+        sanitizedEvent.updated_at
+      );
 
-    if (result.changes === 0) {
-      throw new Error(`No event found with ID: ${event.id}`);
+      console.log('Event saved successfully with ID:', result.lastInsertRowid);
+      return { id: result.lastInsertRowid, ...sanitizedEvent };
+
+    } catch (error) {
+      console.error('Error saving event:', error);
+      throw error;
     }
-
-    console.log('✅ UPDATE EVENT: Success - Changes:', result.changes);
-    return { id: event.id, ...sanitizedEvent, user_id: event.user_id };
-
-  } catch (error) {
-    console.error('❌ UPDATE EVENT ERROR:', error);
-    throw error;
   }
-}
- saveEvent(event) {
-  try {
-    console.log('💾 SAVE EVENT: Attempting to save event:', event);
-    
-    // ✅ SANITIZE: Use helper function
-    const sanitizedEvent = this.sanitizeForSQLite({
-      user_id: event.user_id || null,
-      title: event.title || null,
-      event_date: event.event_date || null,
-      event_time: event.event_time || null,
-      type: event.type || null,
-      description: event.description || null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
 
-    const stmt = this.db.prepare(`
-      INSERT INTO calendar_events (
-        user_id, title, event_date, event_time, type, description,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(
-      sanitizedEvent.user_id,
-      sanitizedEvent.title,
-      sanitizedEvent.event_date,
-      sanitizedEvent.event_time,
-      sanitizedEvent.type,
-      sanitizedEvent.description,
-      sanitizedEvent.created_at,
-      sanitizedEvent.updated_at
-    );
-
-    console.log('✅ SAVE EVENT: Success - ID:', result.lastInsertRowid);
-    return { id: result.lastInsertRowid, ...sanitizedEvent };
-
-  } catch (error) {
-    console.error('❌ SAVE EVENT ERROR:', error);
-    throw error;
-  }
-}
-
-  // ✅ FIXED: Complete deleteEvent implementation
+  /**
+   * Deletes a calendar event from the database
+   * @param {number} id - Event ID to delete
+   * @returns {Object} Success status and deletion confirmation
+   */
   deleteEvent(id) {
     try {
       const stmt = this.db.prepare('DELETE FROM calendar_events WHERE id = ?');
@@ -528,10 +600,16 @@ updateEvent(event) {
     }
   }
 
-  // ✅ FIXED: Complete getDiaryEntries implementation
+  /**
+   * Retrieves diary entries for a user, optionally filtered by date
+   * @param {string} userId - The user identifier
+   * @param {string} date - Optional date filter in YYYY-MM-DD format
+   * @returns {Array} Array of diary entries
+   */
   getDiaryEntries(userId, date) {
     try {
       if (date) {
+        // Get entries for specific date
         const stmt = this.db.prepare(`
           SELECT * FROM diary_entries 
           WHERE user_id = ? AND entry_date = ? 
@@ -539,6 +617,7 @@ updateEvent(event) {
         `);
         return stmt.all(userId, date);
       } else {
+        // Get recent entries across all dates
         const stmt = this.db.prepare(`
           SELECT * FROM diary_entries 
           WHERE user_id = ? 
@@ -553,7 +632,12 @@ updateEvent(event) {
     }
   }
 
-  // ✅ FIXED: Complete saveDiaryEntry implementation
+  /**
+   * Saves or updates a diary entry
+   * Updates existing entry if ID provided, creates new entry otherwise
+   * @param {Object} entry - Diary entry object
+   * @returns {Object} Success status and entry ID
+   */
   saveDiaryEntry(entry) {
     try {
       if (entry.id) {
@@ -580,7 +664,12 @@ updateEvent(event) {
     }
   }
 
-  // ✅ ENHANCED: Chat session management
+  /**
+   * Creates a new chat session for a user
+   * @param {string} userId - The user identifier
+   * @param {string} [title=null] - Optional title for the session
+   * @returns {Object} Success status and session ID
+   */
   createChatSession(userId, title = null) {
     try {
       const stmt = this.db.prepare(`
@@ -595,6 +684,11 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Retrieves the current active chat session for a user
+   * @param {string} userId - The user identifier
+   * @returns {Object|null} Current chat session data or null if none found
+   */
   getCurrentChatSession(userId) {
     try {
       const stmt = this.db.prepare(`
@@ -610,7 +704,14 @@ updateEvent(event) {
     }
   }
 
-  // ✅ ENHANCED: Save chat message with session support
+  /**
+   * Saves a chat message to the database, associated with a session
+   * @param {string} message - The chat message content
+   * @param {boolean} isAi - Flag indicating if the message is from AI
+   * @param {string} userId - The user identifier
+   * @param {string|null} sessionId - Optional session ID, will create or use current session if not provided
+   * @returns {Object} Saved message data including ID and session ID
+   */
   saveChatMessage(message, isAi, userId, sessionId = null) {
     try {
       // If no session ID provided, get or create current session
@@ -657,7 +758,12 @@ updateEvent(event) {
     }
   }
 
-  // ✅ ENHANCED: Get chat history with session info
+  /**
+   * Retrieves chat history for a user, with optional session info
+   * @param {string} userId - The user identifier
+   * @param {number} [limit=50] - Optional limit on number of messages
+   * @returns {Array} Array of chat history objects
+   */
   getChatHistory(userId, limit = 50) {
     try {
       const stmt = this.db.prepare(`
@@ -675,7 +781,11 @@ updateEvent(event) {
     }
   }
 
-  // ✅ NEW: Get chat sessions
+  /**
+   * Retrieves all chat sessions for a user, with message count
+   * @param {string} userId - The user identifier
+   * @returns {Array} Array of chat session objects
+   */
   getChatSessions(userId) {
     try {
       const stmt = this.db.prepare(`
@@ -693,7 +803,11 @@ updateEvent(event) {
     }
   }
 
-  // ✅ NEW: Get messages for specific session
+  /**
+   * Retrieves all messages for a specific chat session
+   * @param {string} sessionId - The session identifier
+   * @returns {Array} Array of message objects
+   */
   getSessionMessages(sessionId) {
     try {
       const stmt = this.db.prepare(`
@@ -708,7 +822,11 @@ updateEvent(event) {
     }
   }
 
-  // ✅ FIXED: Complete getStorageStats implementation
+  /**
+   * Retrieves storage statistics for a user
+   * @param {string} userId - The user identifier
+   * @returns {Object} Storage statistics including counts of tasks, events, diary entries, and chat messages
+   */
   getStorageStats(userId) {
     try {
       const stats = {};
@@ -736,7 +854,11 @@ updateEvent(event) {
     }
   }
 
-  // ✅ NEW: Quick Prompts CRUD operations
+  /**
+   * Retrieves quick prompts for a user, sorted by usage
+   * @param {string} userId - The user identifier
+   * @returns {Array} Array of quick prompt objects
+   */
   getQuickPrompts(userId) {
     try {
       const stmt = this.db.prepare(`
@@ -752,6 +874,12 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Saves a new quick prompt for a user
+   * @param {string} userId - The user identifier
+   * @param {string} promptText - The prompt text
+   * @returns {Object} Success status and prompt ID
+   */
   saveQuickPrompt(userId, promptText) {
     try {
       const stmt = this.db.prepare(`
@@ -766,6 +894,11 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Deletes a quick prompt by ID
+   * @param {number} promptId - The prompt ID to delete
+   * @returns {Object} Success status
+   */
   deleteQuickPrompt(promptId) {
     try {
       const stmt = this.db.prepare('DELETE FROM chat_quick_prompts WHERE id = ?');
@@ -777,6 +910,11 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Increments the usage count of a quick prompt
+   * @param {number} promptId - The prompt ID to update
+   * @returns {Object} Success status
+   */
   updateQuickPromptUsage(promptId) {
     try {
       const stmt = this.db.prepare(`
@@ -792,6 +930,11 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Retrieves downloaded models for a user, sorted by download date
+   * @param {string} userId - The user identifier
+   * @returns {Array} Array of downloaded model objects
+   */
   getDownloadedModels(userId) {
     try {
       console.log(`📊 Getting downloaded models for user: ${userId}`);
@@ -805,6 +948,12 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Saves or updates a downloaded model for a user
+   * @param {string} userId - The user identifier
+   * @param {Object} modelData - Model data including name, size, and status
+   * @returns {Object} Success status and model ID
+   */
   saveDownloadedModel(userId, modelData) {
     try {
       console.log(`💾 Saving downloaded model for user: ${userId}`, modelData);
@@ -827,6 +976,12 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Deletes a downloaded model for a user
+   * @param {string} userId - The user identifier
+   * @param {string} modelName - The model name to delete
+   * @returns {Object} Success status
+   */
   deleteDownloadedModel(userId, modelName) {
     try {
       console.log(`🗑️ Deleting downloaded model for user: ${userId}, model: ${modelName}`);
@@ -840,6 +995,11 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Retrieves user settings for a specific user
+   * @param {string} userId - The user identifier
+   * @returns {Object} User settings object
+   */
   getUserSettings(userId) {
     try {
       const stmt = this.db.prepare(`
@@ -860,6 +1020,12 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Saves user settings, inserting or updating as necessary
+   * @param {string} userId - The user identifier
+   * @param {Object} settings - Settings object containing user preferences
+   * @returns {Object} Success status
+   */
   saveUserSettings(userId, settings) {
     try {
       // Check if settings exist
@@ -908,10 +1074,14 @@ updateEvent(event) {
     }
   }
 
+  /**
+   * Safely closes the database connection
+   * Should be called when shutting down the application
+   */
   close() {
     if (this.db) {
       this.db.close();
-      console.log('✅ LocalDataManager: Database connection closed');
+      console.log('Database connection closed successfully');
     }
   }
 }

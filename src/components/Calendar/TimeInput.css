@@ -1,11 +1,19 @@
+/**
+ * Time Input Component Styles
+ * Enhanced time picker with numpad interface and preset selections
+ * Supports both manual input and interactive numpad for mobile-friendly time entry
+ */
+
+/* Time input container with relative positioning for numpad overlay */
 .time-input-container {
   position: relative;
   width: 100%;
 }
 
+/* Main time input field with consistent theming */
 .time-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Right padding for toggle button */
   height: 2.75rem;
   box-sizing: border-box;
   border-radius: 8px;
@@ -26,8 +34,10 @@
 
 .time-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
 }
 
+/* Toggle button for numpad activation */
 .time-input-toggle {
   position: absolute;
   right: 8px;
@@ -50,6 +60,7 @@
 .time-input-toggle:hover {
   background: rgba(100, 108, 255, 0.15);
   color: white;
+  transform: translateY(-50%) scale(1.1);
 }
 
 .time-icon {
@@ -61,22 +72,27 @@
   line-height: 1;
 }
 
-/* Numpad styling */
-.time-numpad {
+/* Interactive time picker numpad overlay */
+.time-numpad,
+.time-numpad-compact {
   position: absolute;
   top: calc(100% + 5px);
   left: 0;
   z-index: 1000;
   width: 320px;
+  max-width: 95vw; /* Responsive width for mobile */
   background: rgba(25, 25, 45, 0.95);
   border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 5px 20px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(100, 108, 255, 0.1);
   padding: 1rem;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(100, 108, 255, 0.15);
-  animation: fadeIn 0.2s ease;
+  animation: slideInUp 0.2s ease;
 }
 
+/* Numpad header with current time display and close button */
 .time-numpad-header {
   display: flex;
   flex-direction: column;
@@ -91,21 +107,27 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 0.5rem;
+  text-align: center;
 }
 
 .time-numpad-value {
   font-size: 1.7rem;
   font-weight: 700;
   color: white;
-  font-family: monospace;
-  letter-spacing: 1px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  text-align: center;
+  background: rgba(100, 108, 255, 0.1);
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 108, 255, 0.2);
 }
 
 .time-numpad-close {
   position: absolute;
   top: -5px;
   right: -5px;
-  background: rgba(40, 40, 60, 0.5);
+  background: rgba(40, 40, 60, 0.8);
   border: none;
   width: 28px;
   height: 28px;
@@ -116,15 +138,35 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   line-height: 1;
 }
 
 .time-numpad-close:hover {
-  background: rgba(255, 77, 77, 0.2);
-  transform: rotate(90deg);
+  background: rgba(248, 113, 113, 0.3);
+  color: white;
+  transform: rotate(90deg) scale(1.1);
 }
 
+/* Unified button styling for all numpad interactions */
+.time-numpad-button,
+.time-preset-button,
+.time-minute-btn {
+  background: rgba(30, 30, 50, 0.6);
+  color: white;
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Performance optimization */
+  will-change: transform;
+}
+
+/* Number grid buttons */
 .time-numpad-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -133,32 +175,30 @@
 }
 
 .time-numpad-button {
-  background: rgba(30, 30, 50, 0.6);
-  color: white;
-  border: 1px solid rgba(100, 108, 255, 0.2);
-  border-radius: 8px;
   padding: 0.8rem 0;
   font-size: 1.2rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
+  min-height: 48px; /* Touch-friendly size */
 }
 
-.time-numpad-button:hover {
-  background: rgba(100, 108, 255, 0.2);
-  border-color: rgba(100, 108, 255, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+/* Minute preset grid */
+.time-minute-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.3) transparent;
 }
 
-.time-section-label {
+.time-minute-btn {
+  padding: 0.5rem 0.3rem;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+  min-height: 36px;
 }
 
-/* Presets styling */
+/* Legacy preset buttons (maintained for compatibility) */
 .time-presets {
   display: flex;
   flex-wrap: wrap;
@@ -167,27 +207,46 @@
 }
 
 .time-preset-button {
-  background: rgba(30, 30, 50, 0.6);
-  color: white;
-  border: 1px solid rgba(100, 108, 255, 0.2);
-  border-radius: 8px;
   padding: 0.6rem 0.8rem;
   font-size: 0.95rem;
-  transition: all 0.2s ease;
-  cursor: pointer;
   flex: 1;
   min-width: 60px;
   text-align: center;
 }
 
-.time-preset-button:hover {
-  background: rgba(100, 108, 255, 0.2);
+/* Unified hover effects for all interactive buttons */
+.time-numpad-button:hover,
+.time-preset-button:hover,
+.time-minute-btn:hover {
+  background: rgba(100, 108, 255, 0.25);
   border-color: rgba(100, 108, 255, 0.4);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.2);
+  color: white;
 }
 
+/* Active state for pressed buttons */
+.time-numpad-button:active,
+.time-preset-button:active,
+.time-minute-btn:active {
+  transform: translateY(0) scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Section labels for organization */
+.time-section-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Action buttons for apply/cancel operations */
 .time-numpad-actions {
   display: flex;
+  gap: 0.5rem;
   justify-content: center;
   margin-top: 1rem;
 }
@@ -201,17 +260,94 @@
   font-weight: 600;
   transition: all 0.2s ease;
   cursor: pointer;
-  width: 100%;
+  flex: 1;
+  min-height: 44px;
 }
 
 .time-numpad-action-btn:hover {
   background: rgba(100, 108, 255, 0.3);
   transform: translateY(-2px);
-  box-shadow: 0 2px 10px rgba(100, 108, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
 }
 
-/* Animation */
+.time-numpad-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Enhanced animations */
+@keyframes slideInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive design for mobile devices */
+@media (max-width: 768px) {
+  .time-numpad,
+  .time-numpad-compact {
+    width: 280px;
+    padding: 0.8rem;
+  }
+  
+  .time-numpad-value {
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+  }
+  
+  .time-minute-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-height: 100px;
+  }
+  
+  .time-numpad-button {
+    padding: 0.6rem 0;
+    font-size: 1.1rem;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .time-numpad,
+  .time-numpad-compact {
+    width: 260px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .time-minute-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Accessibility improvements */
+.time-numpad-button:focus,
+.time-preset-button:focus,
+.time-minute-btn:focus {
+  outline: 2px solid rgba(100, 108, 255, 0.6);
+  outline-offset: 2px;
+}
+
+/* Performance optimizations */
+.time-numpad {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.time-numpad-button,
+.time-preset-button,
+.time-minute-btn {
+  contain: layout style paint;
 }

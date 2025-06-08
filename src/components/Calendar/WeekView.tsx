@@ -7,12 +7,15 @@ import {
   parseLocalDateString,
 } from "../../utils/timeUtils";
 import { getCurrentUserId } from "../../utils/auth";
-import { useNotifications } from "../../context/NotificationsContext"; // ✅ ADD
-import DetailPopup from "../Common/DetailPopup"; // ✅ ADD
+import { useNotifications } from "../../context/NotificationsContext";
+import DetailPopup from "../Common/DetailPopup";
 import WingmanAvatar from "../Common/WingmanAvatar";
 import "./WeekView.css";
 
-// ✅ COMPACT: Week day component with 7+7 limit
+/**
+ * WeekDay Component Props Interface
+ * Defines the structure for individual day components within the week view
+ */
 interface WeekDayProps {
   date: Date;
   events: any[];
@@ -21,30 +24,47 @@ interface WeekDayProps {
   onDayClick: (dateStr: string) => void;
 }
 
+/**
+ * WeekDay Component
+ * Compact day display with item limits and overflow handling
+ * Features interactive popup system for detailed item viewing
+ * Limits display to 12 tasks and 12 events per day for performance
+ */
 const WeekDay = React.memo(
   ({ date, events = [], tasks = [], isToday, onDayClick }: WeekDayProps) => {
     const dateStr = formatDateToString(date);
     const navigate = useNavigate();
     const { showPopupFor } = useNotifications();
 
-    // ✅ LIMITS: Max 12 tasks, 12 events
+    // Performance optimization: limit displayed items to prevent UI overflow
     const displayTasks = tasks.slice(0, 12);
     const displayEvents = events.slice(0, 12);
     const hasMoreTasks = tasks.length > 12;
     const hasMoreEvents = events.length > 12;
     const hasOverflow = hasMoreTasks || hasMoreEvents;
 
-    // ✅ UPDATED: Show popup instead of direct navigation
+    /**
+     * Handles task click with popup display
+     * Prevents event bubbling to avoid triggering day click
+     */
     const handleTaskClick = (e: React.MouseEvent, task: any) => {
       e.stopPropagation();
       showPopupFor(task);
     };
 
+    /**
+     * Handles event click with popup display
+     * Prevents event bubbling to avoid triggering day click
+     */
     const handleEventClick = (e: React.MouseEvent, event: any) => {
       e.stopPropagation();
       showPopupFor(event);
     };
 
+    /**
+     * Navigates to detailed day view for complete item listing
+     * Used when items exceed display limits
+     */
     const handleDayViewClick = (e: React.MouseEvent) => {
       e.stopPropagation();
       navigate(`/calendar/day?date=${dateStr}`);
@@ -56,24 +76,21 @@ const WeekDay = React.memo(
         onClick={() => onDayClick(dateStr)}
       >
         <div className="week-day-header-compact">
-          <div className="week-day-name-compact">
-            {format(date, "EEE")}
-          </div>
-          <div className="week-day-date-compact">
-            {format(date, "d")}
-          </div>
+          <div className="week-day-name-compact">{format(date, "EEE")}</div>
+          <div className="week-day-date-compact">{format(date, "d")}</div>
         </div>
 
         <div className="week-day-content-compact">
+          {/* Task items with completion and failure state indicators */}
           {displayTasks.map((task) => (
             <div
               key={`task-${task.id}`}
               className={`week-item-compact task ${
                 task.completed ? "completed" : ""
-              } ${task.failed ? "failed" : ""}`} // ✅ ADD: failed class
+              } ${task.failed ? "failed" : ""}`}
               onClick={(e) => handleTaskClick(e, task)}
             >
-              {/* ✅ UPDATED: Show cross for failed, tick for completed, circle for pending */}
+              {/* Status indicator: cross for failed, checkmark for completed, circle for pending */}
               <div className="task-status-compact-readonly">
                 {task.failed ? "×" : task.completed ? "✓" : "○"}
               </div>
@@ -83,11 +100,12 @@ const WeekDay = React.memo(
                   <div className="item-time-compact">{task.task_time}</div>
                 )}
               </div>
-              {/* ✅ ADD: Task type label */}
+              {/* Visual type label for quick identification */}
               <div className="item-type-label task-label">Task</div>
             </div>
           ))}
 
+          {/* Event items with type-specific styling */}
           {displayEvents.map((event) => (
             <div
               key={`event-${event.id}`}
@@ -102,16 +120,14 @@ const WeekDay = React.memo(
                   <div className="item-time-compact">{event.event_time}</div>
                 )}
               </div>
-              {/* ✅ ADD: Event type label */}
+              {/* Visual type label for quick identification */}
               <div className="item-type-label event-label">Event</div>
             </div>
           ))}
 
+          {/* Overflow indicator with total item count */}
           {hasOverflow && (
-            <button
-              className="day-view-more-btn"
-              onClick={handleDayViewClick}
-            >
+            <button className="day-view-more-btn" onClick={handleDayViewClick}>
               View All ({tasks.length + events.length})
             </button>
           )}
@@ -121,13 +137,19 @@ const WeekDay = React.memo(
   }
 );
 
-// ✅ KEEP: Rest of WeekView component unchanged
+/**
+ * WeekView Component
+ * Main week calendar component with navigation and data management
+ * Provides year overview with week-by-week navigation
+ * Integrates with notification system for popup interactions
+ */
 const WeekView: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup, completeTask } =
-    useNotifications(); // ✅ ADD
+    useNotifications();
 
+  // Week state management with Monday start configuration
   const [weekStart, setWeekStart] = useState(() => {
     const today = new Date();
     return startOfWeek(today, { weekStartsOn: 1 });
@@ -136,24 +158,31 @@ const WeekView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [weekData, setWeekData] = useState<Record<string, any>>({});
 
-  // Generate week dates
+  /**
+   * Generates array of 7 consecutive dates starting from week start
+   * Memoized for performance to prevent unnecessary recalculations
+   */
   const weekDates = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   }, [weekStart]);
 
-  // Fetch week data
+  /**
+   * Fetches comprehensive week data for all 7 days
+   * Handles errors gracefully with fallback empty arrays
+   * Optimized for compact display with performance logging
+   */
   const fetchWeekData = useCallback(async () => {
     try {
       setLoading(true);
 
       const userId = getCurrentUserId();
       if (!userId) {
-        console.log("📅 WeekView: No user ID, skipping week data loading");
+        console.log("WeekView: No user ID available, skipping data load");
         setLoading(false);
         return;
       }
 
-      console.log(`📅 WeekView: Loading week data (compact display)`);
+      console.log("WeekView: Loading week data for compact display");
 
       const weekDataPromises = weekDates.map(async (date) => {
         const dateStr = formatDateToString(date);
@@ -188,16 +217,19 @@ const WeekView: React.FC = () => {
       });
 
       setWeekData(newWeekData);
-      console.log(`✅ WeekView: Week data loaded (compact mode)`);
+      console.log("WeekView: Week data loaded successfully");
     } catch (error) {
-      console.error("📅 WeekView: Error fetching week data:", error);
+      console.error("WeekView: Error fetching week data:", error);
       setWeekData({});
     } finally {
       setLoading(false);
     }
   }, [weekDates]);
 
-  // Listen for refresh events
+  /**
+   * Listens for external refresh events from other components
+   * Ensures data consistency across the application
+   */
   useEffect(() => {
     const handleRefresh = () => {
       fetchWeekData();
@@ -207,7 +239,10 @@ const WeekView: React.FC = () => {
     return () => window.removeEventListener("week-data-refresh", handleRefresh);
   }, [fetchWeekData]);
 
-  // Initialize from URL
+  /**
+   * Initializes week view from URL parameters
+   * Handles invalid dates gracefully with fallback to current week
+   */
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     const dateParam = query.get("date");
@@ -231,7 +266,10 @@ const WeekView: React.FC = () => {
     fetchWeekData();
   }, [fetchWeekData]);
 
-  // Navigation handlers
+  /**
+   * Navigation handlers for week traversal
+   * Updates URL to maintain browser history and bookmarkability
+   */
   const handlePrevWeek = () => {
     const newWeekStart = addDays(weekStart, -7);
     navigate(`/calendar/week?date=${formatDateToString(newWeekStart)}`);
@@ -252,13 +290,17 @@ const WeekView: React.FC = () => {
     navigate(`/calendar/day?date=${dateStr}`);
   };
 
+  // Formatted date range for header display
   const weekDateRange = `${format(weekStart, "MMM d")} - ${format(
     addDays(weekStart, 6),
     "MMM d, yyyy"
   )}`;
   const todayStr = getTodayDateString();
 
-  // Calculate stats
+  /**
+   * Calculates week statistics for header summary
+   * Memoized to prevent recalculation on every render
+   */
   const weekStats = useMemo(() => {
     let totalTasks = 0;
     let totalEvents = 0;
@@ -276,11 +318,11 @@ const WeekView: React.FC = () => {
       {loading ? (
         <div className="week-view-loading">
           <div className="loading-spinner"></div>
-          <div>Loading...</div>
+          <div>Loading week data...</div>
         </div>
       ) : (
         <>
-          {/* Compact header */}
+          {/* Compact header with avatar and summary statistics */}
           <div className="week-header-compact">
             <div className="week-title-container-compact">
               <div className="week-header-row">
@@ -312,7 +354,7 @@ const WeekView: React.FC = () => {
             </div>
           </div>
 
-          {/* Compact grid */}
+          {/* Week grid with individual day components */}
           <div className="week-days-grid-compact">
             {weekDates.map((date) => {
               const dateStr = formatDateToString(date);
@@ -333,7 +375,7 @@ const WeekView: React.FC = () => {
         </>
       )}
 
-      {/* ✅ ADD: Detail Popup */}
+      {/* Integrated detail popup for item interactions */}
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}

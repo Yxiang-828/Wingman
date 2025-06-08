@@ -1,4 +1,10 @@
-/* ✅ FULL SCREEN: Week view uses entire viewport height */
+/**
+ * WeekView Component Styles
+ * Full-screen calendar week display with compact and detailed views
+ * Optimized for performance with GPU acceleration and smooth scrolling
+ */
+
+/* Base week view container with full viewport utilization */
 .calendar-week-view {
   height: 100vh;
   background: var(--color-bg-card-secondary, rgba(25, 25, 45, 0.5));
@@ -13,7 +19,7 @@
   padding: 0;
 }
 
-/* ✅ FULL SCREEN: Compact version also uses full height */
+/* Compact week view with reduced height for dashboard integration */
 .calendar-week-view-compact {
   height: 88vh;
   background: rgba(25, 25, 45, 0.5);
@@ -25,7 +31,7 @@
   padding: 0;
 }
 
-/* Loading state */
+/* Unified loading state for all week view variants */
 .week-view-loading {
   display: flex;
   flex-direction: column;
@@ -37,37 +43,60 @@
   padding: 2rem;
 }
 
+/* Consolidated spinner animation (unified with other components) */
 .loading-spinner {
   width: 40px;
   height: 40px;
   border: 3px solid rgba(100, 108, 255, 0.3);
   border-radius: 50%;
   border-top-color: rgba(100, 108, 255, 0.8);
-  animation: spin 1s linear infinite;
+  animation: spin-smooth 1s linear infinite;
   margin-bottom: 1rem;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ✅ COMPACT: Header takes minimal space */
-.week-header {
+/* Unified header styling for both regular and compact views */
+.week-header,
+.week-header-compact {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
   border-bottom: 1px solid rgba(100, 108, 255, 0.15);
   background: rgba(25, 25, 45, 0.7);
   flex-shrink: 0;
+}
+
+/* Regular header with spacious layout */
+.week-header {
+  padding: 1rem 1.5rem;
   min-height: 70px;
 }
 
+/* Compact header with minimal space usage */
+.week-header-compact {
+  padding: 0.8rem 1rem;
+  min-height: 60px;
+  background: rgba(25, 25, 45, 0.6);
+}
+
+/* Title container layouts */
 .week-title-container {
   display: flex;
   flex-direction: column;
 }
 
+.week-title-container-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.week-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Unified title styling with responsive sizing */
 .week-title {
   font-size: 1.6rem;
   font-weight: 700;
@@ -76,25 +105,52 @@
   text-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
+.week-title-compact {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+/* Unified subtitle styling */
 .week-subtitle {
   font-size: 0.9rem;
   color: var(--color-text, rgba(255, 255, 255, 0.8));
   margin-top: 0.3rem;
 }
 
+.week-subtitle-compact {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Navigation button containers */
 .calendar-buttons {
   display: flex;
   gap: 1rem;
 }
 
-.nav-btn {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+.calendar-buttons-compact {
+  display: flex;
+  gap: 0.3rem;
+}
+
+/* Unified navigation button styling */
+.nav-btn,
+.nav-btn-compact {
   cursor: pointer;
-  padding: 0.4rem 0.8rem;
   border-radius: 6px;
   transition: all 0.2s ease;
   user-select: none;
+  border: none;
+  background: transparent;
+}
+
+/* Regular navigation buttons */
+.nav-btn {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
 }
 
 .nav-btn:hover {
@@ -106,23 +162,56 @@
   color: rgba(100, 108, 255, 0.9);
 }
 
-/* ✅ FULL HEIGHT: Grid uses all remaining space */
-.week-days-grid {
+/* Compact navigation buttons */
+.nav-btn-compact {
+  padding: 0.4rem 0.6rem;
+  background: rgba(40, 40, 60, 0.5);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 4px;
+  transition: background 0.1s ease;
+  font-size: 0.8rem;
+  min-width: 35px;
+}
+
+.nav-btn-compact:hover {
+  background: rgba(50, 50, 80, 0.7);
+  color: white;
+}
+
+.today-btn-compact {
+  background: rgba(100, 108, 255, 0.2) !important;
+  color: rgba(100, 108, 255, 0.9) !important;
+}
+
+/* Unified grid layouts for all view types */
+.week-days-grid,
+.week-days-grid-compact {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-  padding: 12px;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
   contain: content;
 }
 
-/* ✅ FULL HEIGHT: Days use all available grid space */
-.week-day {
+/* Regular grid with spacious layout */
+.week-days-grid {
+  gap: 12px;
+  padding: 12px;
+}
+
+/* Compact grid with minimal spacing */
+.week-days-grid-compact {
+  gap: 6px;
+  padding: 8px;
+}
+
+/* Unified day cell styling */
+.week-day,
+.week-day-compact {
   background: rgba(30, 30, 50, 0.7);
   border-radius: 12px;
-  padding: 10px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -130,6 +219,11 @@
   min-height: 0;
   transition: border-color 0.2s ease, background 0.2s ease;
   cursor: pointer;
+}
+
+/* Regular day cells */
+.week-day {
+  padding: 10px;
 }
 
 .week-day:hover {
@@ -142,44 +236,102 @@
   border: 1px solid rgba(100, 108, 255, 0.4);
 }
 
-/* ✅ COMPACT: Day header */
-.week-day-header {
+/* Compact day cells */
+.week-day-compact {
+  background: rgba(30, 30, 50, 0.6);
+  border-radius: 6px;
+  padding: 6px;
+  border: 1px solid rgba(100, 108, 255, 0.1);
+  transition: border-color 0.1s ease;
+}
+
+.week-day-compact:hover {
+  border-color: rgba(100, 108, 255, 0.2);
+}
+
+.week-day-compact.today {
+  background: rgba(35, 35, 60, 0.8);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+}
+
+/* Unified day header styling */
+.week-day-header,
+.week-day-header-compact {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.6rem;
-  margin-bottom: 8px;
   border-bottom: 1px solid rgba(100, 108, 255, 0.2);
   background: rgba(30, 30, 50, 0.5);
   border-radius: 8px;
   flex-shrink: 0;
 }
 
-.week-day-name {
-  font-size: 0.85rem;
+/* Regular day headers */
+.week-day-header {
+  padding: 0.6rem;
+  margin-bottom: 8px;
+}
+
+/* Compact day headers */
+.week-day-header-compact {
+  padding: 0.3rem 0;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+  background: transparent;
+}
+
+/* Unified day name styling */
+.week-day-name,
+.week-day-name-compact {
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.week-day-name {
+  font-size: 0.85rem;
   margin-bottom: 2px;
 }
 
-.week-day-date {
-  font-size: 1.3rem;
+.week-day-name-compact {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1px;
+}
+
+/* Unified day date styling */
+.week-day-date,
+.week-day-date-compact {
   font-weight: 700;
   color: #ffffff;
 }
 
-/* ✅ FULL HEIGHT: Content area uses remaining space */
-.week-day-content {
+.week-day-date {
+  font-size: 1.3rem;
+}
+
+.week-day-date-compact {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Unified content area styling with optimized scrolling */
+.week-day-content,
+.week-day-content-compact {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   overflow-y: auto;
+  min-height: 0;
+}
+
+/* Regular content area */
+.week-day-content {
+  gap: 8px;
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 108, 255, 0.3) rgba(30, 30, 50, 0.3);
   padding: 0.3rem;
-  min-height: 0;
 }
 
 .week-day-content::-webkit-scrollbar {
@@ -196,7 +348,18 @@
   border-radius: 2px;
 }
 
-/* Title sections */
+/* Compact content area with hidden scrollbars */
+.week-day-content-compact {
+  gap: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.week-day-content-compact::-webkit-scrollbar {
+  display: none;
+}
+
+/* Section organization for regular view */
 .title-section {
   display: flex;
   flex-direction: column;
@@ -223,6 +386,7 @@
   gap: 4px;
 }
 
+/* Regular view item styling */
 .title-item {
   font-size: 0.8rem;
   padding: 8px 10px;
@@ -252,6 +416,7 @@
   background: rgba(40, 40, 60, 0.3);
 }
 
+/* Empty state styling */
 .day-empty {
   color: rgba(255, 255, 255, 0.4);
   font-style: italic;
@@ -268,7 +433,7 @@
   min-height: 50px;
 }
 
-/* Week task/event items */
+/* Regular view task and event items */
 .week-task-item,
 .week-event-item {
   margin-bottom: 0.4rem;
@@ -290,7 +455,7 @@
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* Task styling */
+/* Task-specific styling */
 .week-task-item {
   gap: 0.6rem;
 }
@@ -341,7 +506,7 @@
   flex-shrink: 0;
 }
 
-/* Event styling */
+/* Event-specific styling */
 .week-event-item {
   flex-direction: column;
   align-items: flex-start;
@@ -361,7 +526,7 @@
   font-weight: 500;
 }
 
-/* Event type colors */
+/* Event type color coding */
 .week-event-item.meeting {
   border-left: 3px solid #ff6b6b;
 }
@@ -378,149 +543,11 @@
   border-left: 3px solid #646cff;
 }
 
-/* Compact view specific styles */
-.week-header-compact {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
-  background: rgba(25, 25, 45, 0.6);
-  flex-shrink: 0;
-  min-height: 60px;
-}
-
-.week-title-container-compact {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.week-header-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.week-title-compact {
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin: 0;
-  color: white;
-}
-
-.week-subtitle-compact {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.calendar-buttons-compact {
-  display: flex;
-  gap: 0.3rem;
-}
-
-.nav-btn-compact {
-  padding: 0.4rem 0.6rem;
-  background: rgba(40, 40, 60, 0.5);
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(100, 108, 255, 0.2);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.1s ease;
-  font-size: 0.8rem;
-  min-width: 35px;
-}
-
-.nav-btn-compact:hover {
-  background: rgba(50, 50, 80, 0.7);
-  color: white;
-}
-
-.today-btn-compact {
-  background: rgba(100, 108, 255, 0.2) !important;
-  color: rgba(100, 108, 255, 0.9) !important;
-}
-
-/* ✅ COMPACT: Grid */
-.week-days-grid-compact {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  padding: 8px;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-/* ✅ COMPACT: Day cells */
-.week-day-compact {
-  background: rgba(30, 30, 50, 0.6);
-  border-radius: 6px;
-  padding: 6px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(100, 108, 255, 0.1);
-  min-height: 0;
-  transition: border-color 0.1s ease;
-  cursor: pointer;
-}
-
-.week-day-compact:hover {
-  border-color: rgba(100, 108, 255, 0.2);
-}
-
-.week-day-compact.today {
-  background: rgba(35, 35, 60, 0.8);
-  border: 1px solid rgba(100, 108, 255, 0.3);
-}
-
-/* ✅ COMPACT: Day header */
-.week-day-header-compact {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.3rem 0;
-  margin-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
-  flex-shrink: 0;
-}
-
-.week-day-name-compact {
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 1px;
-}
-
-.week-day-date-compact {
-  font-size: 1rem;
-  font-weight: 600;
-  color: white;
-}
-
-/* ✅ COMPACT: Content area */
-.week-day-content-compact {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  min-height: 0;
-}
-
-.week-day-content-compact::-webkit-scrollbar {
-  display: none;
-}
-
-/* ✅ COMPACT: Individual items */
+/* Compact view item styling with enhanced layout */
 .week-item-compact {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* ✅ CHANGED: Space between for labels */
+  justify-content: space-between;
   gap: 0.4rem;
   padding: 0.3rem 0.5rem;
   background: rgba(30, 30, 50, 0.4);
@@ -533,16 +560,16 @@
   font-size: 0.75rem;
 }
 
-/* ✅ ADD: Content wrapper for title and time */
+/* Content wrapper for better text layout */
 .item-content-wrapper {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   flex: 1;
-  min-width: 0; /* Allow text truncation */
+  min-width: 0; /* Allows text truncation */
 }
 
-/* ✅ UPDATED: Item title with better truncation */
+/* Enhanced title styling with proper truncation */
 .item-title-compact {
   font-size: 0.7rem;
   font-weight: 500;
@@ -555,7 +582,7 @@
   min-width: 0;
 }
 
-/* ✅ ADD: Type labels styling */
+/* Type labels for visual distinction */
 .item-type-label {
   font-size: 0.6rem;
   font-weight: 600;
@@ -568,33 +595,33 @@
   white-space: nowrap;
 }
 
-/* ✅ ADD: Task label styling */
+/* Task label styling */
 .item-type-label.task-label {
   background: rgba(74, 222, 128, 0.2);
   color: #4ade80;
   border: 1px solid rgba(74, 222, 128, 0.3);
 }
 
-/* ✅ ADD: Event label styling */
+/* Event label styling */
 .item-type-label.event-label {
   background: rgba(100, 108, 255, 0.2);
   color: #646cff;
   border: 1px solid rgba(100, 108, 255, 0.3);
 }
 
-/* ✅ ADD: Failed task label color override */
+/* Failed task state styling */
 .week-item-compact.task.failed .item-type-label.task-label {
   background: rgba(255, 77, 77, 0.2);
   color: #ff6b6b;
   border-color: rgba(255, 77, 77, 0.3);
 }
 
-/* ✅ ADD: Completed task label opacity */
+/* Completed task state styling */
 .week-item-compact.task.completed .item-type-label.task-label {
   opacity: 0.6;
 }
 
-/* ✅ KEEP: Time display unchanged */
+/* Time display for compact items */
 .item-time-compact {
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.6);
@@ -605,7 +632,7 @@
   line-height: 1.1;
 }
 
-/* ✅ KEEP: Task status unchanged */
+/* Task status indicator for compact view */
 .task-status-compact-readonly {
   width: 14px;
   height: 14px;
@@ -624,14 +651,19 @@
   font-weight: 600;
 }
 
-/* ✅ KEEP: Failed task status styling */
+/* Failed task status styling */
 .week-item-compact.task.failed .task-status-compact-readonly {
   background: rgba(255, 77, 77, 0.2);
   border-color: rgba(255, 77, 77, 0.4);
   color: #ff6b6b;
 }
 
-/* Responsive design */
+/* Enhanced animations for smooth interactions */
+@keyframes spin-smooth {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive design for mobile and tablet devices */
 @media (max-width: 768px) {
   .week-days-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -665,7 +697,7 @@
   }
 }
 
-/* Performance optimizations */
+/* Performance optimizations for smooth interactions */
 .week-day-compact *,
 .week-day * {
   will-change: auto;
