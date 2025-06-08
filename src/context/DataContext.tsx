@@ -120,11 +120,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       if (!userId) throw new Error("User not authenticated");
 
       console.log(`📝 DataContext: Updating task ${task.id}`);
-      
+
       // ✅ FIX: Ensure all values are proper SQLite types
       const updates = {
-        title: String(task.title || ''),
-        task_date: String(task.task_date || ''),
+        title: String(task.title || ""),
+        task_date: String(task.task_date || ""),
         task_time: task.task_time ? String(task.task_time) : null,
         completed: Boolean(task.completed),
         failed: Boolean(task.failed),
@@ -132,11 +132,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         due_date: task.due_date ? String(task.due_date) : null,
         urgency_level: task.urgency_level ? Number(task.urgency_level) : null,
         status: task.status ? String(task.status) : null,
-        updated_at: String(new Date().toISOString())
+        updated_at: String(new Date().toISOString()),
       };
 
-      const updatedTask = await window.electronAPI.db.updateTask(Number(task.id), updates);
-      
+      const updatedTask = await window.electronAPI.db.updateTask(
+        Number(task.id),
+        updates
+      );
+
       if (!updatedTask) {
         throw new Error("Failed to update task");
       }
@@ -144,7 +147,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       console.log(`✅ DataContext: Task ${task.id} updated successfully`);
       return updatedTask;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update task";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update task";
       console.error("❌ Error updating task:", error);
       setError(errorMessage);
       throw error;
@@ -226,7 +230,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
           event_time: event.event_time || "",
           type: event.type || "Personal",
           description: event.description || "",
-          user_id: userId
+          user_id: userId,
         };
 
         // Check window.electronAPI is available
@@ -255,7 +259,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         // ✅ REMOVED: Optimistic update broadcasting
 
         // Update in SQLite
-        const updatedEvent = await window.electronAPI.db.saveEvent(event);
+        const updatedEvent = await window.electronAPI.db.updateEvent(event);
 
         const finalEvent = { ...event, ...updatedEvent };
 

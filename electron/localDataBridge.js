@@ -427,6 +427,52 @@ sanitizeForSQLite(data) {
     }
   }
 
+updateEvent(event) {
+  try {
+    console.log('🔄 UPDATE EVENT: Attempting to update event ID:', event.id);
+    
+    if (!event.id) {
+      throw new Error('Event ID is required for updates');
+    }
+
+    const sanitizedEvent = this.sanitizeForSQLite({
+      title: event.title || null,
+      event_date: event.event_date || null,
+      event_time: event.event_time || null,
+      type: event.type || null,
+      description: event.description || null,
+      updated_at: new Date().toISOString()
+    });
+
+    const stmt = this.db.prepare(`
+      UPDATE calendar_events 
+      SET title = ?, event_date = ?, event_time = ?, type = ?, description = ?, updated_at = ?
+      WHERE id = ? AND user_id = ?
+    `);
+
+    const result = stmt.run(
+      sanitizedEvent.title,
+      sanitizedEvent.event_date,
+      sanitizedEvent.event_time,
+      sanitizedEvent.type,
+      sanitizedEvent.description,
+      sanitizedEvent.updated_at,
+      event.id,
+      event.user_id
+    );
+
+    if (result.changes === 0) {
+      throw new Error(`No event found with ID: ${event.id}`);
+    }
+
+    console.log('✅ UPDATE EVENT: Success - Changes:', result.changes);
+    return { id: event.id, ...sanitizedEvent, user_id: event.user_id };
+
+  } catch (error) {
+    console.error('❌ UPDATE EVENT ERROR:', error);
+    throw error;
+  }
+}
  saveEvent(event) {
   try {
     console.log('💾 SAVE EVENT: Attempting to save event:', event);

@@ -454,7 +454,7 @@ async function setupDatabaseIPC() {
         if (!dataManager) {
           throw new Error('DataManager is not initialized');
         }
-        const result = dataManager.saveEvent(eventData); // saveEvent handles both create and update
+        const result = dataManager.updateEvent(eventData); // saveEvent handles both create and update
         console.log('✅ IPC: Event updated successfully:', result);
         return result;
       } catch (error) {

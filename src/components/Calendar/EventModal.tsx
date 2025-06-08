@@ -18,17 +18,17 @@ const EventModal: React.FC<EventModalProps> = ({
   isOpen,
   onClose,
   event = null,
-  defaultDate
+  defaultDate,
 }) => {
   const { createEvent, updateEvent, deleteEvent } = useData();
   const { showNotification } = useNotifications();
 
   const [formData, setFormData] = useState({
-    title: '',
-    event_date: defaultDate || new Date().toISOString().split('T')[0],
-    event_time: '',
-    type: 'Personal',
-    description: ''
+    title: "",
+    event_date: defaultDate || new Date().toISOString().split("T")[0],
+    event_time: "",
+    type: "Personal",
+    description: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -38,20 +38,23 @@ const EventModal: React.FC<EventModalProps> = ({
   useEffect(() => {
     if (event) {
       setFormData({
-        title: event.title || '',
-        event_date: event.event_date || defaultDate || new Date().toISOString().split('T')[0],
-        event_time: event.event_time || '',
-        type: event.type || 'Personal',
-        description: event.description || ''
+        title: event.title || "",
+        event_date:
+          event.event_date ||
+          defaultDate ||
+          new Date().toISOString().split("T")[0],
+        event_time: event.event_time || "",
+        type: event.type || "Personal",
+        description: event.description || "",
       });
     } else {
       // Reset form for new event
       setFormData({
-        title: '',
-        event_date: defaultDate || new Date().toISOString().split('T')[0],
-        event_time: '',
-        type: 'Personal',
-        description: ''
+        title: "",
+        event_date: defaultDate || new Date().toISOString().split("T")[0],
+        event_time: "",
+        type: "Personal",
+        description: "",
       });
     }
     setErrors({});
@@ -62,15 +65,15 @@ const EventModal: React.FC<EventModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Event title is required';
+      newErrors.title = "Event title is required";
     }
 
     if (!formData.event_date) {
-      newErrors.event_date = 'Event date is required';
+      newErrors.event_date = "Event date is required";
     }
 
     if (!formData.type) {
-      newErrors.type = 'Event type is required';
+      newErrors.type = "Event type is required";
     }
 
     setErrors(newErrors);
@@ -80,14 +83,14 @@ const EventModal: React.FC<EventModalProps> = ({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     const userId = getCurrentUserId();
     if (!userId) {
-      showNotification('Please log in to create events', 'error');
+      showNotification("Please log in to create events", "error");
       return;
     }
 
@@ -99,28 +102,29 @@ const EventModal: React.FC<EventModalProps> = ({
         const updatedEvent = await updateEvent({
           ...event,
           ...formData,
-          user_id: userId
+          user_id: userId,
         });
-        
-        showNotification('Event updated successfully!', 'success');
-        console.log('✅ Event updated:', updatedEvent);
+
+        showNotification("Event updated successfully!", "success");
+        console.log("✅ Event updated:", updatedEvent);
       } else {
         // Create new event
+        console.log("fuck you no id bro");
         const newEvent = await createEvent({
           ...formData,
-          user_id: userId
+          user_id: userId,
         });
-        
-        showNotification('Event created successfully!', 'success');
-        console.log('✅ Event created:', newEvent);
+
+        showNotification("Event created successfully!", "success");
+        console.log("✅ Event created:", newEvent);
       }
 
       onClose();
     } catch (error) {
-      console.error('❌ Error saving event:', error);
+      console.error("❌ Error saving event:", error);
       showNotification(
-        error instanceof Error ? error.message : 'Failed to save event',
-        'error'
+        error instanceof Error ? error.message : "Failed to save event",
+        "error"
       );
     } finally {
       setLoading(false);
@@ -131,7 +135,7 @@ const EventModal: React.FC<EventModalProps> = ({
   const handleDelete = async () => {
     if (!event?.id) return;
 
-    if (!confirm('Are you sure you want to delete this event?')) {
+    if (!confirm("Are you sure you want to delete this event?")) {
       return;
     }
 
@@ -139,14 +143,14 @@ const EventModal: React.FC<EventModalProps> = ({
 
     try {
       await deleteEvent(event.id);
-      showNotification('Event deleted successfully!', 'success');
-      console.log('✅ Event deleted:', event.id);
+      showNotification("Event deleted successfully!", "success");
+      console.log("✅ Event deleted:", event.id);
       onClose();
     } catch (error) {
-      console.error('❌ Error deleting event:', error);
+      console.error("❌ Error deleting event:", error);
       showNotification(
-        error instanceof Error ? error.message : 'Failed to delete event',
-        'error'
+        error instanceof Error ? error.message : "Failed to delete event",
+        "error"
       );
     } finally {
       setLoading(false);
@@ -155,38 +159,38 @@ const EventModal: React.FC<EventModalProps> = ({
 
   // Handle input changes
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
 
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ''
+        [field]: "",
       }));
     }
   };
 
   const eventTypes = [
-    'Personal',
-    'Work',
-    'Meeting',
-    'Reminder',
-    'Social',
-    'Health',
-    'Travel',
-    'Other'
+    "Personal",
+    "Work",
+    "Meeting",
+    "Reminder",
+    "Social",
+    "Health",
+    "Travel",
+    "Other",
   ];
 
   if (!isOpen) return null;
 
   return (
-    <Modal 
-      isOpen={isOpen} 
+    <Modal
+      isOpen={isOpen}
       onClose={onClose}
-      title={event ? 'Edit Event' : 'Create New Event'}
+      title={event ? "Edit Event" : "Create New Event"}
       className="event-modal"
     >
       <form onSubmit={handleSubmit} className="event-form">
@@ -198,13 +202,15 @@ const EventModal: React.FC<EventModalProps> = ({
           <input
             id="event-title"
             type="text"
-            className={`form-input ${errors.title ? 'error' : ''}`}
+            className={`form-input ${errors.title ? "error" : ""}`}
             value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
+            onChange={(e) => handleInputChange("title", e.target.value)}
             placeholder="Enter event title"
             disabled={loading}
           />
-          {errors.title && <span className="error-message">{errors.title}</span>}
+          {errors.title && (
+            <span className="error-message">{errors.title}</span>
+          )}
         </div>
 
         {/* Event Date */}
@@ -215,12 +221,14 @@ const EventModal: React.FC<EventModalProps> = ({
           <input
             id="event-date"
             type="date"
-            className={`form-input ${errors.event_date ? 'error' : ''}`}
+            className={`form-input ${errors.event_date ? "error" : ""}`}
             value={formData.event_date}
-            onChange={(e) => handleInputChange('event_date', e.target.value)}
+            onChange={(e) => handleInputChange("event_date", e.target.value)}
             disabled={loading}
           />
-          {errors.event_date && <span className="error-message">{errors.event_date}</span>}
+          {errors.event_date && (
+            <span className="error-message">{errors.event_date}</span>
+          )}
         </div>
 
         {/* Event Time */}
@@ -230,11 +238,13 @@ const EventModal: React.FC<EventModalProps> = ({
           </label>
           <TimeInput
             value={formData.event_time}
-            onChange={(time) => handleInputChange('event_time', time)}
+            onChange={(time) => handleInputChange("event_time", time)}
             placeholder="Select time (optional)"
-            className={`form-input ${errors.event_time ? 'error' : ''}`}
+            className={`form-input ${errors.event_time ? "error" : ""}`}
           />
-          {errors.event_time && <span className="error-message">{errors.event_time}</span>}
+          {errors.event_time && (
+            <span className="error-message">{errors.event_time}</span>
+          )}
         </div>
 
         {/* Event Type */}
@@ -244,12 +254,12 @@ const EventModal: React.FC<EventModalProps> = ({
           </label>
           <select
             id="event-type"
-            className={`form-input ${errors.type ? 'error' : ''}`}
+            className={`form-input ${errors.type ? "error" : ""}`}
             value={formData.type}
-            onChange={(e) => handleInputChange('type', e.target.value)}
+            onChange={(e) => handleInputChange("type", e.target.value)}
             disabled={loading}
           >
-            {eventTypes.map(type => (
+            {eventTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>
@@ -267,7 +277,7 @@ const EventModal: React.FC<EventModalProps> = ({
             id="event-description"
             className="form-textarea"
             value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
+            onChange={(e) => handleInputChange("description", e.target.value)}
             placeholder="Add event details..."
             rows={3}
             disabled={loading}
@@ -284,7 +294,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 className="btn btn-danger"
                 disabled={loading}
               >
-                {loading ? 'Deleting...' : 'Delete Event'}
+                {loading ? "Deleting..." : "Delete Event"}
               </button>
             )}
           </div>
@@ -303,7 +313,7 @@ const EventModal: React.FC<EventModalProps> = ({
               className="btn btn-primary"
               disabled={loading}
             >
-              {loading ? 'Saving...' : event ? 'Update Event' : 'Create Event'}
+              {loading ? "Saving..." : event ? "Update Event" : "Create Event"}
             </button>
           </div>
         </div>
