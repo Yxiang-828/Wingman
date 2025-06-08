@@ -126,7 +126,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
         } else if (isEvent) {
           return (
             <div className="mission-controls-group">
-              {(item.event_time) && (
+              {item.event_time && (
                 <CountdownTimer
                   targetTime={item.event_time}
                   date={item.event_date}

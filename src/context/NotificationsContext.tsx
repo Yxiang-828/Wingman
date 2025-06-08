@@ -1,3 +1,4 @@
+// Notification command center - keeps your lordship informed of pressing matters
 import React, {
   createContext,
   useContext,
@@ -6,7 +7,6 @@ import React, {
   useCallback,
   ReactNode,
 } from "react";
-// ✅ REMOVED: import { useCalendarCache } from '../Hooks/useCalendar';
 import { useData } from "./DataContext";
 import { getCurrentUserId } from "../utils/auth";
 import { getTodayDateString } from "../utils/timeUtils";
@@ -35,10 +35,9 @@ interface NotificationsContextType {
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
 export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // ✅ REMOVED: const { getDayData } = useCalendarCache('Notifications');
   const { toggleTask } = useData();
 
-  // ✅ NEW: Direct SQLite state
+  // Direct SQLite state management
   const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,11 +49,11 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
   // Read state management
   const [readItems, setReadItems] = useState<Set<string>>(new Set());
 
-  // ✅ NEW: Direct SQLite data fetching
+  // Direct SQLite data fetching for immediate notifications
   const fetchNotificationsData = useCallback(async () => {
     const userId = getCurrentUserId();
     if (!userId) {
-      console.log("🔔 Notifications: No user ID, skipping fetch");
+      console.log("Notifications: No user ID, skipping fetch");
       setLoading(false);
       setIsReady(true);
       return;
@@ -64,9 +63,9 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
 
     try {
       const today = getTodayDateString();
-      console.log(`🔔 Notifications: Fetching data for ${today} (direct SQLite)`);
+      console.log(`Notifications: Fetching data for ${today} (direct SQLite)`);
 
-      // ✅ DIRECT SQLite calls - no cache layer
+      // Direct SQLite calls - no cache layer for real-time accuracy
       const [tasks, events] = await Promise.all([
         window.electronAPI.db.getTasks(userId, today),
         window.electronAPI.db.getEvents(userId, today),
@@ -79,9 +78,9 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
       setPendingTasks(pendingTasksFiltered);
       setTodaysEvents(todaysEventsFiltered);
 
-      console.log(`✅ Notifications: Loaded ${pendingTasksFiltered.length} pending tasks, ${todaysEventsFiltered.length} events`);
+      console.log(`Notifications: Loaded ${pendingTasksFiltered.length} pending tasks, ${todaysEventsFiltered.length} events`);
     } catch (error) {
-      console.error("🔔 Notifications: Error fetching data:", error);
+      console.error("Notifications: Error fetching data:", error);
       setPendingTasks([]);
       setTodaysEvents([]);
     } finally {
@@ -116,10 +115,10 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
     fetchNotificationsData();
   }, [fetchNotificationsData]);
 
-  // ✅ Auto-refresh every 5 minutes
+  // Auto-refresh every 5 minutes to keep your lordship informed
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log("🔔 Notifications: Auto-refresh triggered");
+      console.log("Notifications: Auto-refresh triggered");
       fetchNotificationsData();
     }, 5 * 60 * 1000); // 5 minutes
 
@@ -156,7 +155,7 @@ export const NotificationsProvider: React.FC<{ children: ReactNode }> = ({ child
     saveReadItems(newSet);
   }, [pendingTasks, todaysEvents, readItems, saveReadItems]);
 
-  // Task completion
+  // Task completion with immediate refresh
   const completeTask = useCallback(async (taskId: number): Promise<void> => {
     try {
       const task = pendingTasks.find(t => t.id === taskId);

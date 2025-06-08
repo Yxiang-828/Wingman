@@ -94,11 +94,11 @@ declare global {
       completed: boolean;
       created_at?: string;
       updated_at?: string;
-      task_type?: string;        // ✅ CHANGED: undefined instead of null
-      due_date?: string;         // ✅ CHANGED: undefined instead of null
-      last_reset_date?: string;  // ✅ CHANGED: undefined instead of null
-      urgency_level?: number;    // ✅ CHANGED: undefined instead of null
-      status?: string;           // ✅ CHANGED: undefined instead of null
+      task_type?: string;        
+      due_date?: string;         
+      last_reset_date?: string;  
+      urgency_level?: number;    
+      status?: string;           
     }
     
     interface DiaryEntry {

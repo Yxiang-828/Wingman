@@ -1,3 +1,4 @@
+// Profile command center - your personal domain configuration hub
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import WelcomePopup from "../components/Profile/WelcomePopup";
@@ -8,23 +9,25 @@ const Profile = () => {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
 
+  // Handle welcome setup flow for new commanders
   useEffect(() => {
     if (location.state?.showSetup) {
       setShowPopup(true);
-      // Remove state after showing
+      // Clear navigation state after showing popup
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate]);
 
   return (
     <main className="profile p-6 bg-dark rounded-lg shadow-md hover-glow-tile">
-      <h1>Your Profile</h1>
+      <h1>Your Command Center</h1>
       <Outlet />
       {showPopup && (
         <WelcomePopup
-          message="Welcome aboard! Let's set up your profile."
+          message="Welcome aboard, Commander! Your Wingman is ready to help you configure your digital realm."
           onClose={() => setShowPopup(false)}
-          icon="🛠️"
+          icon="⚙️"
+          type="setup"
         />
       )}
     </main>

@@ -177,7 +177,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     setLoading(false);
   };
 
-  // New user registration with comprehensive validation
+  // New user registration with comprehensive validation and better error handling
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -190,7 +190,9 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         throw new Error("Backend service unavailable");
       }
     } catch (err) {
-      setError("Unable to reach the registration service. Please try again later.");
+      setError(
+        "Unable to reach the registration service. Please try again later."
+      );
       setLoading(false);
       return;
     }
@@ -225,8 +227,24 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         body: JSON.stringify(userData),
       });
 
+      // ✅ SIMPLIFIED: General error handling for registration conflicts
       if (!response.ok) {
-        throw new Error("Registration failed");
+        if (response.status === 409 || response.status === 500) {
+          // Account already exists - provide helpful guidance
+          setError(
+            `Registration failed - an account with these details already exists. Try a different email and username, or check your internet connection and try again.`
+          );
+        } else if (response.status === 400) {
+          setError(
+            "Invalid registration data. Please check your information and try again."
+          );
+        } else {
+          setError(
+            `Registration failed (${response.status}). Please check your internet connection and try again.`
+          );
+        }
+        setLoading(false);
+        return;
       }
 
       const result = await response.json();
@@ -245,7 +263,10 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       setShowWelcomePopup(true);
     } catch (err: any) {
       console.error("Registration error:", err);
-      setError("Registration failed. Please try again.");
+      setError(
+        err.message ||
+          "Registration failed. Please check your internet connection and try a different email/username combination."
+      );
     } finally {
       setLoading(false);
     }

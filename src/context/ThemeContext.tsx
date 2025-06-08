@@ -1,3 +1,4 @@
+// Theme command center - handles your digital realm's visual personality
 import React, {
   createContext,
   useContext,
@@ -5,7 +6,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { getCurrentUserId } from '../utils/auth';
+import { getCurrentUserId } from "../utils/auth";
 
 type Theme = "dark" | "light" | "yandere" | "kuudere" | "tsundere" | "dandere";
 
@@ -37,7 +38,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
       }
     } catch (error) {
       console.error("Failed to load theme from database:", error);
-      // Fallback to localStorage
+      // Fallback to localStorage for offline resilience
       const savedSettings = localStorage.getItem("userSettings");
       if (savedSettings) {
         try {
@@ -52,35 +53,44 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  // Apply theme to document when theme changes
+  // Apply theme to document when theme changes - your digital throne room adapts
   useEffect(() => {
     const body = document.body;
-    
+
     // Remove all existing theme classes
-    body.classList.remove("dark-theme", "light-theme", "yandere-theme", "kuudere-theme", "tsundere-theme", "dandere-theme");
-    
+    body.classList.remove(
+      "dark-theme",
+      "light-theme",
+      "yandere-theme",
+      "kuudere-theme",
+      "tsundere-theme",
+      "dandere-theme"
+    );
+
     // Add new theme class (dark is default, no class needed)
     if (theme !== "dark") {
       body.classList.add(`${theme}-theme`);
     }
-    
-    console.log(`🎨 Theme applied: ${theme}`);
+
+    console.log(`Theme applied: ${theme}`);
   }, [theme]);
 
   const setTheme = async (newTheme: Theme) => {
     setThemeState(newTheme);
 
-    // Save to database
+    // Save to database for persistence across sessions
     try {
       const userId = getCurrentUserId();
       if (userId) {
-        const currentSettings = await window.electronAPI.db.getUserSettings(userId);
+        const currentSettings = await window.electronAPI.db.getUserSettings(
+          userId
+        );
         const updatedSettings = {
           ...currentSettings,
-          theme: newTheme
+          theme: newTheme,
         };
         await window.electronAPI.db.saveUserSettings(userId, updatedSettings);
-        console.log(`💾 Theme saved to database: ${newTheme}`);
+        console.log(`Theme saved to database: ${newTheme}`);
       }
     } catch (error) {
       console.error("Failed to save theme to database:", error);

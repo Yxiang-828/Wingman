@@ -68,7 +68,7 @@ export const getCurrentTimeString = (): string => {
 };
 
 /**
- * ✅ NEW: Validate if a time string is in the future today
+ * Validate if a time string is in the future today
  */
 export const isTimeInFuture = (timeStr: string): boolean => {
   if (!timeStr) return false;
@@ -78,7 +78,7 @@ export const isTimeInFuture = (timeStr: string): boolean => {
 };
 
 /**
- * ✅ NEW: Get next available time slot (current time + 30 minutes)
+ * Get next available time slot (current time + 30 minutes)
  */
 export const getNextAvailableTime = (): string => {
   const now = new Date();

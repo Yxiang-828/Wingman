@@ -1,5 +1,4 @@
-/* Authentication Interface Styling */
-/* Theme-aware login interface with video backgrounds and smooth animations */
+/* Authentication Interface Styling - Optimized for smooth text rendering */
 
 /* Main container positioning for full viewport coverage */
 .login-bg {
@@ -23,7 +22,7 @@
   opacity: 1.0;
 }
 
-/* Central login card with glassmorphism effect */
+/* ✅ FIXED: Central login card with text-optimized rendering */
 .login-card {
   background: rgba(25, 25, 40, 0.95);
   border-radius: 24px;
@@ -41,6 +40,24 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  
+  /* ✅ CRITICAL: Optimized rendering for text during transforms */
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  
+  /* ✅ REMOVED: backdrop-filter to prevent GPU layer conflicts */
+  /* backdrop-filter: blur(12px); */
+}
+
+/* ✅ FIXED: Text-specific anti-aliasing optimization */
+.login-card * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  
+  /* ✅ CRITICAL: Prevent text from creating separate GPU layers */
+  will-change: auto;
 }
 
 /* Smooth entrance animation for login card */
@@ -73,7 +90,7 @@
   filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3));
 }
 
-/* Gradient title text with subtle animation */
+/* ✅ FIXED: Gradient title text with stable rendering */
 .login-title {
   font-size: 2.2rem;
   font-weight: 700;
@@ -82,7 +99,10 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
+  
+  /* ✅ CRITICAL: Force text to stay on main layer */
+  transform: translateZ(0);
+  will-change: auto;
 }
 
 /* Descriptive subtitle with balanced opacity */
@@ -117,7 +137,7 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* MERGED: All theme-specific button styling combined */
+/* ✅ FIXED: Button styling with stable text rendering */
 .login-action-btn {
   background: linear-gradient(135deg, #646cff, #7c7aff); 
   color: #fff;
@@ -134,6 +154,10 @@
   width: 100%;
   position: relative;
   overflow: hidden;
+  
+  /* ✅ CRITICAL: Stable text rendering during hover */
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Theme-specific button gradients */
@@ -153,7 +177,7 @@
   background: linear-gradient(135deg, #231a2d, #4a2c5a) !important;
 }
 
-/* Shine effect animation for buttons */
+/* ✅ OPTIMIZED: Shine effect without text flickering */
 .login-action-btn::before {
   content: '';
   position: absolute;
@@ -163,6 +187,7 @@
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.6s ease;
+  pointer-events: none;
 }
 
 .login-action-btn:hover::before {
@@ -170,19 +195,19 @@
 }
 
 .login-action-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) translateZ(0);
   box-shadow: 0 8px 20px rgba(100, 108, 255, 0.4);
 }
 
 .login-action-btn:active {
-  transform: translateY(0);
+  transform: translateY(0) translateZ(0);
 }
 
 /* Loading state styling */
 .login-action-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  transform: none;
+  transform: translateZ(0);
 }
 
 /* Form switching section */
@@ -284,18 +309,34 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(180, 130, 220, 0.2) !important;
 }
 
-/* Auto-tilt animation triggered after video sequence */
+/* ✅ FIXED: Auto-tilt animation with text stability */
 .login-card.auto-tilt {
-  transform: rotate(1deg) scale(1.02) !important;
-  box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22 !important;
+  transform: rotate(1deg) scale(1.02) translateZ(0) !important;
   transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  
+  /* ✅ CRITICAL: Force all children to stay on same layer */
+  will-change: transform;
+}
+
+.login-card.auto-tilt * {
+  /* ✅ CRITICAL: Prevent text from creating new layers during rotation */
+  will-change: auto !important;
+  transform: translateZ(0);
 }
 
 /* Manual hover interaction overrides auto-tilt */
 .login-card.auto-tilt:hover {
-  transform: rotate(-0.2deg) scale(1.03) !important;
-  box-shadow: 0 12px 32px 0 rgba(100, 108, 255, 0.2), 0 4px 12px 0 #23234a33 !important;
+  transform: rotate(-0.2deg) scale(1.03) translateZ(0) !important;
 }
+
+/* ✅ REMOVED: Global will-change rule that was causing flickering */
+/* 
+.header *,
+.header *::before,
+.header *::after {
+  will-change: transform; // This was the main culprit
+}
+*/
 
 /* Responsive design for mobile devices */
 @media (max-width: 768px) {
@@ -312,4 +353,22 @@
   .login-form {
     max-width: 280px;
   }
+}
+
+/* ✅ ADDED: Hardware acceleration optimizations for specific elements only */
+.login-bg-video,
+.login-card.auto-tilt {
+  will-change: transform;
+}
+
+/* Reset will-change for text elements to prevent layer creation */
+.login-title,
+.login-subtitle,
+.login-input,
+.login-action-btn,
+.login-switch-text,
+.text-accent-primary,
+.login-error {
+  will-change: auto;
+  transform: translateZ(0);
 }

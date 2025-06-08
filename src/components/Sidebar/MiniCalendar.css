@@ -1,14 +1,8 @@
-/* MiniCalendar.css */
+/* Mini calendar component - Multi theme system for all occasions */
 
-/* ═══════════════════════════════════════════════════════════════
-   📅 MINI CALENDAR - DUAL THEME SYSTEM
-   ═══════════════════════════════════════════════════════════════ */
+/* Base dark theme styling */
 
-/* ═══════════════════════════════════════════════════════════════
-   🌙 DEFAULT DARK THEME BASE
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Base calendar container */
+/* Calendar container with modern glassmorphism effect */
 .react-calendar--small {
   font-size: 10px;
   max-width: 220px;
@@ -28,7 +22,7 @@
   border-color: rgba(100, 108, 255, 0.3);
 }
 
-/* Calendar tiles (day cells) */
+/* Day tiles with subtle hover animations */
 .react-calendar--small .react-calendar__tile {
   padding: 8px 6px;
   position: relative;
@@ -42,7 +36,7 @@
   cursor: pointer;
 }
 
-/* Tile hover effects */
+/* Interactive hover effects for tiles */
 .react-calendar--small .react-calendar__tile:hover,
 .react-calendar--small .react-calendar__tile:active,
 .react-calendar--small .react-calendar__tile:focus {
@@ -54,12 +48,12 @@
   position: relative;
 }
 
-/* Days grid container */
+/* Days grid structure */
 .react-calendar--small .react-calendar__month-view__days {
   overflow: visible;
 }
 
-/* Navigation header */
+/* Navigation header with controls */
 .react-calendar--small .react-calendar__navigation {
   background: rgba(20, 20, 35, 0.6);
   z-index: 3;
@@ -68,14 +62,13 @@
   border-radius: 8px 8px 0 0;
   margin-bottom: 8px;
   border-bottom: 1px solid rgba(100, 108, 255, 0.2);
-  /* CENTERING NAVIGATION */
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   padding: 4px 8px !important;
 }
 
-/* Navigation buttons */
+/* Navigation control buttons */
 .react-calendar--small .react-calendar__navigation button {
   background: transparent;
   border: none;
@@ -84,7 +77,6 @@
   transition: all 0.2s ease;
   border-radius: 4px;
   padding: 4px 8px;
-  
 }
 
 .react-calendar--small .react-calendar__navigation button:hover {
@@ -93,7 +85,7 @@
   transform: scale(1.05);
 }
 
-/* Navigation label (month/year) */
+/* Month and year display label */
 .react-calendar--small .react-calendar__navigation__label {
   margin-left: 4px;
   margin-right: 4px;
@@ -112,7 +104,7 @@
   padding: 6px 12px;
 }
 
-/* Week day names */
+/* Week day headers */
 .react-calendar--small .react-calendar__month-view__weekdays {
   color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
@@ -126,7 +118,7 @@
   text-align: center;
 }
 
-/* Today highlight - Dark theme */
+/* Today highlighting for quick reference */
 .today-highlight {
   background: linear-gradient(135deg, rgba(100, 108, 255, 0.3), rgba(100, 108, 255, 0.2));
   color: rgba(255, 255, 255, 1) !important;
@@ -140,7 +132,7 @@
   overflow: visible;
 }
 
-/* Activity indicators */
+/* Activity indicators for days with events */
 .day-ping {
   position: absolute;
   top: 2px;
@@ -166,7 +158,7 @@
   transition: all 0.2s ease;
 }
 
-/* Hover expand activity indicator */
+/* Hover expansion for activity indicators */
 .react-calendar--small .react-calendar__tile:hover .activity-ping {
   width: 16px;
   height: 16px;
@@ -181,11 +173,7 @@
   content: attr(data-count);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ☀️ LIGHT THEME OVERRIDES
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Base calendar container - Light theme */
+/* Light theme overrides for improved visibility */
 .light-theme .react-calendar--small {
   background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
   border: 1px solid rgba(184, 134, 11, 0.3);
@@ -199,7 +187,6 @@
   transform: translateY(-2px);
 }
 
-/* Calendar tiles - Light theme */
 .light-theme .react-calendar--small .react-calendar__tile {
   color: rgba(96, 10, 10, 0.8);
   background: transparent;
@@ -213,7 +200,6 @@
   box-shadow: 0 0 8px rgba(184, 134, 11, 0.4);
 }
 
-/* Navigation - Light theme */
 .light-theme .react-calendar--small .react-calendar__navigation {
   background: rgba(245, 245, 235, 0.8);
   border-bottom: 1px solid rgba(184, 134, 11, 0.2);
@@ -228,18 +214,15 @@
   color: rgba(96, 10, 10, 1);
 }
 
-/* Navigation label - Light theme */
 .light-theme .react-calendar--small .react-calendar__navigation__label {
   color: #600a0a;
   font-weight: 700;
 }
 
-/* Week day names - Light theme */
 .light-theme .react-calendar--small .react-calendar__month-view__weekdays {
   color: rgba(96, 10, 10, 0.6);
 }
 
-/* Today highlight - Light theme */
 .light-theme .today-highlight {
   background: linear-gradient(135deg, rgba(184, 134, 11, 0.25), rgba(218, 163, 75, 0.2)) !important;
   color: #600a0a !important;
@@ -248,14 +231,13 @@
   font-weight: bold;
 }
 
-/* Activity indicators - Light theme */
 .light-theme .activity-ping {
   background: linear-gradient(45deg, #b8860b, #daa520);
   border: 1px solid rgba(96, 10, 10, 0.5);
   box-shadow: 0 0 6px rgba(184, 134, 11, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Adjacent month days - muted styling */
+/* Styling for adjacent month days */
 .react-calendar--small .react-calendar__month-view__days__day--neighboringMonth {
   color: rgba(255, 255, 255, 0.3);
 }
@@ -264,7 +246,7 @@
   color: rgba(96, 10, 10, 0.3);
 }
 
-/* Weekend styling */
+/* Weekend highlighting */
 .react-calendar--small .react-calendar__month-view__days__day--weekend {
   color: rgba(255, 180, 180, 0.9);
 }
@@ -273,11 +255,9 @@
   color: rgba(139, 69, 19, 0.8);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   🎨 ANIMATIONS & EFFECTS
-   ═══════════════════════════════════════════════════════════════ */
+/* Animations and effects */
 
-/* Gentle tremble animation */
+/* Subtle tremble animation for interactivity */
 @keyframes gentle-tremble {
   0% { transform: translateX(0); }
   25% { transform: translateX(-0.5px); }
@@ -286,7 +266,7 @@
   100% { transform: translateX(0); }
 }
 
-/* Activity pulse animation */
+/* Activity pulse animation for engagement indicators */
 @keyframes activity-pulse {
   0%, 100% { 
     transform: scale(1);
@@ -302,7 +282,6 @@
   }
 }
 
-/* Light theme activity pulse */
 .light-theme .activity-ping {
   animation: light-activity-pulse 2s ease-in-out infinite;
 }
@@ -322,10 +301,7 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   📱 RESPONSIVE DESIGN
-   ═══════════════════════════════════════════════════════════════ */
-
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .react-calendar--small {
     max-width: 200px;
@@ -342,11 +318,7 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ♿ ACCESSIBILITY & PERFORMANCE
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Reduce motion for accessibility */
+/* Accessibility and performance optimizations */
 @media (prefers-reduced-motion: reduce) {
   .react-calendar--small .react-calendar__tile:hover {
     animation: none;
@@ -362,7 +334,6 @@
   }
 }
 
-/* High contrast mode support */
 @media (prefers-contrast: high) {
   .react-calendar--small {
     border-width: 2px;

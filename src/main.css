@@ -68,16 +68,12 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ☀️ LIGHT THEME - COMPLETE INVERSION
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ═══════════════════════════════════════════════════════════════
-   ☀️ LIGHT THEME - COMPLETE COMPREHENSIVE COVERAGE
+   LIGHT THEME - COMPLETE INVERSION
    ═══════════════════════════════════════════════════════════════ */
 
 .light-theme {
   /* ═══════════════════════════════════════════════════════════════
-     🎨 ZONE 1: CORE VARIABLES & BASE STYLING
+     ZONE 1: CORE VARIABLES & BASE STYLING
      ═══════════════════════════════════════════════════════════════ */
   
   /* Core Variables */
@@ -130,7 +126,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🎨 ZONE 2: COMPONENT CONTAINERS & LAYOUT
+   ZONE 2: COMPONENT CONTAINERS & LAYOUT
    ═══════════════════════════════════════════════════════════════ */
 
 /* Body & Main Containers */
@@ -272,7 +268,7 @@
   background: linear-gradient(  270deg, #b9660726,#c1bfa2) !important;
 }
 /* ═══════════════════════════════════════════════════════════════
-   🎨 ZONE 3: TEXT, INPUTS, BUTTONS & INTERACTIVE ELEMENTS
+   ZONE 3: TEXT, INPUTS, BUTTONS & INTERACTIVE ELEMENTS
    ═══════════════════════════════════════════════════════════════ */
 
 /* All Headings & Title Elements */
@@ -656,7 +652,7 @@
   }
 }
 /* ═══════════════════════════════════════════════════════════════
-   🎯 ENHANCED COMPONENT STYLING - All Themes
+   ENHANCED COMPONENT STYLING - All Themes
    ═══════════════════════════════════════════════════════════════ */
 
 /* Cards with theme-appropriate glows */
@@ -766,7 +762,7 @@ p, span, label {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🚀 PERFORMANCE OPTIMIZATIONS
+   PERFORMANCE OPTIMIZATIONS
    ═══════════════════════════════════════════════════════════════ */
 
 /* Reduce motion for accessibility */
@@ -789,7 +785,6 @@ p, span, label {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* ✅ KEY: Remove any transforms that push content */
   will-change: width, max-width;
   transform: translateZ(0);
 }
@@ -856,12 +851,12 @@ body.dandere-theme {
   background-color: #0f0a12; /* Fallback */
 }
 
-/* ✅ EXCLUDE LOGIN: Don't apply PNG backgrounds to login pages */
+/* EXCLUDE LOGIN: Don't apply PNG backgrounds to login pages */
 body:not(.login-page) {
   background: url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
 }
 
-/* ✅ THEME BACKGROUNDS: Only for non-login pages */
+/* THEME BACKGROUNDS: Only for non-login pages */
 body.light-theme:not(.login-page) {
   background: url('./assets/backgrounds/light-theme.png') center center / cover no-repeat fixed;
 }
@@ -882,7 +877,7 @@ body.dandere-theme:not(.login-page) {
   background: url('./assets/backgrounds/dandere-theme.png') center center / cover no-repeat fixed;
 }
 
-/* ✅ LOGIN PAGES: Transparent backgrounds only */
+/* LOGIN PAGES: Transparent backgrounds only */
 body.login-page {
   background: transparent !important;
 }

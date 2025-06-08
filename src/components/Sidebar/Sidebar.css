@@ -1,61 +1,49 @@
-/* ✅ FIX: Container to handle hover for both toggle and sidebar */
-.sidebar-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
-  pointer-events: none; /* Allow clicks through when sidebar is hidden */
-}
+/* Command center sidebar - your digital throne room interface */
 
-.sidebar-container > * {
-  pointer-events: auto; /* Re-enable pointer events for children */
-}
-
-/* Basic sidebar styling - improved visuals */
+/* Sidebar base structure with smooth transitions */
 .sidebar {
   position: fixed;
   top: 0;
-  left: -260px; /* COMPLETELY HIDDEN: Full width off-screen */
+  left: -260px; /* Completely hidden by default */
   width: 260px;
   height: 100vh;
   background: linear-gradient(145deg, rgba(15, 15, 25, 0.85) 0%, rgba(25, 25, 40, 0.9) 100%);
   backdrop-filter: blur(12px);
   border-right: 1px solid rgba(100, 108, 255, 0.2);
   z-index: 100;
-  transition: left 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); /* MUCH SLOWER: Very smooth expansion */
-  padding: 1rem; /* COMPACT: Reduced padding */
-  overflow: hidden; /* HIDDEN: No scrollbar by default */
+  transition: left 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smooth expansion */
+  padding: 1rem;
+  overflow: hidden; /* No scrollbar when hidden */
   box-shadow: none;
 }
 
-/* FIXED: Only show when toggle button is hovered OR when pinned visible */
+/* Expanded state on hover - temporary preview */
 .sidebar.hover-expanded {
-  left: 0; /* EXPAND: Only when button is hovered */
-  overflow-y: auto; /* SHOW: Scrollbar on hover */
-  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(100, 108, 255, 0.15);
-  background: linear-gradient(145deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.98) 100%);
-}
-
-/* PINNED: When clicked and pinned open */
-.sidebar.visible {
-  left: 0; /* PINNED: Stays open when clicked */
+  left: 0;
   overflow-y: auto;
   box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(100, 108, 255, 0.15);
   background: linear-gradient(145deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.98) 100%);
 }
 
-/* Main content wrapper that shifts right */
+/* Pinned state - stays open when clicked */
+.sidebar.visible {
+  left: 0;
+  overflow-y: auto;
+  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(100, 108, 255, 0.15);
+  background: linear-gradient(145deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.98) 100%);
+}
+
+/* Main content adaptation for sidebar visibility */
 .main-content-wrapper {
   transition: margin-left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   width: 100%;
 }
 
-/* Push main content when sidebar is visible */
 .main-content-wrapper.sidebar-visible {
   margin-left: 280px;
 }
 
-/* Sidebar Toggle Button - Clean Default Version */
+/* Floating toggle button with majestic animation */
 .sidebar-toggle {
   position: fixed;
   left: 0;
@@ -78,17 +66,13 @@
   will-change: top;
 }
 
-/* Floating animation */
+/* Majestic floating animation for the toggle button */
 @keyframes float-vertical {
-  0% {
-    top: 20vh;
-  }
-  100% {
-    top: 80vh;
-  }
+  0% { top: 20vh; }
+  100% { top: 80vh; }
 }
 
-/* Toggle button background */
+/* Toggle button background gradient */
 .sidebar-toggle::before {
   content: "";
   position: absolute;
@@ -101,18 +85,18 @@
   z-index: -1;
 }
 
-/* When sidebar is open */
+/* Toggle button when sidebar is open */
 .sidebar-toggle.open {
   left: 280px;
   animation: float-vertical 8s ease-in-out infinite alternate;
 }
 
-/* Hover effect */
+/* Hover enhancement for toggle button */
 .sidebar-toggle:hover {
   transform: translateY(-50%) scale(1.1);
 }
 
-
+/* Avatar container within toggle button */
 .sidebar-toggle-avatar {
   width: 35px;
   height: 35px;
@@ -124,8 +108,7 @@
   background: rgba(100, 108, 255, 0.1);
 }
 
-
-/* Avatar image styling */
+/* Boss's avatar image styling */
 .sidebar-toggle-avatar img {
   width: 100%;
   height: 100%;
@@ -135,14 +118,14 @@
   border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
-/* Fallback icon - DARK ICON: Visible on white background */
+/* Fallback icon when no avatar is set */
 .sidebar-toggle-avatar:empty::before {
   content: "👤";
   font-size: 20px;
   color: rgba(60, 60, 60, 0.8);
 }
 
-/* COMPACT: Sidebar header */
+/* Sidebar header with title and theme controls */
 .sidebar-header {
   display: flex;
   align-items: center;
@@ -164,7 +147,7 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* COMPACT: Theme button */
+/* Theme toggle button with subtle effects */
 .theme-toggle-btn {
   background: rgba(100, 108, 255, 0.15);
   border: 1px solid rgba(100, 108, 255, 0.3);
@@ -182,14 +165,14 @@
   box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
-/* COMPACT: Navigation items */
+/* Navigation structure */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 }
 
-/* ✅ FIX: Add proper link content wrapper */
+/* Main navigation links */
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -230,7 +213,7 @@
   transform: scale(1.1);
 }
 
-/* ✅ ADD: Badge styling */
+/* Notification and activity badges */
 .sidebar-badge {
   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   color: white;
@@ -244,7 +227,7 @@
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
 
-/* IMPROVED: Compact sub-menu */
+/* Submenu container with smooth expansion */
 .sidebar-submenu {
   max-height: 0;
   overflow: hidden;
@@ -277,7 +260,7 @@
   border-left: 2px solid var(--color-accent-primary, #646cff);
 }
 
-/* IMPROVED: Submenu arrow */
+/* Submenu expansion indicator */
 .submenu-arrow {
   font-size: 0.7rem;
   transition: transform 0.3s ease;
@@ -291,7 +274,7 @@
   color: var(--color-accent-primary, #646cff);
 }
 
-/* SMOOTH: Scrollbar */
+/* Custom scrollbar for the sidebar */
 .sidebar::-webkit-scrollbar {
   width: 4px;
 }
@@ -311,7 +294,7 @@
   background: rgba(100, 108, 255, 0.6);
 }
 
-/* RESPONSIVE: Mobile behavior */
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .sidebar {
     left: -260px;
@@ -340,7 +323,7 @@
   }
 }
 
-/* ACCESSIBILITY: Respect reduced motion preference */
+/* Accessibility support for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .sidebar-toggle {
     animation: none;

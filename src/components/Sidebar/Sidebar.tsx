@@ -1,4 +1,4 @@
-
+// Command center sidebar - your loyal navigator through the digital realm
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MiniCalendar from "./MiniCalendar";
@@ -9,6 +9,7 @@ import { getCurrentUserId } from "../../utils/auth";
 import "../../main.css";
 import "./Sidebar.css";
 
+// Simple icon components with subtle animation
 const DashboardIcon = () => <span className="icon-rotate">📊</span>;
 const CalendarIcon = () => <span className="icon-rotate">📅</span>;
 const DiaryIcon = () => <span className="icon-rotate">📝</span>;
@@ -16,7 +17,7 @@ const ProfileIcon = () => <span className="icon-rotate">👤</span>;
 
 type Theme = "dark" | "light" | "yandere" | "kuudere" | "tsundere" | "dandere";
 
-// ✅ SIMPLIFIED: MenuItem interface
+// Navigation item structure for the boss's convenience
 interface MenuItem {
   title: string;
   path: string;
@@ -27,15 +28,15 @@ interface MenuItem {
 }
 
 const Sidebar: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false); // ✅ PINNED state
-  const [isHoverExpanded, setIsHoverExpanded] = useState(false); // ✅ HOVER state
+  const [isVisible, setIsVisible] = useState(false); // Pinned state for persistent access
+  const [isHoverExpanded, setIsHoverExpanded] = useState(false); // Temporary expansion on hover
   const [openSubmenus, setOpenSubmenus] = useState<Set<string>>(new Set());
-  const [userAvatar, setUserAvatar] = useState<string | null>(null); // ✅ NEW: User's avatar
+  const [userAvatar, setUserAvatar] = useState<string | null>(null); // Boss's chosen avatar
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { unreadCount } = useNotifications();
 
-  // ✅ LOAD USER AVATAR: Get from database
+  // Retrieve the boss's avatar from their settings
   useEffect(() => {
     loadUserAvatar();
   }, []);
@@ -54,7 +55,7 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  // ✅ HOVER HANDLERS: Toggle button triggers expansion
+  // Hover handlers for the toggle button - shows preview without commitment
   const handleToggleHover = () => {
     if (!isVisible) {
       setIsHoverExpanded(true);
@@ -67,7 +68,7 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  // ✅ SIDEBAR HOVER HANDLERS: Keep sidebar open when hovering
+  // Sidebar hover handlers - maintains expansion while boss explores
   const handleSidebarMouseEnter = () => {
     if (!isVisible) {
       setIsHoverExpanded(true);
@@ -80,7 +81,7 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  // ✅ CLICK HANDLER: Pin/unpin sidebar
+  // Pin or unpin the sidebar - boss's choice for workspace layout
   const toggleSidebar = () => {
     const newVisibility = !isVisible;
     setIsVisible(newVisibility);
@@ -89,13 +90,14 @@ const Sidebar: React.FC = () => {
       setIsHoverExpanded(false);
     }
 
+    // Notify other components about the change
     const event = new CustomEvent("toggle-sidebar", {
       detail: { visible: newVisibility },
     });
     window.dispatchEvent(event);
   };
 
-  // ✅ THEME FUNCTIONS: Cycle through all themes
+  // Theme cycling through all available moods
   const toggleTheme = () => {
     const themes: Theme[] = [
       "dark",
@@ -110,6 +112,7 @@ const Sidebar: React.FC = () => {
     setTheme(themes[nextIndex]);
   };
 
+  // Visual representation of current theme mood
   const getThemeEmoji = () => {
     switch (theme) {
       case "dark":
@@ -129,18 +132,18 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  // ✅ DASHBOARD REFRESH: Special function with event dispatch
+  // Dashboard refresh with event broadcasting for coordinated updates
   const handleDashboardRefresh = async () => {
-    console.log("🔄 DASHBOARD REFRESH: Navigating to dashboard");
+    console.log("Navigating to dashboard and broadcasting refresh");
     navigate("/");
     const refreshEvent = new CustomEvent("dashboard-refresh", {
       detail: { timestamp: Date.now() },
     });
     window.dispatchEvent(refreshEvent);
-    console.log("✅ DASHBOARD REFRESH: Completed");
+    console.log("Dashboard refresh completed");
   };
 
-  // ✅ SUBMENU TOGGLE: Expand/collapse submenu items
+  // Submenu expansion management
   const toggleSubmenu = (title: string) => {
     setOpenSubmenus((prev) => {
       const newSet = new Set(prev);
@@ -153,7 +156,7 @@ const Sidebar: React.FC = () => {
     });
   };
 
-  // ✅ MENU ITEMS: Complete navigation structure
+  // Complete navigation structure for the boss's empire
   const menuItems: MenuItem[] = [
     {
       title: "Dashboard",
@@ -209,7 +212,7 @@ const Sidebar: React.FC = () => {
     },
   ];
 
-  // ✅ LIFECYCLE: Listen for external sidebar toggle events
+  // Listen for external sidebar toggle events
   useEffect(() => {
     const handleToggle = (event: CustomEvent) => {
       const newVisibility = event.detail.visible;
@@ -226,7 +229,7 @@ const Sidebar: React.FC = () => {
     };
   }, []);
 
-  // ✅ LISTEN FOR AVATAR UPDATES: Reload when user changes avatar
+  // Listen for avatar updates from profile changes
   useEffect(() => {
     const handleAvatarUpdate = () => {
       loadUserAvatar();
@@ -239,10 +242,9 @@ const Sidebar: React.FC = () => {
     };
   }, []);
 
-  // ✅ COMPLETE RENDER: Full sidebar with all functionality
   return (
     <>
-      {/* ✅ SIMPLIFIED TOGGLE BUTTON: Use user's selected avatar */}
+      {/* Toggle button with boss's avatar - floats majestically */}
       <button
         className={`sidebar-toggle ${isVisible ? "open" : ""}`}
         onClick={toggleSidebar}
@@ -250,22 +252,24 @@ const Sidebar: React.FC = () => {
         onMouseLeave={handleToggleLeave}
         aria-label="Toggle sidebar"
       >
-       <div className="sidebar-toggle-avatar">
-        {userAvatar ? (
-          <img
-            src={userAvatar}
-            alt="User Avatar"
-            onError={() => setUserAvatar(null)}
-          />
-        ) : (
-          <span style={{ fontSize: "20px", color: "rgba(255, 255, 255, 0.7)" }}>
-            👤
-          </span>
-        )}
-      </div>
+        <div className="sidebar-toggle-avatar">
+          {userAvatar ? (
+            <img
+              src={userAvatar}
+              alt="User Avatar"
+              onError={() => setUserAvatar(null)}
+            />
+          ) : (
+            <span
+              style={{ fontSize: "20px", color: "rgba(255, 255, 255, 0.7)" }}
+            >
+              👤
+            </span>
+          )}
+        </div>
       </button>
 
-      {/* ✅ SIDEBAR: Expands on button hover OR sidebar hover, stays when pinned */}
+      {/* Main sidebar panel - expands on hover or when pinned */}
       <aside
         className={`sidebar ${isVisible ? "visible" : ""} ${
           isHoverExpanded ? "hover-expanded" : ""
@@ -273,7 +277,7 @@ const Sidebar: React.FC = () => {
         onMouseEnter={handleSidebarMouseEnter}
         onMouseLeave={handleSidebarMouseLeave}
       >
-        {/* ✅ HEADER: Compact title and theme toggle */}
+        {/* Header with title and theme selector */}
         <div className="sidebar-header">
           <h1 className="sidebar-title">Wingman</h1>
           <button
@@ -285,10 +289,10 @@ const Sidebar: React.FC = () => {
           </button>
         </div>
 
-        {/* ✅ MINI CALENDAR: Compact calendar widget */}
+        {/* Compact calendar widget for quick date navigation */}
         <MiniCalendar />
 
-        {/* ✅ NAVIGATION: Full menu with submenus */}
+        {/* Complete navigation menu with submenus and badges */}
         <nav className="sidebar-nav">
           {menuItems.map((item) => (
             <div key={item.title} className="nav-item">
@@ -318,7 +322,7 @@ const Sidebar: React.FC = () => {
                 {item.submenu && <span className="submenu-arrow">▶</span>}
               </Link>
 
-              {/* ✅ SUBMENU: Animated expansion */}
+              {/* Expandable submenu with smooth animation */}
               {item.submenu && (
                 <div
                   className={`sidebar-submenu ${
