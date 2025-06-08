@@ -10,11 +10,19 @@ interface CompletedTasksCardProps {
   tasks: Task[];
 }
 
+/**
+ * CompletedTasksCard Component - Your Wingman's Achievement Gallery
+ * Displays completed missions with uncomplete functionality and detail popups
+ * Your victories organized and ready for review, boss
+ */
 const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
   const navigate = useNavigate();
   const { showPopupFor, currentPopupItem, closePopup } = useNotifications();
-  
-  // Get completed tasks only, sorted by latest first, limited to 12
+
+  /**
+   * Filters and sorts completed tasks by completion recency
+   * Your most recent victories displayed prominently
+   */
   const displayTasks = useMemo(() => {
     return tasks
       .filter((task) => task.completed)
@@ -36,27 +44,27 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
     [showPopupFor]
   );
 
-  // ✅ FIXED: Handle uncomplete task and trigger dashboard refresh
+  /**
+   * Handles task uncomplete with dashboard refresh
+   * Your Wingman restores missions to active status
+   */
   const handleStatusClick = useCallback(
     async (e: React.MouseEvent, task: Task) => {
       e.stopPropagation();
-      
+
       try {
-        console.log(`🔄 CompletedTasksCard: Uncompleting task ${task.id}`);
-        
-        // Update in database
+        console.log("Wingman: Restoring task to active status:", task.id);
+
         await window.electronAPI.db.updateTask(task.id, {
           completed: false,
         });
-        
-        // ✅ TRIGGER: Dashboard refresh
+
         const refreshEvent = new CustomEvent("dashboard-refresh");
         window.dispatchEvent(refreshEvent);
-        
-        console.log(`✅ CompletedTasksCard: Task ${task.id} uncompleted and dashboard refreshed`);
-        
+
+        console.log("Wingman: Task restored and dashboard refreshed");
       } catch (error) {
-        console.error("Error uncompleting task:", error);
+        console.error("Wingman: Error restoring task:", error);
       }
     },
     []
@@ -69,7 +77,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
         month: "short",
         day: "numeric",
       });
-    } catch (error) {
+    } catch {
       return dateStr;
     }
   };
@@ -106,7 +114,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
                   >
                     ✓
                   </div>
-                  
+
                   <div className="item-content">
                     <div className="item-title completed">{task.title}</div>
                     <div className="item-meta">
@@ -121,7 +129,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
                 </div>
               ))}
             </div>
-            
+
             {hasMore && (
               <button
                 className="view-more-btn"
@@ -130,19 +138,19 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
                   navigate(`/completed-tasks?date=${today}`);
                 }}
               >
-                View All {totalCompletedTasks} Completed &rarr;
+                View All {totalCompletedTasks} Completed →
               </button>
             )}
           </>
         ) : (
           <div className="dashboard-empty">
             <div className="dashboard-empty-icon">✅</div>
-            <p>No completed tasks today</p>
+            <p>No victories yet today, boss</p>
             <button
               className="action-btn"
               onClick={() => navigate("/calendar/day?tab=tasks")}
             >
-              Add Task
+              Add Mission
             </button>
           </div>
         )}

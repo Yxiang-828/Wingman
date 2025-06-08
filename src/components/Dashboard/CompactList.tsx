@@ -3,7 +3,10 @@ import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import "./CompactList.css";
 
-// Helper: Truncate titles
+/**
+ * Helper function for smart title truncation
+ * Your Wingman ensures text fits perfectly in compact spaces
+ */
 const truncateTitle = (title: string, maxWords: number = 8): string => {
   if (!title) return "";
   const words = title.split(/\s+/);
@@ -11,7 +14,6 @@ const truncateTitle = (title: string, maxWords: number = 8): string => {
   return words.slice(0, maxWords).join(" ") + "...";
 };
 
-// COMPACT TASK LIST
 interface CompactTaskListProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
@@ -19,6 +21,11 @@ interface CompactTaskListProps {
   maxDisplay?: number;
 }
 
+/**
+ * CompactTaskList Component - Your Wingman's Efficient Task Display
+ * Optimized for space-constrained contexts with smart loading
+ * Maintains full dashboard functionality in compact form
+ */
 export const CompactTaskList: React.FC<CompactTaskListProps> = ({
   tasks,
   onTaskClick,
@@ -26,12 +33,18 @@ export const CompactTaskList: React.FC<CompactTaskListProps> = ({
   maxDisplay = 10,
 }) => {
   const [displayCount, setDisplayCount] = useState(maxDisplay);
+
   const visibleTasks = useMemo(
     () => tasks.slice(0, displayCount),
     [tasks, displayCount]
   );
+
   const remainingCount = Math.max(0, tasks.length - displayCount);
 
+  /**
+   * Handles task completion with event propagation control
+   * Your Wingman prevents accidental clicks on parent elements
+   */
   const handleStatusClick = useCallback(
     (e: React.MouseEvent, task: Task) => {
       e.stopPropagation();
@@ -47,8 +60,8 @@ export const CompactTaskList: React.FC<CompactTaskListProps> = ({
   if (tasks.length === 0) {
     return (
       <div className="compact-empty-state">
-        <div className="compact-empty-icon">📝</div>
-        <p className="compact-empty-text">No tasks for today</p>
+        <div className="compact-empty-icon">📋</div>
+        <p className="compact-empty-text">No pending missions, boss</p>
       </div>
     );
   }
@@ -88,7 +101,7 @@ export const CompactTaskList: React.FC<CompactTaskListProps> = ({
       {remainingCount > 0 && (
         <div className="compact-load-more">
           <button className="load-more-btn" onClick={handleLoadMore}>
-            Show {remainingCount} more tasks
+            Show {remainingCount} more missions
           </button>
         </div>
       )}
@@ -96,34 +109,54 @@ export const CompactTaskList: React.FC<CompactTaskListProps> = ({
   );
 };
 
-// COMPACT EVENT LIST
 interface CompactEventListProps {
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
   maxDisplay?: number;
 }
 
+/**
+ * CompactEventList Component - Your Wingman's Schedule Overview
+ * Displays events efficiently with type indicators and smart pagination
+ * Maintains visual consistency with task display patterns
+ */
 export const CompactEventList: React.FC<CompactEventListProps> = ({
   events,
   onEventClick,
   maxDisplay = 10,
 }) => {
   const [displayCount, setDisplayCount] = useState(maxDisplay);
+
   const visibleEvents = useMemo(
     () => events.slice(0, displayCount),
     [events, displayCount]
   );
+
   const remainingCount = Math.max(0, events.length - displayCount);
 
   const handleLoadMore = useCallback(() => {
     setDisplayCount((prev) => Math.min(prev + 5, events.length));
   }, [events.length]);
 
+  /**
+   * Maps event types to appropriate visual indicators
+   * Your Wingman understands different event contexts
+   */
+  const getEventIcon = (type: string) => {
+    const icons = {
+      meeting: "👥",
+      personal: "🏠",
+      reminder: "⏰",
+      work: "💼",
+    };
+    return icons[type as keyof typeof icons] || "📅";
+  };
+
   if (events.length === 0) {
     return (
       <div className="compact-empty-state">
         <div className="compact-empty-icon">📅</div>
-        <p className="compact-empty-text">No events for today</p>
+        <p className="compact-empty-text">No events scheduled, boss</p>
       </div>
     );
   }
@@ -134,15 +167,14 @@ export const CompactEventList: React.FC<CompactEventListProps> = ({
         {visibleEvents.map((event) => (
           <div
             key={event.id}
-            className={`compact-event-item event-type-${event.type.toLowerCase()}`}
+            className={`compact-event-item event-type-${
+              event.type?.toLowerCase() || "default"
+            }`}
             onClick={() => onEventClick(event)}
           >
             <div className="compact-event-row">
               <div className="compact-event-type-indicator">
-                {event.type === "meeting" && "👥"}
-                {event.type === "personal" && "🏠"}
-                {event.type === "reminder" && "⏰"}
-                {event.type === "work" && "💼"}
+                {getEventIcon(event.type)}
               </div>
 
               <div className="compact-event-content">
@@ -172,3 +204,92 @@ export const CompactEventList: React.FC<CompactEventListProps> = ({
     </div>
   );
 };
+
+interface CompactListProps {
+  tasks?: Task[];
+  events?: CalendarEvent[];
+  type: "tasks" | "events";
+  onItemClick?: (item: Task | CalendarEvent) => void;
+}
+
+/**
+ * CompactList Component - Your Wingman's Condensed View
+ * Space-efficient display for tasks and events in limited contexts
+ * Perfect for sidebar or modal displays where space is precious
+ */
+const CompactList: React.FC<CompactListProps> = ({
+  tasks = [],
+  events = [],
+  type,
+  onItemClick,
+}) => {
+  const items = type === "tasks" ? tasks : events;
+
+  /**
+   * Handles item click with proper type casting
+   * Your Wingman ensures smooth navigation between different views
+   */
+  const handleItemClick = (item: Task | CalendarEvent) => {
+    if (onItemClick) {
+      onItemClick(item);
+    }
+  };
+
+  if (items.length === 0) {
+    return (
+      <div className="compact-list-container">
+        <div className="compact-empty">
+          <p>
+            {type === "tasks"
+              ? "No missions to display, boss"
+              : "No events to show, boss"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="compact-list-container">
+      {type === "tasks" ? (
+        <div className="compact-task-list">
+          {(items as Task[]).map((task) => (
+            <div
+              key={task.id}
+              className="compact-task-item"
+              onClick={() => handleItemClick(task)}
+            >
+              <div className="compact-status">{task.completed ? "✓" : "○"}</div>
+              <div className="compact-content">
+                <div className="compact-title">{task.title}</div>
+                {task.task_time && (
+                  <div className="compact-meta">{task.task_time}</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="compact-event-list">
+          {(items as CalendarEvent[]).map((event) => (
+            <div
+              key={event.id}
+              className="compact-event-item"
+              onClick={() => handleItemClick(event)}
+            >
+              <div className="compact-content">
+                <div className="compact-title">{event.title}</div>
+                <div className="compact-meta">
+                  {event.event_time && <span>{event.event_time}</span>}
+                  {event.type && <span> • {event.type}</span>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CompactList;

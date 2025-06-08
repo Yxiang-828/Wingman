@@ -1,4 +1,10 @@
-/* CONTAINER */
+/**
+ * CompactList Component Styles - Your Wingman's Efficient Display System
+ * Inherits from unified Dashboard.css for consistency
+ * Optimized compact layouts for space-constrained contexts
+ */
+
+/* Container foundation inheriting dashboard patterns */
 .compact-list-container {
   display: flex;
   flex-direction: column;
@@ -6,7 +12,7 @@
   overflow: hidden;
 }
 
-/* SCROLLABLE LISTS */
+/* Scrollable lists with unified theming */
 .compact-task-list,
 .compact-event-list {
   flex: 1;
@@ -27,18 +33,23 @@
   border-radius: 2px;
 }
 
-/* TASK ITEMS */
+/* Compact task items inheriting dashboard styling */
 .compact-task-item {
   background: rgba(25, 25, 40, 0.6);
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-  border-left: 3px solid rgba(100, 108, 255, 0.5);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 0.3rem;
+  border-left: 2px solid rgba(100, 108, 255, 0.5);
   transition: all 0.2s ease;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .compact-task-item:hover {
-  background: rgba(30, 30, 45, 0.8);
+  background: rgba(35, 35, 55, 0.8);
+  border-left-color: rgba(100, 108, 255, 0.8);
   transform: translateX(2px);
 }
 
@@ -71,8 +82,9 @@
 }
 
 .compact-task-status:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
   border-color: rgba(100, 108, 255, 0.8);
+  box-shadow: 0 0 4px rgba(100, 108, 255, 0.2);
 }
 
 .compact-task-item.completed .compact-task-status {
@@ -81,49 +93,40 @@
   color: #4ade80;
 }
 
-.compact-task-content {
+.compact-content {
   flex: 1;
   min-width: 0;
 }
 
-.compact-task-title {
-  font-size: 0.85rem;
-  font-weight: 500;
+.compact-title {
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.9);
-  line-height: 1.2;
+  margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.compact-task-item.completed .compact-task-title {
-  text-decoration: line-through;
+.compact-meta {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.1rem;
 }
 
-.compact-task-meta {
-  margin-top: 0.2rem;
-}
-
-.compact-task-time {
-  background: rgba(20, 20, 35, 0.6);
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* EVENT ITEMS */
+/* Event items following dashboard patterns */
 .compact-event-item {
   background: rgba(25, 25, 40, 0.6);
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-  border-left: 3px solid rgba(100, 108, 255, 0.5);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 0.3rem;
+  border-left: 2px solid rgba(100, 108, 255, 0.5);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .compact-event-item:hover {
-  background: rgba(30, 30, 45, 0.8);
+  background: rgba(35, 35, 55, 0.8);
+  border-left-color: rgba(100, 108, 255, 0.8);
   transform: translateX(2px);
 }
 
@@ -175,7 +178,7 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* EVENT TYPE COLORS */
+/* Event type colors with semantic meaning */
 .compact-event-item.event-type-meeting {
   border-left-color: rgba(100, 108, 255, 0.8);
 }
@@ -192,10 +195,11 @@
   border-left-color: rgba(147, 51, 234, 0.8);
 }
 
-/* LOAD MORE BUTTON */
+/* Load more functionality */
 .compact-load-more {
   padding: 0.5rem;
   border-top: 1px solid rgba(100, 108, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .load-more-btn {
@@ -211,11 +215,12 @@
 }
 
 .load-more-btn:hover {
-  background: rgba(30, 30, 45, 0.8);
-  border-color: rgba(100, 108, 255, 0.5);
+  background: rgba(100, 108, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
-/* EMPTY STATE */
+/* Empty state styling */
 .compact-empty-state {
   display: flex;
   flex-direction: column;

@@ -35,7 +35,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('db:getDiaryEntries', userId, date),
     saveDiaryEntry: (entry) => 
       ipcRenderer.invoke('db:saveDiaryEntry', entry),
-
+    deleteDiaryEntry: (id) => ipcRenderer.invoke('db:deleteDiaryEntry', id),
     // ═══════════════════════════════════════════════════════════════
     // 🎯 **CHAT OPERATIONS**
     // ═══════════════════════════════════════════════════════════════

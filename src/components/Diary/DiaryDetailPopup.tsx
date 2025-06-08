@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, memo, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { format } from "date-fns";
 import "./DiaryDetailPopup.css";
 
@@ -7,195 +7,117 @@ interface DiaryEntry {
   title: string;
   content: string;
   mood: string;
-  entry_date: string;
-  created_at: string;
+  entry_date?: string;
+  created_at?: string;
+  date?: string;
 }
 
 interface DiaryDetailPopupProps {
   entry: DiaryEntry;
   onClose: () => void;
-  onEdit?: (id: number) => void;
-  onDelete?: (id: number) => void;
-  clickPosition?: { x: number; y: number }; // ✅ NEW: Click position
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
 }
 
-const getMoodEmoji = (mood: string): string => {
-  const moods: Record<string, string> = {
-    happy: "😊",
-    sad: "😔",
-    neutral: "😐",
-    excited: "🤩",
-    anxious: "😰",
-  };
-  return moods[mood] || "😐";
-};
+/**
+ * DiaryDetailPopup Component - Your Wingman's Memory Portal
+ * Fast viewport-centered popup with no lag
+ */
+const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({
+  entry,
+  onClose,
+  onEdit,
+  onDelete,
+}) => {
+  const popupRef = useRef<HTMLDivElement>(null);
 
-const getMoodLabel = (mood: string): string => {
-  const labels: Record<string, string> = {
-    happy: "Happy",
-    sad: "Sad",
-    neutral: "Neutral",
-    excited: "Excited",
-    anxious: "Anxious",
-  };
-  return labels[mood] || "Unknown";
-};
-
-const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = memo(
-  ({ entry, onClose, onEdit, onDelete, clickPosition }) => {
-    const [popupStyle, setPopupStyle] = useState<React.CSSProperties | null>(
-      null
-    ); // ✅ Start as null
-
-    useEffect(() => {
-      if (clickPosition) {
-        const popupWidth = 600;
-        const popupHeight = 400;
-        const margin = 20;
-
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const scrollX = window.scrollX;
-        const scrollY = window.scrollY;
-
-        // Calculate initial position (centered on click)
-        let left = clickPosition.x - popupWidth / 2;
-        let top = clickPosition.y - popupHeight / 2;
-
-        // Adjust if popup would go off-screen
-        if (left < scrollX + margin) {
-          left = scrollX + margin;
-        } else if (left + popupWidth > scrollX + viewportWidth - margin) {
-          left = scrollX + viewportWidth - popupWidth - margin;
-        }
-
-        if (top < scrollY + margin) {
-          top = scrollY + margin;
-        } else if (top + popupHeight > scrollY + viewportHeight - margin) {
-          top = scrollY + viewportHeight - popupHeight - margin;
-        }
-
-        setPopupStyle({
-          position: "absolute",
-          left: `${left}px`,
-          top: `${top}px`,
-          zIndex: 1000,
-        });
+  /**
+   * ✅ SIMPLE EVENT HANDLING - No complex scroll locking
+   */
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
       }
-    }, [clickPosition]);
+    };
 
-    const handleEscape = useCallback(
-      (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
-          onClose();
-        }
-      },
-      [onClose]
-    );
-
-    const handleOverlayClick = useCallback(
-      (e: React.MouseEvent) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      },
-      [onClose]
-    );
-
-    useEffect(() => {
-      document.addEventListener("keydown", handleEscape, { passive: true });
-      document.body.style.overflow = "hidden";
-
-      return () => {
-        document.removeEventListener("keydown", handleEscape);
-        document.body.style.overflow = "unset";
-      };
-    }, [handleEscape]);
-
-    const formattedDate = React.useMemo(() => {
-      try {
-        return format(new Date(entry.entry_date), "EEEE, MMMM d, yyyy");
-      } catch {
-        return entry.entry_date || "Unknown date";
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
+        onClose();
       }
-    }, [entry.entry_date]);
+    };
 
-    const moodData = React.useMemo(
-      () => ({
-        emoji: getMoodEmoji(entry.mood),
-        label: getMoodLabel(entry.mood),
-      }),
-      [entry.mood]
-    );
+    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("mousedown", handleClickOutside);
 
-    // ✅ DON'T RENDER until position is calculated
-    if (!popupStyle) {
-      return null;
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
+  const getMoodEmoji = (mood: string) => {
+    const moods: Record<string, string> = {
+      happy: "😊",
+      sad: "😔",
+      neutral: "😐",
+      excited: "🤩",
+      anxious: "😰",
+      angry: "😡",
+      relaxed: "😌",
+    };
+    return moods[mood] || "😐";
+  };
+
+  const formatDate = (entry: DiaryEntry) => {
+    try {
+      const dateStr = entry.created_at || entry.entry_date || entry.date;
+      return format(new Date(dateStr), "EEEE, MMMM d, yyyy");
+    } catch {
+      return entry.created_at || entry.entry_date || entry.date || "";
     }
+  };
 
-    return (
-      <div
-        className="diary-popup-overlay"
-        onClick={handleOverlayClick}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="diary-popup-title"
-      >
-        {/* ✅ POSITIONED: Popup appears over clicked entry */}
-        <div className="diary-popup-content" style={popupStyle}>
-          <button
-            className="diary-popup-close"
-            onClick={onClose}
-            aria-label="Close diary entry"
-            type="button"
-          >
-            ×
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this entry, boss?")) {
+      onClose(); // Close popup immediately after confirmation
+      try {
+        await onDelete(entry.id);
+      } catch (error) {
+        console.error("Error deleting entry:", error);
+        alert("Failed to delete entry. Please try again.");
+      }
+    }
+  };
+
+  return (
+    <div className="diary-popup-overlay">
+      <div ref={popupRef} className="diary-popup-content">
+        <button className="diary-popup-close" onClick={onClose}>
+          ✕
+        </button>
+
+        <div className="diary-popup-header">
+          <h2 className="diary-popup-title">{entry.title}</h2>
+          <div className="diary-popup-meta">
+            <span className="diary-popup-mood">{getMoodEmoji(entry.mood)}</span>
+            <span className="diary-popup-date">{formatDate(entry)}</span>
+          </div>
+        </div>
+
+        <div className="diary-popup-content-text">{entry.content}</div>
+
+        <div className="diary-popup-actions">
+          <button className="diary-popup-edit" onClick={() => onEdit(entry.id)}>
+            Edit Entry
           </button>
-
-          <div className="diary-popup-header">
-            <h2 id="diary-popup-title" className="diary-popup-title">
-              {entry.title || "Untitled Entry"}
-            </h2>
-
-            <div className="diary-popup-meta">
-              <span className="diary-popup-date">{formattedDate}</span>
-              <div className="diary-popup-mood">
-                <span>{moodData.emoji}</span>
-                <span>{moodData.label}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="diary-popup-content-text">
-            {entry.content || "No content available."}
-          </div>
-
-          {(onEdit || onDelete) && (
-            <div className="diary-popup-actions">
-              {onEdit && (
-                <button
-                  className="diary-action-btn edit"
-                  onClick={() => onEdit(entry.id)}
-                >
-                  Edit
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  className="diary-action-btn delete"
-                  onClick={() => onDelete(entry.id)}
-                >
-                  Delete
-                </button>
-              )}
-            </div>
-          )}
+          <button className="diary-popup-delete" onClick={handleDelete}>
+            Delete Entry
+          </button>
         </div>
       </div>
-    );
-  }
-);
-
-DiaryDetailPopup.displayName = "DiaryDetailPopup";
+    </div>
+  );
+};
 
 export default DiaryDetailPopup;

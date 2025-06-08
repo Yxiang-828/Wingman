@@ -1,3 +1,9 @@
+/**
+ * DiarySearch Component Styles - Your Wingman's Investigation Center
+ * Advanced search interface with real-time filtering and smart suggestions
+ * Where memories are hunted down with precision
+ */
+
 .diary-search-container {
   width: 100%;
   max-width: 1000px;
@@ -5,10 +11,10 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  background: var(--color-bg-card-secondary, rgba(25, 25, 45, 0.5));
+  background: rgba(25, 25, 45, 0.5);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.25));
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   min-height: 80vh;
 }
 
@@ -23,7 +29,7 @@
 
 .diary-search-header h1 {
   font-size: 1.8rem;
-  color: var(--color-text-primary, white);
+  color: white;
   margin: 0;
   font-weight: 600;
 }
@@ -55,7 +61,7 @@
   border-color: rgba(100, 108, 255, 0.5);
 }
 
-/* ✅ FIXED: Search form styling */
+/* Advanced search form with gradient backdrop */
 .search-form {
   background: linear-gradient(135deg, rgba(30, 30, 50, 0.6), rgba(25, 25, 45, 0.8));
   border-radius: 16px;
@@ -144,11 +150,6 @@
   transform: none;
 }
 
-.search-button:disabled:hover {
-  transform: none;
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.15);
-}
-
 .search-loading {
   animation: spin 1s linear infinite;
   color: rgba(100, 108, 255, 0.8);
@@ -159,7 +160,7 @@
   filter: drop-shadow(0 0 4px rgba(100, 108, 255, 0.4));
 }
 
-/* ✅ FIXED: Search filters layout */
+/* Filter controls with responsive layout */
 .search-filters {
   display: flex;
   gap: 1rem;
@@ -246,7 +247,7 @@
   border-color: rgba(255, 99, 71, 0.5);
 }
 
-/* ✅ FIXED: Recent entries section */
+/* Recent entries section */
 .recent-records-container {
   background: rgba(20, 20, 35, 0.4);
   border-radius: 12px;
@@ -277,7 +278,7 @@
   font-size: 0.8rem;
 }
 
-/* ✅ FIXED: Loading indicator */
+/* Loading states with smooth animations */
 .searching-indicator {
   display: flex;
   flex-direction: column;
@@ -301,7 +302,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ✅ FIXED: Compact records list */
+/* Compact records list with smooth scrolling */
 .compact-records-list {
   display: flex;
   flex-direction: column;
@@ -365,7 +366,7 @@
   margin: 0;
 }
 
-/* ✅ FIXED: No records state */
+/* Empty states with encouragement */
 .no-records {
   display: flex;
   flex-direction: column;
@@ -404,7 +405,7 @@
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.2);
 }
 
-/* ✅ FIXED: Search results popup */
+/* Search results popup system */
 .search-popup-overlay {
   position: fixed;
   top: 0;
@@ -472,7 +473,7 @@
   box-shadow: 0 4px 12px rgba(255, 99, 71, 0.2);
 }
 
-/* ✅ FIXED: Search results list */
+/* Search results display */
 .search-results-list {
   display: flex;
   flex-direction: column;
@@ -536,7 +537,6 @@
   margin: 0;
 }
 
-/* ✅ FIXED: No results state */
 .no-results {
   display: flex;
   flex-direction: column;
@@ -558,7 +558,7 @@
   margin: 0;
 }
 
-/* ✅ FIXED: Scrollbar styling */
+/* Scrollbar styling across all lists */
 .compact-records-list::-webkit-scrollbar,
 .search-results-list::-webkit-scrollbar {
   width: 6px;
@@ -581,7 +581,7 @@
   background: rgba(100, 108, 255, 0.6);
 }
 
-/* ✅ FIXED: Responsive design */
+/* Responsive design adjustments */
 @media (max-width: 768px) {
   .diary-search-container {
     padding: 1rem;
@@ -613,7 +613,7 @@
   }
 }
 
-/* ✅ ENHANCED: Loading state animations */
+/* Enhanced loading state animations */
 @keyframes searchPulse {
   0%, 100% { 
     box-shadow: 0 4px 12px rgba(100, 108, 255, 0.15);

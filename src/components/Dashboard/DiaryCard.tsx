@@ -18,54 +18,48 @@ interface DiaryCardProps {
   entries?: DiaryEntry[];
 }
 
+/**
+ * DiaryCard Component - Your Wingman's Memory Palace
+ * Displays recent diary entries with popup details and smooth navigation
+ * Your thoughts organized and ready for review, boss
+ */
 const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
   const navigate = useNavigate();
   const { entries: contextEntries, loading, deleteEntry } = useDiary();
   const [selectedEntry, setSelectedEntry] = useState<DiaryEntry | null>(null);
-  const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
 
-  // ✅ ADD: Missing dashboardRef declaration
   const dashboardRef = useRef<HTMLElement | null>(null);
-
   const displayEntries = contextEntries.slice(0, 5);
 
-  // ✅ FIXED: Set container for modal
+  /**
+   * Sets up container reference for modal positioning
+   * Your Wingman ensures popups appear in the right place
+   */
   useEffect(() => {
-    dashboardRef.current = document.querySelector(".dashboard") || document.body;
+    dashboardRef.current =
+      document.querySelector(".dashboard") || document.body;
   }, []);
 
-  // Handle entry click with position tracking
-  const handleEntryClick = useCallback((entry: DiaryEntry, event: React.MouseEvent) => {
-    // Get the clicked element's position
-    const rect = event.currentTarget.getBoundingClientRect();
-    const scrollX = window.scrollX || document.documentElement.scrollLeft;
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-    
-    // Calculate center of clicked entry
-    const clickX = rect.left + scrollX + (rect.width / 2);
-    const clickY = rect.top + scrollY + (rect.height / 2);
-    
-    console.log('📍 Click position:', { clickX, clickY, rect });
-    
-    setClickPosition({ x: clickX, y: clickY });
-    setSelectedEntry(entry);
-  }, []);
+  /**
+   * Handles entry click - simplified without position tracking
+   * Your Wingman opens the memory portal perfectly centered
+   */
+  const handleEntryClick = useCallback(
+    (entry: DiaryEntry, event: React.MouseEvent) => {
+      console.log("Wingman: Opening diary entry from dashboard:", entry.title);
+      setSelectedEntry(entry);
+    },
+    []
+  );
 
   const handleClosePopup = useCallback(() => {
     setSelectedEntry(null);
-    setClickPosition(null);
   }, []);
 
-  const handleDelete = useCallback((id: number) => {
-    deleteEntry(id);
-    setSelectedEntry(null);
-    setClickPosition(null);
-  }, [deleteEntry]);
-
-  const handleEdit = useCallback((id: number) => {
-    navigate(`/diary/edit?id=${id}`);
-  }, [navigate]);
-
+  /**
+   * Formats date for display with fallback handling
+   * Your Wingman ensures dates always look proper
+   */
   const formatDateDisplay = (dateStr: string) => {
     try {
       return format(new Date(dateStr), "MMM d, yyyy");
@@ -74,6 +68,10 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
     }
   };
 
+  /**
+   * Maps mood strings to appropriate emoji representations
+   * Your Wingman understands your emotional expressions
+   */
   const getMoodEmoji = (mood: string) => {
     const moods: Record<string, string> = {
       happy: "😊",
@@ -89,10 +87,12 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
     return (
       <div className="dashboard-card">
         <div className="dashboard-card-header">
-          <h2>📝 Today's Thoughts</h2>
+          <h2>Your Thoughts</h2>
         </div>
         <div className="dashboard-card-content">
-          <div className="diary-loading">Loading your thoughts...</div>
+          <div className="diary-loading">
+            Your Wingman is gathering your thoughts...
+          </div>
         </div>
       </div>
     );
@@ -102,7 +102,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
     <>
       <div className="dashboard-card">
         <div className="dashboard-card-header">
-          <h2>📝 Today's Thoughts</h2>
+          <h2>Your Thoughts</h2>
           <button
             className="card-action-btn"
             onClick={() => navigate("/diary/write")}
@@ -137,7 +137,7 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
             ) : (
               <div className="dashboard-empty">
                 <div className="dashboard-empty-icon">📝</div>
-                <p>No thoughts captured today</p>
+                <p>No thoughts captured yet, boss</p>
                 <button
                   className="action-btn"
                   onClick={() => navigate("/diary/write")}
@@ -159,14 +159,12 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ entries: propEntries }) => {
         </div>
       </div>
 
-      {/* Popup positioned at click location */}
-      {selectedEntry && clickPosition && (
+      {selectedEntry && (
         <DiaryDetailPopup
           entry={selectedEntry}
           onClose={handleClosePopup}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          clickPosition={clickPosition}
+          onEdit={(id) => navigate(`/diary/edit?id=${id}`)}
+          onDelete={deleteEntry}
         />
       )}
     </>

@@ -1,3 +1,9 @@
+/**
+ * ViewEntries Component Styles - Your Wingman's Chronicle Archive
+ * Month-grouped diary entries with expandable interface and smooth interactions
+ * Where memories are organized for easy exploration
+ */
+
 .view-entries-container {
   max-width: 800px;
   margin: 0 auto;
@@ -5,6 +11,27 @@
   background: rgba(25, 25, 45, 0.5);
   border-radius: 16px;
   min-height: 80vh;
+  max-height: 90vh; /* ✅ LIMIT HEIGHT */
+  overflow-y: auto; /* ✅ ADD SCROLLBAR */
+}
+
+/* ✅ SMOOTH SCROLLBAR */
+.view-entries-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.view-entries-container::-webkit-scrollbar-track {
+  background: rgba(20, 20, 35, 0.3);
+  border-radius: 4px;
+}
+
+.view-entries-container::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.4);
+  border-radius: 4px;
+}
+
+.view-entries-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 108, 255, 0.6);
 }
 
 .view-entries-header {
@@ -55,7 +82,7 @@
   box-shadow: 0 4px 12px rgba(100, 108, 255, 0.2);
 }
 
-/* ✅ CLEAN: Month grouping */
+/* Month grouping system with smooth animations */
 .entries-by-month {
   display: flex;
   flex-direction: column;
@@ -110,7 +137,7 @@
   transform: rotate(180deg);
 }
 
-/* ✅ CLEAN: Entry previews */
+/* Entry previews with click positioning */
 .month-entries {
   padding: 0 1.5rem 1rem;
 }
@@ -163,7 +190,7 @@
   font-size: 0.9rem;
 }
 
-/* ✅ CLEAN: Empty state */
+/* Empty state with encouragement */
 .diary-empty-state {
   display: flex;
   flex-direction: column;
@@ -193,15 +220,15 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Success message */
+/* Success message notification */
 .success-message {
   position: fixed;
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--color-success-bg, rgba(74, 222, 128, 0.15));
-  border: 1px solid var(--color-success-border, rgba(74, 222, 128, 0.3));
-  color: var(--color-success-text, rgba(74, 222, 128, 0.9));
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: rgba(74, 222, 128, 0.9);
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   animation: fade-in-up 0.5s ease forwards;
@@ -214,7 +241,7 @@
 .close-btn {
   background: none;
   border: none;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
+  color: rgba(255, 255, 255, 0.8);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0;
@@ -227,7 +254,7 @@
 }
 
 .close-btn:hover {
-  color: var(--color-text, white);
+  color: white;
   transform: rotate(90deg);
 }
 
@@ -242,169 +269,16 @@
   }
 }
 
-/* Loading and empty states */
-.diary-loading {
-  text-align: center;
-  padding: 4rem 0;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
-  font-size: 1.1rem;
-}
-
-/* Empty state styling */
-.diary-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
-}
-
-.diary-empty-state p {
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Load more button */
-.load-more-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1.5rem;
-  position: relative;
-  padding: 1.5rem;
-  text-align: center;
-  background: var(--color-bg-card-secondary, rgba(25, 25, 45, 0.7));
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  margin-top: auto;
-}
-
-.load-more-container {
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1rem 0;
-  margin-top: 1rem;
-  text-align: center;
-  background: linear-gradient(
-    to top,
-    var(--color-bg-main-secondary, rgba(20, 20, 35, 0.95)) 70%,
-    var(--color-bg-main-secondary-fade, rgba(20, 20, 35, 0.7)) 100%
-  );
-  border-top: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
-  z-index: 90;
-  box-shadow: 0 -4px 12px var(--color-shadow, rgba(0, 0, 0, 0.2));
-}
-
-.load-more-btn {
-  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
-  color: var(--color-text, white);
-  border: 1px solid var(--color-accent-primary, rgba(100, 108, 255, 0.5));
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.2));
-}
-
-.load-more-btn {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-primary, rgba(100, 108, 255, 0.7)),
-    var(--color-accent-primary-dark, rgba(83, 91, 242, 0.7))
-  );
-  color: var(--color-text-contrast, white);
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 10px var(--color-shadow, rgba(0, 0, 0, 0.3));
-}
-
-.load-more-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-primary-bright, rgba(110, 118, 255, 0.8)),
-    var(--color-accent-primary-dark-bright, rgba(93, 101, 242, 0.8))
-  );
-  box-shadow: 0 6px 15px
-    var(--color-accent-primary-glow, rgba(83, 91, 242, 0.4));
-}
-
-.load-more-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: var(--color-bg-disabled, rgba(60, 60, 80, 0.7));
-}
-
-.load-more-container.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem 0;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
-}
-
-/* Loading spinner for automatic loading */
-.loading-spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
-  border-top-color: var(--color-accent-primary, rgba(100, 108, 255, 0.8));
-  border-radius: 50%;
-  margin-right: 10px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Scrollbar styling */
-.diary-card.view-entries-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.diary-card.view-entries-container::-webkit-scrollbar-track {
-  background: var(--color-scrollbar-track, rgba(30, 30, 50, 0.3));
-  border-radius: 4px;
-}
-
-.diary-card.view-entries-container::-webkit-scrollbar-thumb {
-  background: var(--color-scrollbar-thumb, rgba(100, 108, 255, 0.5));
-  border-radius: 4px;
-}
-
 /* Responsive design */
 @media (max-width: 768px) {
   .view-entries-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
-    padding: 1.2rem 1.5rem;
   }
 
   .view-entries-actions {
     width: 100%;
-    display: flex;
   }
 
   .search-entries-btn,
@@ -414,10 +288,6 @@
     padding: 0.75rem 1rem;
   }
 
-  .entries-by-month {
-    padding: 1rem;
-  }
-
   .month-header {
     padding: 0.75rem 1rem;
   }
@@ -425,18 +295,4 @@
   .diary-entry-preview {
     padding: 1rem;
   }
-}
-
-/* Debugging styles - to be removed */
-.debug-date {
-  font-size: 0.8rem;
-  color: rgba(255, 0, 0, 0.7);
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.debug-date span {
-  display: inline-block;
 }

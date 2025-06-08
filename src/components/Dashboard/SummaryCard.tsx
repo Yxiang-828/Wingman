@@ -2,8 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
-import "./Dashboard.css"; // Import shared dashboard styles first
-import "./SummaryCard.css"; // Then component-specific styles
+import "./Dashboard.css";
+import "./SummaryCard.css"; 
 
 interface SummaryCardProps {
   tasks: Task[];

@@ -28,12 +28,6 @@ const DiarySearch: React.FC = () => {
   const [recentEntries, setRecentEntries] = useState<DiaryEntry[]>([]);
   const recentEntriesLimit = 8;
 
-  // ✅ NEW: Only adding click position tracking
-  const [clickPosition, setClickPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-
   // ✅ KEEP: Available moods for filtering
   const moods = ["happy", "sad", "neutral", "excited", "anxious", "angry", "relaxed"];
 
@@ -186,33 +180,22 @@ const DiarySearch: React.FC = () => {
     }
   };
 
-  // ✅ NEW: Click handler with position tracking
+  // ✅ REMOVE: Click position tracking
   const handleEntryClick = (entry: DiaryEntry, event?: React.MouseEvent) => {
-    if (event) {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const scrollX = window.scrollX || document.documentElement.scrollLeft;
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      
-      const clickX = rect.left + scrollX + rect.width / 2;
-      const clickY = rect.top + scrollY + rect.height / 2;
-      
-      setClickPosition({ x: clickX, y: clickY });
-    }
+    console.log("Wingman: Opening search result:", entry.title);
     setSelectedEntry(entry);
     setShowSearchPopup(false);
   };
 
-  // ✅ NEW: Close handler
+  // ✅ KEEP: Close handler
   const handleClosePopup = () => {
     setSelectedEntry(null);
-    setClickPosition(null);
   };
 
   // ✅ NEW: Delete handler
   const handleDelete = (id: number) => {
     // Handle delete if needed
     setSelectedEntry(null);
-    setClickPosition(null);
   };
 
   const hasActiveFilters = searchParams.query || searchParams.startDate || searchParams.endDate || searchParams.mood;
@@ -412,13 +395,12 @@ const DiarySearch: React.FC = () => {
       )}
 
       {/* ✅ NEW: Positioned popup */}
-      {selectedEntry && clickPosition && (
+      {selectedEntry && (
         <DiaryDetailPopup
           entry={selectedEntry}
           onClose={handleClosePopup}
           onEdit={(id: number) => navigate(`/diary/edit?id=${id}`)}
           onDelete={handleDelete}
-          clickPosition={clickPosition}
         />
       )}
     </div>

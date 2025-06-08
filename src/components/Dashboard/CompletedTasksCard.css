@@ -386,7 +386,7 @@
 
 .clear-completed:hover {
   background: rgba(255, 77, 77, 0.2);
-  transform: translateY(-1px); /* ✅ GENTLE LIKE DIARY CARD */
+  transform: translateY(-1px);
 }
 
 .completed-empty {

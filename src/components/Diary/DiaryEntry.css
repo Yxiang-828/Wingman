@@ -1,4 +1,10 @@
-/* Base styling for diary entry container */
+/**
+ * DiaryEntry Component Styles - Your Wingman's Creative Sanctuary
+ * Immersive writing environment with mood-responsive theming and floating tools
+ * Where thoughts transform into chronicles of victory
+ */
+
+/* Base container with immersive fullscreen design */
 .diary-container {
   max-width: 800px;
   margin: 0 auto;
@@ -8,101 +14,80 @@
 .diary-entry-container {
   display: flex;
   height: calc(100vh - 120px);
-  background: var(--color-bg-card-secondary, rgba(25, 25, 45, 0.5));
+  background: rgba(25, 25, 45, 0.5);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.25)),
-    0 0 30px var(--color-glow-primary, rgba(255, 160, 50, 0.15));
-  position: relative; /* Ensure this is set for absolute positioning */
-  padding-left: 80px; /* Add padding to make room for the mood selector */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 160, 50, 0.15);
+  position: relative;
+  padding-left: 80px;
 }
 
-/* Entry component styling */
-.entry-item {
-  min-height: 6rem; /* Minimum height for entries */
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: var(--color-bg-card, rgba(30, 30, 50, 0.5));
-}
-
-/* MOOD SELECTOR STYLING - COLLAPSIBLE SIDEBAR */
+/* Mood selector with intelligent collapsible behavior */
 .mood-selector {
   position: absolute;
   left: 10px;
   top: 20%;
-  transform: translateY(0);
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: 70px;
   padding: 12px 8px;
   border-radius: 12px;
-  background: var(--color-bg-card-secondary, rgba(30, 30, 50, 0.75));
-  backdrop-filter: blur(5px);
-  box-shadow: 0 0 20px var(--color-shadow, rgba(0, 0, 0, 0.15)),
-    0 0 10px var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
-  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
+  background: rgba(30, 30, 50, 0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(100, 108, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(100, 108, 255, 0.3);
   z-index: 10;
   transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  max-height: 80px; /* Default collapsed state */
+  max-height: 80px;
   overflow: hidden;
 }
 
-/* Trembling animation for unselected state */
+/* Enhanced box appearance with depth */
+.mood-selector::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(100, 108, 255, 0.1) 0%,
+    rgba(147, 51, 234, 0.05) 50%,
+    rgba(30, 30, 50, 0.2) 100%
+  );
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+/* Gentle attention animation for unselected state */
 .mood-selector:not(.has-selection) {
-  animation: tremble 1.2s ease-in-out infinite;
+  animation: subtlePulse 3s ease-in-out infinite;
 }
 
 /* Expanded state on hover */
 .mood-selector:hover {
-  max-height: 350px; /* Expand to show all options */
-  top: 20%;
-  transform: translateY(0);
+  max-height: 350px;
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(100, 108, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 0 20px rgba(100, 108, 255, 0.2);
+  border-color: rgba(100, 108, 255, 0.5);
 }
 
 /* Collapsed state after selection */
 .mood-selector.has-selection {
   max-height: 80px;
-  background: var(--color-bg-card, rgba(30, 30, 50, 0.5));
+  background: rgba(30, 30, 50, 0.5);
   border-radius: 10px 10px 16px 16px;
-  box-shadow: 0 0 25px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.3));
 }
 
-/* Scroll appearance for collapsed state */
-.mood-selector.has-selection::before {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 8px;
-  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.6));
-  border-radius: 4px;
-  box-shadow: 0 0 10px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.6));
-}
-
-/* Scroll ends */
-.mood-selector.has-selection::after {
-  content: "";
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 2px;
-  background: var(--color-text-secondary, rgba(255, 255, 255, 0.3));
-  border-radius: 1px;
-}
-
-/* Individual mood option styling with enhanced animations */
+/* Individual mood option styling */
 .mood-option {
   display: flex;
   flex-direction: column;
@@ -111,309 +96,139 @@
   border-radius: 10px;
   width: 100%;
   cursor: pointer;
-  transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-  background: var(--color-bg-input, rgba(40, 40, 60, 0.4));
-  border: 2px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.25));
+  transition: all 0.3s ease;
+  background: rgba(40, 40, 60, 0.4);
+  border: 2px solid rgba(100, 108, 255, 0.25);
   position: relative;
   overflow: hidden;
 }
 
-/* Emoji styling with larger size */
 .mood-emoji {
   font-size: 1.8rem;
   margin-bottom: 4px;
   transition: all 0.3s ease;
 }
 
-/* Label styling */
 .mood-label {
   font-size: 0.7rem;
   font-weight: 500;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
+  color: rgba(255, 255, 255, 0.8);
 }
 
-/* HOVER EFFECTS with increased range of motion */
+/* Hover effects with mood-specific colors */
 .mood-option:hover {
-  transform: translateX(8px) scale(1.07); /* Larger motion range */
-  background: var(--color-bg-input-hover, rgba(50, 50, 80, 0.6));
-  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.6));
-  box-shadow: 0 0 15px
-      var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4)),
-    0 0 30px var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
+  transform: translateX(8px) scale(1.07);
+  background: rgba(50, 50, 80, 0.6);
+  border-color: rgba(100, 108, 255, 0.6);
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
   z-index: 2;
 }
 
-/* Mood-specific hover animations with corresponding colors */
 .mood-option[data-mood="happy"]:hover .mood-emoji {
-  color: var(--color-mood-happy, #ffd700); /* Gold */
+  color: #ffd700;
   text-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
-  animation: bounce 0.7s infinite alternate;
-  transform: translateY(-10px); /* Larger bounce */
+  animation: gentleBounce 0.7s infinite alternate;
 }
 
 .mood-option[data-mood="sad"]:hover .mood-emoji {
-  color: var(--color-mood-sad, #6495ed); /* Cornflower Blue */
+  color: #6495ed;
   text-shadow: 0 0 12px rgba(100, 149, 237, 0.7);
-  animation: shake 0.7s infinite;
-  transform: translateX(-6px); /* Larger shake */
+  animation: gentleShake 0.7s infinite;
 }
 
 .mood-option[data-mood="neutral"]:hover .mood-emoji {
-  color: var(--color-mood-neutral, #e0e0e0); /* Light Gray */
+  color: #e0e0e0;
   text-shadow: 0 0 12px rgba(224, 224, 224, 0.7);
-  animation: pulse 1s infinite alternate;
-  transform: scale(1.15); /* Larger pulse */
+  animation: gentlePulse 1s infinite alternate;
 }
 
 .mood-option[data-mood="excited"]:hover .mood-emoji {
-  color: var(--color-mood-excited, #ff69b4); /* Hot Pink */
+  color: #ff69b4;
   text-shadow: 0 0 12px rgba(255, 105, 180, 0.7);
-  animation: spin 1.2s infinite;
-  transform: rotate(25deg); /* Larger rotation */
+  animation: gentleSpin 1.2s infinite;
 }
 
 .mood-option[data-mood="anxious"]:hover .mood-emoji {
-  color: var(--color-mood-anxious, #9370db); /* Medium Purple */
+  color: #9370db;
   text-shadow: 0 0 12px rgba(147, 112, 219, 0.7);
-  animation: wobble 0.6s infinite;
-  transform: rotate(-15deg); /* Larger wobble */
+  animation: gentleWobble 0.6s infinite;
 }
 
-/* CLICK EFFECTS with radiant box glow outline */
-.mood-option:active {
-  transform: scale(0.95) translateX(2px);
-  transition: all 0.1s ease;
-}
-
-/* Mood-specific click animations with glowing outlines */
-.mood-option[data-mood="happy"]:active {
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 215, 0, 0.8);
-  border-color: var(--color-mood-happy, #ffd700);
-}
-
-.mood-option[data-mood="sad"]:active {
-  box-shadow: 0 0 0 3px rgba(100, 149, 237, 0.5),
-    0 0 25px rgba(100, 149, 237, 0.8);
-  border-color: var(--color-mood-sad, #6495ed);
-}
-
-.mood-option[data-mood="neutral"]:active {
-  box-shadow: 0 0 0 3px rgba(224, 224, 224, 0.5),
-    0 0 25px rgba(224, 224, 224, 0.8);
-  border-color: var(--color-mood-neutral, #e0e0e0);
-}
-
-.mood-option[data-mood="excited"]:active {
-  box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.5),
-    0 0 25px rgba(255, 105, 180, 0.8);
-  border-color: var(--color-mood-excited, #ff69b4);
-}
-
-.mood-option[data-mood="anxious"]:active {
-  box-shadow: 0 0 0 3px rgba(147, 112, 219, 0.5),
-    0 0 25px rgba(147, 112, 219, 0.8);
-  border-color: var(--color-mood-anxious, #9370db);
-}
-
-/* SELECTED STATE with pulsing color-specific border */
+/* Selected state with mood-specific styling */
 .mood-option.selected {
   border-width: 3px;
-  background: var(--color-bg-input-selected, rgba(70, 70, 100, 0.6));
+  background: rgba(70, 70, 100, 0.6);
 }
 
-/* Color-specific selected state */
 .mood-option.selected[data-mood="happy"] {
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-  border-color: var(--color-mood-happy, #ffd700);
-  animation: pulse-glow-gold 2s infinite alternate;
+  border-color: #ffd700;
+  animation: pulseGoldGlow 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="sad"] {
   box-shadow: 0 0 20px rgba(100, 149, 237, 0.6);
-  border-color: var(--color-mood-sad, #6495ed);
-  animation: pulse-glow-blue 2s infinite alternate;
+  border-color: #6495ed;
+  animation: pulseBlueGlow 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="neutral"] {
   box-shadow: 0 0 20px rgba(224, 224, 224, 0.6);
-  border-color: var(--color-mood-neutral, #e0e0e0);
-  animation: pulse-glow-gray 2s infinite alternate;
+  border-color: #e0e0e0;
+  animation: pulseGrayGlow 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="excited"] {
   box-shadow: 0 0 20px rgba(255, 105, 180, 0.6);
-  border-color: var(--color-mood-excited, #ff69b4);
-  animation: pulse-glow-pink 2s infinite alternate;
+  border-color: #ff69b4;
+  animation: pulsePinkGlow 2s infinite alternate;
 }
 
 .mood-option.selected[data-mood="anxious"] {
   box-shadow: 0 0 20px rgba(147, 112, 219, 0.6);
-  border-color: var(--color-mood-anxious, #9370db);
-  animation: pulse-glow-purple 2s infinite alternate;
+  border-color: #9370db;
+  animation: pulsePurpleGlow 2s infinite alternate;
 }
 
-/* Animation keyframes */
-@keyframes tremble {
-  0%,
-  100% {
-    transform: rotate(0deg) translateY(0);
-  }
-  25% {
-    transform: rotate(-1deg) translateY(-2px);
-  }
-  50% {
-    transform: rotate(0deg) translateY(0);
-  }
-  75% {
-    transform: rotate(1deg) translateY(-1px);
-  }
-}
-
-@keyframes bounce {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-6px);
-  }
-  75% {
-    transform: translateX(6px);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(1.2);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes wobble {
-  0%,
-  100% {
-    transform: rotate(0);
-  }
-  25% {
-    transform: rotate(-15deg);
-  }
-  75% {
-    transform: rotate(15deg);
-  }
-}
-
-/* Color-specific pulsing glow animations */
-@keyframes pulse-glow-gold {
-  0% {
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
-  }
-}
-
-@keyframes pulse-glow-blue {
-  0% {
-    box-shadow: 0 0 10px rgba(100, 149, 237, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 30px rgba(100, 149, 237, 0.8);
-  }
-}
-
-@keyframes pulse-glow-gray {
-  0% {
-    box-shadow: 0 0 10px rgba(224, 224, 224, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 30px rgba(224, 224, 224, 0.8);
-  }
-}
-
-@keyframes pulse-glow-pink {
-  0% {
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 30px rgba(255, 105, 180, 0.8);
-  }
-}
-
-@keyframes pulse-glow-purple {
-  0% {
-    box-shadow: 0 0 10px rgba(147, 112, 219, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 30px rgba(147, 112, 219, 0.8);
-  }
-}
-
-/* Main writing area */
+/* Main writing area with smooth gradient background */
 .diary-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   padding: 2rem;
   overflow-y: auto;
-  background: linear-gradient(
-    135deg,
-    var(--color-bg-main-primary, rgba(40, 35, 50, 0.6)) 0%,
-    var(--color-bg-main-secondary, rgba(25, 25, 45, 0.7)) 100%
-  );
+  background: linear-gradient(135deg, rgba(25, 25, 45, 0.3) 0%, rgba(35, 35, 65, 0.4) 100%);
   transition: all 0.3s ease;
 }
 
-/* Custom scrollbar for diary main content */
 .diary-main::-webkit-scrollbar {
   width: 8px;
 }
 
 .diary-main::-webkit-scrollbar-track {
-  background: var(--color-scrollbar-track, rgba(30, 30, 50, 0.2));
+  background: rgba(30, 30, 50, 0.2);
   border-radius: 10px;
 }
 
 .diary-main::-webkit-scrollbar-thumb {
-  background: var(--color-scrollbar-thumb, rgba(100, 108, 255, 0.4));
+  background: rgba(100, 108, 255, 0.4);
   border-radius: 10px;
-  border: 2px solid var(--color-scrollbar-track, rgba(30, 30, 50, 0.2));
+  border: 2px solid rgba(30, 30, 50, 0.2);
 }
 
 .diary-main::-webkit-scrollbar-thumb:hover {
-  background: var(--color-scrollbar-thumb-hover, rgba(100, 108, 255, 0.6));
+  background: rgba(100, 108, 255, 0.6);
 }
 
 .diary-header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
+  border-bottom: 1px solid rgba(100, 108, 255, 0.2);
   padding-bottom: 1rem;
 }
 
 .diary-date {
   font-size: 0.95rem;
-  color: var(--color-text-accent, rgba(255, 230, 200, 0.8));
+  color: rgba(255, 230, 200, 0.8);
   margin-bottom: 0.75rem;
   font-weight: 500;
 }
@@ -423,8 +238,8 @@
   background: transparent;
   border: none;
   outline: none;
-  color: var(--color-text, rgba(255, 255, 255, 0.95));
-  text-shadow: 0 0 10px var(--color-glow-primary, rgba(255, 160, 50, 0.2));
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 0 10px rgba(255, 160, 50, 0.2);
   font-size: 1.8rem;
   font-weight: 600;
   padding: 0.5rem 0;
@@ -433,11 +248,11 @@
 }
 
 .diary-title:focus {
-  border-bottom-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
+  border-bottom-color: rgba(100, 108, 255, 0.4);
 }
 
 .diary-title::placeholder {
-  color: var(--color-text-placeholder, rgba(255, 255, 255, 0.4));
+  color: rgba(255, 255, 255, 0.4);
   font-weight: 500;
 }
 
@@ -449,70 +264,37 @@
 .diary-textarea {
   width: 100%;
   min-height: 200px;
-  background: var(--color-bg-input, rgba(35, 32, 45, 0.4));
-  border: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.15));
+  background: rgba(35, 32, 45, 0.4);
+  border: 1px solid rgba(100, 108, 255, 0.15);
   border-radius: 12px;
-  color: var(--color-text, rgba(255, 255, 255, 0.95));
+  color: rgba(255, 255, 255, 0.95);
   font-size: 1.1rem;
   line-height: 1.7;
   padding: 1.5rem;
   outline: none;
   resize: none;
   transition: all 0.3s;
-  box-shadow: 0 2px 10px var(--color-shadow, rgba(0, 0, 0, 0.1)) inset,
-    0 0 15px var(--color-glow-primary, rgba(255, 160, 50, 0.05)) inset;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) inset;
 }
 
 .diary-textarea:focus {
-  border-color: var(--color-accent-secondary, rgba(255, 180, 100, 0.4));
-  box-shadow: 0 0 0 2px
-      var(--color-accent-secondary-glow, rgba(255, 180, 100, 0.1)),
-    0 2px 10px var(--color-shadow, rgba(0, 0, 0, 0.1)) inset;
+  border-color: rgba(255, 180, 100, 0.4);
+  box-shadow: 0 0 0 2px rgba(255, 180, 100, 0.1);
 }
 
 .diary-textarea::placeholder {
-  color: var(--color-text-placeholder, rgba(255, 255, 255, 0.4));
+  color: rgba(255, 255, 255, 0.4);
 }
 
-/* Footer area with mood and actions */
+/* Footer with save actions */
 .diary-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
+  border-top: 1px solid rgba(100, 108, 255, 0.2);
   padding-top: 1.5rem;
   gap: 2rem;
   flex-wrap: wrap;
-}
-
-.diary-mood {
-  flex: 0 0 auto;
-  max-width: 200px;
-}
-
-.diary-mood label {
-  font-size: 0.95rem;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
-  font-weight: 500;
-}
-
-.diary-mood-select {
-  background: var(--color-bg-card, rgba(30, 30, 50, 0.4));
-  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
-  border-radius: 8px;
-  color: var(--color-text, white);
-  padding: 0.5rem;
-  min-width: 180px;
-  outline: none;
-  transition: all 0.3s;
-}
-
-.diary-mood-select:focus {
-  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
-  box-shadow: 0 0 0 2px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.1));
 }
 
 .diary-actions {
@@ -523,112 +305,71 @@
 }
 
 .diary-save-btn {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-primary, #646cff) 0%,
-    var(--color-accent-primary-dark, #535bf2) 100%
-  );
-  color: var(--color-text-contrast, white);
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.2), rgba(147, 51, 234, 0.3));
+  color: white;
   border: none;
   border-radius: 8px;
   padding: 0.7rem 1.5rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.3));
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
 .diary-save-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4));
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.3);
 }
 
 .diary-save-btn:disabled {
-  background: var(--color-accent-primary-disabled, rgba(100, 108, 255, 0.4));
+  background: rgba(100, 108, 255, 0.4);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-/* Floating toggle button - fixed to right edge WITH animation */
+/* Floating tools toggle button */
 .diary-tools-toggle {
   position: fixed;
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  width: 80px; /* Wider for horizontal layout */
-  height: 34px; /* Shorter height */
-  border-radius: 16px 0 0 16px; /* Rounded on left side only */
-  background: var(--color-bg-main-primary, rgba(40, 35, 50, 0.7));
-  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
-  color: var(--color-text, white);
+  width: 80px;
+  height: 34px;
+  border-radius: 16px 0 0 16px;
+  background: rgba(40, 35, 50, 0.7);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 100;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.2));
-  animation: float-vertical 8s ease-in-out infinite alternate;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: floatVertical 8s ease-in-out infinite alternate;
 }
 
 .diary-tools-toggle.open {
-  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
-  /* Keep position fixed, just change color */
+  background: rgba(100, 108, 255, 0.2);
 }
 
 .diary-tools-toggle:hover {
-  width: 90px; /* Expand slightly on hover */
-  background: var(--color-bg-input-hover, rgba(50, 45, 60, 0.8));
-  box-shadow: 0 0 15px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4));
+  width: 90px;
+  background: rgba(50, 45, 60, 0.8);
+  box-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
 }
 
-.tools-toggle-text {
-  font-size: 0.8rem;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-/* Vertical floating animation */
-@keyframes float-vertical {
-  0% {
-    transform: translateY(calc(-50% - 10px));
-  }
-  100% {
-    transform: translateY(calc(-50% + 10px));
-  }
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .diary-tools-toggle {
-    top: auto;
-    bottom: 20px;
-    right: 20px;
-    transform: none;
-    animation: none;
-  }
-
-  .diary-tools-toggle.open {
-    right: 20px;
-    bottom: 350px;
-  }
-}
-
-/* Tools panel - positioned relative to container */
+/* Tools panel positioned relative to container */
 .diary-tools {
-  position: absolute; /* Changed from fixed to absolute */
+  position: absolute;
   top: 0;
-  right: -320px; /* Position it just outside the card */
+  right: -320px;
   width: 320px;
   height: 100%;
-  background: var(--color-bg-tools-panel, rgba(28, 28, 40, 0.95));
-  border-left: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
-  box-shadow: -5px 0 15px var(--color-shadow, rgba(0, 0, 0, 0.2));
+  background: rgba(28, 28, 40, 0.95);
+  border-left: 1px solid rgba(100, 108, 255, 0.3);
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
   padding: 2rem 1.5rem;
   z-index: 99;
   overflow-y: auto;
@@ -636,38 +377,32 @@
 }
 
 .diary-tools.hidden {
-  transform: translateX(0); /* Don't move */
+  transform: translateX(0);
   opacity: 0;
 }
 
 .diary-tools.visible {
-  transform: translateX(-100%); /* Slide in from the right */
+  transform: translateX(-100%);
   opacity: 1;
 }
 
-/* Custom scrollbar for tools panel */
 .diary-tools::-webkit-scrollbar {
   width: 6px;
 }
 
 .diary-tools::-webkit-scrollbar-track {
-  background: var(--color-scrollbar-track, rgba(30, 30, 50, 0.1));
+  background: rgba(30, 30, 50, 0.1);
   border-radius: 10px;
 }
 
 .diary-tools::-webkit-scrollbar-thumb {
-  background: var(--color-scrollbar-thumb, rgba(100, 108, 255, 0.3));
+  background: rgba(100, 108, 255, 0.3);
   border-radius: 10px;
-}
-
-.diary-tools::-webkit-scrollbar-thumb:hover {
-  background: var(--color-scrollbar-thumb-hover, rgba(100, 108, 255, 0.5));
 }
 
 .diary-tools-header {
   margin-bottom: 2rem;
-  border-bottom: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.3));
+  border-bottom: 1px solid rgba(100, 108, 255, 0.3);
   padding-bottom: 1rem;
 }
 
@@ -675,9 +410,8 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text, white);
-  text-shadow: 0 0 10px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.5));
+  color: white;
+  text-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
 }
 
 .diary-tools-section {
@@ -687,10 +421,10 @@
 .diary-tools-section h3 {
   font-size: 1.1rem;
   margin-bottom: 1rem;
-  color: var(--color-text, rgba(255, 255, 255, 0.9));
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* Quick entry buttons */
+/* Quick entry templates */
 .quick-entries {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -700,10 +434,10 @@
 
 .quick-entry-btn {
   padding: 0.75rem 0.5rem;
-  background: var(--color-bg-main-primary, rgba(40, 35, 50, 0.6));
-  border: 1px solid var(--color-accent-primary-border, rgba(100, 108, 255, 0.2));
+  background: rgba(40, 35, 50, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.2);
   border-radius: 8px;
-  color: var(--color-text, white);
+  color: white;
   cursor: pointer;
   transition: all 0.3s;
   text-align: center;
@@ -711,12 +445,12 @@
 
 .quick-entry-btn:hover {
   transform: translateY(-2px);
-  background: var(--color-accent-primary-glow, rgba(100, 108, 255, 0.15));
-  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
-  box-shadow: 0 4px 12px var(--color-shadow, rgba(0, 0, 0, 0.2));
+  background: rgba(100, 108, 255, 0.15);
+  border-color: rgba(100, 108, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Writing prompts */
+/* Writing prompts section */
 .writing-prompts {
   display: flex;
   flex-direction: column;
@@ -724,34 +458,26 @@
 }
 
 .writing-prompt {
-  background: var(--color-bg-main-primary, rgba(40, 35, 50, 0.6));
-  border: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.15));
+  background: rgba(40, 35, 50, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.15);
   border-radius: 10px;
   padding: 1rem;
   transition: all 0.3s;
-  animation: fadeIn 0.5s;
   cursor: pointer;
 }
 
 .writing-prompt:hover {
-  background: var(--color-bg-input-hover, rgba(40, 35, 50, 0.8));
+  background: rgba(40, 35, 50, 0.8);
   transform: translateY(-2px);
-  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
-  box-shadow: 0 4px 12px var(--color-shadow, rgba(0, 0, 0, 0.2));
-}
-
-/* Remove the use-prompt-btn since we're making the entire prompt clickable */
-.use-prompt-btn {
-  display: none;
+  border-color: rgba(100, 108, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .refresh-prompts-btn {
-  background: var(--color-bg-card, rgba(40, 35, 50, 0.5));
-  border: 1px dashed
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.25));
+  background: rgba(40, 35, 50, 0.5);
+  border: 1px dashed rgba(100, 108, 255, 0.25);
   border-radius: 8px;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.8));
+  color: rgba(255, 255, 255, 0.8);
   padding: 0.75rem;
   margin-top: 1rem;
   width: 100%;
@@ -760,94 +486,17 @@
 }
 
 .refresh-prompts-btn:hover {
-  background: var(--color-bg-input-hover, rgba(40, 35, 50, 0.7));
-  border-color: var(--color-accent-primary, rgba(100, 108, 255, 0.4));
+  background: rgba(40, 35, 50, 0.7);
+  border-color: rgba(100, 108, 255, 0.4);
   transform: translateY(-2px);
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .diary-entry-container {
-    flex-direction: column;
-    height: auto;
-    min-height: calc(100vh - 120px);
-  }
-
-  .diary-tools {
-    position: fixed;
-    width: 100%;
-    height: 350px;
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    transform: translateY(100%);
-  }
-
-  .diary-tools.visible {
-    transform: translateY(0);
-  }
-
-  .diary-tools-toggle {
-    position: fixed;
-    top: auto;
-    bottom: 20px;
-    right: 20px;
-    transform: none;
-    animation: none;
-  }
-
-  .diary-tools-toggle.open {
-    right: 20px;
-    bottom: 350px;
-  }
-}
-
-/* Add these card styles from Diary.css */
-.diary-card {
-  background: var(--color-bg-card, #232323);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.2));
-  padding: 2.5rem;
-  margin-bottom: 2rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.diary-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--color-accent-primary, #646cff),
-    var(--color-accent-primary-dark, #535bf2)
-  );
-  opacity: 0.7;
-}
-
-.diary-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.15));
-}
-
-/* Base immersive mode styling with enhanced edge glow */
+/* Immersive mode body styling */
 body.immersive-mode {
-  background: radial-gradient(
-    circle at center,
-    var(--color-bg-main-primary, rgba(32, 32, 45, 0.95)) 0%,
-    var(--color-bg-main-secondary, rgba(22, 22, 32, 0.98)) 80%
-  );
-  position: relative;
-  overflow: hidden;
+  background: linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.98) 100%);
+  overflow-x: hidden;
 }
 
-/* Edge glow effect - default theme */
 body.immersive-mode::before {
   content: "";
   position: fixed;
@@ -855,142 +504,217 @@ body.immersive-mode::before {
   left: 0;
   right: 0;
   bottom: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(100, 108, 255, 0.03) 0%,
+    rgba(147, 51, 234, 0.02) 40%,
+    transparent 70%
+  );
   pointer-events: none;
-  z-index: 10;
-  box-shadow: inset 0 0 80px 10px
-      var(--mood-glow-color, rgba(255, 180, 50, 0.15)),
-    inset 0 0 30px 5px var(--mood-inner-glow, rgba(255, 140, 50, 0.1));
-  animation: subtle-flicker 8s infinite alternate;
-}
-
-
-
-@keyframes subtle-flicker {
-  0% {
-    opacity: 0.7;
-  }
-  25% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  75% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes float-particles {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-100%);
-  }
+  z-index: -1;
+  animation: subtleFlicker 8s ease-in-out infinite alternate;
 }
 
 body.immersive-mode .main-content-wrapper {
-  margin-left: 0 !important;
+  padding: 0;
+  margin: 0;
 }
 
 body.immersive-mode .diary-entry-container {
-  max-width: 900px;
-  margin: 0 auto;
-  box-shadow: 0 0 40px var(--color-bg-main-glow, rgba(50, 50, 80, 0.15));
-  border-radius: 20px;
-  overflow: hidden;
+  height: 100vh;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-/* Typography enhancements */
-body.immersive-mode .diary-title {
-  font-family: "Georgia", serif;
-  font-weight: 600;
-  font-size: 2rem;
-  letter-spacing: -0.01em;
-}
-
-body.immersive-mode .diary-textarea {
-  font-family: "Georgia", serif;
-  font-size: 1.2rem;
-  line-height: 1.8;
-  background: var(--color-bg-input, rgba(35, 35, 50, 0.3));
-  border: 1px solid
-    var(--color-accent-primary-border, rgba(100, 108, 255, 0.15));
-  box-shadow: inset 0 0 20px var(--color-shadow, rgba(0, 0, 0, 0.1));
-}
-
-body.immersive-mode .diary-textarea::placeholder {
-  color: var(--color-text-placeholder, rgba(255, 255, 255, 0.4));
-  opacity: 0.7;
-}
-
-body.immersive-mode .diary-date {
-  font-family: "Georgia", serif;
-  font-style: italic;
-}
-
-/* Hide header when in immersive mode */
 body.immersive-mode header {
   display: none;
 }
 
-/* Ensure a nice loading state */
-.diary-loading {
+/* Mood selector label styling */
+.mood-selector-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
   text-align: center;
-  padding: 3rem;
-  font-size: 1.2rem;
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.mood-selector:hover .mood-selector-label {
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mood-selector.has-selection .mood-selector-label {
+  display: none;
+}
+
+/* Error and loading state enhancements */
+.diary-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.diary-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(100, 108, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: rgba(100, 108, 255, 0.8);
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
 
 .diary-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
   text-align: center;
-  padding: 2rem;
-  background: var(--color-error-bg, rgba(255, 80, 80, 0.1));
-  border-radius: 8px;
-  border: 1px solid var(--color-error-border, rgba(255, 80, 80, 0.3));
-  color: var(--color-error-text, rgba(255, 160, 160, 0.9));
+  background: rgba(25, 25, 45, 0.5);
+  border-radius: 16px;
   margin: 2rem auto;
   max-width: 600px;
 }
 
-/* Add a lovely write entry container */
-.write-entry-container {
-  position: relative;
-  height: 100vh;
-  width: 100%;
+.diary-error .error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
 }
 
-/* Quirky "pick carefully" text */
-.mood-selector-label {
-  position: absolute;
-  right: -90px; /* Position to the right of the selector */
-  top: 10px;
-  font-size: 0.65rem;
-  font-family: "Courier New", monospace; /* Quirky typewriter font */
-  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
-  transform: rotate(90deg); /* Rotate vertically */
-  transform-origin: left center;
-  letter-spacing: 1px;
-  text-transform: lowercase;
-  font-style: italic;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0.8;
-  text-shadow: 0 0 5px
-    var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4));
-  transition: opacity 0.3s ease;
+.diary-error h2 {
+  color: rgba(255, 160, 160, 0.9);
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
 }
 
-/* Show the text more prominently when hovering the mood selector */
-.mood-selector:hover .mood-selector-label {
-  opacity: 1;
+.diary-error p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 2rem 0;
+  font-size: 1.1rem;
 }
 
-/* Hide the label when a selection has been made */
-.mood-selector.has-selection .mood-selector-label {
-  opacity: 0;
-  transition: opacity 0.8s ease;
+.diary-action-btn {
+  background: rgba(100, 108, 255, 0.2);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  color: #b8baff;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.diary-action-btn:hover {
+  background: rgba(100, 108, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.2);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes subtlePulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(100, 108, 255, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(100, 108, 255, 0.4); }
+}
+
+@keyframes gentleBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+@keyframes gentleShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes gentlePulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+
+@keyframes gentleSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gentleWobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes pulseGoldGlow {
+  0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+  100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+}
+
+@keyframes pulseBlueGlow {
+  0% { box-shadow: 0 0 20px rgba(100, 149, 237, 0.6); }
+  100% { box-shadow: 0 0 30px rgba(100, 149, 237, 0.8); }
+}
+
+@keyframes pulseGrayGlow {
+  0% { box-shadow: 0 0 20px rgba(224, 224, 224, 0.6); }
+  100% { box-shadow: 0 0 30px rgba(224, 224, 224, 0.8); }
+}
+
+@keyframes pulsePinkGlow {
+  0% { box-shadow: 0 0 20px rgba(255, 105, 180, 0.6); }
+  100% { box-shadow: 0 0 30px rgba(255, 105, 180, 0.8); }
+}
+
+@keyframes pulsePurpleGlow {
+  0% { box-shadow: 0 0 20px rgba(147, 112, 219, 0.6); }
+  100% { box-shadow: 0 0 30px rgba(147, 112, 219, 0.8); }
+}
+
+@keyframes subtleFlicker {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes floatVertical {
+  0% { transform: translateY(-50%) translateY(-5px); }
+  100% { transform: translateY(-50%) translateY(5px); }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .diary-entry-container {
+    padding-left: 0;
+    flex-direction: column;
+  }
+
+  .mood-selector {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    max-height: none;
+    flex-direction: row;
+    justify-content: space-around;
+    order: -1;
+  }
+
+  .diary-tools {
+    width: 100%;
+    right: 0;
+    height: auto;
+    position: relative;
+  }
+
+  .diary-tools-toggle {
+    display: none;
+  }
 }

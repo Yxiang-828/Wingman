@@ -1,13 +1,17 @@
-/* SummaryCard-specific styles, inheriting general styling from Dashboard.css */
+/**
+ * SummaryCard Component Styles - Your Wingman's Daily Briefing
+ * Full-width overview card with motivational quotes and key statistics
+ * Command center overview for the modern Viking warrior
+ */
 
 .summary-card {
-  grid-column: 1 / -1; /* Make it span full width */
+  grid-column: 1 / -1;
   background: linear-gradient(135deg, rgba(30, 30, 50, 0.7) 0%, rgba(35, 35, 60, 0.8) 100%);
-  height: auto !important; /* Override the fixed height */
+  height: auto !important;
   min-height: 200px;
 }
 
-/* Quote box styling */
+/* Inspirational quote display with elegant styling */
 .quote-box {
   background: rgba(100, 108, 255, 0.1);
   border-radius: 12px;
@@ -17,7 +21,6 @@
   color: rgba(255, 255, 255, 0.8);
   text-align: center;
   position: relative;
-  /* Remove the border-left causing that vertical line */
 }
 
 .quote-box::before {
@@ -30,7 +33,7 @@
   font-family: Georgia, serif;
 }
 
-/* Stats grid */
+/* Statistics grid with responsive layout */
 .summary-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -38,7 +41,7 @@
   margin-top: 1rem;
 }
 
-/* Individual stat items */
+/* Interactive statistic items with hover effects */
 .stat-item {
   background: rgba(20, 20, 35, 0.6);
   border-radius: 12px;
@@ -52,7 +55,7 @@
 .stat-item:hover {
   transform: translateY(-5px) scale(1.02);
   background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 15px var(--glow-primary);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 15px rgba(100, 108, 255, 0.3);
   border-color: rgba(100, 108, 255, 0.3);
 }
 
@@ -72,7 +75,7 @@
   font-weight: 500;
 }
 
-/* Responsive styles */
+/* Responsive adjustments for mobile devices */
 @media (max-width: 768px) {
   .summary-stats {
     grid-template-columns: 1fr;

@@ -532,6 +532,22 @@ async function setupDatabaseIPC() {
       }
     });
 
+
+    ipcMain.handle('db:deleteDiaryEntry', async (event, id) => {
+      try {
+        console.log('🗑️ Main: Deleting diary entry:', id);
+        if (!dataManager) {
+          throw new Error('DataManager is not initialized');
+        }
+        const result = dataManager.deleteDiaryEntry(id);
+        console.log('✅ Main: Diary entry deleted successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Main: IPC Error deleting diary entry:', error);
+        throw error;
+      }
+    });
+
     // CHAT HANDLERS
     ipcMain.handle('db:getChatHistory', async (event, userId, limit) => {
       try {

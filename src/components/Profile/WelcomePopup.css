@@ -46,6 +46,7 @@
   transform: scale(1.05);
 }
 
+/* Main popup overlay with glassmorphism effect */
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -66,6 +67,7 @@
   opacity: 1;
 }
 
+/* Main popup card with gradient background and subtle animations */
 .popup-card {
   background: linear-gradient(135deg, rgba(25, 25, 45, 0.95), rgba(35, 35, 60, 0.98));
   border-radius: 24px;
@@ -83,7 +85,7 @@
   overflow: hidden;
 }
 
-/* ✅ NEW: Registration popup specific styling */
+/* Enhanced styling for registration welcome */
 .popup-card.registration-popup {
   min-width: 500px;
   background: linear-gradient(135deg, rgba(20, 35, 50, 0.95), rgba(30, 45, 65, 0.98));
@@ -91,6 +93,7 @@
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 60px rgba(100, 108, 255, 0.3);
 }
 
+/* Subtle shimmer effect for special occasions */
 .popup-card.registration-popup::before {
   content: '';
   position: absolute;
@@ -101,7 +104,7 @@
   background: linear-gradient(90deg, transparent, rgba(100, 108, 255, 0.1), transparent);
 }
 
-/* ✅ NEW: Welcome header for registration */
+/* Welcome header section for new users */
 .welcome-header {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -125,7 +128,7 @@
   margin: 0;
 }
 
-/* ✅ NEW: Registration info section */
+/* Registration information panel */
 .registration-info {
   background: rgba(15, 25, 40, 0.6);
   border-radius: 12px;
@@ -144,6 +147,7 @@
   font-size: 1rem;
 }
 
+/* Feature list with subtle hover effects */
 .feature-list {
   list-style: none;
   padding: 0;
@@ -166,20 +170,19 @@
   border-bottom: none;
 }
 
-/* ✅ NEW: Enhanced popup icon */
+/* Enhanced popup icon with glow effect */
 .popup-icon {
   filter: drop-shadow(0 4px 12px rgba(100, 108, 255, 0.4));
 }
 
-
-/* ✅ NEW: Enhanced popup message */
+/* Message text with proper line spacing */
 .popup-message {
   line-height: 1.5;
   position: relative;
   z-index: 1;
 }
 
-/* ✅ NEW: Enhanced action button */
+/* Action button with sweep animation */
 .action-btn {
   position: relative;
   z-index: 1;
@@ -203,6 +206,7 @@
   left: 100%;
 }
 
+/* Smooth popup entrance animation */
 @keyframes popup-appear {
   0% {
     opacity: 0;
@@ -214,6 +218,7 @@
   }
 }
 
+/* Logo with playful hover effect */
 .logo-img {
   transition: transform 0.3s ease;
   filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3));
@@ -223,7 +228,7 @@
   transform: rotate(5deg) scale(1.05);
 }
 
-/* ✅ NEW: Theme-specific styling */
+/* Theme-specific popup styling */
 .yandere-theme .popup-card {
   background: linear-gradient(135deg, rgba(45, 26, 38, 0.95), rgba(55, 36, 48, 0.98)) !important;
   border-color: rgba(255, 107, 179, 0.4) !important;
@@ -248,7 +253,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(180, 130, 220, 0.3) !important;
 }
 
-/* Pro tip section styling */
+/* Pro tip section with keyboard shortcut styling */
 .pro-tip {
   background: rgba(100, 108, 255, 0.1);
   border: 1px solid rgba(100, 108, 255, 0.3);
@@ -277,19 +282,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Mobile responsiveness for pro tip */
-@media (max-width: 768px) {
-  .tip-text {
-    font-size: 0.8rem;
-  }
-  
-  .tip-text kbd {
-    font-size: 0.7rem;
-    padding: 0.1rem 0.3rem;
-  }
-}
-
-/* ✅ NEW: Mobile responsiveness */
+/* Mobile responsiveness */
 @media (max-width: 768px) {
   .popup-card {
     min-width: 320px;
@@ -307,5 +300,14 @@
   
   .feature-list {
     font-size: 0.9rem;
+  }
+  
+  .tip-text {
+    font-size: 0.8rem;
+  }
+  
+  .tip-text kbd {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
   }
 }

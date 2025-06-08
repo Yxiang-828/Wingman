@@ -1,8 +1,10 @@
+// Welcome popup that greets the boss with style and provides app orientation
 import React, { useState, useEffect } from "react";
 import productiveIcon from "../../assets/icons/productive.png";
 import moodyIcon from "../../assets/icons/moody.png";
 import "./WelcomePopup.css";
 
+// Icon mapping for different moods - your Wingman adapts to your vibe
 const moodIcons: Record<string, string> = {
   productive: productiveIcon,
   moody: moodyIcon,
@@ -27,35 +29,36 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Listen for mood changes from the main process
     if (window.electronAPI?.onMoodChange) {
       window.electronAPI.onMoodChange((mood: string) => {
         if (mood === "productive" || mood === "moody") setMood(mood);
       });
     }
 
-    // Fade in animation
+    // Smooth entrance animation
     setTimeout(() => setIsVisible(true), 100);
   }, []);
 
-  // Enhanced close handler with fade out
+  // Graceful exit with fade animation
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(onClose, 300);
   };
 
-  // Auto-close for non-registration popups
+  // Auto-dismiss for non-critical popups to respect the boss's time
   useEffect(() => {
     if (type !== "registration") {
-      const timer = setTimeout(handleClose, 6000); // Extended to 6 seconds for reading time
+      const timer = setTimeout(handleClose, 6000);
       return () => clearTimeout(timer);
     }
   }, [type]);
 
-  // Get appropriate button text based on type
+  // Context-aware button text that matches the situation
   const getButtonText = () => {
     switch (type) {
       case "registration":
-        return "Let's Get Started! 🚀";
+        return "Let's Get Started!";
       case "login":
         return "Continue";
       default:
@@ -63,7 +66,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
     }
   };
 
-  // Get appropriate animation class
+  // Dynamic styling based on popup importance
   const getAnimationClass = () => {
     switch (type) {
       case "registration":
@@ -89,14 +92,14 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
           />
         )}
 
-        {/* Enhanced welcome header for registration */}
+        {/* Special welcome treatment for new commanders */}
         {type === "registration" && (
           <div className="welcome-header">
             <h2 className="welcome-title">Welcome to Wingman!</h2>
             <p className="welcome-subtitle">
               {username
-                ? `Hey ${username}, you're all set! 👋`
-                : "Your productivity companion is ready! 🎉"}
+                ? `Hey ${username}, you're all set!`
+                : "Your productivity companion is ready!"}
             </p>
           </div>
         )}
@@ -110,28 +113,28 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
           ))}
         </div>
 
-        {/* Enhanced info for registration with app introduction */}
+        {/* Feature showcase for new users */}
         {type === "registration" && (
           <div className="registration-info">
             <p className="info-text">
-              🚁 Wingman is your advanced productivity companion:
+              Your Wingman is armed with advanced productivity tools:
             </p>
             <ul className="feature-list">
-              <li>📝 Smart diary with mood tracking</li>
-              <li>📅 Intelligent calendar with time blocking</li>
-              <li>🤖 AI assistant powered by Ollama</li>
+              <li>Smart diary with mood tracking</li>
+              <li>Intelligent calendar with time blocking</li>
+              <li>AI assistant powered by Ollama</li>
               <li>
-                🎨 6 beautiful themes (Dark, Light, Yandere, Kuudere, Tsundere,
+                6 beautiful themes (Dark, Light, Yandere, Kuudere, Tsundere,
                 Dandere)
               </li>
-              <li>🔐 Hybrid architecture: Local data + Cloud auth</li>
-              <li>📱 Complete offline functionality</li>
+              <li>Hybrid architecture: Local data with cloud auth</li>
+              <li>Complete offline functionality</li>
             </ul>
 
             <div className="pro-tip">
               <p className="tip-text">
-                💡 <strong>Pro Tip:</strong> Press <kbd>Ctrl + -</kbd> to make
-                the app smaller if it looks too big!
+                <strong>Pro Tip:</strong> Press <kbd>Ctrl + -</kbd> to make the
+                app smaller if it looks too big!
               </p>
             </div>
           </div>

@@ -1,4 +1,7 @@
-/* ✅ KEEP: login-bg for positioning (USED in TSX) */
+/* Authentication Interface Styling */
+/* Theme-aware login interface with video backgrounds and smooth animations */
+
+/* Main container positioning for full viewport coverage */
 .login-bg {
   min-height: 100vh;
   min-width: 100vw;
@@ -6,9 +9,9 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  /* ✅ DEFAULT: Dark theme PNG background */
 }
 
+/* Full-screen video background with proper scaling */
 .login-bg-video {
   position: absolute;
   top: 0;
@@ -20,28 +23,27 @@
   opacity: 1.0;
 }
 
-/* ✅ ENHANCED: More spacious login card */
+/* Central login card with glassmorphism effect */
 .login-card {
   background: rgba(25, 25, 40, 0.95);
-  border-radius: 24px; /* ✅ INCREASED: More rounded corners */
-  padding: 2rem 2rem; /* ✅ REDUCED: From 3.5rem 3rem */
+  border-radius: 24px;
+  padding: 2rem 2rem;
   width: 100%;
-  max-width: 420px; /* ✅ REDUCED: From 480px */
-  min-height: 420px; /* ✅ REDUCED: From 500px */
+  max-width: 420px;
+  min-height: 420px;
   border: 1px solid rgba(100, 108, 255, 0.2);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(100, 108, 255, 0.1);
   position: relative;
   z-index: 2;
-  margin: 1.5rem auto; /* ✅ INCREASED: More margin */
+  margin: 1.5rem auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* ✅ NEW: Center content vertically */
-  gap: 1rem; /* ✅ NEW: Consistent spacing between elements */
+  justify-content: center;
+  gap: 1rem;
 }
 
-
-
+/* Smooth entrance animation for login card */
 .animate-fade-in {
   animation: fadeIn 0.3s;
 }
@@ -57,23 +59,23 @@
   }
 }
 
-/* ✅ ENHANCED: Header section with better spacing */
+/* Header section with brand identity */
 .login-header {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* ✅ LOGO: Enhanced logo styling */
+/* Enhanced logo with glow effect */
 .login-card .logo-img {
-  width: 64px; /* ✅ INCREASED: Larger logo */
+  width: 64px;
   height: 64px;
-  filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3)); /* ✅ NEW: Glow effect */
+  filter: drop-shadow(0 4px 8px rgba(100, 108, 255, 0.3));
 }
 
-/* ✅ ENHANCED: Title styling */
+/* Gradient title text with subtle animation */
 .login-title {
-  font-size: 2.2rem; /* ✅ INCREASED: Larger title */
+  font-size: 2.2rem;
   font-weight: 700;
   margin: 0;
   background: linear-gradient(135deg, #646cff, #7c7aff);
@@ -83,7 +85,7 @@
   text-shadow: 0 0 15px rgba(100, 108, 255, 0.3);
 }
 
-/* ✅ ENHANCED: Subtitle styling */
+/* Descriptive subtitle with balanced opacity */
 .login-subtitle {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
@@ -92,32 +94,30 @@
   line-height: 1.4;
 }
 
-/* ✅ ENHANCED: Form styling with better spacing */
+/* Form layout with consistent spacing */
 .login-form {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
   width: 100%;
-  max-width: 320px; /* ✅ CONSTRAINED: Form width */
+  max-width: 320px;
 }
 
-/* ✅ ENHANCED: Input styling */
+/* Input fields with subtle border animation */
 .login-input {
   padding: 0.4rem 0.4rem;
-  border-radius: 12px; /* ✅ INCREASED: More rounded inputs */
+  border-radius: 12px;
   background: rgba(35, 35, 50, 0.8);
   border: 1px solid rgba(100, 108, 255, 0.2);
   color: white;
   font-size: 1rem;
 }
 
-
-
 .login-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* ✅ ENHANCED: Button styling with more space */
+/* MERGED: All theme-specific button styling combined */
 .login-action-btn {
   background: linear-gradient(135deg, #646cff, #7c7aff); 
   color: #fff;
@@ -136,7 +136,8 @@
   overflow: hidden;
 }
 
-.yandere-theme .login-action-btn{
+/* Theme-specific button gradients */
+.yandere-theme .login-action-btn {
   background: linear-gradient(135deg, #1f1f24, #712706) !important;
 }
 
@@ -144,16 +145,15 @@
   background: linear-gradient(135deg, #1a2332, #2c4a6b) !important;
 }
 
-
 .tsundere-theme .login-action-btn {
   background: linear-gradient(135deg, #3d2620, #8b4513) !important;
 }
-
 
 .dandere-theme .login-action-btn {
   background: linear-gradient(135deg, #231a2d, #4a2c5a) !important;
 }
 
+/* Shine effect animation for buttons */
 .login-action-btn::before {
   content: '';
   position: absolute;
@@ -178,16 +178,16 @@
   transform: translateY(0);
 }
 
-/* ✅ ENHANCED: Loading state */
+/* Loading state styling */
 .login-action-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
 }
 
-/* ✅ ENHANCED: Switch button styling */
+/* Form switching section */
 .login-switch {
-  margin-top: 2rem; /* ✅ INCREASED: More space above switch */
+  margin-top: 2rem;
   text-align: center;
 }
 
@@ -196,29 +196,30 @@
   margin-bottom: 1rem;
 }
 
+/* Interactive switch button with hover effects */
 .text-accent-primary {
   color: #8186ff;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
-  padding: 0.5rem 1rem; /* ✅ NEW: More clickable area */
+  padding: 0.5rem 1rem;
   border-radius: 6px;
   display: inline-block;
 }
 
 .text-accent-primary:hover {
   color: #646cff;
-  background: rgba(100, 108, 255, 0.1); /* ✅ NEW: Hover background */
+  background: rgba(100, 108, 255, 0.1);
 }
 
-/* ✅ PASSWORD: Field with counter */
+/* Password field with character counter */
 .password-field {
   position: relative;
 }
 
 .password-count {
   position: absolute;
-  right: 1rem; /* ✅ ADJUSTED: Better positioning */
+  right: 1rem;
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.75rem;
@@ -226,7 +227,7 @@
   pointer-events: none;
 }
 
-/* ✅ ENHANCED: Error message styling */
+/* Error message styling with warning colors */
 .login-error {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
@@ -238,7 +239,7 @@
   margin-bottom: 1rem;
 }
 
-/* ✅ ENHANCED: Theme indicator */
+/* Theme indicator at bottom of card */
 .login-theme-indicator {
   margin-top: 2rem;
   padding: 1rem;
@@ -258,7 +259,7 @@
   text-transform: capitalize;
 }
 
-/* ✅ THEME BACKGROUNDS: Use body theme classes */
+/* Theme-specific card backgrounds */
 .yandere-theme .login-card {
   background: rgba(45, 26, 38, 0.95) !important;
   border-color: rgba(255, 107, 179, 0.3) !important;
@@ -283,22 +284,20 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(180, 130, 220, 0.2) !important;
 }
 
-/* ✅ AUTO-TILT: Login card tilts automatically after video ends */
+/* Auto-tilt animation triggered after video sequence */
 .login-card.auto-tilt {
   transform: rotate(1deg) scale(1.02) !important;
   box-shadow: 0 8px 24px 0 rgba(100, 108, 255, 0.13), 0 2px 8px 0 #23234a22 !important;
   transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-
-/* ✅ PRIORITY: Manual hover overrides auto-tilt */
+/* Manual hover interaction overrides auto-tilt */
 .login-card.auto-tilt:hover {
   transform: rotate(-0.2deg) scale(1.03) !important;
   box-shadow: 0 12px 32px 0 rgba(100, 108, 255, 0.2), 0 4px 12px 0 #23234a33 !important;
 }
 
-
-/* ✅ RESPONSIVE: Mobile adjustments */
+/* Responsive design for mobile devices */
 @media (max-width: 768px) {
   .login-card {
     max-width: 360px;

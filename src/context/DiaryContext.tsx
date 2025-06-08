@@ -111,16 +111,31 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const deleteEntry = async (id: number): Promise<void> => {
-    try {
-      console.warn("Delete diary entry not implemented in SQLite version");
-      // Just update local state for now
-      setEntries(entries.filter((entry) => entry.id !== id));
-    } catch (error) {
-      console.error(`Error deleting diary entry ${id}:`, error);
-      throw error;
+  /**
+ * Deletes a diary entry from SQLite database
+ * Your Wingman removes the memory from your digital vault
+ */
+const deleteEntry = useCallback(async (id: number): Promise<void> => {
+  try {
+    console.log("Wingman: Deleting diary entry:", id);
+    
+    const userId = getCurrentUserId();
+    if (!userId) {
+      throw new Error("User not authenticated");
     }
-  };
+
+    // ✅ IMPLEMENT: SQLite deletion via electronAPI
+    await window.electronAPI.db.deleteDiaryEntry(id);
+    
+    // ✅ UPDATE: Remove from local state
+    setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+    
+    console.log("Wingman: Entry deleted successfully from SQLite:", id);
+  } catch (error) {
+    console.error("Wingman: Error deleting diary entry:", error);
+    throw error;
+  }
+}, []);
 
   return (
     <DiaryContext.Provider

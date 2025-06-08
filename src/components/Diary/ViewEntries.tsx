@@ -1,27 +1,30 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDiary } from "../../context/DiaryContext";
 import DiaryDetailPopup from "./DiaryDetailPopup";
 import { format } from "date-fns";
 import "./ViewEntries.css";
 
+/**
+ * ViewEntries Component - Your Wingman's Chronicle Archive
+ * Month-grouped diary display with click-positioned detail popups
+ * Where memories are organized and explored with precision
+ */
 const ViewEntries: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { entries, loading, deleteEntry } = useDiary();
 
-  // ✅ EXISTING: Your state variables
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // ✅ NEW: Only adding click position tracking
-  const [clickPosition, setClickPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-
-  // ✅ EXISTING: Your computation logic - UNTOUCHED
+  /**
+   * Groups entries by month with proper date handling
+   * Your Wingman organizes memories chronologically
+   */
   const groupedEntries = useMemo(() => {
-    const grouped: Record<string, any[]> = {};
+    const grouped: Record<string, any> = {};
 
     entries.forEach((entry) => {
       const date = new Date(entry.created_at || entry.entry_date || entry.date);
@@ -45,7 +48,10 @@ const ViewEntries: React.FC = () => {
     return grouped;
   }, [entries]);
 
-  // ✅ EXISTING: Your month logic - UNTOUCHED
+  /**
+   * Manages month expansion with auto-expand for most recent
+   * Your Wingman shows recent memories first
+   */
   const sortedMonths = useMemo(() => {
     const months = Object.keys(groupedEntries).sort().reverse();
     if (months.length > 0 && !expandedMonth) {
@@ -54,29 +60,54 @@ const ViewEntries: React.FC = () => {
     return months;
   }, [groupedEntries, expandedMonth]);
 
-  // ✅ EXISTING: Your functions - UNTOUCHED
+  /**
+   * Handles success message from navigation state
+   * Your Wingman acknowledges completed actions
+   */
+  React.useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      const timer = setTimeout(() => setSuccessMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
+
   const toggleMonth = (monthKey: string) => {
     setExpandedMonth(expandedMonth === monthKey ? null : monthKey);
   };
 
   const handleEdit = (id: number) => {
+    setSelectedEntry(null);
     navigate(`/diary/edit?id=${id}`);
   };
 
+  /**
+   * Handles entry deletion with confirmation
+   * Your Wingman protects against accidental losses
+   */
   const handleDelete = async (id: number) => {
-    await deleteEntry(id);
-    setSelectedEntry(null);
-    setClickPosition(null); // ✅ NEW: Clear position on delete
+    try {
+      await deleteEntry(id);
+      console.log("Wingman: Entry deleted successfully:", id);
+    } catch (error) {
+      console.error("Wingman: Error deleting entry:", error);
+      alert("Failed to delete entry, boss. Please try again.");
+    }
   };
 
+  /**
+   * Maps mood strings to emoji representations
+   * Your Wingman understands emotional context
+   */
   const getMoodEmoji = (mood: string) => {
     const moods: Record<string, string> = {
       happy: "😊",
       sad: "😢",
-      excited: "😃",
+      excited: "🤩",
       angry: "😡",
       relaxed: "😌",
       neutral: "😐",
+      anxious: "😰",
     };
     return moods[mood] || "😐";
   };
@@ -89,29 +120,26 @@ const ViewEntries: React.FC = () => {
     }
   };
 
-  // ✅ NEW: Click handler with position tracking
+  /**
+   * Handles entry click - simplified without position tracking
+   * Your Wingman opens the memory portal in the center of your view
+   */
   const handleEntryClick = (entry: any, event: React.MouseEvent) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const scrollX = window.scrollX || document.documentElement.scrollLeft;
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-
-    const clickX = rect.left + scrollX + rect.width / 2;
-    const clickY = rect.top + scrollY + rect.height / 2;
-
-    setClickPosition({ x: clickX, y: clickY });
+    console.log("Wingman: Opening entry details:", entry.title);
     setSelectedEntry(entry);
   };
 
-  // ✅ NEW: Close handler
   const handleClosePopup = () => {
     setSelectedEntry(null);
-    setClickPosition(null);
   };
 
   if (loading) {
     return (
       <div className="view-entries-container">
-        <div className="diary-loading">Loading entries...</div>
+        <div className="diary-loading">
+          <div className="loading-spinner"></div>
+          <p>Your Wingman is gathering your memories...</p>
+        </div>
       </div>
     );
   }
@@ -119,13 +147,13 @@ const ViewEntries: React.FC = () => {
   return (
     <div className="view-entries-container">
       <div className="view-entries-header">
-        <h2>Diary Entries ({entries.length})</h2>
+        <h2>Your Chronicle ({entries.length} entries)</h2>
         <div className="view-entries-actions">
           <button
             className="search-entries-btn"
             onClick={() => navigate("/diary/search")}
           >
-            Search
+            Search Memories
           </button>
           <button
             className="write-entry-btn"
@@ -196,25 +224,33 @@ const ViewEntries: React.FC = () => {
       ) : (
         <div className="diary-empty-state">
           <div className="diary-empty-icon">📝</div>
-          <p>No diary entries yet</p>
+          <p>No thoughts captured yet, boss</p>
+          <p>Your chronicles await your first entry</p>
           <button
             className="write-entry-btn"
             onClick={() => navigate("/diary/write")}
           >
-            Write Your First Entry
+            Begin Your Chronicle
           </button>
         </div>
       )}
 
-      {/* ✅ NEW: Positioned popup */}
-      {selectedEntry && clickPosition && (
+      {selectedEntry && (
         <DiaryDetailPopup
           entry={selectedEntry}
           onClose={handleClosePopup}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          clickPosition={clickPosition}
         />
+      )}
+
+      {successMessage && (
+        <div className="success-message">
+          <span>✓ {successMessage}</span>
+          <button className="close-btn" onClick={() => setSuccessMessage(null)}>
+            ✕
+          </button>
+        </div>
       )}
     </div>
   );

@@ -1,3 +1,5 @@
+// User Authentication Hub - Gateway to your digital realm
+// Handles both login and registration with theme-aware background videos
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import productiveIcon from "../../assets/icons/productive.png";
@@ -28,11 +30,12 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [mood, setMood] = useState<"productive" | "moody">("productive");
   const [currentTheme, setCurrentTheme] = useState<string>("dark");
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [autoTilt, setAutoTilt] = useState(false); // Add this state for auto-tilt
+  const [autoTilt, setAutoTilt] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const navigate = useNavigate();
 
+  // Listen for mood changes from external sources
   useEffect(() => {
     const handleMoodChange = (mood: string) => {
       if (mood === "productive" || mood === "moody") setMood(mood);
@@ -51,7 +54,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     };
   }, []);
 
-  // ✅ APPLY THEME: Read from localStorage and apply to body
+  // Apply saved theme from localStorage to maintain visual consistency
   useEffect(() => {
     const loadSavedTheme = () => {
       try {
@@ -59,10 +62,10 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         if (savedSettings) {
           const settings = JSON.parse(savedSettings);
           if (settings.theme) {
-            console.log(`🎨 Login: Applying saved theme: ${settings.theme}`);
+            console.log(`Applying saved theme: ${settings.theme}`);
             setCurrentTheme(settings.theme);
 
-            // Apply theme class to body (matching ThemeContext behavior)
+            // Apply theme class to body for global styling
             const body = document.body;
             body.classList.remove(
               "dark-theme",
@@ -84,10 +87,10 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     };
 
     loadSavedTheme();
-    // Also try after a short delay in case localStorage is still loading
     setTimeout(loadSavedTheme, 100);
   }, []);
-  // ADD: Video paths
+
+  // Theme-specific video backgrounds for immersive experience
   const themeVideos: Record<string, string> = {
     dark: darkVideo,
     light: lightVideo,
@@ -96,22 +99,23 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     tsundere: tsundereVideo,
     dandere: dandereVideo,
   };
-  // Password change handler with length validation
+
+  // Password validation with character limit enforcement
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
 
-    // Limit password to max 6 characters
     if (newPassword.length <= 6) {
       setPassword(newPassword);
     }
   };
 
+  // User authentication with retry logic for network resilience
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Try up to 3 times with increasing delays
+    // Retry mechanism for unreliable network connections
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const userData = {
@@ -119,7 +123,6 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
           password: password,
         };
 
-        // Use absolute URL for all fetch calls
         const apiUrl = "http://localhost:8080/api/v1/user/login";
         console.log(`Login attempt ${attempt + 1} to: ${apiUrl}`);
 
@@ -129,7 +132,6 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(userData),
-          // Add timeout
           signal: AbortSignal.timeout(10000),
         });
 
@@ -147,29 +149,26 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
           throw new Error("Invalid login response");
         }
 
-        // Store the user in localStorage
+        // Persist user session data
         localStorage.setItem("user", JSON.stringify(result));
 
-        // Update Auth state manager explicitly
+        // Update authentication state manager
         Auth.setAuthenticated(true, result.id);
 
-        // Call the onLogin callback
         onLogin(result);
 
-        // Navigate to the dashboard
+        // Navigate to dashboard with greeting flag
         navigate("/", { state: { showGreeting: true } });
-        return; // Exit the function on success
+        return;
       } catch (err: any) {
         console.error(`Login attempt ${attempt + 1} failed:`, err);
 
-        // Only set error and stop trying on final attempt
         if (attempt === 2) {
           setError(
             err.message ||
               "Connection to server failed. Please restart the application."
           );
         } else {
-          // Wait before retrying (1s, 3s)
           await new Promise((r) => setTimeout(r, attempt * 2000 + 1000));
         }
       }
@@ -178,12 +177,13 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     setLoading(false);
   };
 
+  // New user registration with comprehensive validation
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    // Health check before registration
+    // Backend health check before proceeding
     try {
       const healthCheck = await fetch("http://localhost:8080/health");
       if (!healthCheck.ok) {
@@ -235,13 +235,12 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         throw new Error("Invalid registration response");
       }
 
-      // Store user data
       localStorage.setItem("user", JSON.stringify(result));
 
-      // Show enhanced welcome popup with app introduction
+      // Show welcome popup with personalized message
       const displayName = name || username || "New User";
       setWelcomeMessage(
-        `Registration successful! 🎉\n\nYour Wingman account is ready. Let's explore all the amazing features together!`
+        `Registration successful! Your Wingman account is ready. Let's explore all the amazing features together!`
       );
       setShowWelcomePopup(true);
     } catch (err: any) {
@@ -252,40 +251,36 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     }
   };
 
-  // ✅ NEW: Handle welcome popup close
+  // Handle welcome popup completion and proceed to profile setup
   const handleWelcomeClose = () => {
     setShowWelcomePopup(false);
 
-    // Now proceed with login flow
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     onLogin(userData);
 
-    // Navigate to profile setup
     navigate("/profile", { state: { showSetup: true } });
   };
 
-  // Add handlers
+  // Video loading event handlers
   const handleVideoLoad = () => {
     setVideoLoaded(true);
-    console.log(`🎬 Video loaded for ${currentTheme}`);
+    console.log(`Video loaded for ${currentTheme}`);
   };
 
   const handleVideoError = () => {
     setVideoLoaded(false);
-    console.log(`🎬 Video failed for ${currentTheme}, using PNG fallback`);
+    console.log(`Video failed for ${currentTheme}, using fallback`);
   };
 
-  // Add this useEffect to trigger tilt after 5 seconds
+  // Auto-tilt animation trigger after video sequence
   useEffect(() => {
     const tiltTimer = setTimeout(() => {
       setAutoTilt(true);
-      console.log("🎬 Video ended - triggering auto-tilt");
-    }, 5000); // 5 seconds
+      console.log("Video ended - triggering auto-tilt");
+    }, 5000);
 
     return () => clearTimeout(tiltTimer);
-  }, [currentTheme]); // Reset timer when theme changes
-
-  // In your form rendering section, update the structure:
+  }, [currentTheme]);
 
   return (
     <div className={`login-bg ${videoLoaded ? "has-video" : ""}`}>
@@ -349,7 +344,6 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
             </button>
           </form>
         ) : (
-          // ✅ COMPLETE REGISTRATION FORM - This was truncated
           <form onSubmit={handleRegister} className="login-form">
             <input
               type="text"
@@ -423,7 +417,6 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         </div>
       </div>
 
-      {/* ✅ NEW: Welcome Popup */}
       {showWelcomePopup && (
         <WelcomePopup
           message={welcomeMessage}

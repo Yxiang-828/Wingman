@@ -1,6 +1,10 @@
-/* Enhanced Dashboard Styling with gentle hover effects like diary card */
+/**
+ * Enhanced Dashboard Styling - Your Wingman's Command Center
+ * Unified card system with consistent hover behaviors and theme integration
+ * Optimized for performance with strategic animation controls
+ */
 
-/* Main dashboard container */
+/* Main dashboard container with smooth entrance */
 .dashboard-container {
   display: flex;
   flex-direction: column;
@@ -11,7 +15,7 @@
   animation: fadeIn 0.4s ease;
 }
 
-/* Dashboard grid layout */
+/* Dashboard grid layout with responsive design */
 .dashboard {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -19,7 +23,7 @@
   align-items: start;
 }
 
-/* Card base styling */
+/* Unified card foundation for all dashboard components */
 .dashboard-card {
   background: linear-gradient(135deg, rgba(22, 22, 30, 0.85) 0%, rgba(18, 18, 28, 0.9) 100%);
   border-radius: 16px;
@@ -34,12 +38,8 @@
   flex-direction: column;
 }
 
-/* ✅ CONSISTENT: Gentle hover for ALL cards (diary, tasks, events, completed) */
-.dashboard-card:hover,
-.diary-card:hover,
-.tasks-card:hover,
-.events-card:hover,
-.completed-tasks-card:hover {
+/* Master hover behavior for ALL dashboard cards */
+.dashboard-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
   border-color: rgba(100, 108, 255, 0.25);
@@ -47,7 +47,7 @@
   scroll-behavior: smooth;
 }
 
-/* Card header styling */
+/* Card header with consistent spacing and typography */
 .dashboard-card-header {
   display: flex;
   justify-content: space-between;
@@ -55,7 +55,7 @@
   margin-bottom: 1.2rem;
   padding-bottom: 0.8rem;
   border-bottom: 1px solid rgba(100, 108, 255, 0.15);
-  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+  flex-shrink: 0;
 }
 
 .dashboard-card-header h2 {
@@ -68,10 +68,10 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* ✅ GENTLE: Action button hover like diary card */
+/* Unified action button system */
 .card-action-btn {
   background: rgba(100, 108, 255, 0.15);
-  color: var(--accent-primary);
+  color: var(--color-accent-primary, #646cff);
   border: 1px solid rgba(100, 108, 255, 0.2);
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -79,7 +79,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+  flex-shrink: 0;
 }
 
 .card-action-btn:hover {
@@ -88,31 +88,17 @@
   box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
-/* ✅ FIXED: Dashboard card content area - handles scrollbar properly */
+/* Content area with proper scrollbar handling */
 .dashboard-card-content {
   flex: 1;
-  min-height: 0; /* ✅ CRITICAL: Allow flex shrinking */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   position: relative;
-  /* ✅ RESERVE SPACE: Add padding-right to account for potential scrollbar */
   padding-right: 2px;
 }
 
-/* ✅ FIXED: Virtualized container styling for dashboard cards */
-.tasks-virtualized-container,
-.events-virtualized-container,
-.completed-tasks-container {
-  flex: 1;
-  min-height: 0;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* ✅ FIXED: List containers with proper scrollbar handling */
+/* Scrollable list containers */
 .dashboard-list {
   flex: 1;
   overflow-y: auto;
@@ -121,23 +107,22 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 108, 255, 0.3) transparent;
   scroll-behavior: smooth;
-  /* ✅ CRITICAL: Add stable gutter to prevent layout shift */
   scrollbar-gutter: stable;
-  /* ✅ RESERVE SPACE: Account for scrollbar width */
   padding-right: 8px;
 }
 
-/* ✅ HOVER: Only show scrollbar on hover/active */
+/* Hide scrollbar until hover for cleaner look */
 .dashboard-card:not(:hover) .dashboard-list {
   overflow-y: hidden;
-  padding-right: 0.5rem; /* Reset padding when no scrollbar */
+  padding-right: 0.5rem;
 }
 
 .dashboard-card:hover .dashboard-list {
   overflow-y: auto;
-  padding-right: 8px; /* Account for scrollbar when visible */
+  padding-right: 8px;
 }
 
+/* Custom scrollbar styling */
 .dashboard-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -157,7 +142,7 @@
   background: rgba(100, 108, 255, 0.6);
 }
 
-/* ✅ COMPACT: Dashboard item styling with proper width handling */
+/* Universal dashboard item foundation */
 .dashboard-item {
   background: rgba(25, 25, 40, 0.6);
   border-radius: 8px;
@@ -170,51 +155,19 @@
   align-items: center;
   gap: 0.6rem;
   min-height: 48px;
-  /* ✅ PREVENT OVERFLOW: Ensure content doesn't exceed container */
   max-width: 100%;
   box-sizing: border-box;
 }
 
-/* ✅ CONSISTENT: Item hover effects for ALL cards */
-.dashboard-item:hover,
-.diary-card .dashboard-item:hover,
-.tasks-card .dashboard-item:hover,
-.events-card .dashboard-item:hover,
-.completed-tasks-card .dashboard-item:hover {
+/* Master item hover behavior */
+.dashboard-item:hover {
   background: rgba(35, 35, 55, 0.8);
   border-left-color: rgba(100, 108, 255, 0.8);
   transform: translateX(3px);
   box-shadow: 0 2px 12px rgba(100, 108, 255, 0.15);
 }
 
-/* Task-specific styling */
-.dashboard-item.task {
-  border-left-color: rgba(100, 108, 255, 0.6);
-}
-
-.dashboard-item.task.completed {
-  opacity: 0.8;
-  border-left-color: rgba(74, 222, 128, 0.6);
-}
-
-/* Event-specific styling */
-.dashboard-item.event {
-  border-left-color: rgba(147, 51, 234, 0.6);
-}
-
-.dashboard-item.event.meeting {
-  border-left-color: rgba(100, 108, 255, 0.6);
-}
-
-.dashboard-item.event.personal {
-  border-left-color: rgba(74, 222, 128, 0.6);
-}
-
-.dashboard-item.event.reminder {
-  border-left-color: rgba(248, 113, 113, 0.6);
-}
-
-/* ✅ GENTLE: Status indicator hover like diary card */
+/* Status indicator system with semantic colors */
 .item-status {
   width: 20px;
   height: 20px;
@@ -232,12 +185,7 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* ✅ CONSISTENT: Status indicator hovers for ALL cards */
-.item-status:hover,
-.diary-card .item-status:hover,
-.tasks-card .item-status:hover,
-.events-card .item-status:hover,
-.completed-tasks-card .item-status:hover {
+.item-status:hover {
   transform: scale(1.05);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
@@ -255,14 +203,13 @@
   background: rgba(74, 222, 128, 0.3);
 }
 
-/* ✅ FIXED: Item content styling with proper text overflow */
+/* Content area with overflow protection */
 .item-content {
   flex: 1;
-  min-width: 0; /* ✅ CRITICAL: Allow text to be truncated */
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  /* ✅ PREVENT OVERFLOW: Ensure content doesn't exceed available space */
   overflow: hidden;
 }
 
@@ -272,7 +219,6 @@
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.2;
   margin: 0;
-  /* ✅ PREVENT OVERFLOW: Truncate long titles */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -291,7 +237,6 @@
   gap: 0.4rem;
   align-items: center;
   line-height: 1;
-  /* ✅ PREVENT OVERFLOW: Allow wrapping if needed */
   flex-wrap: wrap;
 }
 
@@ -300,7 +245,7 @@
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   font-size: 0.7rem;
-  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+  flex-shrink: 0;
 }
 
 .item-type {
@@ -309,40 +254,10 @@
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   font-size: 0.7rem;
-  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+  flex-shrink: 0;
 }
 
-/* ✅ GENTLE: Completed tasks flash effect - more controlled */
-.highlight-flash {
-  animation: gentleHighlightFlash 2s ease-out;
-  border-color: rgba(74, 222, 128, 0.6) !important;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.2) !important;
-}
-
-@keyframes gentleHighlightFlash {
-  0% {
-    background: rgba(74, 222, 128, 0.12);
-    border-color: rgba(74, 222, 128, 0.6);
-    box-shadow: 0 0 8px rgba(74, 222, 128, 0.2);
-  }
-  25% {
-    background: rgba(74, 222, 128, 0.08);
-    border-color: rgba(74, 222, 128, 0.5);
-    box-shadow: 0 0 6px rgba(74, 222, 128, 0.15);
-  }
-  50% {
-    background: rgba(74, 222, 128, 0.05);
-    border-color: rgba(74, 222, 128, 0.4);
-    box-shadow: 0 0 4px rgba(74, 222, 128, 0.1);
-  }
-  100% {
-    background: rgba(25, 25, 40, 0.6);
-    border-color: rgba(74, 222, 128, 0.6);
-    box-shadow: none;
-  }
-}
-
-/* ✅ GENTLE: View more button hover like diary card */
+/* View more button system */
 .view-more-btn {
   background: rgba(100, 108, 255, 0.15);
   color: rgba(100, 108, 255, 0.9);
@@ -355,7 +270,7 @@
   transition: all 0.2s ease;
   margin-top: 0.5rem;
   text-align: center;
-  flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+  flex-shrink: 0;
 }
 
 .view-more-btn:hover {
@@ -364,77 +279,7 @@
   box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
-/* Summary card styles */
-.summary-card {
-  grid-column: 1 / -1;
-  background: linear-gradient(135deg, rgba(30, 30, 50, 0.7) 0%, rgba(35, 35, 60, 0.8) 100%);
-}
-
-.summary-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1rem;
-}
-
-/* ✅ GENTLE: Stat item hover like diary card */
-.stat-item {
-  background: rgba(15, 15, 28, 0.7);
-  border-radius: 12px;
-  padding: 1.5rem;
-  text-align: center;
-  transition: all 0.5s ease;
-  border: 1px solid rgba(100, 108, 255, 0.1);
-  cursor: pointer;
-}
-
-.stat-item:hover {
-  transform: translateY(-2px) scale(1.01);
-  background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  border-color: rgba(100, 108, 255, 0.25);
-}
-
-.stat-number {
-  font-size: 2.8rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, #9d6eff, #646cff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-}
-
-/* Quote box styling */
-.quote-box {
-  background: rgba(100, 108, 255, 0.1);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.8rem;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  position: relative;
-  border-left: 4px solid var(--accent-primary);
-}
-
-.quote-box::before {
-  content: '"';
-  font-size: 4rem;
-  position: absolute;
-  top: -0.5rem;
-  left: 0.5rem;
-  color: rgba(100, 108, 255, 0.2);
-  font-family: Georgia, serif;
-}
-
-/* Empty state */
+/* Empty state styling */
 .dashboard-empty {
   display: flex;
   flex-direction: column;
@@ -459,7 +304,7 @@
   line-height: 1.4;
 }
 
-/* ✅ GENTLE: Action button hover like diary card */
+/* Action button for empty states */
 .action-btn {
   background: rgba(100, 108, 255, 0.15);
   color: rgba(100, 108, 255, 0.9);
@@ -478,43 +323,84 @@
   box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
 }
 
-/* Scroll behavior for dashboard */
-.dashboard-container {
-  scroll-behavior: smooth;
+/* Chat card specific styling */
+.chat-card .chat-preview {
+  background: rgba(25, 25, 40, 0.6);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-left: 3px solid rgba(100, 108, 255, 0.5);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Custom scrollbar styling */
-.dashboard-card::-webkit-scrollbar,
-.tasks-list::-webkit-scrollbar,
-.events-list::-webkit-scrollbar,
-.entries-list::-webkit-scrollbar {
-  width: 6px;
+.chat-card .chat-preview p {
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  margin: 0;
+  text-align: center;
 }
 
-.dashboard-card::-webkit-scrollbar-track,
-.tasks-list::-webkit-scrollbar-track,
-.events-list::-webkit-scrollbar-track,
-.entries-list::-webkit-scrollbar-track {
-  background: rgba(20, 20, 35, 0.3);
-  border-radius: 3px;
+.chat-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
 }
 
-.dashboard-card::-webkit-scrollbar-thumb,
-.tasks-list::-webkit-scrollbar-thumb,
-.events-list::-webkit-scrollbar-thumb,
-.entries-list::-webkit-scrollbar-thumb {
-  background: rgba(100, 108, 255, 0.4);
-  border-radius: 3px;
+.chat-input {
+  flex: 1;
+  background: rgba(25, 25, 40, 0.6);
+  border: 1px solid rgba(100, 108, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
 }
 
-.dashboard-card::-webkit-scrollbar-thumb:hover,
-.tasks-list::-webkit-scrollbar-thumb:hover,
-.events-list::-webkit-scrollbar-thumb:hover,
-.entries-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 108, 255, 0.6);
+.chat-input:focus {
+  outline: none;
+  border-color: rgba(100, 108, 255, 0.5);
 }
 
-/* Media queries for responsiveness */
+.chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.chat-submit {
+  background: rgba(100, 108, 255, 0.2);
+  color: rgba(100, 108, 255, 0.9);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.chat-submit:hover {
+  background: rgba(100, 108, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design adjustments */
 @media (max-width: 1200px) {
   .dashboard {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -561,41 +447,13 @@
     height: 18px;
     min-width: 18px;
   }
-}
 
-/* ✅ REFERENCE: DiaryCard hover pattern - ALL cards should follow this */
-.diary-card .dashboard-item:hover,
-.tasks-card .dashboard-item:hover,
-.events-card .dashboard-item:hover,
-.completed-tasks-card .dashboard-item:hover {
-  background: rgba(30, 30, 50, 0.6);
-  transform: translateX(2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-}
+  .chat-form {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
-/* ✅ CONSISTENT: All status hovers follow diary card pattern */
-.diary-card .item-status:hover,
-.tasks-card .item-status:hover,
-.events-card .item-status:hover,
-.completed-tasks-card .item-status:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 4px rgba(100, 108, 255, 0.2);
+  .chat-submit {
+    padding: 0.75rem;
+  }
 }
-
-/* ✅ CONSISTENT: All button hovers follow diary card pattern */
-.diary-card .card-action-btn:hover,
-.tasks-card .card-action-btn:hover,
-.events-card .card-action-btn:hover,
-.completed-tasks-card .card-action-btn:hover,
-.diary-card .view-more-btn:hover,
-.tasks-card .view-more-btn:hover,
-.events-card .view-more-btn:hover,
-.completed-tasks-card .view-more-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.2);
-  transition: all 0.2s ease;
-}
-
-/* ✅ REMOVE: Any diary-card specific styling that differs from standard */
-/* Delete any .diary-card rules that override the standard dashboard-card behavior */

@@ -599,7 +599,29 @@ class LocalDataManager {
       throw error;
     }
   }
-
+  /**
+   * Deletes a diary entry from the database
+   * @param {number} id - Entry ID to delete
+   * @returns {Object} Success status and deletion confirmation
+   */
+  deleteDiaryEntry(id){
+    try {
+      console.log("LocalDataManager: Deleting diary entry:", id);
+      
+      const stmt = this.db.prepare("DELETE FROM diary_entries WHERE id = ?");
+      const result = stmt.run(id);
+      
+      if (result.changes === 0) {
+        throw new Error(`No diary entry found with id ${id}`);
+      }
+      
+      console.log("LocalDataManager: Diary entry deleted successfully:", id);
+      return { success: true, deletedId: id };
+    } catch (error) {
+      console.error("LocalDataManager: Error deleting diary entry:", error);
+      throw error;
+    }
+  }
   /**
    * Retrieves diary entries for a user, optionally filtered by date
    * @param {string} userId - The user identifier
@@ -1085,5 +1107,7 @@ class LocalDataManager {
     }
   }
 }
+
+
 
 module.exports = { LocalDataManager };
