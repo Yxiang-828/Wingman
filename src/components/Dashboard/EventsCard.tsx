@@ -52,7 +52,7 @@ const EventsCard: React.FC<EventsCardProps> = ({ events }) => {
   return (
     <div className="dashboard-card events-card">
       <div className="dashboard-card-header">
-        <h2>Your Schedule ({events.length})</h2>
+        <h2>Today's Events ({events.length})</h2>
         <button
           className="card-action-btn"
           onClick={() => navigate("/calendar/day")}

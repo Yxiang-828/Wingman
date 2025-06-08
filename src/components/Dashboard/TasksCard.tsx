@@ -198,7 +198,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   return (
     <div className="dashboard-card tasks-card">
       <div className="dashboard-card-header">
-        <h2>Your Missions ({totalPendingTasks + totalFailedTasks})</h2>
+        <h2>Today's Tasks ({totalPendingTasks + totalFailedTasks})</h2>
         <button
           className="card-action-btn"
           onClick={() => navigate("/calendar/day?tab=tasks")}

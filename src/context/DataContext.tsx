@@ -276,7 +276,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       setError("Failed to delete event");
       throw error;
     } finally {
-      setLoading(false);
+    setLoading(false);
     }
   }, []);
 

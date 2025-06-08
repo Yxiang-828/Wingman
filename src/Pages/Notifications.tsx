@@ -1,3 +1,4 @@
+// Mission control center - your tactical overview of all active operations
 import React, {
   useState,
   useEffect,
@@ -14,7 +15,7 @@ import type { CalendarEvent } from "../api/Calendar";
 import DetailPopup from "../components/Common/DetailPopup";
 import "./Notifications.css";
 
-// ✅ CATEGORY SECTION COMPONENT
+// Category section builder - organizes missions by priority and status
 interface CategorySectionProps {
   title: string;
   items: any[];
@@ -59,7 +60,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     );
   }
 
-  // ✅ HELPER: Get category-specific CSS classes
+  // Category-specific styling and behavior
   const getCategoryItemClass = (categoryType: string, item: any): string => {
     switch (categoryType) {
       case "urgent":
@@ -75,7 +76,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     }
   };
 
-  // ✅ HELPER: Get category-specific icons
+  // Category-appropriate mission indicators
   const getCategoryIcon = (categoryType: string, item: any): string => {
     switch (categoryType) {
       case "urgent":
@@ -91,7 +92,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     }
   };
 
-  // ✅ HELPER: Get category-specific controls
+  // Context-aware control panels for each mission type
   const getCategoryControls = (categoryType: string, item: any) => {
     const isTask = "task_date" in item;
     const isEvent = "event_date" in item;
@@ -103,7 +104,6 @@ const CategorySection: React.FC<CategorySectionProps> = ({
         if (isTask) {
           return (
             <div className="mission-controls-group">
-              {/* ✅ ADD: Timer for tasks */}
               {item.task_time && !item.completed && !item.failed && (
                 <CountdownTimer
                   targetTime={item.task_time}
@@ -153,7 +153,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
             className="mission-btn retry"
             onClick={(e) => {
               e.stopPropagation();
-              // Handle retry logic - reset failed status
+              // Reset failed mission for another attempt
               handleTaskCompletion({
                 ...item,
                 failed: false,
@@ -161,7 +161,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
               });
             }}
           >
-            🔄 Retry
+            🔄 Retry Mission
           </button>
         );
       default:
@@ -222,7 +222,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
   );
 };
 
-// ✅ MISSION COUNTDOWN TIMER
+// Tactical countdown timer - tracks mission deadlines with precision
 interface CountdownTimerProps {
   targetTime: string;
   date: string;
@@ -244,22 +244,19 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   onEventReminder,
   isTracking = false,
 }) => {
-  // ✅ FIXED: Single state object with loading
   const [timerState, setTimerState] = useState({
     hours: 0,
     minutes: 0,
     seconds: 0,
     isOverdue: false,
     shouldFail: false,
-    isLoading: true, // ✅ NEW: Loading state
+    isLoading: true,
   });
 
   const hasTriggeredRef = useRef(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const onTaskFailRef = useRef(onTaskFail);
-  const onEventReminderRef = useRef(onEventReminder);
 
-  // ✅ OPTIMIZED: Memoized target calculation
+  // Calculate target datetime for precise countdown
   const targetDateTime = useMemo(() => {
     if (!targetTime || targetTime === "All day") return null;
 
@@ -273,7 +270,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     }
   }, [date, targetTime]);
 
-  // ✅ OPTIMIZED: Single timer with better performance
+  // High-precision countdown with automatic status updates
   useEffect(() => {
     if (
       isCompleted ||
@@ -285,13 +282,12 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
       return;
     }
 
-    // ✅ IMPROVED: Optimized calculation function
     const updateTimer = () => {
       const now = new Date();
       const diff = targetDateTime.getTime() - now.getTime();
 
       if (diff <= 0) {
-        // Time's up
+        // Mission deadline reached
         const newState = {
           hours: 0,
           minutes: 0,
@@ -302,7 +298,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
         };
         setTimerState(newState);
 
-        // ✅ TRIGGER: Callbacks only once
+        // Trigger appropriate callback once
         if (!hasTriggeredRef.current) {
           hasTriggeredRef.current = true;
           if (type === "task" && onTaskFail) {
@@ -314,7 +310,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
         return;
       }
 
-      // ✅ OPTIMIZED: Simple time calculations
+      // Calculate remaining time with precision
       const totalSeconds = Math.floor(diff / 1000);
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -330,10 +326,8 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
       });
     };
 
-    // ✅ IMMEDIATE: Initial calculation
     updateTimer();
 
-    // ✅ OPTIMIZED: Only create interval if needed
     if (!isCompleted && !isFailed) {
       intervalRef.current = setInterval(updateTimer, 1000);
     }
@@ -344,19 +338,13 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
         intervalRef.current = null;
       }
     };
-  }, [targetDateTime, type, isCompleted, isFailed, isTracking]);
+  }, [targetDateTime, type, isCompleted, isFailed, isTracking, onTaskFail, onEventReminder]);
 
-  // ✅ UPDATE: Callback refs
-  useEffect(() => {
-    onTaskFailRef.current = onTaskFail;
-    onEventReminderRef.current = onEventReminder;
-  }, [onTaskFail, onEventReminder]);
-
-  // ✅ EARLY RETURNS: Handle edge cases
+  // Mission status displays
   if (isCompleted) {
     return (
       <div className="mission-timer completed">
-        <span className="mission-display">✅ COMPLETED</span>
+        <span className="mission-display">✅ MISSION COMPLETE</span>
       </div>
     );
   }
@@ -364,7 +352,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   if (isFailed) {
     return (
       <div className="mission-timer failed">
-        <span className="mission-display">❌ FAILED</span>
+        <span className="mission-display">❌ MISSION FAILED</span>
       </div>
     );
   }
@@ -372,12 +360,11 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   if (!targetTime || targetTime === "All day") {
     return (
       <div className="mission-timer all-day">
-        <span className="mission-display">📅 ALL DAY</span>
+        <span className="mission-display">📅 ALL DAY OPERATION</span>
       </div>
     );
   }
 
-  // ✅ LOADING SCREEN: Show while calculating
   if (timerState.isLoading) {
     return (
       <div className="mission-timer loading">
@@ -387,7 +374,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     );
   }
 
-  // ✅ OPTIMIZED: Get urgency level function
+  // Tactical urgency assessment
   const getUrgencyLevel = (): string => {
     if (timerState.isOverdue) return "critical";
     if (timerState.hours === 0 && timerState.minutes <= 5) return "critical";
@@ -421,7 +408,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   );
 };
 
-// ✅ TASK COMPLETION BUTTON
+// Task completion control - marks missions as successful
 interface TaskCompletionButtonProps {
   task: Task;
   onComplete: (task: Task) => void;
@@ -456,7 +443,7 @@ const TaskCompletionButton: React.FC<TaskCompletionButtonProps> = ({
   );
 };
 
-// ✅ EVENT TRACKING BUTTON
+// Event tracking control - monitors active operations
 interface EventTrackingButtonProps {
   event: CalendarEvent;
   isTracking: boolean;
@@ -481,13 +468,13 @@ const EventTrackingButton: React.FC<EventTrackingButtonProps> = ({
   );
 };
 
-// ✅ MAIN NOTIFICATIONS COMPONENT
+// Main mission control interface
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { updateTask } = useData();
 
-  // ✅ State variables
+  // Mission data state management
   const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
@@ -499,7 +486,7 @@ const Notifications: React.FC = () => {
     Task | CalendarEvent | null
   >(null);
 
-  // ✅ Persistent tracking state with localStorage
+  // Persistent tracking state with localStorage
   const [trackingEvents, setTrackingEvents] = useState<Set<number>>(() => {
     try {
       const stored = localStorage.getItem("trackingEvents");
@@ -513,7 +500,7 @@ const Notifications: React.FC = () => {
     new Set()
   );
 
-  // ✅ TAB MANAGEMENT
+  // Tab management for mission filtering
   const query = new URLSearchParams(location.search);
   const tabFromUrl = query.get("tab");
   const [activeTab, setActiveTab] = useState<string>(
@@ -523,7 +510,7 @@ const Notifications: React.FC = () => {
       : "all"
   );
 
-  // ✅ SAVE TRACKING STATE TO LOCALSTORAGE
+  // Persist tracking state across sessions
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -535,7 +522,7 @@ const Notifications: React.FC = () => {
     }
   }, [trackingEvents]);
 
-  // ✅ Proper task categorization
+  // Load mission data from tactical database
   const fetchNotificationsData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -543,31 +530,28 @@ const Notifications: React.FC = () => {
     try {
       const userId = getCurrentUserId();
       if (!userId) {
-        console.log("🔔 Notifications: No user authenticated");
+        console.log("Mission Control: No commander authenticated");
         setLoading(false);
         setIsReady(true);
         return;
       }
 
       const today = getTodayDateString();
-      console.log(`🔔 Notifications: Fetching data for ${today}`);
+      console.log(`Mission Control: Loading operations for ${today}`);
 
       const [tasksData, eventsData] = await Promise.all([
         window.electronAPI.db.getTasks(userId, today),
         window.electronAPI.db.getEvents(userId, today),
       ]);
 
-      // ✅ Proper task categorization based on actual status
+      // Categorize missions by status
       const allTasks = tasksData || [];
-
       const pending = allTasks.filter(
         (task: Task) => !task.completed && !task.failed
       );
-
       const completed = allTasks.filter(
         (task: Task) => task.completed && !task.failed
       );
-
       const failed = allTasks.filter((task: Task) => task.failed);
 
       setPendingTasks(pending);
@@ -576,22 +560,18 @@ const Notifications: React.FC = () => {
       setTodaysEvents(eventsData || []);
 
       console.log(
-        `✅ Notifications: Loaded ${pending.length} pending, ${
-          completed.length
-        } completed, ${failed.length} failed tasks, ${
-          eventsData?.length || 0
-        } events`
+        `Mission Control: ${pending.length} active, ${completed.length} completed, ${failed.length} failed missions, ${eventsData?.length || 0} events loaded`
       );
     } catch (error) {
-      console.error("❌ Notifications: Error fetching data:", error);
-      setError("Failed to load notifications");
+      console.error("Mission Control: Error loading data:", error);
+      setError("Failed to load mission data");
     } finally {
       setLoading(false);
       setIsReady(true);
     }
   }, []);
 
-  // ✅ REFRESH HANDLERS
+  // Data refresh handlers
   useEffect(() => {
     fetchNotificationsData();
   }, [fetchNotificationsData]);
@@ -603,7 +583,7 @@ const Notifications: React.FC = () => {
       window.removeEventListener("notifications-refresh", handleRefresh);
   }, [fetchNotificationsData]);
 
-  // ✅ TAB MANAGEMENT
+  // Tab navigation management
   useEffect(() => {
     if (
       tabFromUrl &&
@@ -618,7 +598,7 @@ const Notifications: React.FC = () => {
     navigate(`/notifications?tab=${tab}`);
   };
 
-  // ✅ TASK HANDLERS
+  // Mission completion handler
   const handleTaskCompletion = useCallback(
     async (task: Task) => {
       if (processingTasks.has(task.id)) return;
@@ -634,7 +614,7 @@ const Notifications: React.FC = () => {
 
         await fetchNotificationsData();
       } catch (error) {
-        console.error("Error completing task:", error);
+        console.error("Error completing mission:", error);
       } finally {
         setProcessingTasks((prev) => {
           const newSet = new Set(prev);
@@ -646,6 +626,7 @@ const Notifications: React.FC = () => {
     [updateTask, fetchNotificationsData, processingTasks]
   );
 
+  // Mission failure handler
   const handleTaskFailure = useCallback(
     async (task: Task) => {
       try {
@@ -657,13 +638,13 @@ const Notifications: React.FC = () => {
 
         await fetchNotificationsData();
       } catch (error) {
-        console.error("Error failing task:", error);
+        console.error("Error marking mission as failed:", error);
       }
     },
     [updateTask, fetchNotificationsData]
   );
 
-  // ✅ EVENT HANDLERS
+  // Event tracking management
   const handleToggleTracking = useCallback((event: CalendarEvent) => {
     setTrackingEvents((prev) => {
       const newSet = new Set(prev);
@@ -676,11 +657,12 @@ const Notifications: React.FC = () => {
     });
   }, []);
 
+  // Event notification handler
   const handleEventTimeUp = useCallback(async (event: CalendarEvent) => {
-    console.log("⏰ Event time up:", event.title);
+    console.log("Event notification:", event.title);
 
     if (Notification.permission === "granted") {
-      new Notification("Event Time!", {
+      new Notification("Mission Event Alert!", {
         body: `Your event "${event.title}" time has arrived.`,
         icon: "/favicon.ico",
       });
@@ -691,7 +673,7 @@ const Notifications: React.FC = () => {
     setCurrentPopupItem(item);
   }, []);
 
-  // ✅ DISPLAY DATA CALCULATION - UPDATED FOR "ALL" TAB CATEGORIES
+  // Dynamic display data based on selected tab
   const displayData = useMemo(() => {
     const now = new Date();
 
@@ -748,9 +730,8 @@ const Notifications: React.FC = () => {
         return [...activeEvents, ...overEvents];
 
       case "all":
-        // ✅ NEW: Priority-based categorization for "all" tab
+        // Priority-based categorization for tactical overview
         const priorityCategories = {
-          // 🔥 TOP PRIORITY: Pending tasks and upcoming events
           urgent: [
             ...(pendingTasks || []).map((task) => ({
               ...task,
@@ -761,19 +742,16 @@ const Notifications: React.FC = () => {
               .map((event) => ({ ...event, category: "upcoming-event" })),
           ],
 
-          // ✅ COMPLETED: Recently completed tasks
           completed: (completedTasks || []).map((task) => ({
             ...task,
             category: "completed-task",
           })),
 
-          // ❌ FAILED: Failed tasks that need attention
           failed: (failedTasks || []).map((task) => ({
             ...task,
             category: "failed-task",
           })),
 
-          // 📅 PAST EVENTS: Events that are over
           pastEvents: (todaysEvents || [])
             .filter((event) => getEventStatus(event) === "over")
             .map((event) => ({ ...event, category: "past-event" })),
@@ -797,7 +775,7 @@ const Notifications: React.FC = () => {
     );
   }
 
-  // ✅ Safe calculation with fallback values
+  // Calculate total mission count
   const totalMissions =
     (pendingTasks?.length || 0) +
     (completedTasks?.length || 0) +
@@ -806,35 +784,35 @@ const Notifications: React.FC = () => {
 
   return (
     <div className="mission-control-container">
-      {/* Mission Control Header */}
+      {/* Mission Command Center Header */}
       <div className="mission-control-header">
         <div className="mission-title-section">
           <h1 className="mission-title">Mission Control</h1>
           <div className="mission-summary">
             <span className="mission-count">
-              {totalMissions} Total Missions Today
+              {totalMissions} Total Operations Today
             </span>
           </div>
         </div>
       </div>
 
-      {/* Mission Status Tabs */}
+      {/* Tactical Status Tabs */}
       <div className="mission-tabs">
         {[
-          { key: "all", label: "All Missions", count: totalMissions },
+          { key: "all", label: "All Operations", count: totalMissions },
           {
             key: "pending",
-            label: "Active Tasks",
+            label: "Active Missions",
             count: pendingTasks?.length || 0,
           },
           {
             key: "completed",
-            label: "Completed Tasks",
+            label: "Completed",
             count: completedTasks?.length || 0,
           },
           {
             key: "failed",
-            label: "Failed Tasks",
+            label: "Failed",
             count: failedTasks?.length || 0,
           },
           { key: "event", label: "Events", count: todaysEvents?.length || 0 },
@@ -867,18 +845,18 @@ const Notifications: React.FC = () => {
         ))}
       </div>
 
-      {/* Mission Operations List */}
+      {/* Mission Operations Display */}
       <div className="mission-operations-list">
         {activeTab === "all" &&
         typeof displayData === "object" &&
         !Array.isArray(displayData) ? (
           <div className="mission-categories-grid">
-            {/* 🔥 TOP PRIORITY SECTION */}
+            {/* High Priority Operations */}
             <CategorySection
-              title="Urgent Missions"
+              title="Urgent Operations"
               items={(displayData as any).urgent}
               icon="🔥"
-              emptyMessage="No urgent tasks or upcoming events"
+              emptyMessage="No urgent missions or upcoming events"
               categoryType="urgent"
               showPopupFor={showPopupFor}
               handleTaskCompletion={handleTaskCompletion}
@@ -889,12 +867,12 @@ const Notifications: React.FC = () => {
               processingTasks={processingTasks}
             />
 
-            {/* ✅ COMPLETED SECTION */}
+            {/* Completed Operations */}
             <CategorySection
-              title="Completed Tasks"
+              title="Completed Missions"
               items={(displayData as any).completed}
               icon="✅"
-              emptyMessage="No completed tasks today"
+              emptyMessage="No completed missions today"
               categoryType="completed"
               showPopupFor={showPopupFor}
               handleTaskCompletion={handleTaskCompletion}
@@ -905,9 +883,9 @@ const Notifications: React.FC = () => {
               processingTasks={processingTasks}
             />
 
-            {/* ❌ FAILED SECTION */}
+            {/* Failed Operations */}
             <CategorySection
-              title="Failed Tasks"
+              title="Failed Missions"
               items={(displayData as any).failed}
               icon="❌"
               emptyMessage="No failed missions"
@@ -921,7 +899,7 @@ const Notifications: React.FC = () => {
               processingTasks={processingTasks}
             />
 
-            {/* 📋 PAST EVENTS SECTION */}
+            {/* Completed Events */}
             <CategorySection
               title="Completed Events"
               items={(displayData as any).pastEvents}
@@ -937,8 +915,7 @@ const Notifications: React.FC = () => {
               processingTasks={processingTasks}
             />
           </div>
-        ) : // ✅ KEEP: Original logic for other tabs UNCHANGED
-        Array.isArray(displayData) && displayData.length > 0 ? (
+        ) : Array.isArray(displayData) && displayData.length > 0 ? (
           displayData.map((item: any) => {
             const isTask = item.itemType === "task";
             const isEvent = item.itemType === "event";
@@ -1015,7 +992,7 @@ const Notifications: React.FC = () => {
                 </div>
 
                 <div className="mission-controls">
-                  {/* Timer for active items */}
+                  {/* Timer for active operations */}
                   {!isEventOver &&
                     (item.task_time || item.event_time) &&
                     !item.completed &&
@@ -1032,7 +1009,7 @@ const Notifications: React.FC = () => {
                       />
                     )}
 
-                  {/* Task completion button */}
+                  {/* Mission completion controls */}
                   {isTask && !item.completed && !item.failed && (
                     <TaskCompletionButton
                       task={item}
@@ -1041,7 +1018,7 @@ const Notifications: React.FC = () => {
                     />
                   )}
 
-                  {/* Event tracking button - only for active events */}
+                  {/* Event tracking controls */}
                   {isEvent && !isEventOver && (
                     <EventTrackingButton
                       event={item}
@@ -1056,13 +1033,13 @@ const Notifications: React.FC = () => {
         ) : (
           <div className="mission-standby">
             <div className="mission-standby-icon">🎯</div>
-            <h3>No Active Missions</h3>
-            <p>All clear, commander!</p>
+            <h3>All Clear, Commander</h3>
+            <p>No active missions detected. Your Wingman awaits orders.</p>
           </div>
         )}
       </div>
 
-      {/* Popup */}
+      {/* Mission Detail Popup */}
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}

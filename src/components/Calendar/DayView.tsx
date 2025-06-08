@@ -127,7 +127,6 @@ const DayView: React.FC = () => {
     setHighlightId(highlightParam);
   }, [location.search]);
 
-  // ✅ DEFINE: fetchDayData as a standalone function (ADD AFTER LINE 110)
   const fetchDayData = useCallback(async () => {
     if (!date) return;
 
@@ -167,7 +166,6 @@ const DayView: React.FC = () => {
     }
   }, [date]);
 
-  // ✅ REPLACE: The existing useEffect (lines 113-143) with this simple one:
   useEffect(() => {
     fetchDayData();
   }, [fetchDayData]);
@@ -392,12 +390,10 @@ const DayView: React.FC = () => {
     };
   };
 
-  // ✅ ADD: Handle task details (show popup)
   const handleTaskDetails = (task: Task) => {
     showPopupFor(task);
   };
 
-  // ✅ ADD: Handle event details (show popup)
   const handleEventDetails = (event: CalendarEvent) => {
     showPopupFor(event);
   };
@@ -451,7 +447,6 @@ const DayView: React.FC = () => {
     setEditEventForm({ title: "", event_time: "", type: "", description: "" });
   };
 
-  // ✅ NEW: Add refresh function
   const refreshDayView = useCallback(async () => {
     if (!date) return;
 
@@ -475,7 +470,7 @@ const DayView: React.FC = () => {
       });
 
       console.log(
-        `✅ DayView: Refreshed ${tasks?.length || 0} tasks, ${
+        ` DayView: Refreshed ${tasks?.length || 0} tasks, ${
           events?.length || 0
         } events`
       );
@@ -484,7 +479,7 @@ const DayView: React.FC = () => {
     }
   }, [date]);
 
-  // ✅ NEW: Listen for retry mission refresh events
+  //Listen for retry mission refresh events
   useEffect(() => {
     const handleRetryRefresh = () => {
       console.log("🔄 DayView: Received retry mission refresh event");
@@ -496,7 +491,7 @@ const DayView: React.FC = () => {
       window.removeEventListener("retry-mission-refresh", handleRetryRefresh);
   }, [refreshDayView]);
 
-  // ✅ ADD: Listen for task failure updates and auto-refresh
+  //Listen for task failure updates and auto-refresh
   useEffect(() => {
     const checkAndMarkFailedTasks = async () => {
       if (!date) return;
@@ -523,7 +518,7 @@ const DayView: React.FC = () => {
               console.log(
                 `❌ DayView: Marking task ${task.id} "${task.title}" as failed`
               );
-              // ✅ UPDATE DATABASE
+              // UPDATE DATABASE
               await window.electronAPI.db.updateTask(task.id, { failed: true });
               hasUpdates = true;
               return { ...task, failed: true };
@@ -536,10 +531,10 @@ const DayView: React.FC = () => {
         })
       );
 
-      // ✅ UPDATE LOCAL STATE
+      // UPDATE LOCAL STATE
       if (hasUpdates) {
         setCurrentDateTasks(updatedTasks);
-        console.log(`✅ DayView: Marked failed tasks and updated UI`);
+        console.log(`DayView: Marked failed tasks and updated UI`);
       }
     };
 
@@ -550,14 +545,14 @@ const DayView: React.FC = () => {
 
         if (currentDate === affectedDate) {
           console.log(
-            `🔄 DayView: ${
+            `DayView: ${
               event.detail.totalFailed || 0
             } tasks failed on ${affectedDate}, refreshing`
           );
           checkAndMarkFailedTasks(); // Use our function instead of fetchDayData
         }
       } else {
-        console.log(`🔄 DayView: Generic refresh triggered`);
+        console.log(`DayView: Generic refresh triggered`);
         checkAndMarkFailedTasks();
       }
     };
@@ -571,7 +566,7 @@ const DayView: React.FC = () => {
     window.addEventListener("notifications-refresh", handleTaskFailure);
     window.addEventListener("retry-mission-refresh", handleTaskFailure);
 
-    // ✅ SINGLE INTERVAL: Check and mark failed tasks every minute
+    // SINGLE INTERVAL: Check and mark failed tasks every minute
     checkAndMarkFailedTasks(); // Run immediately
     const interval = setInterval(checkAndMarkFailedTasks, 60 * 1000);
 
@@ -759,7 +754,7 @@ const DayView: React.FC = () => {
                 <div
                   key={event.id}
                   className={`event-item event-${event.type?.toLowerCase()}`}
-                  onClick={() => handleEventDetails(event)} // ✅ ADD: Click handler for popup
+                  onClick={() => handleEventDetails(event)} //Click handler for popup
                 >
                   <div className="event-time">
                     {formatTime(event.event_time)}
@@ -830,7 +825,7 @@ const DayView: React.FC = () => {
                   onChange={(time) =>
                     setNewTask({ ...newTask, task_time: time })
                   }
-                  placeholder="Task time"
+                  placeholder="Task by ..."
                 />
                 <button type="submit" className="day-form-btn">
                   Add Task
@@ -838,7 +833,7 @@ const DayView: React.FC = () => {
               </div>
             </form>
 
-            {/* ✅ NEW: Structured task lists in order */}
+            {/*Structured task lists in order */}
             <div className="day-list">
               {/* 1. PENDING TASKS */}
               {pendingTasks.length > 0 && (
@@ -999,7 +994,7 @@ const DayView: React.FC = () => {
         )}
       </div>
 
-      {/* ✅ ADD: DetailPopup rendering */}
+      {/*DetailPopup rendering */}
       {currentPopupItem && (
         <DetailPopup
           item={currentPopupItem}
@@ -1027,7 +1022,7 @@ const DayView: React.FC = () => {
                 onChange={(time) =>
                   setEditTaskForm({ ...editTaskForm, task_time: time })
                 }
-                placeholder="Task time"
+                placeholder="Task by ..."
               />
               <div className="day-form-actions">
                 <button type="submit">Save</button>

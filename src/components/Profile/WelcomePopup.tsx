@@ -133,7 +133,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
 
             <div className="pro-tip">
               <p className="tip-text">
-                <strong>Pro Tip:</strong> Press <kbd>Ctrl + -</kbd> to make the
+                <strong>Pro Tip:</strong> Press <kbd>'Ctrl' + '-'</kbd> to make the
                 app smaller if it looks too big!
               </p>
             </div>
