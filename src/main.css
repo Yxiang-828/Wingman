@@ -71,11 +71,11 @@
    LIGHT THEME - COMPLETE INVERSION
    ═══════════════════════════════════════════════════════════════ */
 
-.light-theme {
+
   /* ═══════════════════════════════════════════════════════════════
      ZONE 1: CORE VARIABLES & BASE STYLING
      ═══════════════════════════════════════════════════════════════ */
-  
+  .light-theme {
   /* Core Variables */
   --color-bg-body: transparent;
   --color-bg-main: rgba(248, 248, 240, 0.95);
@@ -125,10 +125,6 @@
   --theme-scan-animation: light-golden-scan;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ZONE 2: COMPONENT CONTAINERS & LAYOUT
-   ═══════════════════════════════════════════════════════════════ */
-
 /* Body & Main Containers */
 .light-theme body {
   background: var(--color-bg-body) !important;
@@ -171,11 +167,12 @@
 .light-theme .profile-container,
 .light-theme .avatar-page-container,
 .light-theme .calendar-week-view,
+.light-theme .calendar-week-view-compact,
 .light-theme .week-day,
 .light-theme .month-cell,
 .light-theme .compact-event-item,
 .light-theme .compact-task-item,
-.light-theme  .model-manager,
+.light-theme .model-manager,
 .light-theme .sidebar,
 .light-theme .sidebar-container,
 .light-theme .header,
@@ -211,79 +208,46 @@
 .light-theme .floating-panel,
 .light-theme .floating-view-selector,
 .light-theme .mission-standby,
-.light-theme .sidebar-toggle::before {
-  background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
+.light-theme .sidebar-toggle::before,
+.light-theme .diary-tools,
+.light-theme .writing-prompt {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6), rgba(0, 0, 0, 0.1)) !important;
 }
+
 .light-theme .mission-category-header,
-.light-theme .mission-item{
-  background: #c1bfa2 !important;
+.light-theme .mission-item {
+  background: rgba(193, 191, 162, 0.6) !important;
 }
-
-
-.light-theme .mission-category-empty {
-  background: var(--color-bg-card) !important;
-  color: var(--color-text-primary) !important;
-  border: 1px solid var(--color-border-normal) !important;
-  border-radius: 8px !important;
-  padding: 2rem !important;
-  text-align: center !important;
+.light-theme .day-stat-label,
+.light-theme .diary-date{
+  color: #600a0a !important;
 }
-.light-theme .mission-tracker-btn,
-.light-theme .mission-btn {
-    background: linear-gradient(135deg, rgb(25 25 27 / 20%), rgb(106 69 23 / 30%)) !important;
-    border: 1px solid rgba(120, 80, 200, 0.4);
-    color: #64442b;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-/* 
+/* Dashboard Elements */
 .light-theme .quote-box {
-    background: #b97c6d4a !important;
-    color: black !important;
-    border: 1px solid var(--color-accent-secondary) !important;
-    border-radius: 12px !important;
-    padding: 1.5rem !important;
+  background: rgba(185, 124, 109, 0.2) !important;
+  color: #600a0a !important;
+  border: 1px solid var(--color-accent-secondary) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
 }
-
-.light-theme .datetime-display {
-  background: linear-gradient(145deg, #c1bfa2, #00000026) !important;
+.light-theme .day-view-container{
+  background: none !important;
 }
-
-
-
 .light-theme .dashboard-item {
-  background: rgb(218 163 75 / 53%) !important;
-  color: var(--color-text-inverse) !important;
+  background: rgba(245, 245, 235, 0.3) !important;
+  color: #600a0a !important;
   border: 1px solid var(--color-accent-secondary) !important;
 }
 
 .light-theme .diary-entry-preview {
-  background: rgb(218 163 75 / 53%) !important;
+  background: rgba(245, 245, 235, 0.3) !important;
 }
 
-.light-theme .home-stat-card {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border: 1px solid var(--light-border-normal) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+.light-theme .month-header {
+  background: linear-gradient(270deg, rgba(185, 102, 7, 0.15), rgba(193, 191, 162, 0.6)) !important;
 }
 
-.light-theme .home-stat-card:hover {
-  background: rgba(255, 255, 255, 1.0) !important;
-  border-color: var(--light-accent-primary) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-}
-.light-theme .month-header{
-  background: linear-gradient(  270deg, #b9660726,#c1bfa2) !important;
-}
-/* ═══════════════════════════════════════════════════════════════
-   ZONE 3: TEXT, INPUTS, BUTTONS & INTERACTIVE ELEMENTS
-   ═══════════════════════════════════════════════════════════════ */
-
-/* All Headings & Title Elements */
+/* Text Elements */
 .light-theme h1, 
 .light-theme h2, 
 .light-theme h3, 
@@ -320,7 +284,6 @@
 .light-theme .search-title,
 .light-theme .category-title,
 .light-theme .mission-category-title,
-.light-theme .week-title,
 .light-theme .day-view-date,
 .light-theme .settings-main-title,
 .light-theme .settings-card-title,
@@ -333,7 +296,7 @@
   background: none !important;
 }
 
-/* All Input Elements */
+/* Input Elements */
 .light-theme input,
 .light-theme textarea,
 .light-theme select,
@@ -364,14 +327,14 @@
 .light-theme .search-button,
 .light-theme .event-time,
 .light-theme .mission-category-content,
-.light-theme .day-view-tab,
-.light-theme .day-stat-card  {
+.light-theme .day-view-tab {
   color: #600a0a !important;
   -webkit-text-fill-color: #600a0a !important;
-  background: rgb(122 77 42 / 50%) !important;
+  background: rgba(122, 77, 42, 0.35) !important;
   border: 1px solid var(--color-border-normal) !important;
   border-radius: 8px !important;
 }
+
 
 .light-theme input:focus,
 .light-theme textarea:focus,
@@ -382,7 +345,7 @@
   outline: none !important;
 }
 
-/* All Primary Buttons - Translucent Golden Base */
+/* Buttons */
 .light-theme .btn-primary,
 .light-theme .action-btn,
 .light-theme .search-entries-btn,
@@ -405,24 +368,16 @@
 .light-theme .refresh-data-btn,
 .light-theme .day-refresh-btn,
 .light-theme .load-more-btn,
-.light-theme .chatbot-quick-reply.custom-prompt  {
-  /* Base translucent golden background */
-  background: rgba(184, 134, 11, 0.15) !important;
-  color: rgba(139, 69, 19, 0.9) !important; /* Warm brown text */
-  border: 1px solid rgba(184, 134, 11, 0.3) !important;
+.light-theme .chatbot-quick-reply.custom-prompt {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: rgba(139, 69, 19, 0.9) !important;
+  border: 1px solid rgba(184, 134, 11, 0.25) !important;
   border-radius: 8px !important;
   padding: 0.75rem 1.5rem !important;
   font-weight: 500 !important;
   box-shadow: 
-    0 2px 8px rgba(184, 134, 11, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.light-theme .sidebar-toggle:hover {
-  background: var(--color-bg-tertiary) !important;
-  border-color: var(--color-accent-primary) !important;
+    0 2px 8px rgba(184, 134, 11, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 /* Labels and Secondary Text */
@@ -444,19 +399,24 @@
 .light-theme .compact-event-time,
 .light-theme .event-time,
 .light-theme .task-time,
-.light-theme .stat-label {
+.light-theme .stat-label,
+.light-theme .item-title-compact
+  {
   color: #600a0a !important;
   font-weight: 500 !important;
 }
-.detail-type,
-.detail-status{
+
+.light-theme .detail-type,
+.light-theme .detail-status {
   color: #600a0a !important;
-  background-color: rgb(142, 122, 122) !important;
+  background-color: rgba(142, 122, 122, 0.5) !important;
 }
-.light-theme .item-time{
-  background: rgb(180 186 132 / 60%);
+
+.light-theme .item-time {
+  background: rgba(180, 186, 132, 0.4) !important;
 }
-/* Gradient Text Elements Override */
+
+/* Stat Numbers */
 .light-theme .day-view-date,
 .light-theme .stat-number,
 .light-theme .mission-count,
@@ -466,26 +426,6 @@
   -webkit-text-fill-color: #600a0a !important;
   background: none !important;
   color: #600a0a !important;
-}
-
-/* Special Text Elements */
-.light-theme .mission-deadline {
-  color: var(--color-text-primary) !important;
-  background: rgba(200, 180, 160, 0.15) !important;
-}
-
-.light-theme .mission-summary {
-  background: var(--color-bg-card) !important;
-  color: var(--color-text-primary) !important;
-  border-color: var(--color-border-normal) !important;
-}
-
-.light-theme .diary-date {
-  background: none !important;
-  -webkit-background-clip: unset !important;
-  background-clip: unset !important;
-  -webkit-text-fill-color: var(--color-text-primary) !important;
-  color: var(--color-text-primary) !important;
 }
 
 /* Interactive Elements */
@@ -505,19 +445,18 @@
   border-color: var(--color-accent-primary) !important;
 }
 
-/* Chat Components */
-.light-theme .message-bubble.user {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
-  color: var(--color-text-inverse) !important;
+/* Calendar Elements */
+.light-theme .week-day:hover {
+  background: var(--color-bg-hover) !important;
+  border-color: var(--color-accent-primary) !important;
 }
 
-.light-theme .message-bubble.ai {
-  background: var(--color-bg-tertiary) !important;
-  color: var(--color-text-primary) !important;
-  border: 1px solid var(--color-border-normal) !important;
+.light-theme .week-day.today {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 10px var(--color-accent-glow) !important;
 }
 
-/* Mission Control Elements */
+/* Mission Elements */
 .light-theme .mission-tab {
   background: var(--color-bg-secondary) !important;
   border: 1px solid var(--color-border-normal) !important;
@@ -530,76 +469,6 @@
   background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
   color: var(--color-text-inverse) !important;
   border-color: var(--color-accent-secondary) !important;
-}
-
-/* Status Indicators */
-.light-theme .status-badge,
-.light-theme .sidebar-badge,
-.light-theme .notification-badge {
-  background: var(--color-accent-primary) !important;
-  color: var(--color-text-inverse) !important;
-  border: 1px solid var(--color-accent-secondary) !important;
-}
-
-.light-theme .status-badge.completed {
-  background: var(--color-success) !important;
-  color: white !important;
-}
-
-.light-theme .status-badge.pending {
-  background: var(--color-warning) !important;
-  color: white !important;
-}
-
-.light-theme .status-badge.error {
-  background: var(--color-error) !important;
-  color: white !important;
-}
-
-/* Calendar Specific Elements */
-.light-theme .week-day {
-  background: var(--color-bg-card) !important;
-  border: 1px solid var(--color-border-subtle) !important;
-}
-
-.light-theme .week-day:hover {
-  background: var(--color-bg-hover) !important;
-  border-color: var(--color-accent-primary) !important;
-}
-
-.light-theme .week-day.today {
-  border-color: var(--color-accent-primary) !important;
-  box-shadow: 0 0 10px var(--color-accent-glow) !important;
-}
-
-.light-theme .event-item.meeting {
-  border-left-color: #4169e1 !important;
-}
-
-.light-theme .event-item.personal {
-  border-left-color: #228b22 !important;
-}
-
-.light-theme .event-item.reminder {
-  border-left-color: #dc143c !important;
-}
-
-/* Diary Elements */
-.light-theme .mood-option {
-  background: var(--color-bg-card) !important;
-  border: 2px solid var(--color-border-normal) !important;
-  color: var(--color-text-primary) !important;
-}
-
-.light-theme .mood-option:hover {
-  border-color: var(--color-accent-primary) !important;
-  background: var(--color-bg-hover) !important;
-}
-
-.light-theme .mood-option.selected {
-  border-color: var(--color-accent-primary) !important;
-  background: var(--color-accent-primary) !important;
-  color: var(--color-text-inverse) !important;
 }
 
 /* Profile Elements */
@@ -616,6 +485,51 @@
   box-shadow: 0 0 15px var(--color-accent-glow) !important;
 }
 
+/* WeekView Components */
+.light-theme .week-header,
+.light-theme .week-header-compact {
+  background: rgba(245, 245, 235, 0.6) !important;
+  border-bottom: 1px solid rgba(184, 134, 11, 0.15) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .week-day-header,
+.light-theme .week-day-header-compact {
+  background: rgba(250, 250, 245, 0.5) !important;
+  border-bottom: 1px solid rgba(184, 134, 11, 0.15) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .week-task-item,
+.light-theme .week-event-item {
+  background: rgba(245, 245, 235, 0.4) !important;
+  color: #600a0a !important;
+  border: 1px solid rgba(184, 134, 11, 0.15) !important;
+}
+
+.light-theme .week-item-compact {
+  background: rgba(245, 245, 235, 0.4) !important;
+  color: #600a0a !important;
+  border-left: 2px solid rgba(184, 134, 11, 0.25) !important;
+}
+
+/* Calendar Widget */
+.light-theme .react-calendar--small {
+  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6), rgba(0, 0, 0, 0.1)) !important;
+  border: 1px solid rgba(184, 134, 11, 0.25) !important;
+  box-shadow: 0 2px 12px rgba(184, 134, 11, 0.1) !important;
+  color: #600a0a !important;
+}
+
+.light-theme .react-calendar--small .react-calendar__tile {
+  color: rgba(96, 10, 10, 0.7) !important;
+}
+
+.light-theme .react-calendar--small .react-calendar__tile:hover {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: #600a0a !important;
+}
+
 /* Animations */
 @keyframes light-golden-scan {
   0% { background-position: -100% 0; }
@@ -623,46 +537,29 @@
 }
 
 .light-theme .mission-scan {
-  background: linear-gradient(90deg, transparent, rgba(184, 134, 11, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(184, 134, 11, 0.25), transparent);
   animation: light-golden-scan 2s infinite;
-}
-
-/* Logout Button Special Styling */
-.logout-btn::before {
-  background: linear-gradient(135deg, rgb(127 12 12), rgb(159 16 16));
 }
 
 /* Special Elements */
 .light-theme .detail-popup {
-  background: rgba(210, 180, 140, 0.95) !important;
-  border: 2px solid rgba(160, 130, 100, 0.6) !important;
+  background: rgba(210, 180, 140, 0.8) !important;
+  border: 2px solid rgba(160, 130, 100, 0.5) !important;
   color: var(--color-text-primary) !important;
   box-shadow: var(--shadow-large) !important;
 }
 
-.light-theme .detail-popup-title {
-  color: var(--color-text-inverse) !important;
-}
-
-/* Home Page Special */
 .light-theme .home-title {
   background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
+/* ═══════════════════════════════════════════════════════════════
+   ZONE 2: COMPONENT CONTAINERS & LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
 
-/* Responsive */
-@media (max-width: 768px) {
-  .light-theme .sidebar-toggle {
-    left: -10px !important;
-  }
-  
-  .light-theme .dashboard-card,
-  .light-theme .settings-card {
-    padding: 1rem !important;
-  }
-}
+
 /* ═══════════════════════════════════════════════════════════════
    ENHANCED COMPONENT STYLING - All Themes
    ═══════════════════════════════════════════════════════════════ */
@@ -916,7 +813,8 @@ button:focus,
 button:focus-visible {
   outline: 2px solid var(--color-accent-primary);
 }
-Add theme-specific variables for notifications */
+
+/* Add theme-specific variables for notifications */
 :root,
 .dark-theme {
   --theme-scan-animation: mission-scan;
@@ -941,4 +839,7 @@ Add theme-specific variables for notifications */
   --color-mission-primary: #7dd3fc;
   --color-mission-glow: rgba(125, 211, 252, 0.4);
 }
+
+
+
 
