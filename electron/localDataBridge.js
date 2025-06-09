@@ -1024,21 +1024,38 @@ class LocalDataManager {
    */
   getUserSettings(userId) {
     try {
-      const stmt = this.db.prepare(`
-        SELECT * FROM user_settings WHERE user_id = ?
-      `);
-      const result = stmt.get(userId);
+      const query = `
+        SELECT ai_model, ai_model_auto_selected, theme, notifications_enabled, selected_avatar
+        FROM user_settings 
+        WHERE user_id = ?
+      `;
       
-      // Convert integers back to booleans
+      const result = this.db.prepare(query).get(userId);
+      
       if (result) {
         result.ai_model_auto_selected = result.ai_model_auto_selected === 1;
         result.notifications_enabled = result.notifications_enabled === 1;
+        // Add selectedAvatar field with fallback
+        result.selectedAvatar = result.selected_avatar || 'wingman-auto';
       }
       
-      return result || {};
+      // Return default settings including avatar if no record exists
+      return result || {
+        ai_model: 'llama3.2:1b',
+        ai_model_auto_selected: true,
+        theme: 'dark',
+        notifications_enabled: true,
+        selectedAvatar: 'wingman-auto'
+      };
     } catch (error) {
       console.error('Error getting user settings:', error);
-      return {};
+      return {
+        ai_model: 'llama3.2:1b',
+        ai_model_auto_selected: true,
+        theme: 'dark',
+        notifications_enabled: true,
+        selectedAvatar: 'wingman-auto'
+      };
     }
   }
 
@@ -1053,13 +1070,15 @@ class LocalDataManager {
       // Check if settings exist
       const existing = this.getUserSettings(userId);
       
-      if (Object.keys(existing).length > 0) {
+      if (Object.keys(existing).length > 0 && existing.ai_model) {
         // Update existing settings
         const updates = [];
         const values = [];
         
         Object.keys(settings).forEach(key => {
-          updates.push(`${key} = ?`);
+          // Map selectedAvatar to selected_avatar for database column
+          const dbKey = key === 'selectedAvatar' ? 'selected_avatar' : key;
+          updates.push(`${dbKey} = ?`);
           // Convert booleans to integers for SQLite
           const value = typeof settings[key] === 'boolean' ? (settings[key] ? 1 : 0) : settings[key];
           values.push(value);
@@ -1072,24 +1091,30 @@ class LocalDataManager {
           SET ${updates.join(', ')}, updated_at = datetime('now')
           WHERE user_id = ?
         `);
-        stmt.run(...values);
+        
+        const result = stmt.run(...values);
+        console.log('User settings updated successfully');
+        return { success: true, changes: result.changes };
       } else {
         // Insert new settings
         const stmt = this.db.prepare(`
-          INSERT INTO user_settings (
-            user_id, ai_model, ai_model_auto_selected, theme, notifications_enabled, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+          INSERT INTO user_settings 
+          (user_id, ai_model, ai_model_auto_selected, theme, notifications_enabled, selected_avatar, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         `);
-        stmt.run(
-          userId, 
+        
+        const result = stmt.run(
+          userId,
           settings.ai_model || 'llama3.2:1b',
           settings.ai_model_auto_selected ? 1 : 0,
           settings.theme || 'dark',
-          settings.notifications_enabled ? 1 : 0
+          settings.notifications_enabled ? 1 : 0,
+          settings.selectedAvatar || 'wingman-auto'
         );
+        
+        console.log('User settings created successfully');
+        return { success: true, changes: result.changes };
       }
-      
-      return { success: true };
     } catch (error) {
       console.error('Error saving user settings:', error);
       throw error;

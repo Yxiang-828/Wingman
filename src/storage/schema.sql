@@ -101,14 +101,15 @@ CREATE TABLE IF NOT EXISTS downloaded_models (
     UNIQUE(user_id, model_name)
 );
 
--- User Settings table (make sure booleans are stored as INTEGER)
+-- User Settings table (updated to include avatar selection)
 CREATE TABLE IF NOT EXISTS user_settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL UNIQUE,
     ai_model TEXT DEFAULT 'llama3.2:1b',
-    ai_model_auto_selected INTEGER DEFAULT 1,  -- Store as INTEGER not BOOLEAN
+    ai_model_auto_selected INTEGER DEFAULT 1,
     theme TEXT DEFAULT 'dark',
-    notifications_enabled INTEGER DEFAULT 1,   -- Store as INTEGER not BOOLEAN
+    notifications_enabled INTEGER DEFAULT 1,
+    selected_avatar TEXT DEFAULT 'wingman-auto',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );

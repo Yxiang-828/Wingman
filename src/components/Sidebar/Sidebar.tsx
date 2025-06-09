@@ -1,6 +1,6 @@
 // Command center sidebar - your loyal navigator through the digital realm
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import MiniCalendar from "./MiniCalendar";
 import { useTheme } from "../../context/ThemeContext";
 import { useNotifications } from "../../context/NotificationsContext";
@@ -28,11 +28,12 @@ interface MenuItem {
 }
 
 const Sidebar: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false); // Pinned state for persistent access
-  const [isHoverExpanded, setIsHoverExpanded] = useState(false); // Temporary expansion on hover
+  const [isVisible, setIsVisible] = useState(false);
+  const [isHoverExpanded, setIsHoverExpanded] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState<Set<string>>(new Set());
   const [userAvatar, setUserAvatar] = useState<string | null>(null); // Boss's chosen avatar
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { unreadCount } = useNotifications();
 
@@ -120,13 +121,13 @@ const Sidebar: React.FC = () => {
       case "light":
         return "☀️";
       case "yandere":
-        return "🌸";
+        return "💕";
       case "kuudere":
         return "❄️";
       case "tsundere":
-        return "🧡";
+        return "🔥";
       case "dandere":
-        return "💜";
+        return "🌸";
       default:
         return "🌙";
     }
@@ -244,7 +245,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
-      {/* Toggle button with boss's avatar - floats majestically */}
+      {/* Decorative toggle button with theme-responsive streaks */}
       <button
         className={`sidebar-toggle ${isVisible ? "open" : ""}`}
         onClick={toggleSidebar}
@@ -252,24 +253,16 @@ const Sidebar: React.FC = () => {
         onMouseLeave={handleToggleLeave}
         aria-label="Toggle sidebar"
       >
-        <div className="sidebar-toggle-avatar">
-          {userAvatar ? (
-            <img
-              src={userAvatar}
-              alt="User Avatar"
-              onError={() => setUserAvatar(null)}
-            />
-          ) : (
-            <span
-              style={{ fontSize: "20px", color: "rgba(255, 255, 255, 0.7)" }}
-            >
-              👤
-            </span>
-          )}
+        <div className="sidebar-toggle-decorative">
+          <div className="toggle-streak streak-1"></div>
+          <div className="toggle-streak streak-2"></div>
+          <div className="toggle-streak streak-3"></div>
+          <div className="toggle-streak streak-4"></div>
+          <div className="toggle-streak streak-5"></div>
         </div>
       </button>
 
-      {/* Main sidebar panel - expands on hover or when pinned */}
+      {/* Sidebar content */}
       <aside
         className={`sidebar ${isVisible ? "visible" : ""} ${
           isHoverExpanded ? "hover-expanded" : ""
@@ -277,72 +270,101 @@ const Sidebar: React.FC = () => {
         onMouseEnter={handleSidebarMouseEnter}
         onMouseLeave={handleSidebarMouseLeave}
       >
-        {/* Header with title and theme selector */}
+        {/* Sidebar header */}
         <div className="sidebar-header">
-          <h1 className="sidebar-title">Wingman</h1>
+          <h2 className="sidebar-title">Command Center</h2>
           <button
             className="theme-toggle-btn"
             onClick={toggleTheme}
-            title={`Current: ${theme} - Click to cycle themes`}
+            title={`Current theme: ${theme}`}
           >
             {getThemeEmoji()}
           </button>
         </div>
 
-        {/* Compact calendar widget for quick date navigation */}
-        <MiniCalendar />
-
-        {/* Complete navigation menu with submenus and badges */}
+        {/* Navigation menu */}
         <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <div key={item.title} className="nav-item">
-              <Link
-                to={item.path}
-                className={`sidebar-link ${item.submenu ? "has-submenu" : ""} ${
-                  openSubmenus.has(item.title) ? "active" : ""
-                }`}
-                onClick={(e) => {
-                  if (item.submenu) {
-                    e.preventDefault();
-                    toggleSubmenu(item.title);
-                  } else if (item.onClick) {
-                    item.onClick();
-                  }
-                }}
-              >
-                <div className="sidebar-link-content">
-                  <span className="sidebar-icon">{item.icon}</span>
-                  <span className="sidebar-text">{item.title}</span>
+          {menuItems.map((item, index) => (
+            <div key={index} className="nav-item">
+              {item.submenu ? (
+                <div
+                  className={`sidebar-link flex items-center justify-between ${
+                    location.pathname === item.path ? "active" : ""
+                  }`}
+                  onClick={() => toggleSubmenu(item.title)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="sidebar-link-content">
+                    <span className="sidebar-icon">{item.icon}</span>
+                    <span className="sidebar-text">{item.title}</span>
+                  </div>
+                  <span className="icon-rotate submenu-arrow">
+                    {openSubmenus.has(item.title) ? "▼" : "▶"}
+                  </span>
                 </div>
+              ) : item.onClick ? (
+                <div
+                  className="sidebar-link"
+                  onClick={item.onClick}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="sidebar-link-content">
+                    <span className="sidebar-icon">{item.icon}</span>
+                    <span className="sidebar-text">{item.title}</span>
+                    {item.badge !== undefined && (
+                      <span className="sidebar-badge">{item.badge}</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <Link to={item.path!} className="sidebar-link">
+                  <div className="sidebar-link-content">
+                    <span className="sidebar-icon">{item.icon}</span>
+                    <span className="sidebar-text">{item.title}</span>
+                    {item.badge !== undefined && (
+                      <span className="sidebar-badge">{item.badge}</span>
+                    )}
+                  </div>
+                </Link>
+              )}
 
-                {item.badge && (
-                  <span className="sidebar-badge">{item.badge}</span>
-                )}
-
-                {item.submenu && <span className="submenu-arrow">▶</span>}
-              </Link>
-
-              {/* Expandable submenu with smooth animation */}
               {item.submenu && (
                 <div
-                  className={`sidebar-submenu ${
-                    openSubmenus.has(item.title) ? "open" : ""
+                  className={`sidebar-submenu${
+                    openSubmenus.has(item.title) ? " open" : ""
                   }`}
                 >
-                  {item.submenu.map((subItem) => (
-                    <Link
-                      key={subItem.title}
-                      to={subItem.path}
-                      className="sidebar-submenu-item"
-                    >
-                      {subItem.title}
-                    </Link>
-                  ))}
+                  {openSubmenus.has(item.title) &&
+                    item.submenu.map((subItem, subIndex) => (
+                      <Link
+                        key={subIndex}
+                        to={subItem.path}
+                        className="sidebar-submenu-item"
+                      >
+                        {subItem.title}
+                      </Link>
+                    ))}
                 </div>
               )}
             </div>
           ))}
         </nav>
+
+        {/* Mini Calendar */}
+        <div className="sidebar-widget">
+          <MiniCalendar />
+        </div>
+
+        {/* Quick Add */}
+        <div className="mt-4 px-4">
+          <button
+            className="action-btn w-full flex items-center justify-center gap-2"
+            onClick={() => navigate("/diary/write")}
+          >
+            <span className="icon-rotate">✨</span>
+            New Entry
+          </button>
+        </div>
       </aside>
     </>
   );
