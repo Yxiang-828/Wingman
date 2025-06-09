@@ -193,3 +193,6 @@ docs/_build/
 .sass-cache/
 .connect.lock
 .typings/
+
+#guide files
+completethis.txt
