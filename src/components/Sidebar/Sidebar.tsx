@@ -4,7 +4,6 @@ import { useNavigate, Link } from "react-router-dom";
 import MiniCalendar from "./MiniCalendar";
 import { useTheme } from "../../context/ThemeContext";
 import { useNotifications } from "../../context/NotificationsContext";
-import WingmanAvatar from "../Common/WingmanAvatar";
 import { getCurrentUserId } from "../../utils/auth";
 import "../../main.css";
 import "./Sidebar.css";
@@ -31,29 +30,9 @@ const Sidebar: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false); // Pinned state for persistent access
   const [isHoverExpanded, setIsHoverExpanded] = useState(false); // Temporary expansion on hover
   const [openSubmenus, setOpenSubmenus] = useState<Set<string>>(new Set());
-  const [userAvatar, setUserAvatar] = useState<string | null>(null); // Boss's chosen avatar
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { unreadCount } = useNotifications();
-
-  // Retrieve the boss's avatar from their settings
-  useEffect(() => {
-    loadUserAvatar();
-  }, []);
-
-  const loadUserAvatar = async () => {
-    try {
-      const userId = getCurrentUserId();
-      if (!userId) return;
-
-      const settings = await window.electronAPI.db.getUserSettings(userId);
-      if (settings?.avatar_image) {
-        setUserAvatar(settings.avatar_image);
-      }
-    } catch (error) {
-      console.error("Failed to load user avatar:", error);
-    }
-  };
 
   // Hover handlers for the toggle button - shows preview without commitment
   const handleToggleHover = () => {
@@ -229,19 +208,6 @@ const Sidebar: React.FC = () => {
     };
   }, []);
 
-  // Listen for avatar updates from profile changes
-  useEffect(() => {
-    const handleAvatarUpdate = () => {
-      loadUserAvatar();
-    };
-
-    window.addEventListener("avatar-updated", handleAvatarUpdate);
-
-    return () => {
-      window.removeEventListener("avatar-updated", handleAvatarUpdate);
-    };
-  }, []);
-
   return (
     <>
       {/* Toggle button with boss's avatar - floats majestically */}
@@ -252,20 +218,11 @@ const Sidebar: React.FC = () => {
         onMouseLeave={handleToggleLeave}
         aria-label="Toggle sidebar"
       >
-        <div className="sidebar-toggle-avatar">
-          {userAvatar ? (
-            <img
-              src={userAvatar}
-              alt="User Avatar"
-              onError={() => setUserAvatar(null)}
-            />
-          ) : (
-            <span
-              style={{ fontSize: "20px", color: "rgba(255, 255, 255, 0.7)" }}
-            >
-              👤
-            </span>
-          )}
+        <div className="adaptive-streaks">
+          <div className="streak streak-1"></div>
+          <div className="streak streak-2"></div>
+          <div className="streak streak-3"></div>
+          <div className="streak streak-4"></div>
         </div>
       </button>
 
