@@ -241,7 +241,7 @@
 }
 
 .item-time {
-  background: rgba(20, 20, 35, 0.6);
+  background: rgb(112 40 115 / 60%);
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
   font-size: 0.7rem;

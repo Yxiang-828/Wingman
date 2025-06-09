@@ -210,9 +210,9 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
                 <div className="detail-popup-content">
                   <div className="detail-popup-header">
                     <div
-                      className={`detail-type ${(item as CalendarEvent).type}`}
+                      className={`detail-type ${(item as CalendarEvent).type|| 'default'}`}
                     >
-                      {(item as CalendarEvent).type}
+                      {(item as CalendarEvent).type || 'General'}
                     </div>
                     <div className="detail-date">{formattedDate}</div>
                   </div>

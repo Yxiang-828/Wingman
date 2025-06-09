@@ -337,13 +337,7 @@
   }
 }
 
-/* Light theme home page adjustments */
-.light-theme .home-title {
-  background: linear-gradient(135deg, var(--light-accent-primary), var(--light-accent-secondary)) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
+
 
 .light-theme .home-stat-card {
   background: rgba(255, 255, 255, 0.9) !important;
