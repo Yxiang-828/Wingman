@@ -44,7 +44,7 @@ export const setCurrentUser = (userData: any) => {
   localStorage.setItem("user", JSON.stringify(userData));
 };
 
-// Add this function to check auth state before data operations
+//check auth state before data operations
 export const waitForAuthentication = async (
   maxWaitTime = 5000
 ): Promise<boolean> => {

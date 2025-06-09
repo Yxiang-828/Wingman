@@ -119,7 +119,6 @@
   background: linear-gradient(135deg, #646cff, #7c7aff);
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .welcome-subtitle {

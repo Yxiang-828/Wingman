@@ -138,7 +138,6 @@ export const startNotificationService = (tasks: Task[], events: CalendarEvent[])
   return () => clearInterval(intervalId);
 };
 
-// Add this new service file for desktop notifications
 export const showDesktopNotification = (title: string, body: string) => {
   try {
     // Request permission if needed

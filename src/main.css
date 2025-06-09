@@ -228,7 +228,19 @@
   padding: 2rem !important;
   text-align: center !important;
 }
-
+.light-theme .mission-tracker-btn,
+.light-theme .mission-btn {
+    background: linear-gradient(135deg, rgb(25 25 27 / 20%), rgb(106 69 23 / 30%)) !important;
+    border: 1px solid rgba(120, 80, 200, 0.4);
+    color: #64442b;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+/* 
 .light-theme .quote-box {
     background: #b97c6d4a !important;
     color: black !important;
@@ -904,8 +916,7 @@ button:focus,
 button:focus-visible {
   outline: 2px solid var(--color-accent-primary);
 }
-
-/* Add theme-specific variables for notifications */
+Add theme-specific variables for notifications */
 :root,
 .dark-theme {
   --theme-scan-animation: mission-scan;

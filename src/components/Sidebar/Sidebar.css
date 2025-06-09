@@ -45,27 +45,26 @@
 
 /* Floating toggle button with majestic animation */
 .sidebar-toggle {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 80px;
-  border: none;
-  border-radius: 0 50px 50px 0;
-  cursor: pointer;
-  z-index: 101;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  overflow: visible;
-  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
-  animation: float-vertical 8s ease-in-out infinite alternate;
-  will-change: top;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 285px;
+    border: none;
+    border-radius: 0 50px 50px 0;
+    cursor: pointer;
+    z-index: 101;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    overflow: visible;
+    box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+    animation: float-vertical 8s ease-in-out infinite alternate;
+    will-change: top;
 }
-
 /* Majestic floating animation for the toggle button */
 @keyframes float-vertical {
   0% { top: 20vh; }
@@ -98,8 +97,8 @@
 
 /* Avatar container within toggle button */
 .sidebar-toggle-avatar {
-  width: 35px;
-  height: 35px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   overflow: hidden;
   display: flex;

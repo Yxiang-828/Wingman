@@ -29,9 +29,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ HYBRID ARCHITECTURE: Include authentication + chat routes
+#  HYBRID ARCHITECTURE: Include authentication + chat routes
 app.include_router(user.router, prefix="/api/v1", tags=["users"])
-app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])  # Add this line
+app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])  
 
 @app.get("/")
 def read_root():
@@ -64,7 +64,7 @@ async def add_global_exception_handler(request, call_next):
             content={"detail": "Internal server error"}
         )
 
-# ✅ DATA ENDPOINT STATUS (updated for AI)
+#  DATA ENDPOINT STATUS (updated for AI)
 @app.get("/api/v1/status")
 def data_endpoint_status():
     return {
