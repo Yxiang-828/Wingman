@@ -169,10 +169,10 @@ class OSNotificationManager {
         }
       });
 
-      // ✅ FIXED: Only add FUTURE events (not past events)
+      //  Only add FUTURE events (not past events)
       events.forEach(event => {
         if (event.event_time && event.event_time !== 'All day') {
-          // ✅ KEY FIX: Only add if event time is in the future
+          // Only add if event time is in the future
           if (event.event_time > currentTime) {
             this.activeItems.set(`event-${event.id}`, {
               id: `event-${event.id}`,
@@ -196,7 +196,7 @@ class OSNotificationManager {
   }
 
   /**
-   * ✅ FIXED: Only process notifications for items that are BECOMING due now
+   *   Only process notifications for items that are BECOMING due now
    * NOT for items that were already overdue when we started
    */
   private async processNotifications(): Promise<void> {
@@ -230,7 +230,7 @@ class OSNotificationManager {
           item.notified15min = true;
         }
 
-        // ✅ FIXED: Handle due time (ONLY when timer reaches 0, not for already overdue)
+        //  Handle due time (ONLY when timer reaches 0, not for already overdue)
         if (minutesUntilDue <= 0 && !item.notifiedOverdue && !item.notifiedStart) {
           if (item.type === 'task') {
             await this.handleTaskOverdue(item);
@@ -396,48 +396,58 @@ class OSNotificationManager {
     }
   }
 
-  /**
-   * Set up event listeners for real-time updates
-   */
-  private setupEventListeners(): void {
-    // Listen for task updates
-    window.addEventListener('task-updated', this.handleTaskUpdate.bind(this));
-    window.addEventListener('task-created', this.handleTaskCreated.bind(this));
-    window.addEventListener('task-completed', this.handleTaskCompletedEvent.bind(this));
-    window.addEventListener('task-deleted', this.handleTaskDeleted.bind(this));
+ /**
+ * Set up event listeners for real-time updates
+ */
+private setupEventListeners(): void {
+  // Listen for task updates - FIX: Cast to EventListener
+  window.addEventListener('task-updated', this.handleTaskUpdate.bind(this) as EventListener);
+  window.addEventListener('task-created', this.handleTaskCreated.bind(this) as EventListener);
+  window.addEventListener('task-completed', this.handleTaskCompletedEvent.bind(this) as EventListener);
+  window.addEventListener('task-deleted', this.handleTaskDeleted.bind(this) as EventListener);
 
-    // Listen for event updates
-    window.addEventListener('event-updated', this.handleEventUpdate.bind(this));
-    window.addEventListener('event-created', this.handleEventCreated.bind(this));
-    window.addEventListener('event-deleted', this.handleEventDeleted.bind(this));
+  // Listen for event updates - FIX: Cast to EventListener
+  window.addEventListener('event-updated', this.handleEventUpdate.bind(this) as EventListener);
+  window.addEventListener('event-created', this.handleEventCreated.bind(this) as EventListener);
+  window.addEventListener('event-deleted', this.handleEventDeleted.bind(this) as EventListener); // FIX: Add missing method
 
-    // Listen for retry mission refresh**
-    window.addEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this));
-  }
+  // Listen for retry mission refresh
+  window.addEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this) as EventListener);
+}
 
-  /**
-   * Handle retry mission refresh events
-   */
-  private handleRetryRefresh(): void {
-    this.log('🔄 Retry mission detected, refreshing active items');
-    this.forceRefresh();
-  }
+/**
+ * Remove event listeners - FIX: Cast to EventListener
+ */
+private removeEventListeners(): void {
+  window.removeEventListener('task-updated', this.handleTaskUpdate.bind(this) as EventListener);
+  window.removeEventListener('task-created', this.handleTaskCreated.bind(this) as EventListener);
+  window.removeEventListener('task-completed', this.handleTaskCompletedEvent.bind(this) as EventListener);
+  window.removeEventListener('task-deleted', this.handleTaskDeleted.bind(this) as EventListener);
+  window.removeEventListener('event-updated', this.handleEventUpdate.bind(this) as EventListener);
+  window.removeEventListener('event-created', this.handleEventCreated.bind(this) as EventListener);
+  window.removeEventListener('event-deleted', this.handleEventDeleted.bind(this) as EventListener);
+  
+  // Remove retry listener
+  window.removeEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this) as EventListener);
+}
 
-  /**
-   * Remove event listeners
-   */
-  private removeEventListeners(): void {
-    window.removeEventListener('task-updated', this.handleTaskUpdate.bind(this));
-    window.removeEventListener('task-created', this.handleTaskCreated.bind(this));
-    window.removeEventListener('task-completed', this.handleTaskCompletedEvent.bind(this));
-    window.removeEventListener('task-deleted', this.handleTaskDeleted.bind(this));
-    window.removeEventListener('event-updated', this.handleEventUpdate.bind(this));
-    window.removeEventListener('event-created', this.handleEventCreated.bind(this));
-    window.removeEventListener('event-deleted', this.handleEventDeleted.bind(this));
-    
-    // **NEW: Remove retry listener**
-    window.removeEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this));
-  }
+/**
+ * Handle event deletion events - FIX: Add missing method
+ */
+private handleEventDeleted(event: Event): void {
+  const customEvent = event as CustomEvent;
+  const eventId = customEvent.detail.eventId;
+  this.activeItems.delete(`event-${eventId}`);
+  this.log(`➖ Removed event from monitoring: ${eventId}`);
+}
+
+/**
+ * Handle retry mission refresh events
+ */
+private handleRetryRefresh(): void {
+  this.log('🔄 Retry mission refresh triggered - reloading active items');
+  this.loadActiveItems();
+}
 
   /**
    * Handle task update events
@@ -455,7 +465,7 @@ class OSNotificationManager {
       }
       this.log(`➖ Removed task from monitoring (completed/failed): ${task.title}`);
     } else if (task.task_time && task.task_time !== 'All day') {
-      // ✅ KEY FIX: Only add if task time is in the future
+      //  Only add if task time is in the future
       if (task.task_time > currentTime) {
         const updatedItem: NotificationItem = {
           id: itemId,
@@ -494,7 +504,7 @@ class OSNotificationManager {
     const currentTime = getCurrentTimeString();
     
     if (!task.completed && !task.failed && task.task_time && task.task_time !== 'All day') {
-      // ✅ KEY FIX: Only add if task time is in the future
+      //  Only add if task time is in the future
       if (task.task_time > currentTime) {
         this.activeItems.set(`task-${task.id}`, {
           id: `task-${task.id}`,
@@ -539,7 +549,7 @@ class OSNotificationManager {
     const currentTime = getCurrentTimeString();
 
     if (eventData.event_time && eventData.event_time !== 'All day') {
-      // ✅ KEY FIX: Only add if event time is in the future
+      // Only add if event time is in the future
       if (eventData.event_time > currentTime) {
         this.activeItems.set(itemId, {
           id: itemId,
@@ -568,7 +578,7 @@ class OSNotificationManager {
     const currentTime = getCurrentTimeString();
     
     if (eventData.event_time && eventData.event_time !== 'All day') {
-      // ✅ KEY FIX: Only add if event time is in the future
+      // Only add if event time is in the future
       if (eventData.event_time > currentTime) {
         this.activeItems.set(`event-${eventData.id}`, {
           id: `event-${eventData.id}`,

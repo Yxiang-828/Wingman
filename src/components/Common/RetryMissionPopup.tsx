@@ -62,6 +62,14 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
 
       try {
         await onRetry(newTime);
+
+        // 🔧 ADD: Dispatch retry refresh event for OSNotificationManager
+        window.dispatchEvent(
+          new CustomEvent("retry-mission-refresh", {
+            detail: { taskId: task.id, newTime, timestamp: Date.now() },
+          })
+        );
+
         onClose();
       } catch (error) {
         console.error("Wingman: Error rescheduling mission:", error);
@@ -70,7 +78,7 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
         setIsSubmitting(false);
       }
     },
-    [newTime, currentTime, onRetry, onClose]
+    [newTime, currentTime, onRetry, onClose, task.id]
   );
 
   // Optimized event handlers to prevent unnecessary re-renders

@@ -46,67 +46,72 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Simplified: Create Task using direct SQLite
-  const createTask = useCallback(async (task: Omit<Task, "id">): Promise<Task> => {
-    setLoading(true);
-    try {
-      console.log("DataContext: Creating task with data:", task);
+  const createTask = useCallback(
+    async (task: Omit<Task, "id">): Promise<Task> => {
+      setLoading(true);
+      try {
+        console.log("DataContext: Creating task with data:", task);
 
-      // Get user ID
-      const userId = getCurrentUserId();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
-
-      // Complete data sanitization for SQLite
-      const sanitizedTask = {
-        title: String(task.title || ""),
-        task_date: String(task.task_date || ""),
-        task_time: String(task.task_time || ""),
-        completed: Boolean(task.completed || false),
-        user_id: String(userId),
-        task_type: task.task_type ? String(task.task_type) : null,
-        due_date: task.due_date ? String(task.due_date) : null,
-        urgency_level: task.urgency_level ? Number(task.urgency_level) : null,
-        status: task.status ? String(task.status) : null,
-        last_reset_date: task.last_reset_date
-          ? String(task.last_reset_date)
-          : null,
-      };
-
-      // Remove any React/IPC artifacts that might be present
-      Object.keys(sanitizedTask).forEach((key) => {
-        if (sanitizedTask[key] === undefined) {
-          delete sanitizedTask[key];
+        // Get user ID
+        const userId = getCurrentUserId();
+        if (!userId) {
+          throw new Error("User not authenticated");
         }
-      });
 
-      console.log(
-        "DataContext: Sending sanitized task to SQLite:",
-        sanitizedTask
-      );
+        // Complete data sanitization for SQLite
+        const sanitizedTask = {
+          title: String(task.title || ""),
+          task_date: String(task.task_date || ""),
+          task_time: String(task.task_time || ""),
+          completed: Boolean(task.completed || false),
+          user_id: String(userId),
+          task_type: task.task_type ? String(task.task_type) : null,
+          due_date: task.due_date ? String(task.due_date) : null,
+          urgency_level: task.urgency_level ? Number(task.urgency_level) : null,
+          status: task.status ? String(task.status) : null,
+          last_reset_date: task.last_reset_date
+            ? String(task.last_reset_date)
+            : null,
+        };
 
-      // Create via SQLite with sanitized data
-      const newTask = await window.electronAPI.db.saveTask(sanitizedTask);
+        // Remove any React/IPC artifacts that might be present
+        Object.keys(sanitizedTask).forEach((key) => {
+          if (sanitizedTask[key] === undefined) {
+            delete sanitizedTask[key];
+          }
+        });
 
-      console.log(`DataContext: Task ${newTask.id} created successfully`);
-      
-      // Dispatch event for OSNotificationManager
-      window.dispatchEvent(new CustomEvent('task-created', {
-        detail: newTask
-      }));
-      
-      return newTask;
-    } catch (error) {
-      console.error("DataContext: Error creating task:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to create task";
-      setError(errorMessage);
+        console.log(
+          "DataContext: Sending sanitized task to SQLite:",
+          sanitizedTask
+        );
 
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        // Create via SQLite with sanitized data
+        const newTask = await window.electronAPI.db.saveTask(sanitizedTask);
+
+        console.log(`DataContext: Task ${newTask.id} created successfully`);
+
+        // Dispatch event for OSNotificationManager
+        window.dispatchEvent(
+          new CustomEvent("task-created", {
+            detail: newTask,
+          })
+        );
+
+        return newTask;
+      } catch (error) {
+        console.error("DataContext: Error creating task:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to create task";
+        setError(errorMessage);
+
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   // Simplified: Update Task using direct SQLite
   const updateTask = useCallback(async (task: Task): Promise<Task> => {
@@ -141,12 +146,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       }
 
       console.log(`DataContext: Task ${task.id} updated successfully`);
-      
+
       // Dispatch event for OSNotificationManager
-      window.dispatchEvent(new CustomEvent('task-updated', {
-        detail: updatedTask
-      }));
-      
+      window.dispatchEvent(
+        new CustomEvent("task-updated", {
+          detail: updatedTask,
+        })
+      );
+
       return updatedTask;
     } catch (error) {
       const errorMessage =
@@ -167,12 +174,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       await window.electronAPI.db.deleteTask(id);
 
       console.log(`DataContext: Task ${id} deleted successfully`);
-      
+
       // Dispatch event for OSNotificationManager
-      window.dispatchEvent(new CustomEvent('task-deleted', {
-        detail: { taskId: id }
-      }));
-      
+      window.dispatchEvent(
+        new CustomEvent("task-deleted", {
+          detail: { taskId: id },
+        })
+      );
     } catch (error) {
       console.error("Error deleting task:", error);
       setError("Failed to delete task");
@@ -183,27 +191,32 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // Simplified: Toggle Task using direct SQLite
-  const toggleTask = useCallback(async (task: Task): Promise<Task> => {
-    try {
-      const updatedTask = await updateTask({
-        ...task,
-        completed: !task.completed,
-        updated_at: new Date().toISOString(),
-      });
+  const toggleTask = useCallback(
+    async (task: Task): Promise<Task> => {
+      try {
+        const updatedTask = await updateTask({
+          ...task,
+          completed: !task.completed,
+          updated_at: new Date().toISOString(),
+        });
 
-      // If task was completed, dispatch completion event
-      if (updatedTask.completed) {
-        window.dispatchEvent(new CustomEvent('task-completed', {
-          detail: { taskId: updatedTask.id, title: updatedTask.title }
-        }));
+        // If task was completed, dispatch completion event
+        if (updatedTask.completed) {
+          window.dispatchEvent(
+            new CustomEvent("task-completed", {
+              detail: { taskId: updatedTask.id, title: updatedTask.title },
+            })
+          );
+        }
+
+        return updatedTask;
+      } catch (error) {
+        console.error("Error toggling task:", error);
+        throw error;
       }
-
-      return updatedTask;
-    } catch (error) {
-      console.error("Error toggling task:", error);
-      throw error;
-    }
-  }, [updateTask]);
+    },
+    [updateTask]
+  );
 
   // Simplified: Create Event using direct SQLite
   const createEvent = useCallback(
@@ -232,12 +245,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
         const newEvent = await window.electronAPI.db.saveEvent(eventData);
         console.log(`DataContext: Event ${newEvent.id} created successfully`);
-        
+
         // Dispatch event for OSNotificationManager
-        window.dispatchEvent(new CustomEvent('event-created', {
-          detail: newEvent
-        }));
-        
+        window.dispatchEvent(
+          new CustomEvent("event-created", {
+            detail: newEvent,
+          })
+        );
+
         return newEvent;
       } catch (error) {
         console.error("Error creating event:", error);
@@ -260,12 +275,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         const finalEvent = { ...event, ...updatedEvent };
 
         console.log(`DataContext: Event ${event.id} updated successfully`);
-        
+
         // Dispatch event for OSNotificationManager
-        window.dispatchEvent(new CustomEvent('event-updated', {
-          detail: updatedEvent
-        }));
-        
+        window.dispatchEvent(
+          new CustomEvent("event-updated", {
+            detail: updatedEvent,
+          })
+        );
+
         return updatedEvent;
       } catch (error) {
         console.error("Error updating event:", error);
@@ -286,12 +303,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       await window.electronAPI.db.deleteEvent(id);
 
       console.log(`DataContext: Event ${id} deleted successfully`);
-      
+
       // Dispatch event for OSNotificationManager
       window.dispatchEvent(new CustomEvent('event-deleted', {
         detail: { eventId: id }
       }));
-      
     } catch (error) {
       console.error("Error deleting event:", error);
       setError("Failed to delete event");

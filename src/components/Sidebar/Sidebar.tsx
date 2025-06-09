@@ -1,3 +1,4 @@
+
 // Command center sidebar - your loyal navigator through the digital realm
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -22,38 +23,58 @@ interface MenuItem {
   path: string;
   icon: React.ReactNode;
   submenu?: { title: string; path: string }[];
+  badge?: number | string;
   onClick?: () => void;
 }
 
 const Sidebar: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false); // Pinned state for persistent access
+  const [isHoverExpanded, setIsHoverExpanded] = useState(false); // Temporary expansion on hover
   const [openSubmenus, setOpenSubmenus] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const { unreadCount } = useNotifications();
 
-  // Simplified toggle - click to expand/collapse with content push
+  // Hover handlers for the toggle button - shows preview without commitment
+  const handleToggleHover = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(true);
+    }
+  };
+
+  const handleToggleLeave = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(false);
+    }
+  };
+
+  // Sidebar hover handlers - maintains expansion while boss explores
+  const handleSidebarMouseEnter = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(true);
+    }
+  };
+
+  const handleSidebarMouseLeave = () => {
+    if (!isVisible) {
+      setIsHoverExpanded(false);
+    }
+  };
+
+  // Pin or unpin the sidebar - boss's choice for workspace layout
   const toggleSidebar = () => {
     const newVisibility = !isVisible;
     setIsVisible(newVisibility);
 
-    // Apply body class for global layout adaptation
-    if (newVisibility) {
-      document.body.classList.add("sidebar-visible");
-    } else {
-      document.body.classList.remove("sidebar-visible");
+    if (!newVisibility) {
+      setIsHoverExpanded(false);
     }
 
-    // Notify layout system to adapt main content
-    const event = new CustomEvent("sidebar-toggle", {
+    // Notify other components about the change
+    const event = new CustomEvent("toggle-sidebar", {
       detail: { visible: newVisibility },
     });
     window.dispatchEvent(event);
-
-    // Also maintain backward compatibility
-    const legacyEvent = new CustomEvent("toggle-sidebar", {
-      detail: { visible: newVisibility },
-    });
-    window.dispatchEvent(legacyEvent);
   };
 
   // Theme cycling through all available moods
@@ -147,6 +168,7 @@ const Sidebar: React.FC = () => {
       title: "Wingman",
       path: "/chatbot",
       icon: <span className="icon-rotate">🤖</span>,
+      badge: 1,
     },
     {
       title: "Profile",
@@ -166,33 +188,24 @@ const Sidebar: React.FC = () => {
       title: "Notifications",
       path: "/notifications",
       icon: <span className="icon-rotate">🔔</span>,
+      badge: unreadCount > 0 ? unreadCount : undefined,
     },
   ];
 
   // Listen for external sidebar toggle events
-  // Listen for external sidebar toggle events and cleanup on unmount
   useEffect(() => {
     const handleToggle = (event: CustomEvent) => {
       const newVisibility = event.detail.visible;
       setIsVisible(newVisibility);
-
-      // Sync body class
-      if (newVisibility) {
-        document.body.classList.add("sidebar-visible");
-      } else {
-        document.body.classList.remove("sidebar-visible");
-      }
     };
 
     window.addEventListener("toggle-sidebar", handleToggle as EventListener);
 
-    // Cleanup on component unmount
     return () => {
       window.removeEventListener(
         "toggle-sidebar",
         handleToggle as EventListener
       );
-      document.body.classList.remove("sidebar-visible");
     };
   }, []);
 
@@ -202,6 +215,8 @@ const Sidebar: React.FC = () => {
       <button
         className={`sidebar-toggle ${isVisible ? "open" : ""}`}
         onClick={toggleSidebar}
+        onMouseEnter={handleToggleHover}
+        onMouseLeave={handleToggleLeave}
         aria-label="Toggle sidebar"
       >
         <div className="adaptive-streaks">
@@ -213,7 +228,13 @@ const Sidebar: React.FC = () => {
       </button>
 
       {/* Main sidebar panel - expands on hover or when pinned */}
-      <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
+      <aside
+        className={`sidebar ${isVisible ? "visible" : ""} ${
+          isHoverExpanded ? "hover-expanded" : ""
+        }`}
+        onMouseEnter={handleSidebarMouseEnter}
+        onMouseLeave={handleSidebarMouseLeave}
+      >
         {/* Header with title and theme selector */}
         <div className="sidebar-header">
           <h1 className="sidebar-title">Wingman</h1>
@@ -252,6 +273,10 @@ const Sidebar: React.FC = () => {
                   <span className="sidebar-text">{item.title}</span>
                 </div>
 
+                {item.badge && (
+                  <span className="sidebar-badge">{item.badge}</span>
+                )}
+
                 {item.submenu && <span className="submenu-arrow">▶</span>}
               </Link>
 
@@ -282,3 +307,7 @@ const Sidebar: React.FC = () => {
 };
 
 export default Sidebar;
+
+
+
+
