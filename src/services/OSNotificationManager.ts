@@ -35,6 +35,7 @@ class OSNotificationManager {
   // Track all active notifications
   private activeItems: Map<string, NotificationItem> = new Map();
   private lastCheckTime: string = '';
+  private isInitialLoad: boolean = true; // 🔧 NEW: Track if this is the first load
 
   private constructor(config: Partial<OSNotificationConfig> = {}) {
     this.config = {
@@ -69,24 +70,28 @@ class OSNotificationManager {
     // Request notification permissions
     await this.requestPermissions();
     
+    // 🔧 SET INITIAL LOAD FLAG
+    this.isInitialLoad = true;
+    
     // Load all current items
     await this.loadActiveItems();
     
     // Start monitoring
     this.isRunning = true;
     
-    // Run initial check
-    await this.processNotifications();
+    // 🔧 SKIP INITIAL CHECK TO PREVENT LOGIN NOTIFICATIONS
+    // Don't run processNotifications() on initial load
     
     // Set up interval to check every minute
     this.intervalId = setInterval(() => {
+      this.isInitialLoad = false; // 🔧 Clear initial load flag after first interval
       this.processNotifications();
     }, this.config.checkIntervalMs);
 
     // Set up event listeners for real-time updates
     this.setupEventListeners();
 
-    this.log('✅ OSNotificationManager: Started successfully');
+    this.log('✅ OSNotificationManager: Started successfully (initial notifications suppressed)');
   }
 
   /**
@@ -123,7 +128,8 @@ class OSNotificationManager {
   }
 
   /**
-   * Load all active tasks and events that need monitoring
+   * Load only FUTURE tasks and events that need monitoring
+   * NEVER load already overdue items for notification
    */
   private async loadActiveItems(): Promise<void> {
     try {
@@ -131,6 +137,7 @@ class OSNotificationManager {
       if (!userId) return;
 
       const today = getTodayDateString();
+      const currentTime = getCurrentTimeString();
       
       // Get today's tasks and events
       const [tasks, events] = await Promise.all([
@@ -140,47 +147,66 @@ class OSNotificationManager {
 
       this.activeItems.clear();
 
-      // Add tasks to monitoring
+      // ✅ FIXED: Only add FUTURE tasks (not overdue, not completed, not failed)
       tasks.forEach(task => {
-        if (!task.completed && !task.failed && task.task_time) {
-          this.activeItems.set(`task-${task.id}`, {
-            id: `task-${task.id}`,
-            type: 'task',
-            title: task.title,
-            time: task.task_time,
-            date: task.task_date,
-            userId: task.user_id,
-            completed: task.completed,
-            failed: task.failed
-          });
+        if (!task.completed && !task.failed && task.task_time && task.task_time !== 'All day') {
+          // ✅ KEY FIX: Only add if task time is in the future
+          if (task.task_time > currentTime) {
+            this.activeItems.set(`task-${task.id}`, {
+              id: `task-${task.id}`,
+              type: 'task',
+              title: task.title,
+              time: task.task_time,
+              date: task.task_date,
+              userId: task.user_id,
+              completed: task.completed,
+              failed: task.failed
+            });
+            this.log(`➕ Added FUTURE task to monitoring: ${task.title} at ${task.task_time}`);
+          } else {
+            this.log(`⏭️ Skipped OVERDUE task: ${task.title} (${task.task_time} < ${currentTime})`);
+          }
         }
       });
 
-      // Add events to monitoring
+      // ✅ FIXED: Only add FUTURE events (not past events)
       events.forEach(event => {
-        if (event.event_time) {
-          this.activeItems.set(`event-${event.id}`, {
-            id: `event-${event.id}`,
-            type: 'event',
-            title: event.title,
-            time: event.event_time,
-            date: event.event_date,
-            userId: event.user_id
-          });
+        if (event.event_time && event.event_time !== 'All day') {
+          // ✅ KEY FIX: Only add if event time is in the future
+          if (event.event_time > currentTime) {
+            this.activeItems.set(`event-${event.id}`, {
+              id: `event-${event.id}`,
+              type: 'event',
+              title: event.title,
+              time: event.event_time,
+              date: event.event_date,
+              userId: event.user_id
+            });
+            this.log(`➕ Added FUTURE event to monitoring: ${event.title} at ${event.event_time}`);
+          } else {
+            this.log(`⏭️ Skipped PAST event: ${event.title} (${event.event_time} < ${currentTime})`);
+          }
         }
       });
 
-      this.log(`📊 Loaded ${this.activeItems.size} items for notification monitoring`);
+      this.log(`📊 Loaded ${this.activeItems.size} FUTURE items for notification monitoring (filtered out overdue)`);
     } catch (error) {
       console.error('OSNotificationManager: Error loading items:', error);
     }
   }
 
   /**
-   * Main notification processing logic
+   * ✅ FIXED: Only process notifications for items that are BECOMING due now
+   * NOT for items that were already overdue when we started
    */
   private async processNotifications(): Promise<void> {
     try {
+      // ✅ SKIP NOTIFICATIONS DURING INITIAL LOAD
+      if (this.isInitialLoad) {
+        this.log('🔕 OSNotificationManager: Skipping notifications during initial load');
+        return;
+      }
+
       const currentTime = getCurrentTimeString();
       const today = getTodayDateString();
       this.lastCheckTime = currentTime;
@@ -204,16 +230,17 @@ class OSNotificationManager {
           item.notified15min = true;
         }
 
-        // Handle due time
-        if (minutesUntilDue <= 0) {
+        // ✅ FIXED: Handle due time (ONLY when timer reaches 0, not for already overdue)
+        if (minutesUntilDue <= 0 && !item.notifiedOverdue && !item.notifiedStart) {
           if (item.type === 'task') {
             await this.handleTaskOverdue(item);
           } else {
             await this.handleEventStart(item);
           }
           
-          // Remove from active monitoring
+          // Remove from active monitoring after notification
           this.activeItems.delete(itemId);
+          this.log(`🗑️ Removed completed notification item: ${item.title}`);
         }
       }
 
@@ -418,8 +445,8 @@ class OSNotificationManager {
   private handleTaskUpdate(event: CustomEvent): void {
     const task = event.detail;
     const itemId = `task-${task.id}`;
+    const currentTime = getCurrentTimeString();
 
-    // **FIX: Handle retry scenario properly**
     if (task.completed || task.failed) {
       // Task completed or failed - remove from monitoring
       this.activeItems.delete(itemId);
@@ -428,33 +455,32 @@ class OSNotificationManager {
       }
       this.log(`➖ Removed task from monitoring (completed/failed): ${task.title}`);
     } else if (task.task_time && task.task_time !== 'All day') {
-      // **NEW: Task has been updated/retried - refresh monitoring**
-      const existingItem = this.activeItems.get(itemId);
-      
-      const updatedItem: NotificationItem = {
-        id: itemId,
-        type: 'task',
-        title: task.title,
-        time: task.task_time,
-        date: task.task_date,
-        userId: task.user_id,
-        completed: task.completed,
-        failed: task.failed,
-        // **RESET NOTIFICATION FLAGS FOR RETRIED TASKS**
-        notified30min: false,
-        notified15min: false,
-        notifiedOverdue: false
-      };
+      // ✅ KEY FIX: Only add if task time is in the future
+      if (task.task_time > currentTime) {
+        const updatedItem: NotificationItem = {
+          id: itemId,
+          type: 'task',
+          title: task.title,
+          time: task.task_time,
+          date: task.task_date,
+          userId: task.user_id,
+          completed: task.completed,
+          failed: task.failed,
+          // Reset notification flags for retried tasks
+          notified30min: false,
+          notified15min: false,
+          notifiedOverdue: false
+        };
 
-      this.activeItems.set(itemId, updatedItem);
-      
-      if (existingItem) {
-        this.log(`🔄 Updated task monitoring: ${task.title} (new time: ${task.task_time})`);
+        this.activeItems.set(itemId, updatedItem);
+        this.log(`🔄 Updated task monitoring: ${task.title} (future time: ${task.task_time})`);
       } else {
-        this.log(`➕ Added updated task to monitoring: ${task.title}`);
+        // Remove overdue tasks from monitoring
+        this.activeItems.delete(itemId);
+        this.log(`⏭️ Removed OVERDUE task from monitoring: ${task.title} (${task.task_time} < ${currentTime})`);
       }
     } else {
-      // **Task has no time or is all-day - remove from time-based monitoring**
+      // Task has no time or is all-day - remove from time-based monitoring
       this.activeItems.delete(itemId);
       this.log(`➖ Removed task from monitoring (no time): ${task.title}`);
     }
@@ -465,18 +491,25 @@ class OSNotificationManager {
    */
   private handleTaskCreated(event: CustomEvent): void {
     const task = event.detail;
-    if (!task.completed && !task.failed && task.task_time) {
-      this.activeItems.set(`task-${task.id}`, {
-        id: `task-${task.id}`,
-        type: 'task',
-        title: task.title,
-        time: task.task_time,
-        date: task.task_date,
-        userId: task.user_id,
-        completed: task.completed,
-        failed: task.failed
-      });
-      this.log(`➕ Added task to monitoring: ${task.title}`);
+    const currentTime = getCurrentTimeString();
+    
+    if (!task.completed && !task.failed && task.task_time && task.task_time !== 'All day') {
+      // ✅ KEY FIX: Only add if task time is in the future
+      if (task.task_time > currentTime) {
+        this.activeItems.set(`task-${task.id}`, {
+          id: `task-${task.id}`,
+          type: 'task',
+          title: task.title,
+          time: task.task_time,
+          date: task.task_date,
+          userId: task.user_id,
+          completed: task.completed,
+          failed: task.failed
+        });
+        this.log(`➕ Added FUTURE task to monitoring: ${task.title} at ${task.task_time}`);
+      } else {
+        this.log(`⏭️ Skipped OVERDUE task creation: ${task.title} (${task.task_time} < ${currentTime})`);
+      }
     }
   }
 
@@ -503,18 +536,27 @@ class OSNotificationManager {
   private handleEventUpdate(event: CustomEvent): void {
     const eventData = event.detail;
     const itemId = `event-${eventData.id}`;
+    const currentTime = getCurrentTimeString();
 
-    if (eventData.event_time) {
-      this.activeItems.set(itemId, {
-        id: itemId,
-        type: 'event',
-        title: eventData.title,
-        time: eventData.event_time,
-        date: eventData.event_date,
-        userId: eventData.user_id
-      });
+    if (eventData.event_time && eventData.event_time !== 'All day') {
+      // ✅ KEY FIX: Only add if event time is in the future
+      if (eventData.event_time > currentTime) {
+        this.activeItems.set(itemId, {
+          id: itemId,
+          type: 'event',
+          title: eventData.title,
+          time: eventData.event_time,
+          date: eventData.event_date,
+          userId: eventData.user_id
+        });
+        this.log(`🔄 Updated FUTURE event monitoring: ${eventData.title} at ${eventData.event_time}`);
+      } else {
+        this.activeItems.delete(itemId);
+        this.log(`⏭️ Removed PAST event from monitoring: ${eventData.title} (${eventData.event_time} < ${currentTime})`);
+      }
     } else {
       this.activeItems.delete(itemId);
+      this.log(`➖ Removed event from monitoring (no time): ${eventData.title}`);
     }
   }
 
@@ -523,26 +565,24 @@ class OSNotificationManager {
    */
   private handleEventCreated(event: CustomEvent): void {
     const eventData = event.detail;
-    if (eventData.event_time) {
-      this.activeItems.set(`event-${eventData.id}`, {
-        id: `event-${eventData.id}`,
-        type: 'event',
-        title: eventData.title,
-        time: eventData.event_time,
-        date: eventData.event_date,
-        userId: eventData.user_id
-      });
-      this.log(`➕ Added event to monitoring: ${eventData.title}`);
+    const currentTime = getCurrentTimeString();
+    
+    if (eventData.event_time && eventData.event_time !== 'All day') {
+      // ✅ KEY FIX: Only add if event time is in the future
+      if (eventData.event_time > currentTime) {
+        this.activeItems.set(`event-${eventData.id}`, {
+          id: `event-${eventData.id}`,
+          type: 'event',
+          title: eventData.title,
+          time: eventData.event_time,
+          date: eventData.event_date,
+          userId: eventData.user_id
+        });
+        this.log(`➕ Added FUTURE event to monitoring: ${eventData.title} at ${eventData.event_time}`);
+      } else {
+        this.log(`⏭️ Skipped PAST event creation: ${eventData.title} (${eventData.event_time} < ${currentTime})`);
+      }
     }
-  }
-
-  /**
-   * Handle event deletion events
-   */
-  private handleEventDeleted(event: CustomEvent): void {
-    const eventId = event.detail.eventId;
-    this.activeItems.delete(`event-${eventId}`);
-    this.log(`➖ Removed event from monitoring: ${eventId}`);
   }
 
   /**

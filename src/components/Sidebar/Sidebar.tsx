@@ -31,17 +31,16 @@ const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
-  
-    // Simplified toggle - click to expand/collapse with content push
+  // Simplified toggle - click to expand/collapse with content push
   const toggleSidebar = () => {
     const newVisibility = !isVisible;
     setIsVisible(newVisibility);
 
     // Apply body class for global layout adaptation
     if (newVisibility) {
-      document.body.classList.add('sidebar-visible');
+      document.body.classList.add("sidebar-visible");
     } else {
-      document.body.classList.remove('sidebar-visible');
+      document.body.classList.remove("sidebar-visible");
     }
 
     // Notify layout system to adapt main content
@@ -171,17 +170,17 @@ const Sidebar: React.FC = () => {
   ];
 
   // Listen for external sidebar toggle events
-    // Listen for external sidebar toggle events and cleanup on unmount
+  // Listen for external sidebar toggle events and cleanup on unmount
   useEffect(() => {
     const handleToggle = (event: CustomEvent) => {
       const newVisibility = event.detail.visible;
       setIsVisible(newVisibility);
-      
+
       // Sync body class
       if (newVisibility) {
-        document.body.classList.add('sidebar-visible');
+        document.body.classList.add("sidebar-visible");
       } else {
-        document.body.classList.remove('sidebar-visible');
+        document.body.classList.remove("sidebar-visible");
       }
     };
 
@@ -189,8 +188,11 @@ const Sidebar: React.FC = () => {
 
     // Cleanup on component unmount
     return () => {
-      window.removeEventListener("toggle-sidebar", handleToggle as EventListener);
-      document.body.classList.remove('sidebar-visible');
+      window.removeEventListener(
+        "toggle-sidebar",
+        handleToggle as EventListener
+      );
+      document.body.classList.remove("sidebar-visible");
     };
   }, []);
 
@@ -211,9 +213,7 @@ const Sidebar: React.FC = () => {
       </button>
 
       {/* Main sidebar panel - expands on hover or when pinned */}
-      <aside
-        className={`sidebar ${isVisible ? "visible" : ""}`}
-      >
+      <aside className={`sidebar ${isVisible ? "visible" : ""}`}>
         {/* Header with title and theme selector */}
         <div className="sidebar-header">
           <h1 className="sidebar-title">Wingman</h1>

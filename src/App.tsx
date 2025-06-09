@@ -26,6 +26,7 @@ import { Auth } from "./utils/AuthStateManager";
 import { osNotificationManager } from "./services/OSNotificationManager";
 import "./main.css";
 import "./styles/scrollbars.css";
+import LoadingScreen from "./components/Common/LoadingScreen";
 
 // Create an AppContent component that will be inside the Router
 const AppContent = ({
@@ -35,6 +36,8 @@ const AppContent = ({
 }) => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [notificationManagerReady, setNotificationManagerReady] =
+    useState(false); //  NEW: Track notification manager state
 
   // Modified useEffect to properly update auth state and call onAuthChange
   useEffect(() => {
@@ -74,56 +77,90 @@ const AppContent = ({
     };
   }, []);
 
-  // **NEW: OSNotificationManager Integration**
-  // **REASON: Need to start/stop notification manager based on authentication state**
-  // **DECISION: Placed after auth initialization to ensure user state is ready**
+  // **ENHANCED: OSNotificationManager Integration with Loading State**
   useEffect(() => {
-    // **REASON: Only start notifications when user is authenticated**
-    // **DECISION: Check both authInitialized and stored user to ensure proper state**
     const storedUser = localStorage.getItem("user");
     const isAuthenticated = authInitialized && !!storedUser;
 
     if (isAuthenticated) {
-      console.log("🚀 AppContent: User authenticated, starting OSNotificationManager");
+      console.log(
+        "🚀 AppContent: User authenticated, starting OSNotificationManager"
+      );
 
-      // **NEW: Store user ID for background notifications**
+      //  SET LOADING STATE
+      setNotificationManagerReady(false);
+
+      // Store user ID for background notifications
       try {
         const userData = JSON.parse(storedUser);
         if (userData.id && window.electronAPI?.user?.storeActiveUser) {
-          window.electronAPI.user.storeActiveUser(userData.id).then(result => {
-            if (result.success) {
-              console.log("✅ AppContent: User ID stored for background notifications");
-            } else {
-              console.error("❌ AppContent: Failed to store user ID:", result.error);
-            }
-          });
+          window.electronAPI.user
+            .storeActiveUser(userData.id)
+            .then((result) => {
+              if (result.success) {
+                console.log(
+                  "✅ AppContent: User ID stored for background notifications"
+                );
+              } else {
+                console.error(
+                  "❌ AppContent: Failed to store user ID:",
+                  result.error
+                );
+              }
+            });
         }
       } catch (error) {
-        console.error("❌ AppContent: Error parsing user data for storage:", error);
+        console.error(
+          "❌ AppContent: Error parsing user data for storage:",
+          error
+        );
       }
 
-      // **REASON: Async start to avoid blocking UI initialization**
-      // **DECISION: Use setTimeout to defer notification setup until after render**
-      setTimeout(() => {
-        osNotificationManager.start().catch(error => {
-          console.error("❌ AppContent: Failed to start OSNotificationManager:", error);
-        });
-      }, 1000); // 1 second delay to ensure app is fully loaded
+      // **ENHANCED: Start with proper loading state management**
+      setTimeout(async () => {
+        try {
+          await osNotificationManager.start();
+          console.log(
+            "✅ AppContent: OSNotificationManager started successfully"
+          );
+
+          //  DELAY BEFORE MARKING AS READY TO ALLOW DATA LOADING
+          setTimeout(() => {
+            setNotificationManagerReady(true);
+            console.log("✅ AppContent: OSNotificationManager fully ready");
+          }, 1500); // 1.5 second delay for data loading
+        } catch (error) {
+          console.error(
+            "❌ AppContent: Failed to start OSNotificationManager:",
+            error
+          );
+          // Still mark as ready to prevent infinite loading
+          setNotificationManagerReady(true);
+        }
+      }, 1000);
+    } else {
+      // User not authenticated, skip notification manager
+      setNotificationManagerReady(true);
     }
 
-    // **REASON: Cleanup function to stop manager when user logs out**
-    // **DECISION: Return cleanup function that runs when dependencies change**
     return () => {
       if (isAuthenticated) {
-        console.log("⏹️ AppContent: Stopping OSNotificationManager due to auth change");
+        console.log(
+          "⏹️ AppContent: Stopping OSNotificationManager due to auth change"
+        );
         osNotificationManager.stop();
+        setNotificationManagerReady(false);
       }
     };
-  }, [authInitialized]); // **REASON: Only depend on authInitialized to avoid unnecessary re-runs**
+  }, [authInitialized]);
 
-  // Ensure we only render content that needs authentication after auth is initialized
-  if (!authInitialized) {
-    return <div className="loading">Initializing...</div>;
+  //  SHOW LOADING SCREEN WHILE NOTIFICATION MANAGER INITIALIZES
+  if (!authInitialized || !notificationManagerReady) {
+    const loadingMessage = !authInitialized
+      ? "Initializing..."
+      : "Starting notification system...";
+
+    return <LoadingScreen message={loadingMessage} />;
   }
 
   function setUser(_user: any): void {
@@ -273,13 +310,13 @@ const App = () => {
       {isAuthenticated ? (
         <ErrorBoundary>
           <ThemeProvider>
-              <DiaryProvider>
-                <DataProvider>
-                  <NotificationsProvider>
-                    <AppContent onAuthChange={setIsAuthenticated} />
-                  </NotificationsProvider>
-                </DataProvider>
-              </DiaryProvider>
+            <DiaryProvider>
+              <DataProvider>
+                <NotificationsProvider>
+                  <AppContent onAuthChange={setIsAuthenticated} />
+                </NotificationsProvider>
+              </DataProvider>
+            </DiaryProvider>
           </ThemeProvider>
         </ErrorBoundary>
       ) : (
