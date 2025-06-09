@@ -37,11 +37,11 @@ const WeekDay = React.memo(
     const { showPopupFor } = useNotifications();
 
     // Performance optimization: limit displayed items to prevent UI overflow
-    const displayTasks = tasks.slice(0, 12);
-    const displayEvents = events.slice(0, 12);
-    const hasMoreTasks = tasks.length > 12;
-    const hasMoreEvents = events.length > 12;
-    const hasOverflow = hasMoreTasks || hasMoreEvents;
+    const displayTasks = tasks;
+    const displayEvents = events;
+    //const hasMoreTasks = tasks.length > 12;
+    //const hasMoreEvents = events.length > 12;
+    //const hasOverflow = hasMoreTasks || hasMoreEvents;
 
     /**
      * Handles task click with popup display
@@ -81,56 +81,60 @@ const WeekDay = React.memo(
         </div>
 
         <div className="week-day-content-compact">
-          {/* Task items with completion and failure state indicators */}
-          {displayTasks.map((task) => (
-            <div
-              key={`task-${task.id}`}
-              className={`week-item-compact task ${
-                task.completed ? "completed" : ""
-              } ${task.failed ? "failed" : ""}`}
-              onClick={(e) => handleTaskClick(e, task)}
-            >
-              {/* Status indicator: cross for failed, checkmark for completed, circle for pending */}
-              <div className="task-status-compact-readonly">
-                {task.failed ? "×" : task.completed ? "✓" : "○"}
-              </div>
-              <div className="item-content-wrapper">
-                <div className="item-title-compact">{task.title}</div>
-                {task.task_time && (
-                  <div className="item-time-compact">{task.task_time}</div>
-                )}
-              </div>
-              {/* Visual type label for quick identification */}
-              <div className="item-type-label task-label">Task</div>
+          {/* TASKS SECTION - Top half with scrolling */}
+          <div className="week-day-section tasks-section">
+            <div className="section-header">
+              <span className="section-title">Tasks ({displayTasks.length})</span>
             </div>
-          ))}
-
-          {/* Event items with type-specific styling */}
-          {displayEvents.map((event) => (
-            <div
-              key={`event-${event.id}`}
-              className={`week-item-compact event ${
-                event.type?.toLowerCase() || ""
-              }`}
-              onClick={(e) => handleEventClick(e, event)}
-            >
-              <div className="item-content-wrapper">
-                <div className="item-title-compact">{event.title}</div>
-                {event.event_time && (
-                  <div className="item-time-compact">{event.event_time}</div>
-                )}
-              </div>
-              {/* Visual type label for quick identification */}
-              <div className="item-type-label event-label">Event</div>
+            <div className="section-content tasks-content">
+              {displayTasks.map((task) => (
+                <div
+                  key={`task-${task.id}`}
+                  className={`week-item-compact task ${
+                    task.completed ? "completed" : ""
+                  } ${task.failed ? "failed" : ""}`}
+                  onClick={(e) => handleTaskClick(e, task)}
+                >
+                  <div className="task-status-compact-readonly">
+                    {task.failed ? "×" : task.completed ? "✓" : "○"}
+                  </div>
+                  <div className="item-content-wrapper">
+                    <div className="item-title-compact">{task.title}</div>
+                    {task.task_time && (
+                      <div className="item-time-compact">{task.task_time}</div>
+                    )}
+                  </div>
+                  <div className="item-type-label task-label">Task</div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
 
-          {/* Overflow indicator with total item count */}
-          {hasOverflow && (
-            <button className="day-view-more-btn" onClick={handleDayViewClick}>
-              View All ({tasks.length + events.length})
-            </button>
-          )}
+          {/* EVENTS SECTION - Bottom half with scrolling */}
+          <div className="week-day-section events-section">
+            <div className="section-header">
+              <span className="section-title">Events ({displayEvents.length})</span>
+            </div>
+            <div className="section-content events-content">
+              {displayEvents.map((event) => (
+                <div
+                  key={`event-${event.id}`}
+                  className={`week-item-compact event ${
+                    event.type?.toLowerCase() || ""
+                  }`}
+                  onClick={(e) => handleEventClick(e, event)}
+                >
+                  <div className="item-content-wrapper">
+                    <div className="item-title-compact">{event.title}</div>
+                    {event.event_time && (
+                      <div className="item-time-compact">{event.event_time}</div>
+                    )}
+                  </div>
+                  <div className="item-type-label event-label">Event</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -335,7 +339,7 @@ const WeekView: React.FC = () => {
                 <h2 className="week-title-compact">Week View</h2>
               </div>
               <div className="week-subtitle-compact">
-                {weekDateRange} • {weekStats.total} items
+                {weekDateRange} • {weekStats.total} items (unlimited)
               </div>
             </div>
             <div className="calendar-buttons-compact">

@@ -707,3 +707,70 @@
 .title-item {
   contain: layout style;
 }
+/* Split content into separate scrollable halves */
+.week-day-content-compact {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.week-day-section {
+  flex: 1; /* Each section takes exactly 50% height */
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(100, 108, 255, 0.1);
+  border-radius: 4px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(100, 108, 255, 0.1);
+}
+
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.section-content {
+  flex: 1; /* Takes remaining space in each section */
+  overflow-y: auto; /* SEPARATE SCROLLBAR for each section */
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0; /* Critical for flex scrolling */
+}
+
+/* Separate scrollbar styling for tasks */
+.tasks-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tasks-content::-webkit-scrollbar-thumb {
+  background: rgba(100, 108, 255, 0.4);
+  border-radius: 2px;
+}
+
+/* Separate scrollbar styling for events */
+.events-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.events-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 107, 0.4);
+  border-radius: 2px;
+}
+
+.tasks-section {
+  border-left: 2px solid rgba(100, 108, 255, 0.3);
+}
+
+.events-section {
+  border-left: 2px solid rgba(255, 107, 107, 0.3);
+}
