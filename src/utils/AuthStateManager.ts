@@ -47,12 +47,25 @@ class AuthStateManager {
     return this._userId;
   }
 
-  public setAuthenticated(isAuth: boolean, userId: string | null = null) {
-    this._authenticated = isAuth;
+  public setAuthenticated(authenticated: boolean, userId: string | null) {
+    this._authenticated = authenticated;
     this._userId = userId;
 
+    // **NEW: Store user ID for background notifications when logging in**
+    if (authenticated && userId && window.electronAPI?.user?.storeActiveUser) {
+      window.electronAPI.user.storeActiveUser(userId).then(result => {
+        if (result.success) {
+          console.log("✅ AuthStateManager: User ID stored for background notifications");
+        } else {
+          console.error("❌ AuthStateManager: Failed to store user ID:", result.error);
+        }
+      }).catch(error => {
+        console.error("❌ AuthStateManager: Error storing user ID:", error);
+      });
+    }
+
     // Notify all listeners
-    this.listeners.forEach((listener) => listener(isAuth, userId));
+    this.listeners.forEach((listener) => listener(authenticated, userId));
   }
 
   public addListener(listener: AuthListener): () => void {
@@ -81,6 +94,13 @@ class AuthStateManager {
     // Clear storage
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+
+    // **NEW: Clear stored user ID on logout**
+    if (window.electronAPI?.user?.storeActiveUser) {
+      window.electronAPI.user.storeActiveUser(null).catch(error => {
+        console.error("❌ AuthStateManager: Error clearing stored user ID:", error);
+      });
+    }
 
     // Update state
     this.setAuthenticated(false, null);

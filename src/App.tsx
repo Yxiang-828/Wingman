@@ -86,6 +86,22 @@ const AppContent = ({
     if (isAuthenticated) {
       console.log("🚀 AppContent: User authenticated, starting OSNotificationManager");
 
+      // **NEW: Store user ID for background notifications**
+      try {
+        const userData = JSON.parse(storedUser);
+        if (userData.id && window.electronAPI?.user?.storeActiveUser) {
+          window.electronAPI.user.storeActiveUser(userData.id).then(result => {
+            if (result.success) {
+              console.log("✅ AppContent: User ID stored for background notifications");
+            } else {
+              console.error("❌ AppContent: Failed to store user ID:", result.error);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("❌ AppContent: Error parsing user data for storage:", error);
+      }
+
       // **REASON: Async start to avoid blocking UI initialization**
       // **DECISION: Use setTimeout to defer notification setup until after render**
       setTimeout(() => {

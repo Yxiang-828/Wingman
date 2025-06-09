@@ -105,6 +105,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     requestPermission: () => ipcRenderer.invoke('notifications:requestPermission'),
     scheduleReminder: (options) => ipcRenderer.invoke('notifications:scheduleReminder', options),
     cancelNotification: (id) => ipcRenderer.invoke('notifications:cancel', id)
+  },
+
+  // ✅ USER MANAGEMENT OPERATIONS
+  user: {
+    storeActiveUser: (userId) => ipcRenderer.invoke('store-active-user', userId)
   }
 });
 

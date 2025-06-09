@@ -739,7 +739,7 @@ async function setupDatabaseIPC() {
           const notification = new Notification({
             title: title,
             body: body,
-            icon: iconPath || path.join(__dirname, '..', 'src', 'assets', 'icons', 'moody.png'),
+            icon: iconPath || getNotificationIcon(),
             silent: false
           });
           
@@ -789,6 +789,47 @@ async function setupDatabaseIPC() {
     console.error('Stack trace:', error.stack);
     throw error;
   }
+}
+
+/**
+ * Get correct icon path for notifications
+ */
+function getNotificationIcon() {
+  const iconPaths = [
+    // Development: Direct source access
+    isDevelopment ? path.join(__dirname, '..', 'src', 'assets', 'icons', 'moody.png') : null,
+    
+    // Production: Find hashed asset in dist
+    !isDevelopment ? (() => {
+      try {
+        const assetsDir = path.join(__dirname, '..', 'dist', 'assets');
+        if (fs.existsSync(assetsDir)) {
+          const files = fs.readdirSync(assetsDir);
+          const moodeyIcon = files.find(file => 
+            file.startsWith('moody.') && file.endsWith('.png')
+          );
+          return moodeyIcon ? path.join(assetsDir, moodeyIcon) : null;
+        }
+      } catch (error) {
+        console.error('Error finding production icon:', error);
+      }
+      return null;
+    })() : null,
+    
+    // Additional fallback paths
+    path.join(__dirname, '..', 'public', 'moody.png'),
+    
+  ].filter(Boolean);
+
+  for (const iconPath of iconPaths) {
+    if (fs.existsSync(iconPath)) {
+      console.log('🎯 Found notification icon at:', iconPath);
+      return iconPath;
+    }
+  }
+
+  console.log('⚠️ No notification icon found, using system default');
+  return undefined;
 }
 
 // Application lifecycle management
@@ -849,8 +890,19 @@ app.on('window-all-closed', () => {
   if (backendProcess) {
     backendProcess.kill();
   }
+  
+  // ============================================================================
+  // BACKGROUND NOTIFICATION LOGIC - KEEP APP RUNNING WHEN WINDOW CLOSED
+  // ============================================================================
   if (process.platform !== 'darwin') {
-    app.quit();
+    console.log('🔔 App window closed, keeping background notification service running');
+    
+    // Start background notification service when window is closed
+    console.log('🔔 Starting background notification service...');
+    backgroundNotificationService.start();
+    
+    // Don't call app.quit() - let the app run in background for notifications
+    // The app will continue running and checking for overdue tasks
   }
 });
 
@@ -973,10 +1025,63 @@ function showPythonInstallDialog() {
 
 
 
+// ============================================================================
+// BACKGROUND NOTIFICATION SERVICE CLASS
+// ============================================================================
 class BackgroundNotificationService {
   constructor() {
     this.checkInterval = null;
     this.lastActiveUser = null;
+    
+    // Load stored user ID on startup
+    this.loadStoredUser();
+  }
+
+  /**
+   * Load the last active user from storage
+   */
+  loadStoredUser() {
+    try {
+      const userDataPath = app.getPath('userData');
+      const userFilePath = path.join(userDataPath, 'wingman-data', 'last-active-user.json');
+      
+      if (fs.existsSync(userFilePath)) {
+        const userData = JSON.parse(fs.readFileSync(userFilePath, 'utf8'));
+        this.lastActiveUser = userData.userId;
+        console.log('🔔 BackgroundNotificationService: Loaded stored user ID:', this.lastActiveUser);
+      }
+    } catch (error) {
+      console.error('🔔 BackgroundNotificationService: Error loading stored user:', error);
+    }
+  }
+
+  /**
+   * Store the active user ID persistently
+   */
+  setLastActiveUser(userId) {
+    this.lastActiveUser = userId;
+    
+    try {
+      const userDataPath = app.getPath('userData');
+      const dataDir = path.join(userDataPath, 'wingman-data');
+      
+      // Ensure directory exists
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      
+      const userFilePath = path.join(dataDir, 'last-active-user.json');
+      const userData = {
+        userId: userId,
+        timestamp: new Date().toISOString(),
+        version: '1.0'
+      };
+      
+      fs.writeFileSync(userFilePath, JSON.stringify(userData, null, 2));
+      console.log('🔔 BackgroundNotificationService: Stored user ID:', userId);
+    } catch (error) {
+      console.error('🔔 BackgroundNotificationService: Error storing user ID:', error);
+    }
   }
 
   start() {
@@ -994,49 +1099,80 @@ class BackgroundNotificationService {
   async checkForNotifications() {
     try {
       const userId = this.getLastActiveUser();
-      if (!userId) return;
+      if (!userId) {
+        console.log('🔔 BackgroundNotificationService: No active user stored, skipping check');
+        return;
+      }
 
       const today = new Date().toISOString().split('T')[0];
       const currentTime = new Date().toTimeString().split(' ')[0].slice(0, 5);
 
+      console.log(`🔔 BackgroundNotificationService: Checking notifications for user ${userId} at ${currentTime}`);
+
       // Query database directly from main process
       const tasks = dataManager.getTasks(userId, today);
       
+      // Check for overdue tasks that haven't been marked as failed yet
       const overdueTasks = tasks.filter(task => 
         !task.completed && !task.failed && 
-        task.task_time && task.task_time < currentTime
+        task.task_time && task.task_time !== 'All day' && task.task_time < currentTime
       );
 
-      for (const task of overdueTasks) {
-        await dataManager.updateTask(task.id, { failed: true });
+      if (overdueTasks.length > 0) {
+        console.log(`🔔 BackgroundNotificationService: Found ${overdueTasks.length} overdue tasks`);
         
-        if (Notification.isSupported()) {
-          const notification = new Notification({
-            title: '❌ Task Failed',
-            body: `"${task.title}" was due at ${task.task_time}`,
-            icon: path.join(__dirname, '..', 'src', 'assets', 'icons', 'moody.png')
-          });
-          notification.show();
+        // Mark tasks as failed and send notifications
+        for (const task of overdueTasks) {
+          try {
+            // Mark as failed in database
+            dataManager.updateTask(task.id, { failed: true });
+            
+            // Send OS notification
+            if (Notification.isSupported()) {
+              const notification = new Notification({
+                title: '❌ Task Failed',
+                body: `"${task.title}" was due at ${task.task_time} and has been marked as failed.`,
+                icon: getNotificationIcon(),
+                silent: false
+              });
+              
+              notification.show();
+              
+              // Handle notification click to reopen app
+              notification.on('click', () => {
+                const existingWindow = BrowserWindow.getAllWindows()[0];
+                if (existingWindow) {
+                  existingWindow.show();
+                  existingWindow.focus();
+                } else {
+                  createWindow();
+                }
+              });
+              
+              console.log(`🔔 BackgroundNotificationService: Sent failure notification for task "${task.title}"`);
+            }
+          } catch (error) {
+            console.error(`🔔 BackgroundNotificationService: Error processing task ${task.id}:`, error);
+          }
         }
+      } else {
+        console.log('🔔 BackgroundNotificationService: No overdue tasks found');
       }
+
     } catch (error) {
-      console.error('Background notification check failed:', error);
+      console.error('🔔 BackgroundNotificationService: Error during notification check:', error);
     }
   }
 
   getLastActiveUser() {
-    // Store this when user logs in
     return this.lastActiveUser;
-  }
-
-  setLastActiveUser(userId) {
-    this.lastActiveUser = userId;
   }
 
   stop() {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
+      console.log('🔔 BackgroundNotificationService: Stopped');
     }
   }
 }
@@ -1057,13 +1193,18 @@ app.on('window-all-closed', () => {
     backendProcess.kill();
   }
   
-  // CHANGE: Don't quit immediately - start background service
+  // ============================================================================
+  // BACKGROUND NOTIFICATION LOGIC - KEEP APP RUNNING WHEN WINDOW CLOSED
+  // ============================================================================
   if (process.platform !== 'darwin') {
-    console.log('🔔 App closed, starting background notification service');
+    console.log('🔔 App window closed, keeping background notification service running');
+    
+    // Start background notification service when window is closed
+    console.log('🔔 Starting background notification service...');
     backgroundNotificationService.start();
     
-    // Optional: Create system tray icon to allow reopening
-    // createSystemTray();
+    // Don't call app.quit() - let the app run in background for notifications
+    // The app will continue running and checking for overdue tasks
   }
 });
 
@@ -1071,4 +1212,16 @@ app.on('window-all-closed', () => {
 app.whenReady().then(async () => {
   // ... existing code ...
   backgroundNotificationService.start();
+});
+
+// Add IPC handler to store active user when they log in
+ipcMain.handle('store-active-user', async (event, userId) => {
+  try {
+    backgroundNotificationService.setLastActiveUser(userId);
+    console.log('🔔 Main: Stored active user ID for background notifications:', userId);
+    return { success: true };
+  } catch (error) {
+    console.error('🔔 Main: Error storing active user ID:', error);
+    return { success: false, error: error.message };
+  }
 });

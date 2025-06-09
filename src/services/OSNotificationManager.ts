@@ -383,6 +383,17 @@ class OSNotificationManager {
     window.addEventListener('event-updated', this.handleEventUpdate.bind(this));
     window.addEventListener('event-created', this.handleEventCreated.bind(this));
     window.addEventListener('event-deleted', this.handleEventDeleted.bind(this));
+
+    // Listen for retry mission refresh**
+    window.addEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this));
+  }
+
+  /**
+   * Handle retry mission refresh events
+   */
+  private handleRetryRefresh(): void {
+    this.log('🔄 Retry mission detected, refreshing active items');
+    this.forceRefresh();
   }
 
   /**
@@ -396,6 +407,9 @@ class OSNotificationManager {
     window.removeEventListener('event-updated', this.handleEventUpdate.bind(this));
     window.removeEventListener('event-created', this.handleEventCreated.bind(this));
     window.removeEventListener('event-deleted', this.handleEventDeleted.bind(this));
+    
+    // **NEW: Remove retry listener**
+    window.removeEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this));
   }
 
   /**
@@ -405,13 +419,19 @@ class OSNotificationManager {
     const task = event.detail;
     const itemId = `task-${task.id}`;
 
+    // **FIX: Handle retry scenario properly**
     if (task.completed || task.failed) {
+      // Task completed or failed - remove from monitoring
       this.activeItems.delete(itemId);
       if (task.completed) {
         this.handleTaskCompletion(task.id, task.title);
       }
-    } else if (task.task_time) {
-      this.activeItems.set(itemId, {
+      this.log(`➖ Removed task from monitoring (completed/failed): ${task.title}`);
+    } else if (task.task_time && task.task_time !== 'All day') {
+      // **NEW: Task has been updated/retried - refresh monitoring**
+      const existingItem = this.activeItems.get(itemId);
+      
+      const updatedItem: NotificationItem = {
         id: itemId,
         type: 'task',
         title: task.title,
@@ -419,8 +439,24 @@ class OSNotificationManager {
         date: task.task_date,
         userId: task.user_id,
         completed: task.completed,
-        failed: task.failed
-      });
+        failed: task.failed,
+        // **RESET NOTIFICATION FLAGS FOR RETRIED TASKS**
+        notified30min: false,
+        notified15min: false,
+        notifiedOverdue: false
+      };
+
+      this.activeItems.set(itemId, updatedItem);
+      
+      if (existingItem) {
+        this.log(`🔄 Updated task monitoring: ${task.title} (new time: ${task.task_time})`);
+      } else {
+        this.log(`➕ Added updated task to monitoring: ${task.title}`);
+      }
+    } else {
+      // **Task has no time or is all-day - remove from time-based monitoring**
+      this.activeItems.delete(itemId);
+      this.log(`➖ Removed task from monitoring (no time): ${task.title}`);
     }
   }
 
