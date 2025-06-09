@@ -23,6 +23,7 @@ import ChatBot from "./components/ChatBot/index";
 import Home from "./Pages/Home";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Auth } from "./utils/AuthStateManager";
+import { osNotificationManager } from "./services/OSNotificationManager";
 import "./main.css";
 import "./styles/scrollbars.css";
 
@@ -72,6 +73,37 @@ const AppContent = ({
       );
     };
   }, []);
+
+  // **NEW: OSNotificationManager Integration**
+  // **REASON: Need to start/stop notification manager based on authentication state**
+  // **DECISION: Placed after auth initialization to ensure user state is ready**
+  useEffect(() => {
+    // **REASON: Only start notifications when user is authenticated**
+    // **DECISION: Check both authInitialized and stored user to ensure proper state**
+    const storedUser = localStorage.getItem("user");
+    const isAuthenticated = authInitialized && !!storedUser;
+
+    if (isAuthenticated) {
+      console.log("🚀 AppContent: User authenticated, starting OSNotificationManager");
+
+      // **REASON: Async start to avoid blocking UI initialization**
+      // **DECISION: Use setTimeout to defer notification setup until after render**
+      setTimeout(() => {
+        osNotificationManager.start().catch(error => {
+          console.error("❌ AppContent: Failed to start OSNotificationManager:", error);
+        });
+      }, 1000); // 1 second delay to ensure app is fully loaded
+    }
+
+    // **REASON: Cleanup function to stop manager when user logs out**
+    // **DECISION: Return cleanup function that runs when dependencies change**
+    return () => {
+      if (isAuthenticated) {
+        console.log("⏹️ AppContent: Stopping OSNotificationManager due to auth change");
+        osNotificationManager.stop();
+      }
+    };
+  }, [authInitialized]); // **REASON: Only depend on authInitialized to avoid unnecessary re-runs**
 
   // Ensure we only render content that needs authentication after auth is initialized
   if (!authInitialized) {

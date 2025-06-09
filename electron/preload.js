@@ -97,6 +97,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ✅ ADD: GPU information
   gpu: {
     getInfo: () => ipcRenderer.invoke('get-gpu-info'),
+  },
+
+  // ✅ NOTIFICATION OPERATIONS
+  notifications: {
+    showImmediate: (options) => ipcRenderer.invoke('notifications:showImmediate', options),
+    requestPermission: () => ipcRenderer.invoke('notifications:requestPermission'),
+    scheduleReminder: (options) => ipcRenderer.invoke('notifications:scheduleReminder', options),
+    cancelNotification: (id) => ipcRenderer.invoke('notifications:cancel', id)
   }
 });
 

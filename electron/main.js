@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, globalShortcut, dialog } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, globalShortcut, dialog, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn, exec } = require('child_process');
@@ -696,7 +696,7 @@ async function setupDatabaseIPC() {
       }
     });
 
-    // ENHANCED: Chat session handlers
+    // Chat session handlers
     ipcMain.handle('db:createChatSession', async (event, userId, title) => {
       try {
         const result = dataManager.createChatSession(userId, title);
@@ -728,6 +728,43 @@ async function setupDatabaseIPC() {
         console.error('Error getting session messages:', error);
         throw new Error(`Failed to get session messages: ${error.message}`);
       }
+    });
+
+    // NOTIFICATIONS HANDLERS
+    ipcMain.handle('notifications:showImmediate', async (event, options) => {
+      try {
+        const { title, body, type, iconPath } = options;
+        
+        if (Notification.isSupported()) {
+          const notification = new Notification({
+            title: title,
+            body: body,
+            icon: iconPath || path.join(__dirname, '..', 'src', 'assets', 'icons', 'moody.png'),
+            silent: false
+          });
+          
+          notification.show();
+          
+          notification.on('click', () => {
+            const win = BrowserWindow.getAllWindows()[0];
+            if (win) {
+              if (win.isMinimized()) win.restore();
+              win.focus();
+            }
+          });
+          
+          return { success: true };
+        }
+        
+        return { success: false, error: 'Notifications not supported' };
+      } catch (error) {
+        console.error('Error showing notification:', error);
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle('notifications:requestPermission', async () => {
+      return { permission: 'granted' }; // Electron has built-in permission
     });
 
     // VERIFY ALL HANDLERS ARE REGISTERED
@@ -933,3 +970,105 @@ function showPythonInstallDialog() {
   pythonDialog.loadFile(path.join(__dirname, 'python-install.html'));
   pythonDialog.setMenu(null);
 }
+
+
+
+class BackgroundNotificationService {
+  constructor() {
+    this.checkInterval = null;
+    this.lastActiveUser = null;
+  }
+
+  start() {
+    console.log('🔔 Starting background notification service');
+    
+    // Check every minute for overdue tasks
+    this.checkInterval = setInterval(async () => {
+      await this.checkForNotifications();
+    }, 60000);
+    
+    // Also check immediately
+    this.checkForNotifications();
+  }
+
+  async checkForNotifications() {
+    try {
+      const userId = this.getLastActiveUser();
+      if (!userId) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      const currentTime = new Date().toTimeString().split(' ')[0].slice(0, 5);
+
+      // Query database directly from main process
+      const tasks = dataManager.getTasks(userId, today);
+      
+      const overdueTasks = tasks.filter(task => 
+        !task.completed && !task.failed && 
+        task.task_time && task.task_time < currentTime
+      );
+
+      for (const task of overdueTasks) {
+        await dataManager.updateTask(task.id, { failed: true });
+        
+        if (Notification.isSupported()) {
+          const notification = new Notification({
+            title: '❌ Task Failed',
+            body: `"${task.title}" was due at ${task.task_time}`,
+            icon: path.join(__dirname, '..', 'src', 'assets', 'icons', 'moody.png')
+          });
+          notification.show();
+        }
+      }
+    } catch (error) {
+      console.error('Background notification check failed:', error);
+    }
+  }
+
+  getLastActiveUser() {
+    // Store this when user logs in
+    return this.lastActiveUser;
+  }
+
+  setLastActiveUser(userId) {
+    this.lastActiveUser = userId;
+  }
+
+  stop() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+  }
+}
+
+// Initialize background service
+const backgroundNotificationService = new BackgroundNotificationService();
+
+// Modify the window-all-closed handler:
+app.on('window-all-closed', () => {
+  // Close database connection properly
+  if (dataManager) {
+    dataManager.close();
+    dataManager = null;
+  }
+  
+  // Terminate backend process
+  if (backendProcess) {
+    backendProcess.kill();
+  }
+  
+  // CHANGE: Don't quit immediately - start background service
+  if (process.platform !== 'darwin') {
+    console.log('🔔 App closed, starting background notification service');
+    backgroundNotificationService.start();
+    
+    // Optional: Create system tray icon to allow reopening
+    // createSystemTray();
+  }
+});
+
+// Start background service when app starts
+app.whenReady().then(async () => {
+  // ... existing code ...
+  backgroundNotificationService.start();
+});

@@ -107,6 +107,11 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         // Update in database
         await window.electronAPI.db.updateTask(task.id, { completed: true });
 
+        // Dispatch completion event for OSNotificationManager
+        window.dispatchEvent(new CustomEvent('task-completed', {
+          detail: { taskId: task.id, title: task.title }
+        }));
+
         // Clear processing state and trigger dashboard refresh
         setLocalTasks((prevTasks) =>
           prevTasks.map((t) =>

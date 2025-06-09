@@ -24,12 +24,13 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   ├── tsundere-theme.png
 │   │   ├── tsundere1.png
 │   │   └── yandere-theme.png
-│   ├── moody.icns
-│   ├── moody.ico
-│   ├── moody.png
-│   ├── productive.icns
-│   ├── productive.ico
-│   ├── productive.png
+│   ├── icons/
+│   │   ├── moody.icns
+│   │   ├── moody.ico
+│   │   ├── moody.png
+│   │   ├── productive.icns
+│   │   ├── productive.ico
+│   │   └── productive.png
 │   └── react.svg
 ├── components/
 │   ├── Calendar/
@@ -59,8 +60,6 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   ├── FontSizeInitializer.tsx
 │   │   ├── LoadingScreen.css
 │   │   ├── LoadingScreen.tsx
-│   │   ├── MedievalModal.css
-│   │   ├── MedievalModal.tsx
 │   │   ├── Modal.css
 │   │   ├── Modal.tsx
 │   │   ├── Portal.tsx
@@ -80,7 +79,6 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   ├── EventsCard.css
 │   │   ├── EventsCard.tsx
 │   │   ├── index.tsx
-│   │   ├── MoodGraph.tsx
 │   │   ├── SummaryCard.css
 │   │   ├── SummaryCard.tsx
 │   │   ├── TasksCard.css
@@ -101,10 +99,10 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   │   └── VoiceEntry.tsx
 │   ├── Header/
 │   │   ├── Header.css
-│   │   ├── index.tsx
-│   │   ├── Notifications.tsx
-│   │   └── SearchBar.tsx
+│   │   └── index.tsx
 │   ├── Profile/
+│   │   ├── DownloadPopup.css
+│   │   ├── DownloadPopup.tsx
 │   │   ├── index.tsx
 │   │   ├── login.css
 │   │   ├── login.tsx
@@ -166,6 +164,7 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   ├── NavigationService.ts
 │   ├── NotificationCleanupService.ts
 │   ├── NotificationService.ts
+│   ├── SystemNotificationService.ts
 │   └── TaskFailureManager.ts
 ├── storage/
 │   └── schema.sql
@@ -176,6 +175,7 @@ Folder map of c:\Users\xiang\checker\Wingman\src
 │   ├── chat.d.ts
 │   ├── database.ts
 │   ├── diary.d.ts
+│   ├── electron.d.ts
 │   ├── global.d.ts
 │   ├── index.d.ts
 │   ├── react-calendar.d.ts
