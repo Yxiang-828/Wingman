@@ -24,24 +24,36 @@
   background: transparent;
 }
 
-/* ✅ SLOWER SCROLLING: Make all scrolling slower and smoother */
-* {
+/*  SLOWER SCROLLING: Make all scrolling slower and smoother */
+*,
+*::before,
+*::after {
   scroll-behavior: smooth !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 108, 255, 0.4) rgba(30, 30, 50, 0.2);
 }
 
 html {
   overflow-y: scroll;
   scrollbar-gutter: stable;
   scroll-behavior: smooth !important;
-  /* ✅ SLOWER: Reduce scroll sensitivity */
+  /* ✅ SMOOTHER: Enhanced scroll sensitivity control */
   scroll-padding: 20px;
+  scroll-snap-type: none; /* Disable snap for smoother experience */
 }
 
 body {
   scroll-behavior: smooth !important;
+  overflow-x: hidden; /* Prevent horizontal scroll issues */
 }
 
-/* ✅ SLOWER: Force smooth scrolling on all scrollable containers */
+/*  FORCE SMOOTH: Override any component-specific scroll behaviors */
+html, body, div, main, section, article, aside, nav, header, footer,
+.sidebar, .main-content, .main-content-wrapper, .app-container, #root {
+  scroll-behavior: smooth !important;
+}
+
+/*  SLOWER: Force smooth scrolling on all scrollable containers */
 .day-view-content,
 .dashboard-list,
 .virtualized-scroll-container,
@@ -53,10 +65,37 @@ body {
 .diary-entries-container,
 .chat-messages,
 .detail-popup,
-.sidebar-content {
+.sidebar-content,
+.calendar-container,
+.dashboard-container,
+.profile-container,
+.settings-container,
+.modal-content,
+.popup-content,
+.dropdown-menu,
+.select-options,
+.autocomplete-list,
+.search-results,
+.notification-panel,
+.context-menu,
+.tooltip-container,
+.tabs-content,
+.accordion-content,
+.carousel-container,
+.grid-container,
+.list-container,
+.table-container,
+.form-container,
+.input-container,
+.textarea-container {
   scroll-behavior: smooth !important;
-  /* ✅ SLOWER: Reduce scroll jump distance */
+  /* ENHANCED: Better scroll control */
   overscroll-behavior: contain;
+  scroll-padding: 10px;
+  /* PERFORMANCE: Optimize for smooth scrolling */
+  will-change: scroll-position;
+  transform: translateZ(0); /* Force hardware acceleration */
+  backface-visibility: hidden;
 }
 
 /* Component-specific scrollbar styling */
@@ -152,23 +191,23 @@ body {
   background: rgba(100, 108, 255, 0.3);
 }
 
-/* ✅ SLOWER: Enhanced smooth transitions for slower feel */
+/* SLOWER: Enhanced smooth transitions for slower feel */
 .week-day, .month-day, .day-view-container, .calendar-container {
   transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out; /* ✅ SLOWER: doubled transition time */
 }
 
-/* ✅ SLOWER: Optimize for smoother scrolling */
+/*  SLOWER: Optimize for smoother scrolling */
 .week-days-grid, .month-days-grid, .day-view-content {
   transform: translateZ(0);
   backface-visibility: hidden;
-  will-change: scroll-position; /* ✅ OPTIMIZED: for scroll performance */
+  will-change: scroll-position; 
 }
 
-/* ✅ SLOWER: Dashboard cards with slower transitions */
+/*  SLOWER: Dashboard cards with slower transitions */
 .dashboard-card, .task-item, .event-item {
   contain: content;
   will-change: transform;
-  transition: transform 0.5s ease-out, box-shadow 0.5s ease-out; /* ✅ SLOWER: increased duration */
+  transition: transform 0.5s ease-out, box-shadow 0.5s ease-out; 
 }
 
 /* Animation content containment for performance */
@@ -177,17 +216,86 @@ body {
   contain: strict;
 }
 
-/* ✅ SLOWER: Force Firefox to scroll slower too */
+
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(100, 108, 255, 0.4) rgba(30, 30, 50, 0.2);
 }
 
-/* ✅ SLOWER: Additional scroll behavior controls */
+
 .dashboard-container,
 .calendar-container,
 .main-content,
 .app-container {
   scroll-behavior: smooth !important;
   overscroll-behavior: contain;
+}
+
+
+/* ✅ MOUSE WHEEL SMOOTHING: Enhanced wheel scroll behavior */
+* {
+  /* Smooth out mouse wheel scrolling */
+  scroll-timeline: none;
+}
+
+/* ✅ WEBKIT SPECIFIC: Enhanced smooth scrolling for WebKit browsers */
+@supports (-webkit-overflow-scrolling: touch) {
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth !important;
+  }
+}
+
+/* ✅ FIREFOX SPECIFIC: Enhanced smooth scrolling for Firefox */
+@-moz-document url-prefix() {
+  * {
+    scroll-behavior: smooth !important;
+  }
+  
+  html {
+    scroll-behavior: smooth !important;
+  }
+}
+
+/* ACCESSIBILITY: Respect user's motion preferences while keeping smooth scroll */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* PERFORMANCE: CSS containment for better scroll performance */
+.scrollable-content {
+  contain: layout style paint;
+  will-change: scroll-position;
+}
+
+/* ELECTRON SPECIFIC: Enhanced scrolling for Electron apps */
+body.electron {
+  scroll-behavior: smooth !important;
+  overflow-x: hidden;
+}
+
+/* SMOOTH FOCUS: Smooth scrolling when focusing elements */
+:focus {
+  scroll-margin: 20px;
+  scroll-behavior: smooth !important;
+}
+
+/* ANCHOR LINKS: Smooth scrolling for anchor navigation */
+:target {
+  scroll-margin-top: 20px;
+  scroll-behavior: smooth !important;
+}
+
+/* INPUT FOCUS: Smooth scroll when inputs come into view */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  scroll-margin: 20px;
+  scroll-behavior: smooth !important;
 }

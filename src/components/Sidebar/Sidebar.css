@@ -11,19 +11,13 @@
   backdrop-filter: blur(12px);
   border-right: 1px solid rgba(100, 108, 255, 0.2);
   z-index: 100;
-  transition: left 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smooth expansion */
+  transition: left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);; /* Smooth expansion */
   padding: 1rem;
   overflow: hidden; /* No scrollbar when hidden */
   box-shadow: none;
 }
 
-/* Expanded state on hover - temporary preview */
-.sidebar.hover-expanded {
-  left: 0;
-  overflow-y: auto;
-  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(100, 108, 255, 0.15);
-  background: linear-gradient(145deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.98) 100%);
-}
+
 
 /* Pinned state - stays open when clicked */
 .sidebar.visible {
@@ -35,7 +29,7 @@
 
 /* Main content adaptation for sidebar visibility */
 .main-content-wrapper {
-  transition: margin-left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition: margin-left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
   width: 100%;
 }
 
@@ -64,6 +58,7 @@
     box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
     animation: float-vertical 8s ease-in-out infinite alternate;
     will-change: top;
+    transition: left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 /* Majestic floating animation for the toggle button */
 @keyframes float-vertical {
@@ -86,13 +81,14 @@
 
 /* Toggle button when sidebar is open */
 .sidebar-toggle.open {
-  left: 280px;
+  left: 260px;
   animation: float-vertical 8s ease-in-out infinite alternate;
+  transition: left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* Hover enhancement for toggle button */
 .sidebar-toggle:hover {
-  transform: translateY(-50%) scale(1.1);
+  transform: translateY(-50%) scale(1.05);
 }
 
 /* Avatar container within toggle button */
@@ -194,25 +190,13 @@
   transform: scale(1.1);
 }
 
-/* Notification and activity badges */
-.sidebar-badge {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.2rem 0.4rem;
-  border-radius: 10px;
-  margin-left: 0.5rem;
-  min-width: 16px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
-}
+
 
 /* Submenu container with smooth expansion */
 .sidebar-submenu {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  transition: max-height 0.5s ease, padding 0.5s ease;
   margin-left: 1.5rem;
   border-left: 2px solid rgba(100, 108, 255, 0.2);
   padding-left: 0.5rem;
@@ -244,7 +228,7 @@
 /* Submenu expansion indicator */
 .submenu-arrow {
   font-size: 0.7rem;
-  transition: transform 0.3s ease;
+  transition: transform 0.8s ease;
   color: var(--color-text-muted, #8888aa);
   margin-left: 0.5rem;
 }
@@ -422,4 +406,39 @@
 /* Performance optimization */
 .streak {
   will-change: transform, opacity;
+}
+
+/* Global layout adaptation for push-based sidebar */
+body.sidebar-visible {
+  margin-left: 260px;
+ 
+}
+
+body {
+  transition: margin-left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Preserve background images during sidebar expansion */
+body.sidebar-visible::before,
+body.sidebar-visible .background-container {
+  transform: translateX(0);
+  width: 100vw;
+}
+
+/* Responsive adaptation for smaller screens */
+@media (max-width: 1200px) {
+  body.sidebar-visible {
+    margin-left: 0;
+  }
+  
+  body.sidebar-visible .main-content,
+  body.sidebar-visible .app-container,
+  body.sidebar-visible #root {
+    margin-left: 0;
+  }
+  
+  /* On smaller screens, use overlay mode */
+  .sidebar.visible {
+    z-index: 1000;
+  }
 }

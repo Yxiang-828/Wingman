@@ -363,6 +363,18 @@ async function setupDatabaseIPC() {
     
     // Set up all IPC handlers for database operations
     // Task management handlers
+    ipcMain.handle('db:getStorageStats', async (event, userId) => {
+      try {
+        console.log('Getting storage stats for user:', userId);
+        const stats = dataManager.getStorageStats(userId);
+        console.log('Storage stats result:', stats);
+        return stats;
+      } catch (error) {
+        console.error('Error getting storage stats:', error);
+        throw error;
+      }
+    });
+
     ipcMain.handle('db:getTasks', async (event, userId, date) => {
       try {
         console.log(`Getting tasks for user ${userId}${date ? ` on ${date}` : ''}`);
