@@ -1044,22 +1044,25 @@ python-jose[cryptography]==3.3.0 # For JWT handling
 ### **10.1 Development Mode Architecture**
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    DEVELOPMENT ENVIRONMENT                      │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
-│  │   VITE DEV      │  │   ELECTRON      │  │  FASTAPI DEV    │  │
-│  │   SERVER        │  │   MAIN PROCESS  │  │   SERVER (Uvicorn)│  │
-│  │   (localhost:5173)│  │   (main.js)     │  │ (localhost:8080)│  │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
-│           ▲ Loads URL           │ Spawns & Manages │                     │
-│           │                     ▼                     │                     │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
-│  │ BROWSER WINDOW  │  │   SQLITE DB     │  │ PYTHON VENV     │  │
-│  │ (Renderer Proc) │  │ (User Data Dir) │  │ (Activated)     │  │
-│  │ DevTools Enabled│  └─────────────────┘  └─────────────────┘  │
-│  └─────────────────┘                                            │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------+
+|                       DEVELOPMENT ENVIRONMENT                         |
++-----------------------------------------------------------------------+
+|                                                                       |
+|  +----------------+   +----------------+   +------------------+       |
+|  |   VITE DEV     |   |   ELECTRON     |   |   FASTAPI DEV    |       |
+|  |   SERVER       |   |  MAIN PROCESS  |   |   SERVER (Uvicorn)|      |
+|  | (localhost:5173)|   |  (main.js)    |   | (localhost:8080)  |      |
+|  +----------------+   +----------------+   +------------------+       |
+|          ^                    |                     |                 |
+|          | Loads URL          | Spawns & Manages    |                 |
+|          |                    v                     |                 |
+|  +----------------+   +----------------+   +------------------+       |
+|  | BROWSER WINDOW |   |   SQLITE DB    |   |  PYTHON VENV     |       |
+|  | (Renderer Proc)|   | (User Data Dir)|   |  (Activated)     |       |
+|  |DevTools Enabled|   +----------------+   +------------------+       |
+|  +----------------+                                                   |
+|                                                                       |
++-----------------------------------------------------------------------+
 ```
 
 ```
@@ -1099,24 +1102,29 @@ python-jose[cryptography]==3.3.0 # For JWT handling
 ### **10.2 Production Mode Architecture**
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PRODUCTION PACKAGE (e.g., .exe, .dmg)        │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
-│  │   BUILT REACT   │  │   ELECTRON      │  │  BUNDLED PYTHON │  │
-│  │   APP (Static   │  │   MAIN PROCESS  │  │  BACKEND (frozen)│  │
-│  │   files: HTML,  │  │   (main.js)     │  │  (e.g., PyInstaller│
-│  │   JS, CSS)      │  │                 │  │   or similar)   │  │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
-│           │ Loads file://         │ Spawns & Manages │                     │
-│           ▼                     ▼                     │                     │
-│  ┌─────────────────┐  ┌─────────────────┐             │                     │
-│  │ BROWSER WINDOW  │  │   SQLITE DB     │             │                     │
-│  │ (Renderer Proc) │  │ (User Data Dir) │             │                     │
-│  │ DevTools Disabled│  └─────────────────┘             │                     │
-│  └─────────────────┘                                  │                     │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------+
+|                   PRODUCTION PACKAGE (e.g., .exe, .dmg)                |
++-----------------------------------------------------------------------+
+|                                                                       |
+|  +----------------+   +----------------+   +------------------+       |
+|  |  BUILT REACT   |   |   ELECTRON     |   | BUNDLED PYTHON   |       |
+|  |  APP (Static   |   |  MAIN PROCESS  |   | BACKEND (frozen) |       |
+|  |  files: HTML,  |   |  (main.js)     |   | (e.g. PyInstaller|       |
+|  |  JS, CSS)      |   |                |   |  or similar)     |       |
+|  +----------------+   +----------------+   +------------------+       |
+|          |                    |                     |                 |
+|          | Loads file://      | Spawns & Manages    |                 |
+|          v                    v                     |                 |
+|  +----------------+   +----------------+            |                 |
+|  | BROWSER WINDOW |   |   SQLITE DB    |            |                 |
+|  | (Renderer Proc)|   | (User Data Dir)|            |                 |
+|  |DevTools Disabled|  +----------------+            |                 |
+|  +----------------+                                 |                 |
+|                                                                       |
++-----------------------------------------------------------------------+
 ```
+
+For clarity, this diagram illustrates the production deployment architecture where:
 
 ```
 
@@ -1299,3 +1307,4 @@ app.on("window-all-closed", async () => {
   }
 });
 ```
+
