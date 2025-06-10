@@ -1,4 +1,4 @@
-# 🚁 Wingman - Personal Assistant Dashboard
+# 🚁 Wingman - Personal Assistant 
 
 > A modern personal assistant desktop application that combines task management, calendar events, diary entries, and an AI chatbot in one unified interface.
 
