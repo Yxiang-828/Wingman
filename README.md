@@ -1113,13 +1113,16 @@ python-jose[cryptography]==3.3.0 # For JWT handling
 |  |  JS, CSS)      |   |                |   |  or similar)     |       |
 |  +----------------+   +----------------+   +------------------+       |
 |          |                    |                     |                 |
-|          | Loads file://      | Spawns & Manages    |                 |
-|          v                    v                     |                 |
-|  +----------------+   +----------------+            |                 |
-|  | BROWSER WINDOW |   |   SQLITE DB    |            |                 |
-|  | (Renderer Proc)|   | (User Data Dir)|            |                 |
-|  |DevTools Disabled|  +----------------+            |                 |
-|  +----------------+                                 |                 |
+|          | Loads file://      | Spawns & Manages    | HTTP API        |
+|          v                    v                     v                 |
+|  +----------------+   +----------------+   +------------------+       |
+|  | BROWSER WINDOW |   |   SQLITE DB    |   | LOCAL HTTP SERVER|       |
+|  | (Renderer Proc)|   | (User Data Dir)|   | (localhost:8080) |       |
+|  |DevTools Disabled|  +----------------+   +------------------+       |
+|  +----------------+          ^                     ^                 |
+|          |                    |                     |                 |
+|          +--------------------+---------------------+                 |
+|                      Data & API Requests                             |
 |                                                                       |
 +-----------------------------------------------------------------------+
 ```
