@@ -51,7 +51,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
         <div className="mission-category-header">
           <span className="category-icon">{icon}</span>
           <h3 className="category-title">{title}</h3>
-          <span className="category-count">0</span>
+          <span className="category-count">{items?.length || 0}</span>
         </div>
         <div className="mission-category-empty">
           <p>{emptyMessage}</p>
@@ -338,7 +338,15 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
         intervalRef.current = null;
       }
     };
-  }, [targetDateTime, type, isCompleted, isFailed, isTracking, onTaskFail, onEventReminder]);
+  }, [
+    targetDateTime,
+    type,
+    isCompleted,
+    isFailed,
+    isTracking,
+    onTaskFail,
+    onEventReminder,
+  ]);
 
   // Mission status displays
   if (isCompleted) {
@@ -560,7 +568,11 @@ const Notifications: React.FC = () => {
       setTodaysEvents(eventsData || []);
 
       console.log(
-        `Mission Control: ${pending.length} active, ${completed.length} completed, ${failed.length} failed missions, ${eventsData?.length || 0} events loaded`
+        `Mission Control: ${pending.length} active, ${
+          completed.length
+        } completed, ${failed.length} failed missions, ${
+          eventsData?.length || 0
+        } events loaded`
       );
     } catch (error) {
       console.error("Mission Control: Error loading data:", error);

@@ -275,10 +275,16 @@ class LocalDataManager {
         
         if (updatedCount > 0) {
           console.log(`Auto-marked ${updatedCount} tasks as failed for ${date}`);
-        }
-      }
+        }      }
       
-      return tasks;
+      // Convert SQLite integers back to booleans for JavaScript compatibility
+      const convertedTasks = tasks.map(task => ({
+        ...task,
+        completed: task.completed === 1,
+        failed: task.failed === 1
+      }));
+      
+      return convertedTasks;
       
     } catch (error) {
       console.error('Error getting tasks:', error);
@@ -428,10 +434,18 @@ class LocalDataManager {
 
       if (result.changes === 0) {
         throw new Error(`No task found with ID: ${id}`);
+      }      console.log('Task updated successfully, changes:', result.changes);
+      
+      // Convert integer values back to booleans for the response
+      const responseData = { id, ...sanitizedUpdates };
+      if (responseData.completed !== undefined) {
+        responseData.completed = responseData.completed === 1;
       }
-
-      console.log('Task updated successfully, changes:', result.changes);
-      return { id, ...sanitizedUpdates };
+      if (responseData.failed !== undefined) {
+        responseData.failed = responseData.failed === 1;
+      }
+      
+      return responseData;
 
     } catch (error) {
       console.error('Error updating task:', error);
