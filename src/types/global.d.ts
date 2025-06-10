@@ -83,8 +83,7 @@ declare global {
       created_at?: string;
       updated_at?: string;
     }
-    
-    // ✅ FIXED: Make optional fields ACTUALLY optional with undefined (not null)
+      // ✅ FIXED: Make optional fields ACTUALLY optional with undefined (not null)
     interface Task {
       id: number;
       user_id: string;
@@ -92,6 +91,7 @@ declare global {
       task_date: string;
       task_time: string;
       completed: boolean;
+      failed?: boolean;        // ADDED: Task failure status for deadline tracking
       created_at?: string;
       updated_at?: string;
       task_type?: string;        

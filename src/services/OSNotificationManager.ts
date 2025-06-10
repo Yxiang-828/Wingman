@@ -10,7 +10,7 @@ interface NotificationItem {
   date: string;
   userId: string;
   notified30min?: boolean;
-  notified15min?: boolean;
+  notified5min?: boolean;
   notifiedOverdue?: boolean;
   notifiedStart?: boolean;
   completed?: boolean;
@@ -20,9 +20,9 @@ interface NotificationItem {
 interface OSNotificationConfig {
   checkIntervalMs: number;
   task30minReminder: boolean;
-  task15minReminder: boolean;
+  task5minReminder: boolean;
   event30minReminder: boolean;
-  event15minReminder: boolean;
+  event5minReminder: boolean;
   enableLogging: boolean;
 }
 
@@ -31,6 +31,7 @@ class OSNotificationManager {
   private intervalId: NodeJS.Timeout | null = null;
   private isRunning: boolean = false;
   private config: OSNotificationConfig;
+  private eventHandlers: { [key: string]: EventListener } = {};
   
   // Track all active notifications
   private activeItems: Map<string, NotificationItem> = new Map();
@@ -41,9 +42,9 @@ class OSNotificationManager {
     this.config = {
       checkIntervalMs: 60 * 1000, // Check every minute
       task30minReminder: true,
-      task15minReminder: true,
+      task5minReminder: true,
       event30minReminder: true,
-      event15minReminder: true,
+      event5minReminder: true,
       enableLogging: true,
       ...config
     };
@@ -147,7 +148,7 @@ class OSNotificationManager {
 
       this.activeItems.clear();
 
-      // ✅ FIXED: Only add FUTURE tasks (not overdue, not completed, not failed)
+      //  FIXED: Only add FUTURE tasks (not overdue, not completed, not failed)
       tasks.forEach(task => {
         if (!task.completed && !task.failed && task.task_time && task.task_time !== 'All day') {
           // ✅ KEY FIX: Only add if task time is in the future
@@ -199,56 +200,57 @@ class OSNotificationManager {
    *   Only process notifications for items that are BECOMING due now
    * NOT for items that were already overdue when we started
    */
-  private async processNotifications(): Promise<void> {
-    try {
-      // ✅ SKIP NOTIFICATIONS DURING INITIAL LOAD
-      if (this.isInitialLoad) {
-        this.log('🔕 OSNotificationManager: Skipping notifications during initial load');
-        return;
-      }
-
-      const currentTime = getCurrentTimeString();
-      const today = getTodayDateString();
-      this.lastCheckTime = currentTime;
-
-      this.log(`🔍 Processing notifications at ${currentTime}`);
-
-      for (const [itemId, item] of this.activeItems.entries()) {
-        if (item.date !== today) continue;
-
-        const minutesUntilDue = this.calculateMinutesUntilDue(item.time, currentTime);
-
-        // 30-minute reminder
-        if (this.shouldSend30MinReminder(item, minutesUntilDue)) {
-          await this.send30MinuteReminder(item);
-          item.notified30min = true;
-        }
-
-        // 15-minute reminder
-        if (this.shouldSend15MinReminder(item, minutesUntilDue)) {
-          await this.send15MinuteReminder(item);
-          item.notified15min = true;
-        }
-
-        //  Handle due time (ONLY when timer reaches 0, not for already overdue)
-        if (minutesUntilDue <= 0 && !item.notifiedOverdue && !item.notifiedStart) {
-          if (item.type === 'task') {
-            await this.handleTaskOverdue(item);
-          } else {
-            await this.handleEventStart(item);
-          }
-          
-          // Remove from active monitoring after notification
-          this.activeItems.delete(itemId);
-          this.log(`🗑️ Removed completed notification item: ${item.title}`);
-        }
-      }
-
-    } catch (error) {
-      console.error('OSNotificationManager: Error processing notifications:', error);
+ private async processNotifications(): Promise<void> {
+  try {
+    if (this.isInitialLoad) {
+      this.log('🔕 OSNotificationManager: Skipping notifications during initial load');
+      return;
     }
-  }
 
+    const currentTime = getCurrentTimeString();
+    const today = getTodayDateString();
+    this.lastCheckTime = currentTime;
+
+    this.log(`🔍 Processing notifications at ${currentTime}`);
+
+    for (const [itemId, item] of this.activeItems.entries()) {
+      if (item.date !== today) continue;
+
+      const minutesUntilDue = this.calculateMinutesUntilDue(item.time, currentTime);
+
+      // 30-minute reminder (UNCHANGED)
+      if (this.shouldSend30MinReminder(item, minutesUntilDue)) {
+        await this.send30MinuteReminder(item);
+        item.notified30min = true;
+      }
+
+      // 🔧 CHANGED: 5-minute reminder instead of 15-minute
+      if (this.shouldSend5MinReminder(item, minutesUntilDue)) {
+        await this.send5MinuteReminder(item);
+        item.notified5min = true;
+      }
+
+      // Handle due time (ONLY when timer reaches 0)
+      if (minutesUntilDue <= 0 && !item.notifiedOverdue && !item.notifiedStart) {
+        if (item.type === 'task') {
+          await this.handleTaskOverdue(item); //  Sends failure notification FIRST
+          //  WAIT for notification to be sent
+          item.notifiedOverdue = true; //  Mark as notified
+        } else {
+          await this.handleEventStart(item);
+          item.notifiedStart = true;
+        }
+        
+        // ✅ FIXED: Remove from monitoring AFTER notification is confirmed sent
+        this.activeItems.delete(itemId);
+        this.log(`🗑️ Removed completed notification item: ${item.title}`);
+      }
+    }
+
+  } catch (error) {
+    console.error('OSNotificationManager: Error processing notifications:', error);
+  }
+}
   /**
    * Calculate minutes until due time
    */
@@ -269,32 +271,16 @@ class OSNotificationManager {
     if (item.notified30min) return false;
     
     if (item.type === 'task' && this.config.task30minReminder) {
-      return minutesUntilDue <= 30 && minutesUntilDue > 15;
+      return minutesUntilDue <= 30 && minutesUntilDue > 5;
     }
     
     if (item.type === 'event' && this.config.event30minReminder) {
-      return minutesUntilDue <= 30 && minutesUntilDue > 15;
+      return minutesUntilDue <= 30 && minutesUntilDue > 5;
     }
     
     return false;
   }
 
-  /**
-   * Check if 15-minute reminder should be sent
-   */
-  private shouldSend15MinReminder(item: NotificationItem, minutesUntilDue: number): boolean {
-    if (item.notified15min) return false;
-    
-    if (item.type === 'task' && this.config.task15minReminder) {
-      return minutesUntilDue <= 15 && minutesUntilDue > 0;
-    }
-    
-    if (item.type === 'event' && this.config.event15minReminder) {
-      return minutesUntilDue <= 15 && minutesUntilDue > 0;
-    }
-    
-    return false;
-  }
 
   /**
    * Send 30-minute reminder notification
@@ -310,21 +296,38 @@ class OSNotificationManager {
       console.error('OSNotificationManager: Error sending 30min reminder:', error);
     }
   }
-
-  /**
-   * Send 15-minute reminder notification
-   */
-  private async send15MinuteReminder(item: NotificationItem): Promise<void> {
-    try {
-      const title = `🚨 ${item.type === 'task' ? 'Task' : 'Event'} Alert`;
-      const body = `"${item.title}" ${item.type === 'task' ? 'is due' : 'starts'} in 15 minutes at ${item.time}`;
-      
-      await systemNotificationService.showImmediate(title, body, item.type);
-      this.log(`🚨 15min reminder sent: ${item.title}`);
-    } catch (error) {
-      console.error('OSNotificationManager: Error sending 15min reminder:', error);
-    }
+/**
+ * Check if 5-minute reminder should be sent (CHANGED from 15min)
+ */
+private shouldSend5MinReminder(item: NotificationItem, minutesUntilDue: number): boolean {
+  if (item.notified5min) return false;
+  
+  if (item.type === 'task' && this.config.task5minReminder) {
+    return minutesUntilDue <= 5 && minutesUntilDue > 0;
   }
+  
+  if (item.type === 'event' && this.config.event5minReminder) {
+    return minutesUntilDue <= 5 && minutesUntilDue > 0;
+  }
+  
+  return false;
+}
+
+/**
+ * Send 5-minute reminder notification (CHANGED from 15min)
+ */
+private async send5MinuteReminder(item: NotificationItem): Promise<void> {
+  try {
+    const title = `🚨 ${item.type === 'task' ? 'Task' : 'Event'} Alert`;
+    const body = `"${item.title}" ${item.type === 'task' ? 'is due' : 'starts'} in 5 minutes at ${item.time}`;
+    
+    await systemNotificationService.showImmediate(title, body, item.type);
+    this.log(`🚨 5min reminder sent: ${item.title}`);
+  } catch (error) {
+    console.error('OSNotificationManager: Error sending 5min reminder:', error);
+  }
+}
+
 
   /**
    * Handle task becoming overdue
@@ -400,35 +403,55 @@ class OSNotificationManager {
  * Set up event listeners for real-time updates
  */
 private setupEventListeners(): void {
-  // Listen for task updates - FIX: Cast to EventListener
-  window.addEventListener('task-updated', this.handleTaskUpdate.bind(this) as EventListener);
-  window.addEventListener('task-created', this.handleTaskCreated.bind(this) as EventListener);
-  window.addEventListener('task-completed', this.handleTaskCompletedEvent.bind(this) as EventListener);
-  window.addEventListener('task-deleted', this.handleTaskDeleted.bind(this) as EventListener);
+  // Create strongly typed event handlers to avoid type casting issues
+  const taskUpdateHandler = (event: Event) => {
+    this.handleTaskUpdate(event as CustomEvent).catch(console.error);
+  };
+  const taskCreatedHandler = (event: Event) => this.handleTaskCreated(event as CustomEvent);
+  const taskCompletedHandler = (event: Event) => this.handleTaskCompletedEvent(event as CustomEvent);
+  const taskDeletedHandler = (event: Event) => this.handleTaskDeleted(event as CustomEvent);
+  const eventUpdateHandler = (event: Event) => this.handleEventUpdate(event as CustomEvent);
+  const eventCreatedHandler = (event: Event) => this.handleEventCreated(event as CustomEvent);
+  const eventDeletedHandler = (event: Event) => this.handleEventDeleted(event as CustomEvent);
+  const retryRefreshHandler = () => this.handleRetryRefresh();
 
-  // Listen for event updates - FIX: Cast to EventListener
-  window.addEventListener('event-updated', this.handleEventUpdate.bind(this) as EventListener);
-  window.addEventListener('event-created', this.handleEventCreated.bind(this) as EventListener);
-  window.addEventListener('event-deleted', this.handleEventDeleted.bind(this) as EventListener); // FIX: Add missing method
+  // Add event listeners with proper typing
+  window.addEventListener('task-updated', taskUpdateHandler);
+  window.addEventListener('task-created', taskCreatedHandler);
+  window.addEventListener('task-completed', taskCompletedHandler);
+  window.addEventListener('task-deleted', taskDeletedHandler);
+  window.addEventListener('event-updated', eventUpdateHandler);
+  window.addEventListener('event-created', eventCreatedHandler);
+  window.addEventListener('event-deleted', eventDeletedHandler);
+  window.addEventListener('retry-mission-refresh', retryRefreshHandler);
 
-  // Listen for retry mission refresh
-  window.addEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this) as EventListener);
+  // Store handlers for cleanup
+  this.eventHandlers = {
+    'task-updated': taskUpdateHandler,
+    'task-created': taskCreatedHandler,
+    'task-completed': taskCompletedHandler,
+    'task-deleted': taskDeletedHandler,
+    'event-updated': eventUpdateHandler,
+    'event-created': eventCreatedHandler,
+    'event-deleted': eventDeletedHandler,
+    'retry-mission-refresh': retryRefreshHandler
+  };
 }
 
 /**
- * Remove event listeners - FIX: Cast to EventListener
+ * Remove event listeners with proper cleanup
  */
 private removeEventListeners(): void {
-  window.removeEventListener('task-updated', this.handleTaskUpdate.bind(this) as EventListener);
-  window.removeEventListener('task-created', this.handleTaskCreated.bind(this) as EventListener);
-  window.removeEventListener('task-completed', this.handleTaskCompletedEvent.bind(this) as EventListener);
-  window.removeEventListener('task-deleted', this.handleTaskDeleted.bind(this) as EventListener);
-  window.removeEventListener('event-updated', this.handleEventUpdate.bind(this) as EventListener);
-  window.removeEventListener('event-created', this.handleEventCreated.bind(this) as EventListener);
-  window.removeEventListener('event-deleted', this.handleEventDeleted.bind(this) as EventListener);
-  
-  // Remove retry listener
-  window.removeEventListener('retry-mission-refresh', this.handleRetryRefresh.bind(this) as EventListener);
+  if (this.eventHandlers) {
+    window.removeEventListener('task-updated', this.eventHandlers['task-updated']);
+    window.removeEventListener('task-created', this.eventHandlers['task-created']);
+    window.removeEventListener('task-completed', this.eventHandlers['task-completed']);
+    window.removeEventListener('task-deleted', this.eventHandlers['task-deleted']);
+    window.removeEventListener('event-updated', this.eventHandlers['event-updated']);
+    window.removeEventListener('event-created', this.eventHandlers['event-created']);
+    window.removeEventListener('event-deleted', this.eventHandlers['event-deleted']);
+    window.removeEventListener('retry-mission-refresh', this.eventHandlers['retry-mission-refresh']);
+  }
 }
 
 /**
@@ -452,12 +475,26 @@ private handleRetryRefresh(): void {
   /**
    * Handle task update events
    */
-  private handleTaskUpdate(event: CustomEvent): void {
+  private async handleTaskUpdate(event: CustomEvent): Promise<void> {
     const task = event.detail;
     const itemId = `task-${task.id}`;
     const currentTime = getCurrentTimeString();
 
     if (task.completed || task.failed) {
+      // 🔧 ADD: Send failure notification BEFORE removing from monitoring
+      if (task.failed && !task.completed) {
+        // Send failure notification
+        const title = `❌ Task Failed`;
+        const body = `"${task.title}" was due at ${task.task_time} and has failed.`;
+        
+        try {
+          await systemNotificationService.showImmediate(title, body, 'task');
+          this.log(`❌ Task failure notification sent: ${task.title}`);
+        } catch (error) {
+          console.error('Error sending failure notification:', error);
+        }
+      }
+      
       // Task completed or failed - remove from monitoring
       this.activeItems.delete(itemId);
       if (task.completed) {
@@ -478,7 +515,7 @@ private handleRetryRefresh(): void {
           failed: task.failed,
           // Reset notification flags for retried tasks
           notified30min: false,
-          notified15min: false,
+          notified5min: false,
           notifiedOverdue: false
         };
 
@@ -639,3 +676,4 @@ private handleRetryRefresh(): void {
 
 export const osNotificationManager = OSNotificationManager.getInstance();
 export default OSNotificationManager;
+

@@ -14,6 +14,7 @@ export interface Task {
   task_date: string;    // Date in YYYY-MM-DD format - maps to tasks.task_date
   task_time?: string;   // Optional time in HH:MM format - maps to tasks.task_time
   completed: boolean;   // Completion status - maps to tasks.completed
+  failed?: boolean;     // ADDED: Task failure status for deadline tracking
   user_id?: string | number; // User identifier - maps to tasks.user_id
   isProcessing?: boolean; // Frontend-only field for UI loading states
   

@@ -305,9 +305,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       console.log(`DataContext: Event ${id} deleted successfully`);
 
       // Dispatch event for OSNotificationManager
-      window.dispatchEvent(new CustomEvent('event-deleted', {
-        detail: { eventId: id }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("event-deleted", {
+          detail: { eventId: id },
+        })
+      );
     } catch (error) {
       console.error("Error deleting event:", error);
       setError("Failed to delete event");
