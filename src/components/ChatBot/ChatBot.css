@@ -1,64 +1,11 @@
 /**
  * ChatBot Component Styles
- * Interactive conversational interface with mood system and real-time messaging
  * Optimized for performance with reduced animations and efficient rendering
  */
 
-/* Playful mood animations for avatar interactions */
-@keyframes run-away {
-  0%   { transform: translateX(0); }
-  20%  { transform: translateX(10px); }
-  40%  { transform: translateX(-30px); }
-  60%  { transform: translateX(40px); }
-  80%  { transform: translateX(-60px); }
-  100% { transform: translateX(0); }
-}
+/* Removed animations and hover effects for better performance (previously was here) :D */
 
-/* Tooltip system for mood indicators and interactive elements */
-.mood-icon-tooltip {
-  position: relative;
-  display: inline-block;
-}
-
-.mood-tooltip-text {
-  visibility: hidden;
-  opacity: 0;
-  width: max-content;
-  background: var(--color-bg-tooltip, #23234a);
-  color: var(--color-text-primary, #fff);
-  text-align: center;
-  border-radius: 6px;
-  padding: 4px 10px;
-  position: absolute;
-  z-index: 10;
-  left: 50%;
-  top: 110%;
-  transform: translateX(-50%);
-  transition: opacity 0.2s;
-  font-size: 0.95rem;
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-.mood-icon-tooltip:hover .mood-tooltip-text {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Interactive hover effects for mood and avatar elements */
-.run-away-on-hover:hover {
-  animation: run-away 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.icon-rotate {
-  transition: transform 0.3s;
-}
-
-.icon-rotate:hover {
-  transform: rotate(15deg);
-}
-
-/* Main chatbot container with optimized rendering */
+/* Main chatbot container with simplistic design */
 .chatbot-container {
   display: flex;
   flex-direction: column;
@@ -89,22 +36,21 @@
   gap: 1rem;
 }
 
-/* Avatar container with mood-based visual feedback */
+/* Avatar container - simplified without transitions */
 .wingman-avatar-container {
   position: relative;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: 90px;
+  height: 90px;
+  border-radius: 0;
   overflow: hidden;
   border: 2px solid var(--color-accent-primary, #646cff);
-  transition: border-color 0.3s ease;
 }
 
 .wingman-mood-icon {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: 0;
 }
 
 .wingman-info {
@@ -156,7 +102,7 @@
   font-size: 0.8rem;
 }
 
-/* Header action buttons with unified styling */
+/* Header action buttons - simplified without hover effects */
 .chatbot-header-actions {
   display: flex;
   gap: 0.5rem;
@@ -170,14 +116,12 @@
   background: var(--color-bg-main, #1a1a1a);
   color: var(--color-text-secondary, #a0a0a0);
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1rem;
 }
 
-.header-action-btn:hover,
 .header-action-btn.active {
   background: var(--color-accent-primary, #646cff);
   color: var(--color-text-primary, #ffffff);
@@ -270,6 +214,30 @@
   border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
 }
 
+/* Message content styling for proper avatar alignment */
+.message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Message text wrapper for proper layout */
+.message-text {
+  flex: 1;
+  min-width: 0;
+  /* Allows text to wrap properly */
+}
+
+/* Avatar styling in chat messages */
+.message-avatar {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.2));
+}
+
 /* Quick replies section for common interactions */
 .chatbot-quick-replies {
   padding: 1rem 1.5rem 0;
@@ -292,7 +260,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Add new prompt functionality */
+/* Add new prompt functionality - simplified */
 .add-prompt-btn {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
@@ -301,10 +269,9 @@
   background: transparent;
   color: var(--color-text-secondary, #a0a0a0);
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.add-prompt-btn:hover:not(:disabled) {
+.add-prompt-btn.active {
   background: var(--color-accent-primary, #646cff);
   color: #ffffff;
   border-color: var(--color-accent-primary, #646cff);
@@ -328,7 +295,7 @@
   align-items: center;
 }
 
-/* Individual quick reply button styling */
+/* Individual quick reply button styling - simplified */
 .chatbot-quick-reply {
   flex: 1;
   background: var(--color-bg-card, #232323);
@@ -338,16 +305,11 @@
   padding: 0.75rem 1rem;
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background-color 0.2s ease;
   text-align: left;
   display: flex;
   align-items: center;
   justify-content: space-between;
   min-height: 44px;
-}
-
-.chatbot-quick-reply:hover {
-  background: var(--color-accent-primary, #646cff);
 }
 
 /* Custom prompt indicator styling */
@@ -375,7 +337,7 @@
   text-align: center;
 }
 
-/* Delete button for custom prompts */
+/* Delete button for custom prompts - simplified */
 .delete-prompt-btn {
   position: absolute;
   top: -6px;
@@ -392,7 +354,6 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s ease;
 }
 
 .chatbot-quick-reply-wrapper:hover .delete-prompt-btn {
@@ -416,7 +377,7 @@
   align-items: flex-end;
 }
 
-/* Main text input with focus states */
+/* Main text input - simplified */
 .chatbot-input {
   flex: 1;
   background: var(--color-bg-card, #232323);
@@ -425,7 +386,6 @@
   padding: 1rem 1.25rem;
   color: var(--color-text-primary, #ffffff);
   font-size: 1rem;
-  transition: border-color 0.2s ease;
   min-height: 24px;
   max-height: 120px;
   resize: none;
@@ -440,7 +400,7 @@
   color: var(--color-text-secondary, #a0a0a0);
 }
 
-/* Send button with state management */
+/* Send button - simplified */
 .chatbot-send-btn {
   width: 48px;
   height: 48px;
@@ -453,11 +413,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
-}
-
-.chatbot-send-btn:hover:not(.disabled) {
-  background: var(--color-accent-secondary, #535bf2);
 }
 
 .chatbot-send-btn.disabled {
@@ -465,7 +420,7 @@
   cursor: not-allowed;
 }
 
-/* Humor setting controls */
+/* Humor setting controls - simplified */
 .chatbot-humor-setting {
   display: flex;
   align-items: center;
@@ -487,11 +442,9 @@
   padding: 0.25rem 0.75rem;
   cursor: pointer;
   font-size: 0.8rem;
-  transition: all 0.2s ease;
 }
 
-.chatbot-humor-btn.active,
-.chatbot-humor-btn:hover {
+.chatbot-humor-btn.active {
   background: var(--color-accent-primary, #646cff);
   color: #ffffff;
   border-color: var(--color-accent-primary, #646cff);
@@ -592,6 +545,165 @@
   border: 1px dashed var(--color-border, rgba(255, 255, 255, 0.1));
 }
 
+/* Thinking Section Styles - Collapsible reasoning from LLM responses */
+.thinking-section {
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.thinking-toggle {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary, #b0b0b0);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.thinking-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary, #fff);
+}
+
+.thinking-icon {
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.thinking-label {
+  font-weight: 500;
+  user-select: none;
+}
+
+.thinking-content {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  animation: thinkingExpand 0.3s ease-out;
+}
+
+@keyframes thinkingExpand {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Small Thinking Section Styles - Always visible with subtle styling */
+.thinking-section-small {
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  background: rgba(100, 100, 100, 0.1);
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #b0b0b0);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.thinking-content-small {
+  line-height: 1.4;
+  max-height: 80px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.thinking-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary, #b0b0b0);
+  font-style: italic;
+}
+
+.thinking-text .markdown-content {
+  margin: 0;
+}
+
+.thinking-text .markdown-p {
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+}
+
+.thinking-text .markdown-h2,
+.thinking-text .markdown-h3 {
+  font-size: 1rem;
+  margin: 0.8rem 0 0.4rem 0;
+  opacity: 0.9;
+}
+
+.message-with-thinking {
+  width: 100%;
+}
+
+.main-content {
+  margin-top: 0;
+}
+
+/* Theme-specific thinking section colors */
+.yandere-theme .thinking-toggle:hover {
+  background: rgba(255, 107, 179, 0.1);
+  color: #ff6bb3;
+}
+
+.kuudere-theme .thinking-toggle:hover {
+  background: rgba(130, 180, 220, 0.1);
+  color: #82b4dc;
+}
+
+.tsundere-theme .thinking-toggle:hover {
+  background: rgba(255, 140, 90, 0.1);
+  color: #ff8c5a;
+}
+
+.dandere-theme .thinking-toggle:hover {
+  background: rgba(170, 200, 130, 0.1);
+  color: #aac882;
+}
+
+/* Mobile responsive thinking section */
+@media (max-width: 768px) {
+  .thinking-section {
+    margin-bottom: 8px;
+  }
+
+  .thinking-toggle {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .thinking-content {
+    padding: 10px;
+  }
+
+  .thinking-text {
+    font-size: 0.8rem;
+  }
+
+  .thinking-section-small {
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    max-height: 60px;
+  }
+}
+
 /* Responsive design for mobile devices */
 @media (max-width: 768px) {
   .chatbot-header {
@@ -600,38 +712,38 @@
     gap: 0.5rem;
     align-items: flex-start;
   }
-  
+
   .chatbot-header-left {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .wingman-title {
     font-size: 1.25rem;
   }
-  
+
   .chatbot-messages {
     padding: 1rem;
   }
-  
+
   .chatbot-bubble {
     max-width: 90%;
     font-size: 0.9rem;
     padding: 0.75rem 1rem;
   }
-  
+
   .chatbot-input-area {
     padding: 0.75rem 1rem 1rem;
   }
-  
+
   .quick-replies-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .input-wrapper {
     gap: 0.5rem;
   }
-  
+
   .chatbot-send-btn {
     width: 44px;
     height: 44px;
@@ -643,16 +755,16 @@
   .chatbot-header {
     padding: 0.5rem 0.75rem;
   }
-  
+
   .wingman-avatar-container {
     width: 40px;
     height: 40px;
   }
-  
+
   .wingman-title {
     font-size: 1.1rem;
   }
-  
+
   .chatbot-bubble {
     max-width: 95%;
     font-size: 0.85rem;
@@ -673,12 +785,142 @@
   contain: layout style;
 }
 
+/*MARKDOWN TABLE STYLES*/
+.markdown-content {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.markdown-table-container {
+  overflow-x: auto;
+  margin: 12px 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-primary, #fff);
+}
+
+.markdown-table th,
+.markdown-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  vertical-align: top;
+}
+
+.markdown-table th {
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+  color: var(--color-accent-primary, #ff6bb3);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.markdown-table .status-cell {
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Markdown text formatting */
+.markdown-h2 {
+  color: var(--color-accent-primary, #ff6bb3);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 16px 0 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 4px;
+}
+
+.markdown-h3 {
+  color: var(--color-accent-secondary, #82b4dc);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 12px 0 6px 0;
+}
+
+.markdown-p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.markdown-li {
+  margin: 4px 0;
+  padding-left: 8px;
+  list-style-type: none;
+  position: relative;
+}
+
+.markdown-li::before {
+  content: "•";
+  color: var(--color-accent-primary, #ff6bb3);
+  font-weight: bold;
+  position: absolute;
+  left: -8px;
+}
+
+.markdown-bold {
+  font-weight: 600;
+  color: var(--color-accent-primary, #ff6bb3);
+}
+
+/* Theme-specific table styling */
+.yandere-theme .markdown-table th {
+  color: #ff6bb3;
+}
+
+.kuudere-theme .markdown-table th {
+  color: #82b4dc;
+}
+
+.tsundere-theme .markdown-table th {
+  color: #ff8c5a;
+}
+
+.dandere-theme .markdown-table th {
+  color: #aac882;
+}
+
+/* Status cell color coding */
+.status-cell {
+  white-space: nowrap;
+}
+
+/* Mobile responsive tables */
+@media (max-width: 768px) {
+  .markdown-table-container {
+    margin: 8px -16px;
+    border-radius: 0;
+  }
+
+  .markdown-table {
+    font-size: 0.8rem;
+  }
+
+  .markdown-table th,
+  .markdown-table td {
+    padding: 8px 12px;
+  }
+
+  .markdown-table th {
+    font-size: 0.75rem;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   THEME-SPECIFIC CHAT BOT STYLING
-   Personality-based customizations for each theme character
+   THEME-SPECIFIC CHAT BOT STYLING (unique per theme)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ━━━ YANDERE THEME - Obsessive & Intense ━━━ */
+/* YANDERE THEME - Obsessive & Intense */
 .yandere-theme .chatbot-container {
   background: none;
   border: 1px solid rgba(255, 107, 179, 0.3);
@@ -703,9 +945,9 @@
 }
 
 .yandere-theme .chatbot-bubble.user {
-  background: rgba(255, 107, 179, 1.0);
-  color: rgba(255, 255, 255, 1.0);
-  border: 1px solid rgba(255, 107, 179, 1.0);
+  background: rgba(255, 107, 179, 1);
+  color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(255, 107, 179, 1);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
@@ -735,7 +977,7 @@
   border-color: #ff6bb3;
 }
 
-/* ━━━ KUUDERE THEME - Cold & Distant ━━━ */
+/* KUUDERE THEME - Cold & Distant */
 .kuudere-theme .chatbot-container {
   background: none;
   border: 1px solid rgba(130, 180, 220, 0.3);
@@ -750,7 +992,8 @@
 .kuudere-theme .wingman-title {
   color: #82b4dc;
   text-shadow: 0 0 8px rgba(130, 180, 220, 0.4);
-  font-weight: 500; /* Softer weight for cooler feel */
+  font-weight: 500;
+  /* Softer weight for cooler feel */
 }
 
 .kuudere-theme .chatbot-bubble.wingman {
@@ -761,9 +1004,9 @@
 }
 
 .kuudere-theme .chatbot-bubble.user {
-  background: rgba(130, 180, 220, 1.0);
-  color: rgba(255, 255, 255, 1.0);
-  border: 1px solid rgba(130, 180, 220, 1.0);
+  background: rgba(130, 180, 220, 1);
+  color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(130, 180, 220, 1);
 }
 
 .kuudere-theme .chatbot-input {
@@ -792,7 +1035,7 @@
   border-color: #82b4dc;
 }
 
-/* ━━━ TSUNDERE THEME - Fiery & Contradictory ━━━ */
+/* TSUNDERE THEME - Fiery & Contradictory */
 .tsundere-theme .chatbot-container {
   background: none;
   border: 1px solid rgba(255, 140, 90, 0.3);
@@ -807,7 +1050,8 @@
 .tsundere-theme .wingman-title {
   color: #ff8c5a;
   text-shadow: 0 0 10px rgba(255, 140, 90, 0.5);
-  font-weight: 700; /* Bold for fiery personality */
+  font-weight: 700;
+  /* Bold for fiery personality */
 }
 
 .tsundere-theme .chatbot-bubble.wingman {
@@ -818,9 +1062,9 @@
 }
 
 .tsundere-theme .chatbot-bubble.user {
-  background: rgba(255, 140, 90, 1.0);
-  color: rgba(255, 255, 255, 1.0);
-  border: 1px solid rgba(255, 140, 90, 1.0);
+  background: rgba(255, 140, 90, 1);
+  color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(255, 140, 90, 1);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
@@ -848,10 +1092,11 @@
 .tsundere-theme .chatbot-quick-reply:hover {
   background: rgba(255, 140, 90, 0.2);
   border-color: #ff8c5a;
-  transform: translateY(-1px); /* Slight bounce for energetic feel */
+  transform: translateY(-1px);
+  /* Slight bounce for energetic feel */
 }
 
-/* ━━━ DANDERE THEME - Shy & Gentle ━━━ */
+/* DANDERE THEME - Shy & Gentle */
 .dandere-theme .chatbot-container {
   background: none;
   border: 1px solid rgba(170, 200, 130, 0.3);
@@ -866,7 +1111,8 @@
 .dandere-theme .wingman-title {
   color: #aac882;
   text-shadow: 0 0 8px rgba(170, 200, 130, 0.4);
-  font-weight: 400; /* Gentler weight */
+  font-weight: 400;
+  /* Gentler weight */
 }
 
 .dandere-theme .chatbot-bubble.wingman {
@@ -877,9 +1123,9 @@
 }
 
 .dandere-theme .chatbot-bubble.user {
-  background: rgba(170, 200, 130, 1.0);
-  color: rgba(255, 255, 255, 1.0);
-  border: 1px solid rgba(170, 200, 130, 1.0);
+  background: rgba(170, 200, 130, 1);
+  color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(170, 200, 130, 1);
 }
 
 .dandere-theme .chatbot-input {
@@ -908,7 +1154,7 @@
   border-color: #aac882;
 }
 
-/* ━━━ SHARED THEME ENHANCEMENTS ━━━ */
+/* SHARED THEME ENHANCEMENTS */
 /* Status indicators for all personality themes */
 .yandere-theme .status-dot.online,
 .kuudere-theme .status-dot.online,
@@ -918,19 +1164,52 @@
 }
 
 /* Enhanced hover effects for settings panel */
-.yandere-theme .header-action-btn:hover { background: rgba(255, 107, 179, 0.2); }
-.kuudere-theme .header-action-btn:hover { background: rgba(130, 180, 220, 0.2); }
-.tsundere-theme .header-action-btn:hover { background: rgba(255, 140, 90, 0.2); }
-.dandere-theme .header-action-btn:hover { background: rgba(170, 200, 130, 0.2); }
+.yandere-theme .header-action-btn:hover {
+  background: rgba(255, 107, 179, 0.2);
+}
+
+.kuudere-theme .header-action-btn:hover {
+  background: rgba(130, 180, 220, 0.2);
+}
+
+.tsundere-theme .header-action-btn:hover {
+  background: rgba(255, 140, 90, 0.2);
+}
+
+.dandere-theme .header-action-btn:hover {
+  background: rgba(170, 200, 130, 0.2);
+}
 
 /* Custom scrollbar theming */
-.yandere-theme .chatbot-messages::-webkit-scrollbar-thumb { background: rgba(255, 107, 179, 0.4); }
-.kuudere-theme .chatbot-messages::-webkit-scrollbar-thumb { background: rgba(130, 180, 220, 0.4); }
-.tsundere-theme .chatbot-messages::-webkit-scrollbar-thumb { background: rgba(255, 140, 90, 0.4); }
-.dandere-theme .chatbot-messages::-webkit-scrollbar-thumb { background: rgba(170, 200, 130, 0.4); }
+.yandere-theme .chatbot-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 179, 0.4);
+}
+
+.kuudere-theme .chatbot-messages::-webkit-scrollbar-thumb {
+  background: rgba(130, 180, 220, 0.4);
+}
+
+.tsundere-theme .chatbot-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 140, 90, 0.4);
+}
+
+.dandere-theme .chatbot-messages::-webkit-scrollbar-thumb {
+  background: rgba(170, 200, 130, 0.4);
+}
 
 /* Quick reply button accent indicators */
-.yandere-theme .chatbot-quick-reply.custom-prompt { border-left-color: #ff6bb3; }
-.kuudere-theme .chatbot-quick-reply.custom-prompt { border-left-color: #82b4dc; }
-.tsundere-theme .chatbot-quick-reply.custom-prompt { border-left-color: #ff8c5a; }
-.dandere-theme .chatbot-quick-reply.custom-prompt { border-left-color: #aac882; }
+.yandere-theme .chatbot-quick-reply.custom-prompt {
+  border-left-color: #ff6bb3;
+}
+
+.kuudere-theme .chatbot-quick-reply.custom-prompt {
+  border-left-color: #82b4dc;
+}
+
+.tsundere-theme .chatbot-quick-reply.custom-prompt {
+  border-left-color: #ff8c5a;
+}
+
+.dandere-theme .chatbot-quick-reply.custom-prompt {
+  border-left-color: #aac882;
+}

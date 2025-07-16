@@ -19,10 +19,8 @@ interface Props {
 
 /**
  * TimeBlockVisualizer Component
- * Renders a visual timeline of scheduled time blocks
- * Provides hover tooltips with detailed time information
- * Supports custom colors for different block types
- */
+ * Displays a list of time blocks in a minimalistic format
+ **/
 const TimeBlockVisualizer: React.FC<Props> = ({ blocks }) => (
   <div className="timeblock-visualizer">
     {blocks.map((block) => (

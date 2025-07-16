@@ -39,7 +39,7 @@ interface WingmanAvatarProps {
  * Your Wingman adapts its communication style based on your preferences
  */
 const getPersonalityFromConfig = (
-  personalityId: string
+  personalityId: string,
 ): WingmanPersonality => {
   const personalityMap: Record<string, WingmanPersonality> = {
     supportive: {

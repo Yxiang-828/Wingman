@@ -11,9 +11,9 @@ interface ModalProps {
 }
 
 /**
- * Modal Component - Your Wingman's Command Overlay System
+ * Modal Component -  Wingman's Command Overlay System
  * Provides full-screen modal dialogs with keyboard and click-outside handling
- * Features smooth animations and consistent theming across your interface
+ * Features smooth animations and consistent theming across interface
  */
 const Modal: React.FC<ModalProps> = ({
   title,
@@ -26,7 +26,7 @@ const Modal: React.FC<ModalProps> = ({
 
   /**
    * Keyboard event handling for modal interactions
-   * Your Wingman responds to escape commands instantly
+   *  Wingman responds to escape commands instantly
    */
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

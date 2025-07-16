@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { Task } from "../../api/Task";
 import type { CalendarEvent } from "../../api/Calendar";
 import "./Dashboard.css";
-import "./SummaryCard.css"; 
+import "./SummaryCard.css";
 
 interface SummaryCardProps {
   tasks: Task[];
@@ -12,7 +12,7 @@ interface SummaryCardProps {
 
 const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
   const navigate = useNavigate();
-  
+
   // Navigation handlers with clear purpose
   const navigateToPendingTasks = () => {
     navigate(`/notifications?tab=task`);
@@ -21,7 +21,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
   const navigateToEvents = () => {
     navigate(`/notifications?tab=event`);
   };
-  
+
   const navigateToCompletedTasks = () => {
     // Navigate to today's completed tasks
     const today = new Date().toISOString().split("T")[0];
@@ -29,28 +29,29 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
   };
 
   // Calculate statistics for today only
-  const pendingTasks = tasks.filter(task => !task.completed).length;
-  const completedTasks = tasks.filter(task => task.completed).length;
-  
+  const pendingTasks = tasks.filter((task) => !task.completed).length;
+  const completedTasks = tasks.filter((task) => task.completed).length;
+
   const stats = {
     events: events.length,
     pendingTasks: pendingTasks,
     completedTasks: completedTasks,
   };
-  
+
   return (
     <div className="dashboard-card summary-card">
       <div className="dashboard-card-header">
         <h2>Today's Summary</h2>
       </div>
-      
+
       <div className="quote-box">
-        "The key is not to prioritize what's on your schedule, but to schedule your priorities."
+        "The key is not to prioritize what's on your schedule, but to schedule
+        your priorities."
       </div>
-      
+
       <div className="summary-stats">
-        <div 
-          className="stat-item clickable" 
+        <div
+          className="stat-item clickable"
           onClick={navigateToEvents}
           tabIndex={0}
           role="button"
@@ -59,9 +60,9 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
           <span className="stat-number">{stats.events}</span>
           <span className="stat-label">Today's Events</span>
         </div>
-        
-        <div 
-          className="stat-item clickable" 
+
+        <div
+          className="stat-item clickable"
           onClick={navigateToPendingTasks}
           tabIndex={0}
           role="button"
@@ -70,9 +71,9 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ tasks, events }) => {
           <span className="stat-number">{stats.pendingTasks}</span>
           <span className="stat-label">Tasks</span>
         </div>
-        
-        <div 
-          className="stat-item clickable" 
+
+        <div
+          className="stat-item clickable"
           onClick={navigateToCompletedTasks}
           tabIndex={0}
           role="button"

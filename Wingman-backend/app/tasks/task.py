@@ -9,7 +9,7 @@ def get_tasks_by_date(date_str, user_id):
         # Filter by both date and user_id
         response = supabase.table("tasks").select("*").eq("task_date", date_str).eq("user_id", user_id).execute()
         
-        
+        # Database has 'title' field, send as-is
         result = []
         for task in response.data:
             task_copy = dict(task)
@@ -39,9 +39,9 @@ def create_task(task_data: dict):
         if not verify_user_exists(task_data["user_id"]):
             raise ValueError(f"User with ID {task_data['user_id']} does not exist")
         
-       
+        # Map frontend to database fields
         db_data = {
-            'title': task_data['title'],  
+            'title': task_data['title'],  # Database expects 'title'
             'task_date': task_data.get('task_date', ''),
             'task_time': task_data.get('task_time', ''),
             'completed': task_data.get('completed', False),
@@ -90,7 +90,7 @@ def update_task(task_id: int, task: dict):
             data["task_time"] = data["time"]
             del data["time"]
             
-        # Keep 'title' as-is since database expects 'title'
+        #'title' stays the same since database expects 'title'
         
         # Execute the update query
         response = supabase.table("tasks").update(data).eq("id", task_id).execute()

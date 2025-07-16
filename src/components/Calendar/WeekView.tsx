@@ -10,7 +10,6 @@ import { getCurrentUserId } from "../../utils/auth";
 import { useNotifications } from "../../context/NotificationsContext";
 import { isRecurringTask } from "../../api/Task";
 import DetailPopup from "../Common/DetailPopup";
-import WingmanAvatar from "../Common/WingmanAvatar";
 import "./WeekView.css";
 
 /**
@@ -147,7 +146,7 @@ const WeekDay = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 /**
@@ -209,7 +208,7 @@ const WeekView: React.FC = () => {
       } catch (generateError) {
         console.error(
           "WeekView: Error generating recurring tasks:",
-          generateError
+          generateError,
         );
         // Continue with data loading even if generation fails
       }
@@ -266,14 +265,14 @@ const WeekView: React.FC = () => {
 
     const handleTaskFailureUpdate = () => {
       console.log(
-        "WeekView: Received task failure update - refreshing week data"
+        "WeekView: Received task failure update - refreshing week data",
       );
       fetchWeekData();
     };
 
     const handleDashboardRefresh = () => {
       console.log(
-        "WeekView: Received dashboard refresh - refreshing week data"
+        "WeekView: Received dashboard refresh - refreshing week data",
       );
       fetchWeekData();
     };
@@ -286,7 +285,7 @@ const WeekView: React.FC = () => {
       window.removeEventListener("week-data-refresh", handleRefresh);
       window.removeEventListener(
         "tasks-failed-update",
-        handleTaskFailureUpdate
+        handleTaskFailureUpdate,
       );
       window.removeEventListener("dashboard-refresh", handleDashboardRefresh);
     };
@@ -324,7 +323,7 @@ const WeekView: React.FC = () => {
 
     const handleRecurringTaskDeleted = () => {
       console.log(
-        "📅 WeekView: Recurring task template deleted, refreshing data with debounce"
+        "📅 WeekView: Recurring task template deleted, refreshing data with debounce",
       );
 
       // Debounce the refresh to prevent multiple simultaneous calls
@@ -339,7 +338,7 @@ const WeekView: React.FC = () => {
 
     window.addEventListener(
       "recurring-task-deleted",
-      handleRecurringTaskDeleted
+      handleRecurringTaskDeleted,
     );
 
     return () => {
@@ -348,7 +347,7 @@ const WeekView: React.FC = () => {
       }
       window.removeEventListener(
         "recurring-task-deleted",
-        handleRecurringTaskDeleted
+        handleRecurringTaskDeleted,
       );
     };
   }, [fetchWeekData]);
@@ -380,7 +379,7 @@ const WeekView: React.FC = () => {
   // Formatted date range for header display
   const weekDateRange = `${format(weekStart, "MMM d")} - ${format(
     addDays(weekStart, 6),
-    "MMM d, yyyy"
+    "MMM d, yyyy",
   )}`;
   const todayStr = getTodayDateString();
 
@@ -413,12 +412,12 @@ const WeekView: React.FC = () => {
           <div className="week-header-compact">
             <div className="week-title-container-compact">
               <div className="week-header-row">
-                <WingmanAvatar
+                {/* <WingmanAvatar
                   size="small"
                   mood="neutral"
                   context="dashboard"
                   onClick={() => navigate("/profile")}
-                />
+                /> */}
                 <h2 className="week-title-compact">Week View</h2>
               </div>
               <div className="week-subtitle-compact">

@@ -5,9 +5,7 @@ import { useDiary } from "../../context/DiaryContext";
 import "./DiaryEntry.css";
 
 /**
- * EditEntry Component - Your Wingman's Memory Editor
- * Loads existing diary entries for modification with proper error handling
- * Where past thoughts get refined and updated
+ * EditEntry Component
  */
 const EditEntry: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +17,6 @@ const EditEntry: React.FC = () => {
 
   /**
    * Loads diary entry by ID from URL parameters
-   * Your Wingman retrieves the exact memory you want to modify
    */
   useEffect(() => {
     const loadEntry = async () => {
@@ -55,7 +52,6 @@ const EditEntry: React.FC = () => {
 
   /**
    * Handles entry updates with original date preservation
-   * Your Wingman ensures the chronology remains intact
    */
   const handleSave = async (updatedData: {
     title: string;
@@ -82,7 +78,7 @@ const EditEntry: React.FC = () => {
     } catch (error) {
       console.error("Wingman: Error updating diary entry:", error);
       alert(
-        "Could not update diary entry, boss. Please check your input and try again."
+        "Could not update diary entry, boss. Please check your input and try again.",
       );
     }
   };

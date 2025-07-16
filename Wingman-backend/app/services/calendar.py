@@ -3,7 +3,7 @@ from app.core.supabase import supabase
 from app.services.user import verify_user_exists
 import traceback
 
-# Add proper date formatting
+
 
 def safe_format_date(date_value):
     """Safely format date values for frontend"""
@@ -80,7 +80,7 @@ def create_event(event):
             event_data["time"] = event_data.get("event_time", "")
             return event_data
             
-        # Add an explicit fallback return value
+
         print("No data returned from calendar event insert")
         return {
             "id": 0,
@@ -99,7 +99,6 @@ def update_event(event_id: int, event):
     try:
         data = dict(event)
         
-        # Remove the id field as it's an identity column and can't be updated
         if "id" in data:
             del data["id"]
         

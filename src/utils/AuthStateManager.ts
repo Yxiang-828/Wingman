@@ -51,16 +51,28 @@ class AuthStateManager {
     this._authenticated = authenticated;
     this._userId = userId;
 
-    // **NEW: Store user ID for background notifications when logging in**
-    if (authenticated && userId && window.electronAPI?.user?.storeActiveUser) {      window.electronAPI.user.storeActiveUser(userId).then(result => {
-        if (result.success) {
-          console.log("WINGMAN: AuthStateManager - User ID stored for background notifications");
-        } else {
-          console.error("WINGMAN ERROR: AuthStateManager - Failed to store user ID:", result.error);
-        }
-      }).catch(error => {
-        console.error("WINGMAN ERROR: AuthStateManager - Error storing user ID:", error);
-      });
+    // Store user ID for background notifications when logging in
+    if (authenticated && userId && window.electronAPI?.user?.storeActiveUser) {
+      window.electronAPI.user
+        .storeActiveUser(userId)
+        .then((result) => {
+          if (result.success) {
+            console.log(
+              "WINGMAN: AuthStateManager - User ID stored for background notifications",
+            );
+          } else {
+            console.error(
+              "WINGMAN ERROR: AuthStateManager - Failed to store user ID:",
+              result.error,
+            );
+          }
+        })
+        .catch((error) => {
+          console.error(
+            "WINGMAN ERROR: AuthStateManager - Error storing user ID:",
+            error,
+          );
+        });
     }
 
     // Notify all listeners
@@ -91,10 +103,13 @@ class AuthStateManager {
   public handleLogout() {
     // Clear storage
     localStorage.removeItem("user");
-    localStorage.removeItem("token");    // **NEW: Clear stored user ID on logout**
+    localStorage.removeItem("token"); // Clear stored user ID on logout
     if (window.electronAPI?.user?.storeActiveUser) {
-      window.electronAPI.user.storeActiveUser("").catch(error => {
-        console.error("WINGMAN ERROR: AuthStateManager - Error clearing stored user ID:", error);
+      window.electronAPI.user.storeActiveUser("").catch((error) => {
+        console.error(
+          "WINGMAN ERROR: AuthStateManager - Error clearing stored user ID:",
+          error,
+        );
       });
     }
 

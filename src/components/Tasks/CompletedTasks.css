@@ -1,4 +1,4 @@
-/* Performance-optimized CompletedTasks CSS with 'ct-' prefix */
+/* CompletedTasks CSS with 'ct-' prefix */
 
 .ct-container {
   max-width: 1000px;
@@ -6,7 +6,6 @@
   padding: 16px;
   background: rgba(25, 25, 45, 0.3);
   border-radius: 12px;
-  /* No animations or transforms */
 }
 
 .ct-header {
@@ -215,7 +214,7 @@
 }
 
 .task-item {
-  padding: 1rem 1.2rem; /* Increased padding */
+  padding: 1rem 1.2rem;
   min-height: 4.5rem; /* Ensure consistent height */
   display: grid;
   grid-template-columns: auto 1fr auto;

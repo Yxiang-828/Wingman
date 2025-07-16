@@ -1,7 +1,6 @@
 /**
  * CommonButtons Component Styles
- * Unified button and status indicator system for consistent UI
- * Provides reusable components across your Wingman interface
+ * Provides reusable components across  Wingman interface
  */
 
 /* Primary action buttons with enhanced theming */
@@ -144,12 +143,12 @@
     padding: 0.7rem 1.2rem;
     font-size: 0.85rem;
   }
-  
+
   .btn {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
   }
-  
+
   .btn-lg {
     padding: 0.8rem 1.5rem;
     font-size: 0.9rem;

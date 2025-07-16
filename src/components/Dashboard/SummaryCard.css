@@ -1,17 +1,19 @@
 /**
- * SummaryCard Component Styles - Your Wingman's Daily Briefing
- * Full-width overview card with motivational quotes and key statistics
- * Command center overview for the modern Viking warrior
+ * SummaryCard Component Styles
  */
 
 .summary-card {
   grid-column: 1 / -1;
-  background: linear-gradient(135deg, rgba(30, 30, 50, 0.7) 0%, rgba(35, 35, 60, 0.8) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 50, 0.7) 0%,
+    rgba(35, 35, 60, 0.8) 100%
+  );
   height: auto !important;
   min-height: 200px;
 }
 
-/* Inspirational quote display with elegant styling */
+/* Inspirational quote display */
 .quote-box {
   background: rgba(100, 108, 255, 0.1);
   border-radius: 12px;
@@ -55,7 +57,9 @@
 .stat-item:hover {
   transform: translateY(-5px) scale(1.02);
   background: rgba(25, 25, 40, 0.7);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 15px rgba(100, 108, 255, 0.3);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 15px rgba(100, 108, 255, 0.3);
   border-color: rgba(100, 108, 255, 0.3);
 }
 

@@ -54,8 +54,7 @@ def create_user(user_data):
             logger.error("Username is required and cannot be empty")
             return None
         
-        # Username availability is already checked by frontend before calling this function
-        # No need to double-check here to avoid race conditions and timing issues
+    
         
         # Add timestamps with proper timezone
         now = datetime.now(timezone.utc).isoformat()

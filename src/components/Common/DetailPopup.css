@@ -75,17 +75,17 @@
   color: #a7f3c1;
 }
 
-.detail-type.meeting { 
+.detail-type.meeting {
   background: rgba(98, 19, 89, 0.15);
   color: #c4c6ff;
 }
 
-.detail-type.personal { 
+.detail-type.personal {
   background: rgba(74, 222, 128, 0.15);
   color: #a7f3c1;
 }
 
-.detail-type.reminder { 
+.detail-type.reminder {
   background: rgba(98, 93, 22, 0.15);
   color: #ffb5b5;
 }
@@ -152,7 +152,7 @@
   border: 1px solid rgba(100, 108, 255, 0.3);
 }
 
-
+/* Retry button styling */
 .detail-action-btn.retry {
   background: rgba(255, 165, 0, 0.2); /* Orange theme for retry */
   color: #ffcc80;
@@ -164,7 +164,7 @@
   transform: translateY(-2px);
 }
 
-
+/* Failed info styling */
 .detail-failed-info {
   display: flex;
   align-items: center;

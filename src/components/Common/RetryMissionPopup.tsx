@@ -13,7 +13,7 @@ interface RetryMissionPopupProps {
 }
 
 /**
- * RetryMissionPopup Component - Your Wingman's Mission Recovery System
+ * RetryMissionPopup Component - Wingman's Mission Recovery System
  * Provides interface for rescheduling failed tasks with time validation
  * Features intuitive time selection and error handling
  */
@@ -32,7 +32,7 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
 
   /**
    * Handles time input changes with error clearing
-   * Your Wingman provides immediate feedback on time selection
+   * Wingman provides immediate feedback on time selection
    */
   const handleTimeChange = useCallback((formattedTime: string) => {
     setNewTime(formattedTime);
@@ -63,11 +63,11 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
       try {
         await onRetry(newTime);
 
-        // 🔧 ADD: Dispatch retry refresh event for OSNotificationManager
+        // Dispatch retry refresh event for OSNotificationManager
         window.dispatchEvent(
           new CustomEvent("retry-mission-refresh", {
             detail: { taskId: task.id, newTime, timestamp: Date.now() },
-          })
+          }),
         );
 
         onClose();
@@ -78,7 +78,7 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
         setIsSubmitting(false);
       }
     },
-    [newTime, currentTime, onRetry, onClose, task.id]
+    [newTime, currentTime, onRetry, onClose, task.id],
   );
 
   // Optimized event handlers to prevent unnecessary re-renders
@@ -88,7 +88,7 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const handlePopupClick = useCallback((e: React.MouseEvent) => {
@@ -180,7 +180,7 @@ const RetryMissionPopup: React.FC<RetryMissionPopupProps> = ({
       handlePopupClick,
       handleCancelClick,
       onClose,
-    ]
+    ],
   );
 
   return <Portal container={container || document.body}>{popupContent}</Portal>;

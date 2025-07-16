@@ -1,17 +1,17 @@
-import React from 'react';
-import './LoadingScreen.css';
+import React from "react";
+import "./LoadingScreen.css";
 
 interface LoadingScreenProps {
   message?: string;
 }
 
 /**
- * LoadingScreen Component - Your Wingman's Patience Display
+ * LoadingScreen Component
  * Full-screen loading overlay with animated progress indicators
- * Shows while your faithful assistant prepares the battlefield
+ * Displays while Wingman works in the background
  */
-const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
-  message = 'Your Wingman is preparing...' 
+const LoadingScreen: React.FC<LoadingScreenProps> = ({
+  message = "Your Wingman is preparing...",
 }) => {
   return (
     <div className="loading-screen">

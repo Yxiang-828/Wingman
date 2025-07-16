@@ -46,7 +46,7 @@ const MonthView: React.FC = () => {
       const formattedDate = format(firstDayOfMonth, "yyyy-MM-dd");
       navigate(`/calendar/week?date=${formattedDate}`);
     },
-    [navigate, currentYear]
+    [navigate, currentYear],
   );
 
   /**
@@ -54,7 +54,9 @@ const MonthView: React.FC = () => {
    * Uses today's date as the target for immediate context   */
 
   return (
-    <div className="month-view-container">      {/* Header with year display and navigation options */}
+    <div className="month-view-container">
+      {" "}
+      {/* Header with year display and navigation options */}
       <div className="month-view-header">
         <button
           className="month-nav-btn"
@@ -72,7 +74,6 @@ const MonthView: React.FC = () => {
           &gt;
         </button>
       </div>
-
       {/* Interactive month selector grid */}
       <div className="ms-panel" role="grid" aria-label="Month Selector">
         {months.map((month, index) => (

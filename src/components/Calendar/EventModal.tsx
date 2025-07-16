@@ -86,7 +86,8 @@ const EventModal: React.FC<EventModalProps> = ({
       return;
     }
 
-    const userId = getCurrentUserId();    if (!userId) {
+    const userId = getCurrentUserId();
+    if (!userId) {
       console.log("Please log in to create events");
       return;
     }
@@ -100,8 +101,9 @@ const EventModal: React.FC<EventModalProps> = ({
           ...event,
           ...formData,
           user_id: userId,
-        });        await window.electronAPI.dialogs.alert("Event updated successfully!");
-        console.log("✅ Event updated:", updatedEvent);
+        });
+        await window.electronAPI.dialogs.alert("Event updated successfully!");
+        console.log("Event updated:", updatedEvent);
       } else {
         // Create new event
         console.log("fuck you no id bro");
@@ -111,13 +113,14 @@ const EventModal: React.FC<EventModalProps> = ({
         });
 
         await window.electronAPI.dialogs.alert("Event created successfully!");
-        console.log("✅ Event created:", newEvent);
+        console.log("Event created:", newEvent);
       }
 
-      onClose();    } catch (error) {
-      console.error("❌ Error saving event:", error);
+      onClose();
+    } catch (error) {
+      console.error("Error saving event:", error);
       await window.electronAPI.dialogs.alert(
-        error instanceof Error ? error.message : "Failed to save event"
+        error instanceof Error ? error.message : "Failed to save event",
       );
     } finally {
       setLoading(false);
@@ -127,21 +130,24 @@ const EventModal: React.FC<EventModalProps> = ({
   const handleDelete = async () => {
     if (!event?.id) return;
 
-    const confirmed = await window.electronAPI.dialogs.confirm("Are you sure you want to delete this event?");
-    
+    const confirmed = await window.electronAPI.dialogs.confirm(
+      "Are you sure you want to delete this event?",
+    );
+
     if (!confirmed) {
       return;
     }
 
-    setLoading(true);    try {
+    setLoading(true);
+    try {
       await deleteEvent(event.id);
       await window.electronAPI.dialogs.alert("Event deleted successfully!");
-      console.log("✅ Event deleted:", event.id);
+      console.log("Event deleted:", event.id);
       onClose();
     } catch (error) {
-      console.error("❌ Error deleting event:", error);
+      console.error("Error deleting event:", error);
       await window.electronAPI.dialogs.alert(
-        error instanceof Error ? error.message : "Failed to delete event"
+        error instanceof Error ? error.message : "Failed to delete event",
       );
     } finally {
       setLoading(false);
@@ -175,11 +181,9 @@ const EventModal: React.FC<EventModalProps> = ({
     "Other",
   ];
 
-  if (!isOpen) return null;  return (
-    <Modal
-      onClose={onClose}
-      title={event ? "Edit Event" : "Create New Event"}
-    >
+  if (!isOpen) return null;
+  return (
+    <Modal onClose={onClose} title={event ? "Edit Event" : "Create New Event"}>
       <form onSubmit={handleSubmit} className="event-form">
         {/* Event Title */}
         <div className="form-group">

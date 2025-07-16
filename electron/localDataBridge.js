@@ -1,10 +1,20 @@
-const path = require('path');
-const Database = require('better-sqlite3');
-const fs = require('fs');
-const { app, ipcMain } = require('electron');
+const path = require("path");
+const Database = require("better-sqlite3");
+const fs = require("fs");
+
+// Conditional Electron import - only load when not in test environment
+let app, ipcMain;
+if (
+  process.env.NODE_ENV !== "test" &&
+  process.env.JEST_WORKER_ID === undefined
+) {
+  const electron = require("electron");
+  app = electron.app;
+  ipcMain = electron.ipcMain;
+}
 
 // Define development mode flag
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === "development";
 
 /**
  * LocalDataManager handles all SQLite database operations for Wingman
@@ -12,30 +22,44 @@ const isDevelopment = process.env.NODE_ENV === 'development';
  * Uses better-sqlite3 for synchronous database operations with better performance
  */
 class LocalDataManager {
-  constructor() {
-    // Determine database location in user data directory
-    const userDataPath = app.getPath('userData');
-    const dataDir = path.join(userDataPath, 'wingman-data');
+  constructor(customDbPath = null) {
+    if (customDbPath) {
+      // Use custom path for testing
+      this.dbPath = customDbPath;
+      console.log(
+        "LocalDataManager initializing TEST database at:",
+        this.dbPath,
+      );
+    } else {
+      // Use normal Electron app path for production
+      const userDataPath = app.getPath("userData");
+      const dataDir = path.join(userDataPath, "wingman-data");
 
-    // Ensure data directory exists
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+      // Ensure data directory exists
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+
+      this.dbPath = path.join(dataDir, "wingman.db");
+      console.log(
+        "LocalDataManager initializing PRODUCTION database at:",
+        this.dbPath,
+      );
     }
-
-    this.dbPath = path.join(dataDir, 'wingman.db');
-    console.log('LocalDataManager initializing database at:', this.dbPath);
 
     try {
       // Enhanced SQLite configuration for multi-instance safety
       this.db = new Database(this.dbPath, {
-        timeout: 5000,              // 5 second timeout for locks
+        timeout: 5000, // 5 second timeout for locks
         verbose: isDevelopment ? console.log : null,
-        fileMustExist: false        // Create if doesn't exist
+        fileMustExist: false, // Create if doesn't exist
       });
       this.initializeDatabase();
-      console.log('SQLite database initialized successfully with enhanced configuration');
+      console.log(
+        "SQLite database initialized successfully with enhanced configuration",
+      );
     } catch (err) {
-      console.error('Error initializing SQLite database:', err);
+      console.error("Error initializing SQLite database:", err);
       throw err;
     }
   }
@@ -43,28 +67,28 @@ class LocalDataManager {
   /**
    * Initializes database schema and performs necessary migrations
    * Attempts to load schema from file, falls back to inline creation
-   */  initializeDatabase() {
+   */ initializeDatabase() {
     // Enhanced SQLite configuration for stability and performance
-    this.db.pragma('foreign_keys = ON');
-    this.db.pragma('journal_mode = WAL');      // Write-Ahead Logging for better concurrency
-    this.db.pragma('synchronous = NORMAL');    // Balanced safety/performance
-    this.db.pragma('cache_size = 1000');       // Cache for better performance
-    this.db.pragma('temp_store = MEMORY');     // Store temp tables in memory
-    this.db.pragma('mmap_size = 268435456');   // 256MB memory-mapped I/O
+    this.db.pragma("foreign_keys = ON");
+    this.db.pragma("journal_mode = WAL"); // Write-Ahead Logging for better concurrency
+    this.db.pragma("synchronous = NORMAL"); // Balanced safety/performance
+    this.db.pragma("cache_size = 1000"); // Cache for better performance
+    this.db.pragma("temp_store = MEMORY"); // Store temp tables in memory
+    this.db.pragma("mmap_size = 268435456"); // 256MB memory-mapped I/O
 
-    // Try to load schema from multiple possible locations
+    // Try to load schema from multiple possible locations (to ensure database is always initialized correctly)
     const schemaPaths = [
-      path.join(__dirname, '..', 'src', 'storage', 'schema.sql'),
-      path.join(__dirname, 'schema.sql'),
-      path.join(__dirname, '..', 'schema.sql')
+      path.join(__dirname, "..", "src", "storage", "schema.sql"),
+      path.join(__dirname, "schema.sql"),
+      path.join(__dirname, "..", "schema.sql"),
     ];
 
     let schemaLoaded = false;
 
     for (const schemaPath of schemaPaths) {
       if (fs.existsSync(schemaPath)) {
-        console.log('Loading schema from', schemaPath);
-        const schema = fs.readFileSync(schemaPath, 'utf8');
+        console.log("Loading schema from", schemaPath);
+        const schema = fs.readFileSync(schemaPath, "utf8");
         this.db.exec(schema);
         schemaLoaded = true;
         break;
@@ -73,7 +97,7 @@ class LocalDataManager {
 
     // Create tables programmatically if no schema file found
     if (!schemaLoaded) {
-      console.log('No schema file found, creating tables inline');
+      console.log("No schema file found, creating tables inline");
       this.createTablesInline();
     }
 
@@ -88,42 +112,157 @@ class LocalDataManager {
     try {
       // Check if 'failed' column exists in tasks table and add if missing
       const tableInfo = this.db.prepare("PRAGMA table_info(tasks)").all();
-      const hasFailedColumn = tableInfo.some(column => column.name === 'failed');
+      const hasFailedColumn = tableInfo.some(
+        (column) => column.name === "failed",
+      );
 
       if (!hasFailedColumn) {
-        console.log('Adding failed column to tasks table');
-        this.db.exec('ALTER TABLE tasks ADD COLUMN failed BOOLEAN DEFAULT FALSE');
+        console.log("Adding failed column to tasks table");
+        this.db.exec(
+          "ALTER TABLE tasks ADD COLUMN failed BOOLEAN DEFAULT FALSE",
+        );
       }
 
       // Check if 'recurring_id' column exists in tasks table and add if missing
-      const hasRecurringIdColumn = tableInfo.some(column => column.name === 'recurring_id');
+      const hasRecurringIdColumn = tableInfo.some(
+        (column) => column.name === "recurring_id",
+      );
 
       if (!hasRecurringIdColumn) {
-        console.log('Adding recurring_id column to tasks table');
-        this.db.exec('ALTER TABLE tasks ADD COLUMN recurring_id INTEGER');
+        console.log("Adding recurring_id column to tasks table");
+        this.db.exec("ALTER TABLE tasks ADD COLUMN recurring_id INTEGER");
       }
 
       // Migrate users table to add new columns for offline authentication
-      console.log('Checking users table for authentication columns...');
+      console.log("Checking users table for authentication columns...");
       const usersTableInfo = this.db.prepare("PRAGMA table_info(users)").all();
 
-      const hasNameColumn = usersTableInfo.some(column => column.name === 'name');
-      const hasPasswordColumn = usersTableInfo.some(column => column.name === 'password');
-      const hasLastSyncedColumn = usersTableInfo.some(column => column.name === 'last_synced_at');
+      const hasNameColumn = usersTableInfo.some(
+        (column) => column.name === "name",
+      );
+      const hasPasswordColumn = usersTableInfo.some(
+        (column) => column.name === "password",
+      );
+      const hasLastSyncedColumn = usersTableInfo.some(
+        (column) => column.name === "last_synced_at",
+      );
 
       if (!hasNameColumn) {
-        console.log('Adding name column to users table');
-        this.db.exec('ALTER TABLE users ADD COLUMN name TEXT');
+        console.log("Adding name column to users table");
+        this.db.exec("ALTER TABLE users ADD COLUMN name TEXT");
       }
 
       if (!hasPasswordColumn) {
-        console.log('Adding password column to users table');
-        this.db.exec('ALTER TABLE users ADD COLUMN password TEXT');
+        console.log("Adding password column to users table");
+        this.db.exec("ALTER TABLE users ADD COLUMN password TEXT");
       }
 
       if (!hasLastSyncedColumn) {
-        console.log('Adding last_synced_at column to users table');
-        this.db.exec('ALTER TABLE users ADD COLUMN last_synced_at TEXT');
+        console.log("Adding last_synced_at column to users table");
+        this.db.exec("ALTER TABLE users ADD COLUMN last_synced_at TEXT");
+      }
+
+      // Check and fix user_settings table schema
+      try {
+        const userSettingsInfo = this.db
+          .prepare("PRAGMA table_info(user_settings)")
+          .all();
+        const hasNotificationsEnabled = userSettingsInfo.some(
+          (col) => col.name === "notifications_enabled",
+        );
+        const hasBackgroundColumn = userSettingsInfo.some(
+          (col) => col.name === "background",
+        );
+
+        if (userSettingsInfo.length > 0) {
+          if (!hasNotificationsEnabled) {
+            console.log(
+              "Adding notifications_enabled column to user_settings table",
+            );
+            this.db.exec(
+              "ALTER TABLE user_settings ADD COLUMN notifications_enabled INTEGER DEFAULT 1",
+            );
+          }
+
+          if (hasBackgroundColumn) {
+            console.log(
+              "Removing deprecated background column from user_settings table",
+            );
+            // SQLite doesn't support DROP COLUMN, so we need to recreate the table
+            this.db.exec(`
+              CREATE TABLE user_settings_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL UNIQUE,
+                ai_model TEXT DEFAULT 'llama3.2:1b',
+                ai_model_auto_selected INTEGER DEFAULT 1,
+                theme TEXT DEFAULT 'dark',
+                notifications_enabled INTEGER DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+              )
+            `);
+            this.db.exec(`
+              INSERT INTO user_settings_new (id, user_id, ai_model, ai_model_auto_selected, theme, notifications_enabled, created_at, updated_at)
+              SELECT id, user_id, ai_model, 
+                CASE WHEN ai_model_auto_selected = 'true' OR ai_model_auto_selected = 1 THEN 1 ELSE 0 END,
+                theme, 
+                COALESCE(notifications_enabled, 1),
+                created_at, updated_at
+              FROM user_settings
+            `);
+            this.db.exec("DROP TABLE user_settings");
+            this.db.exec(
+              "ALTER TABLE user_settings_new RENAME TO user_settings",
+            );
+          }
+        }
+      } catch (error) {
+        console.log(
+          "user_settings table does not exist yet, will be created with correct schema",
+        );
+      }
+
+      // Check and fix recurring_tasks table schema
+      try {
+        const recurringTasksInfo = this.db
+          .prepare("PRAGMA table_info(recurring_tasks)")
+          .all();
+        if (recurringTasksInfo.length > 0) {
+          const isActiveColumn = recurringTasksInfo.find(
+            (col) => col.name === "is_active",
+          );
+          if (isActiveColumn && isActiveColumn.type === "BOOLEAN") {
+            console.log(
+              "Fixing is_active column type in recurring_tasks table",
+            );
+            this.db.exec(`
+              CREATE TABLE recurring_tasks_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                task_title TEXT NOT NULL,
+                task_time TEXT,
+                weekdays TEXT NOT NULL,
+                is_active INTEGER DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+              )
+            `);
+            this.db.exec(`
+              INSERT INTO recurring_tasks_new (id, user_id, task_title, task_time, weekdays, is_active, created_at)
+              SELECT id, user_id, task_title, task_time, weekdays,
+                CASE WHEN is_active = 'true' OR is_active = 1 THEN 1 ELSE 0 END,
+                created_at
+              FROM recurring_tasks
+            `);
+            this.db.exec("DROP TABLE recurring_tasks");
+            this.db.exec(
+              "ALTER TABLE recurring_tasks_new RENAME TO recurring_tasks",
+            );
+          }
+        }
+      } catch (error) {
+        console.log(
+          "recurring_tasks table does not exist yet, will be created with correct schema",
+        );
       }
 
       // Ensure recurring_tasks table exists
@@ -134,7 +273,7 @@ class LocalDataManager {
           task_title TEXT NOT NULL,
           task_time TEXT,
           weekdays TEXT NOT NULL,
-          is_active BOOLEAN DEFAULT TRUE,
+          is_active INTEGER DEFAULT 1,
           created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
       `);
@@ -158,13 +297,13 @@ class LocalDataManager {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_id TEXT NOT NULL UNIQUE,
           ai_model TEXT DEFAULT 'llama3.2:1b',
-          ai_model_auto_selected BOOLEAN DEFAULT FALSE,
+          ai_model_auto_selected INTEGER DEFAULT 1,
           theme TEXT DEFAULT 'dark',
-          background TEXT DEFAULT 'default',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          notifications_enabled INTEGER DEFAULT 1,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
-      `);      // Ensure chat quick prompts table exists
+      `); // Ensure chat quick prompts table exists
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS chat_quick_prompts (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -182,9 +321,8 @@ class LocalDataManager {
         CREATE INDEX IF NOT EXISTS idx_recurring_tasks_user_id ON recurring_tasks(user_id);
         CREATE INDEX IF NOT EXISTS idx_recurring_tasks_active ON recurring_tasks(user_id, is_active);
       `);
-
     } catch (error) {
-      console.error('Migration error:', error);
+      console.error("Migration error:", error);
     }
   }
 
@@ -200,14 +338,13 @@ class LocalDataManager {
         title TEXT NOT NULL,
         task_date TEXT,
         task_time TEXT,
-        completed BOOLEAN DEFAULT FALSE,
-        failed BOOLEAN DEFAULT FALSE,
+        completed INTEGER DEFAULT 0,
+        failed INTEGER DEFAULT 0,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
         task_type TEXT,
         due_date TEXT,
         last_reset_date TEXT,
-        urgency_level INTEGER,
         status TEXT,
         recurring_id INTEGER
       )
@@ -255,7 +392,7 @@ class LocalDataManager {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER,
         user_id TEXT NOT NULL,
-        is_ai BOOLEAN DEFAULT FALSE,
+        is_ai INTEGER DEFAULT 0,
         message TEXT NOT NULL,
         timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
         updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -269,7 +406,7 @@ class LocalDataManager {
         user_id TEXT NOT NULL,
         message TEXT NOT NULL,
         timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
-        is_ai BOOLEAN DEFAULT FALSE
+        is_ai INTEGER DEFAULT 0
       )
     `;
 
@@ -280,9 +417,9 @@ class LocalDataManager {
       this.db.exec(createChatSessionsTable);
       this.db.exec(createChatMessagesTable);
       this.db.exec(createChatHistoryTable);
-      console.log('Tables created inline successfully');
+      console.log("Tables created inline successfully");
     } catch (error) {
-      console.error('Error creating tables inline:', error);
+      console.error("Error creating tables inline:", error);
       throw error;
     }
   }
@@ -305,16 +442,15 @@ class LocalDataManager {
       const tasks = stmt.all(userId);
 
       // Convert SQLite integers back to booleans for JavaScript compatibility
-      const convertedTasks = tasks.map(task => ({
+      const convertedTasks = tasks.map((task) => ({
         ...task,
         completed: task.completed === 1,
-        failed: task.failed === 1
+        failed: task.failed === 1,
       }));
 
       return convertedTasks;
-
     } catch (error) {
-      console.error('Error getting all tasks:', error);
+      console.error("Error getting all tasks:", error);
       return [];
     }
   }
@@ -341,22 +477,27 @@ class LocalDataManager {
       if (tasks.length > 0) {
         const now = new Date();
         const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-        const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const currentDate = now.toISOString().split("T")[0]; // YYYY-MM-DD format
 
         let updatedCount = 0;
 
-        tasks.forEach(task => {
+        tasks.forEach((task) => {
           // Only check tasks for TODAY that are overdue, not future dates
-          if (task.task_date === currentDate &&
-            !task.completed && !task.failed && task.task_time &&
-            task.task_time !== 'All day') {
-
-            // Use proper time comparison instead of string comparison
+          if (
+            task.task_date === currentDate &&
+            !task.completed &&
+            !task.failed &&
+            task.task_time &&
+            task.task_time !== "All day"
+          ) {
+            // time comparison instead of string comparison (This used to be a string comparison bug)
             const taskTimeMinutes = this.timeToMinutes(task.task_time);
             const currentTimeMinutes = this.timeToMinutes(currentTime);
 
             if (taskTimeMinutes < currentTimeMinutes) {
-              console.log(`⏰ Auto-marking task "${task.title}" as failed (${task.task_time} < ${currentTime} on ${task.task_date})`);
+              console.log(
+                `⏰ Auto-marking task "${task.title}" as failed (${task.task_time} < ${currentTime} on ${task.task_date})`,
+              );
 
               // Mark as failed in database
               const updateStmt = this.db.prepare(`
@@ -374,21 +515,22 @@ class LocalDataManager {
         });
 
         if (updatedCount > 0) {
-          console.log(`Auto-marked ${updatedCount} tasks as failed for ${date}`);
+          console.log(
+            `Auto-marked ${updatedCount} tasks as failed for ${date}`,
+          );
         }
       }
 
       // Convert SQLite integers back to booleans for JavaScript compatibility
-      const convertedTasks = tasks.map(task => ({
+      const convertedTasks = tasks.map((task) => ({
         ...task,
         completed: task.completed === 1,
-        failed: task.failed === 1
+        failed: task.failed === 1,
       }));
 
       return convertedTasks;
-
     } catch (error) {
-      console.error('Error getting tasks:', error);
+      console.error("Error getting tasks:", error);
       return [];
     }
   }
@@ -397,7 +539,8 @@ class LocalDataManager {
    * Retrieves all events for a specific user across all dates
    * @param {string} userId - The user identifier
    * @returns {Array} Array of event objects
-   */  getAllEvents(userId) {
+   */
+  getAllEvents(userId) {
     try {
       const stmt = this.db.prepare(`
         SELECT * FROM calendar_events 
@@ -407,9 +550,8 @@ class LocalDataManager {
 
       const events = stmt.all(userId);
       return events;
-
     } catch (error) {
-      console.error('Error getting all events:', error);
+      console.error("Error getting all events:", error);
       return [];
     }
   }
@@ -429,9 +571,8 @@ class LocalDataManager {
 
       const entries = stmt.all(userId);
       return entries;
-
     } catch (error) {
-      console.error('Error getting all diary entries:', error);
+      console.error("Error getting all diary entries:", error);
       return [];
     }
   }
@@ -446,13 +587,13 @@ class LocalDataManager {
     const sanitized = {};
 
     for (const [key, value] of Object.entries(data)) {
-      if (typeof value === 'boolean') {
+      if (typeof value === "boolean") {
         // SQLite stores booleans as integers
         sanitized[key] = value ? 1 : 0;
       } else if (value === undefined) {
         // Convert undefined to null for database storage
         sanitized[key] = null;
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === "object" && value !== null) {
         // Convert complex objects to JSON strings if needed
         sanitized[key] = JSON.stringify(value);
       } else {
@@ -472,7 +613,7 @@ class LocalDataManager {
    */
   saveTask(task) {
     try {
-      console.log('Attempting to save task:', task);
+      console.log("Attempting to save task:", task);
 
       // Convert data types for SQLite compatibility
       const sanitizedTask = {
@@ -484,23 +625,23 @@ class LocalDataManager {
         completed: task.completed ? 1 : 0,
         failed: task.failed ? 1 : 0,
         // Handle optional fields
-        task_type: task.task_type || null, due_date: task.due_date || null,
+        task_type: task.task_type || null,
+        due_date: task.due_date || null,
         last_reset_date: task.last_reset_date || null,
-        urgency_level: task.urgency_level || null,
         status: task.status || null,
         recurring_id: task.recurring_id || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
-      console.log('Sanitized task data:', sanitizedTask);
+      console.log("Sanitized task data:", sanitizedTask);
 
       const stmt = this.db.prepare(`
         INSERT INTO tasks (
           user_id, title, task_date, task_time, completed, failed,
-          task_type, due_date, last_reset_date, urgency_level, status,
+          task_type, due_date, last_reset_date, status,
           recurring_id, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       const result = stmt.run(
@@ -513,19 +654,17 @@ class LocalDataManager {
         sanitizedTask.task_type,
         sanitizedTask.due_date,
         sanitizedTask.last_reset_date,
-        sanitizedTask.urgency_level,
         sanitizedTask.status,
         sanitizedTask.recurring_id,
         sanitizedTask.created_at,
-        sanitizedTask.updated_at
+        sanitizedTask.updated_at,
       );
 
-      console.log('Task saved successfully with ID:', result.lastInsertRowid);
+      console.log("Task saved successfully with ID:", result.lastInsertRowid);
       return { id: result.lastInsertRowid, ...sanitizedTask };
-
     } catch (error) {
-      console.error('Error saving task:', error);
-      console.error('Problematic task data:', task);
+      console.error("Error saving task:", error);
+      console.error("Problematic task data:", task);
       throw error;
     }
   }
@@ -536,12 +675,12 @@ class LocalDataManager {
    * @param {number} id - Task ID to update
    * @param {Object} updates - Object containing fields to update
    * @returns {Object} Updated task data
-   */  updateTask(id, updates) {
+   */ updateTask(id, updates) {
     try {
-      console.log('Attempting to update task ID:', id, 'with:', updates);
+      console.log("Attempting to update task ID:", id, "with:", updates);
 
       // First, get the current task to check if it's a recurring task
-      const getTaskStmt = this.db.prepare('SELECT * FROM tasks WHERE id = ?');
+      const getTaskStmt = this.db.prepare("SELECT * FROM tasks WHERE id = ?");
       const currentTask = getTaskStmt.get(id);
 
       if (!currentTask) {
@@ -552,7 +691,7 @@ class LocalDataManager {
       const sanitizedUpdates = {};
 
       for (const [key, value] of Object.entries(updates)) {
-        if (key === 'completed' || key === 'failed') {
+        if (key === "completed" || key === "failed") {
           // Convert boolean to integer
           sanitizedUpdates[key] = value ? 1 : 0;
         } else if (value === undefined) {
@@ -566,12 +705,12 @@ class LocalDataManager {
       // Always update the timestamp for tracking purposes
       sanitizedUpdates.updated_at = new Date().toISOString();
 
-      console.log('Sanitized updates:', sanitizedUpdates);
+      console.log("Sanitized updates:", sanitizedUpdates);
 
       // Build dynamic SQL query for partial updates
       const setClause = Object.keys(sanitizedUpdates)
-        .map(key => `${key} = ?`)
-        .join(', ');
+        .map((key) => `${key} = ?`)
+        .join(", ");
 
       const stmt = this.db.prepare(`
         UPDATE tasks 
@@ -580,13 +719,14 @@ class LocalDataManager {
       `);
 
       const values = [...Object.values(sanitizedUpdates), id];
-      console.log('SQL values:', values);
+      console.log("SQL values:", values);
 
-      const result = stmt.run(...values); if (result.changes === 0) {
+      const result = stmt.run(...values);
+      if (result.changes === 0) {
         throw new Error(`No task found with ID: ${id}`);
       }
 
-      console.log('Task updated successfully, changes:', result.changes);
+      console.log("Task updated successfully, changes:", result.changes);
 
       // Convert integer values back to booleans for the response
       const responseData = { id, ...sanitizedUpdates };
@@ -598,10 +738,9 @@ class LocalDataManager {
       }
 
       return responseData;
-
     } catch (error) {
-      console.error('Error updating task:', error);
-      console.error('Problematic ID:', id, 'Updates:', updates);
+      console.error("Error updating task:", error);
+      console.error("Problematic ID:", id, "Updates:", updates);
       throw error;
     }
   }
@@ -613,7 +752,7 @@ class LocalDataManager {
    */
   deleteTask(id) {
     try {
-      const stmt = this.db.prepare('DELETE FROM tasks WHERE id = ?');
+      const stmt = this.db.prepare("DELETE FROM tasks WHERE id = ?");
       const result = stmt.run(id);
 
       if (result.changes > 0) {
@@ -621,18 +760,15 @@ class LocalDataManager {
         return { success: true, deleted: true };
       } else {
         console.log(`No task found with ID ${id}`);
-        return { success: false, error: 'Task not found' };
+        return { success: false, error: "Task not found" };
       }
-
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error("Error deleting task:", error);
       throw error;
     }
   }
 
-  // ============================================================================
   // RECURRING TASK OPERATIONS
-  // ============================================================================
 
   /**
    * Saves a new recurring task template
@@ -641,7 +777,7 @@ class LocalDataManager {
    */
   saveRecurringTask(recurringTask) {
     try {
-      console.log('Saving recurring task template:', recurringTask);
+      console.log("Saving recurring task template:", recurringTask);
 
       const sanitizedData = {
         user_id: recurringTask.user_id || null,
@@ -651,7 +787,7 @@ class LocalDataManager {
           ? JSON.stringify(recurringTask.weekdays)
           : recurringTask.weekdays,
         is_active: recurringTask.is_active !== false ? 1 : 0,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
 
       const stmt = this.db.prepare(`
@@ -666,14 +802,16 @@ class LocalDataManager {
         sanitizedData.task_time,
         sanitizedData.weekdays,
         sanitizedData.is_active,
-        sanitizedData.created_at
+        sanitizedData.created_at,
       );
 
-      console.log('Recurring task template saved with ID:', result.lastInsertRowid);
+      console.log(
+        "Recurring task template saved with ID:",
+        result.lastInsertRowid,
+      );
       return { id: result.lastInsertRowid, ...sanitizedData };
-
     } catch (error) {
-      console.error('Error saving recurring task template:', error);
+      console.error("Error saving recurring task template:", error);
       throw error;
     }
   }
@@ -694,14 +832,13 @@ class LocalDataManager {
       const templates = stmt.all(userId);
 
       // Parse weekdays JSON for each template
-      return templates.map(template => ({
+      return templates.map((template) => ({
         ...template,
-        weekdays: JSON.parse(template.weekdays || '[]'),
-        is_active: template.is_active === 1
+        weekdays: JSON.parse(template.weekdays || "[]"),
+        is_active: template.is_active === 1,
       }));
-
     } catch (error) {
-      console.error('Error getting recurring task templates:', error);
+      console.error("Error getting recurring task templates:", error);
       return [];
     }
   }
@@ -714,14 +851,14 @@ class LocalDataManager {
    */
   updateRecurringTask(id, updates) {
     try {
-      console.log('Updating recurring task template ID:', id, 'with:', updates);
+      console.log("Updating recurring task template ID:", id, "with:", updates);
 
       const sanitizedUpdates = {};
 
       for (const [key, value] of Object.entries(updates)) {
-        if (key === 'is_active') {
+        if (key === "is_active") {
           sanitizedUpdates[key] = value ? 1 : 0;
-        } else if (key === 'weekdays' && Array.isArray(value)) {
+        } else if (key === "weekdays" && Array.isArray(value)) {
           sanitizedUpdates[key] = JSON.stringify(value);
         } else if (value === undefined) {
           sanitizedUpdates[key] = null;
@@ -731,8 +868,8 @@ class LocalDataManager {
       }
 
       const setClause = Object.keys(sanitizedUpdates)
-        .map(key => `${key} = ?`)
-        .join(', ');
+        .map((key) => `${key} = ?`)
+        .join(", ");
 
       const stmt = this.db.prepare(`
         UPDATE recurring_tasks 
@@ -747,11 +884,10 @@ class LocalDataManager {
         throw new Error(`No recurring task template found with ID: ${id}`);
       }
 
-      console.log('Recurring task template updated successfully');
+      console.log("Recurring task template updated successfully");
       return { success: true, changes: result.changes };
-
     } catch (error) {
-      console.error('Error updating recurring task template:', error);
+      console.error("Error updating recurring task template:", error);
       throw error;
     }
   }
@@ -760,19 +896,23 @@ class LocalDataManager {
    * Deletes a recurring task template from the database
    * @param {number} id - Recurring task template ID to delete
    * @returns {Object} Success status and deletion confirmation
-   */  deleteRecurringTask(id) {
+   */ deleteRecurringTask(id) {
     try {
-      console.log('Deleting recurring task template ID:', id);
+      console.log("Deleting recurring task template ID:", id);
 
       // Start a transaction to delete both the template and all generated tasks
       const deleteTransaction = this.db.transaction(() => {
         // First, count how many tasks will be deleted for logging
-        const countStmt = this.db.prepare('SELECT COUNT(*) as count FROM tasks WHERE recurring_id = ?');
+        const countStmt = this.db.prepare(
+          "SELECT COUNT(*) as count FROM tasks WHERE recurring_id = ?",
+        );
         const taskCount = countStmt.get(id)?.count || 0;
 
         // Delete all tasks that were generated from this template in batches for better performance
         if (taskCount > 0) {
-          console.log(`Preparing to delete ${taskCount} generated tasks from template ${id}`);
+          console.log(
+            `Preparing to delete ${taskCount} generated tasks from template ${id}`,
+          );
 
           // Use a more efficient delete with LIMIT for very large datasets
           if (taskCount > 1000) {
@@ -796,14 +936,20 @@ class LocalDataManager {
             console.log(`Deleted ${deleted} tasks in batches`);
           } else {
             // For smaller datasets, delete all at once
-            const deleteTasksStmt = this.db.prepare('DELETE FROM tasks WHERE recurring_id = ?');
+            const deleteTasksStmt = this.db.prepare(
+              "DELETE FROM tasks WHERE recurring_id = ?",
+            );
             const taskResult = deleteTasksStmt.run(id);
-            console.log(`Deleted ${taskResult.changes} generated tasks from template ${id}`);
+            console.log(
+              `Deleted ${taskResult.changes} generated tasks from template ${id}`,
+            );
           }
         }
 
         // Then delete the recurring task template itself
-        const deleteTemplateStmt = this.db.prepare('DELETE FROM recurring_tasks WHERE id = ?');
+        const deleteTemplateStmt = this.db.prepare(
+          "DELETE FROM recurring_tasks WHERE id = ?",
+        );
         const templateResult = deleteTemplateStmt.run(id);
 
         return { taskCount, templateResult };
@@ -812,20 +958,21 @@ class LocalDataManager {
       const results = deleteTransaction();
 
       if (results.templateResult.changes > 0) {
-        console.log(`Recurring task template ${id} and ${results.taskCount} generated tasks deleted successfully`);
+        console.log(
+          `Recurring task template ${id} and ${results.taskCount} generated tasks deleted successfully`,
+        );
         return {
           success: true,
           deleted: true,
           changes: results.templateResult.changes,
-          deletedTasks: results.taskCount
+          deletedTasks: results.taskCount,
         };
       } else {
         console.log(`No recurring task template found with ID ${id}`);
-        return { success: false, error: 'Recurring task template not found' };
+        return { success: false, error: "Recurring task template not found" };
       }
-
     } catch (error) {
-      console.error('Error deleting recurring task template:', error);
+      console.error("Error deleting recurring task template:", error);
       throw error;
     }
   }
@@ -839,11 +986,11 @@ class LocalDataManager {
     try {
       // Enhanced validation
       if (!userId) {
-        throw new Error('User ID is required for recurring task generation');
+        throw new Error("User ID is required for recurring task generation");
       }
 
       // Use provided date or default to today
-      const date = targetDate || new Date().toISOString().split('T')[0];
+      const date = targetDate || new Date().toISOString().split("T")[0];
 
       // Validate date format
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -857,7 +1004,9 @@ class LocalDataManager {
 
       const dayOfWeek = parsedDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
-      console.log(`Generating recurring tasks for user ${userId} on ${date} (day ${dayOfWeek})`);
+      console.log(
+        `Generating recurring tasks for user ${userId} on ${date} (day ${dayOfWeek})`,
+      );
 
       // Find active recurring templates for this user that include today's weekday
       const stmt = this.db.prepare(`
@@ -866,7 +1015,7 @@ class LocalDataManager {
       `);
 
       const templates = stmt.all(userId);
-      const eligibleTemplates = templates.filter(template => {
+      const eligibleTemplates = templates.filter((template) => {
         try {
           if (!template.weekdays) {
             console.warn(`Template ${template.id} has no weekdays defined`);
@@ -876,23 +1025,36 @@ class LocalDataManager {
           const weekdays = JSON.parse(template.weekdays);
 
           if (!Array.isArray(weekdays)) {
-            console.error(`Template ${template.id} has invalid weekdays format (not array)`);
+            console.error(
+              `Template ${template.id} has invalid weekdays format (not array)`,
+            );
             return false;
           }
 
-          if (weekdays.some(day => typeof day !== 'number' || day < 0 || day > 6)) {
-            console.error(`Template ${template.id} has invalid weekday values (must be 0-6)`);
+          if (
+            weekdays.some(
+              (day) => typeof day !== "number" || day < 0 || day > 6,
+            )
+          ) {
+            console.error(
+              `Template ${template.id} has invalid weekday values (must be 0-6)`,
+            );
             return false;
           }
 
           return weekdays.includes(dayOfWeek);
         } catch (e) {
-          console.error(`Error processing template ${template.id} weekdays:`, e);
+          console.error(
+            `Error processing template ${template.id} weekdays:`,
+            e,
+          );
           return false;
         }
       });
 
-      console.log(`Found ${eligibleTemplates.length} eligible templates for day ${dayOfWeek}`);
+      console.log(
+        `Found ${eligibleTemplates.length} eligible templates for day ${dayOfWeek}`,
+      );
 
       // Check which tasks already exist for this date
       const existingTasksStmt = this.db.prepare(`
@@ -901,19 +1063,23 @@ class LocalDataManager {
       `);
 
       const existingTasks = existingTasksStmt.all(userId, date);
-      const existingRecurringIds = new Set(existingTasks.map(task => task.recurring_id));      // Filter out templates that already have tasks created for today
-      const templatesNeedingTasks = eligibleTemplates.filter(template =>
-        !existingRecurringIds.has(template.id)
+      const existingRecurringIds = new Set(
+        existingTasks.map((task) => task.recurring_id),
+      ); // Filter out templates that already have tasks created for today
+      const templatesNeedingTasks = eligibleTemplates.filter(
+        (template) => !existingRecurringIds.has(template.id),
       );
 
-      console.log(`${templatesNeedingTasks.length} templates need new tasks created`);
+      console.log(
+        `${templatesNeedingTasks.length} templates need new tasks created`,
+      );
 
       // Create task instances for templates that don't have tasks yet
       const createdTasks = [];
       const failedTasks = [];
 
       if (templatesNeedingTasks.length === 0) {
-        console.log('No new recurring tasks needed for today');
+        console.log("No new recurring tasks needed for today");
         return {
           success: true,
           date: date,
@@ -923,7 +1089,7 @@ class LocalDataManager {
           existingTasks: existingTasks.length,
           createdTasks: 0,
           failedTasks: 0,
-          tasks: []
+          tasks: [],
         };
       }
 
@@ -937,24 +1103,30 @@ class LocalDataManager {
       for (const template of templatesNeedingTasks) {
         try {
           // Enhanced validation for template
-          if (!template.task_title || template.task_title.trim() === '') {
+          if (!template.task_title || template.task_title.trim() === "") {
             console.warn(`Skipping template ${template.id}: Empty task title`);
             failedTasks.push({
               templateId: template.id,
-              reason: 'Empty task title'
+              reason: "Empty task title",
             });
             continue;
           }
 
           // Validate task_time if provided
-          if (template.task_time && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(template.task_time)) {
-            console.warn(`Skipping template ${template.id}: Invalid time format: ${template.task_time}`);
+          if (
+            template.task_time &&
+            !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(template.task_time)
+          ) {
+            console.warn(
+              `Skipping template ${template.id}: Invalid time format: ${template.task_time}`,
+            );
             failedTasks.push({
               templateId: template.id,
-              reason: `Invalid time format: ${template.task_time}`
+              reason: `Invalid time format: ${template.task_time}`,
             });
             continue;
-          } const now = new Date().toISOString();
+          }
+          const now = new Date().toISOString();
 
           const result = insertTaskStmt.run(
             userId,
@@ -963,7 +1135,7 @@ class LocalDataManager {
             template.task_time,
             template.id, // recurring_id
             now,
-            now
+            now,
           );
 
           const newTask = {
@@ -976,16 +1148,21 @@ class LocalDataManager {
             failed: false,
             recurring_id: template.id,
             created_at: now,
-            updated_at: now
+            updated_at: now,
           };
 
           createdTasks.push(newTask);
-          console.log(`Created recurring task: "${template.task_title}" with ID ${result.lastInsertRowid}`);
+          console.log(
+            `Created recurring task: "${template.task_title}" with ID ${result.lastInsertRowid}`,
+          );
         } catch (taskError) {
-          console.error(`Failed to create task from template ${template.id}:`, taskError);
+          console.error(
+            `Failed to create task from template ${template.id}:`,
+            taskError,
+          );
           failedTasks.push({
             templateId: template.id,
-            reason: taskError.message
+            reason: taskError.message,
           });
         }
       }
@@ -1000,14 +1177,13 @@ class LocalDataManager {
         createdTasks: createdTasks.length,
         failedTasks: failedTasks.length,
         tasks: createdTasks,
-        errors: failedTasks
+        errors: failedTasks,
       };
-
     } catch (error) {
-      console.error('Error generating recurring tasks:', error);
+      console.error("Error generating recurring tasks:", error);
       return {
         success: false,
-        date: targetDate || new Date().toISOString().split('T')[0],
+        date: targetDate || new Date().toISOString().split("T")[0],
         dayOfWeek: -1,
         totalTemplates: 0,
         eligibleTemplates: 0,
@@ -1015,7 +1191,7 @@ class LocalDataManager {
         createdTasks: 0,
         failedTasks: 0,
         tasks: [],
-        errors: [{ reason: error.message }]
+        errors: [{ reason: error.message }],
       };
     }
   }
@@ -1036,21 +1212,22 @@ class LocalDataManager {
       const task = taskStmt.get(taskId);
 
       if (!task) {
-        return { success: false, message: 'Task not found or not recurring' };
+        return { success: false, message: "Task not found or not recurring" };
       }
 
       // For now, just log the completion
-      // Future enhancement: Could trigger next occurrence generation
-      console.log(`Recurring task completed: ${task.title} (recurring_id: ${task.recurring_id})`);
+      // Future enhancement: Could trigger next occurrence generation (!not in orbital)
+      console.log(
+        `Recurring task completed: ${task.title} (recurring_id: ${task.recurring_id})`,
+      );
 
       return {
         success: true,
         task: task,
-        message: 'Recurring task completion handled'
+        message: "Recurring task completion handled",
       };
-
     } catch (error) {
-      console.error('Error handling recurring task completion:', error);
+      console.error("Error handling recurring task completion:", error);
       throw error;
     }
   }
@@ -1070,7 +1247,7 @@ class LocalDataManager {
       `);
       return stmt.all(userId, date);
     } catch (error) {
-      console.error('Error getting events:', error);
+      console.error("Error getting events:", error);
       return [];
     }
   }
@@ -1082,10 +1259,10 @@ class LocalDataManager {
    */
   updateEvent(event) {
     try {
-      console.log('Attempting to update event ID:', event.id);
+      console.log("Attempting to update event ID:", event.id);
 
       if (!event.id) {
-        throw new Error('Event ID is required for updates');
+        throw new Error("Event ID is required for updates");
       }
 
       const sanitizedEvent = this.sanitizeForSQLite({
@@ -1094,7 +1271,7 @@ class LocalDataManager {
         event_time: event.event_time || null,
         type: event.type || null,
         description: event.description || null,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
 
       const stmt = this.db.prepare(`
@@ -1111,18 +1288,17 @@ class LocalDataManager {
         sanitizedEvent.description,
         sanitizedEvent.updated_at,
         event.id,
-        event.user_id
+        event.user_id,
       );
 
       if (result.changes === 0) {
         throw new Error(`No event found with ID: ${event.id}`);
       }
 
-      console.log('Event updated successfully, changes:', result.changes);
+      console.log("Event updated successfully, changes:", result.changes);
       return { id: event.id, ...sanitizedEvent, user_id: event.user_id };
-
     } catch (error) {
-      console.error('Error updating event:', error);
+      console.error("Error updating event:", error);
       throw error;
     }
   }
@@ -1134,7 +1310,7 @@ class LocalDataManager {
    */
   saveEvent(event) {
     try {
-      console.log('Attempting to save event:', event);
+      console.log("Attempting to save event:", event);
 
       // Use helper function for data sanitization
       const sanitizedEvent = this.sanitizeForSQLite({
@@ -1145,7 +1321,7 @@ class LocalDataManager {
         type: event.type || null,
         description: event.description || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
 
       const stmt = this.db.prepare(`
@@ -1163,14 +1339,13 @@ class LocalDataManager {
         sanitizedEvent.type,
         sanitizedEvent.description,
         sanitizedEvent.created_at,
-        sanitizedEvent.updated_at
+        sanitizedEvent.updated_at,
       );
 
-      console.log('Event saved successfully with ID:', result.lastInsertRowid);
+      console.log("Event saved successfully with ID:", result.lastInsertRowid);
       return { id: result.lastInsertRowid, ...sanitizedEvent };
-
     } catch (error) {
-      console.error('Error saving event:', error);
+      console.error("Error saving event:", error);
       throw error;
     }
   }
@@ -1182,11 +1357,11 @@ class LocalDataManager {
    */
   deleteEvent(id) {
     try {
-      const stmt = this.db.prepare('DELETE FROM calendar_events WHERE id = ?');
+      const stmt = this.db.prepare("DELETE FROM calendar_events WHERE id = ?");
       const result = stmt.run(id);
       return { success: result.changes > 0, deleted: result.changes > 0 };
     } catch (error) {
-      console.error('Error deleting event:', error);
+      console.error("Error deleting event:", error);
       throw error;
     }
   }
@@ -1240,7 +1415,7 @@ class LocalDataManager {
         return stmt.all(userId);
       }
     } catch (error) {
-      console.error('Error getting diary entries:', error);
+      console.error("Error getting diary entries:", error);
       return [];
     }
   }
@@ -1260,7 +1435,13 @@ class LocalDataManager {
           SET title = ?, content = ?, mood = ?, updated_at = datetime('now') 
           WHERE id = ? AND user_id = ?
         `);
-        const result = stmt.run(entry.title, entry.content, entry.mood, entry.id, entry.user_id);
+        const result = stmt.run(
+          entry.title,
+          entry.content,
+          entry.mood,
+          entry.id,
+          entry.user_id,
+        );
         return { id: entry.id, success: result.changes > 0 };
       } else {
         // Create new entry
@@ -1268,11 +1449,17 @@ class LocalDataManager {
           INSERT INTO diary_entries (user_id, entry_date, title, content, mood, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         `);
-        const result = stmt.run(entry.user_id, entry.entry_date, entry.title, entry.content, entry.mood);
+        const result = stmt.run(
+          entry.user_id,
+          entry.entry_date,
+          entry.title,
+          entry.content,
+          entry.mood,
+        );
         return { id: result.lastInsertRowid, success: true };
       }
     } catch (error) {
-      console.error('Error saving diary entry:', error);
+      console.error("Error saving diary entry:", error);
       throw error;
     }
   }
@@ -1292,7 +1479,7 @@ class LocalDataManager {
       const result = stmt.run(userId, title);
       return { id: result.lastInsertRowid, success: true };
     } catch (error) {
-      console.error('Error creating chat session:', error);
+      console.error("Error creating chat session:", error);
       throw error;
     }
   }
@@ -1312,7 +1499,7 @@ class LocalDataManager {
       `);
       return stmt.get(userId);
     } catch (error) {
-      console.error('Error getting current chat session:', error);
+      console.error("Error getting current chat session:", error);
       return null;
     }
   }
@@ -1331,7 +1518,7 @@ class LocalDataManager {
       if (!sessionId) {
         let currentSession = this.getCurrentChatSession(userId);
         if (!currentSession) {
-          const newSession = this.createChatSession(userId, 'Chat Session');
+          const newSession = this.createChatSession(userId, "Chat Session");
           sessionId = newSession.id;
         } else {
           sessionId = currentSession.id;
@@ -1350,7 +1537,12 @@ class LocalDataManager {
         INSERT INTO chat_messages (session_id, user_id, message, is_ai, timestamp, updated_at)
         VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
       `);
-      const messageResult = messageStmt.run(sessionId, userId, message, isAi ? 1 : 0);
+      const messageResult = messageStmt.run(
+        sessionId,
+        userId,
+        message,
+        isAi ? 1 : 0,
+      );
 
       // Update session timestamp
       const updateSessionStmt = this.db.prepare(`
@@ -1363,10 +1555,10 @@ class LocalDataManager {
       return {
         id: historyResult.lastInsertRowid,
         session_id: sessionId,
-        success: true
+        success: true,
       };
     } catch (error) {
-      console.error('Error saving chat message:', error);
+      console.error("Error saving chat message:", error);
       throw error;
     }
   }
@@ -1389,7 +1581,7 @@ class LocalDataManager {
       `);
       return stmt.all(userId, limit);
     } catch (error) {
-      console.error('Error getting chat history:', error);
+      console.error("Error getting chat history:", error);
       return [];
     }
   }
@@ -1411,7 +1603,7 @@ class LocalDataManager {
       `);
       return stmt.all(userId);
     } catch (error) {
-      console.error('Error getting chat sessions:', error);
+      console.error("Error getting chat sessions:", error);
       return [];
     }
   }
@@ -1430,7 +1622,7 @@ class LocalDataManager {
       `);
       return stmt.all(sessionId);
     } catch (error) {
-      console.error('Error getting session messages:', error);
+      console.error("Error getting session messages:", error);
       return [];
     }
   }
@@ -1445,24 +1637,32 @@ class LocalDataManager {
       const stats = {};
 
       // Count tasks
-      const tasksStmt = this.db.prepare('SELECT COUNT(*) as count FROM tasks WHERE user_id = ?');
+      const tasksStmt = this.db.prepare(
+        "SELECT COUNT(*) as count FROM tasks WHERE user_id = ?",
+      );
       stats.total_tasks = tasksStmt.get(userId).count;
 
       // Count events
-      const eventsStmt = this.db.prepare('SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?');
+      const eventsStmt = this.db.prepare(
+        "SELECT COUNT(*) as count FROM calendar_events WHERE user_id = ?",
+      );
       stats.total_events = eventsStmt.get(userId).count;
 
       // Count diary entries
-      const diaryStmt = this.db.prepare('SELECT COUNT(*) as count FROM diary_entries WHERE user_id = ?');
+      const diaryStmt = this.db.prepare(
+        "SELECT COUNT(*) as count FROM diary_entries WHERE user_id = ?",
+      );
       stats.total_diary_entries = diaryStmt.get(userId).count;
 
       // Count chat messages
-      const chatStmt = this.db.prepare('SELECT COUNT(*) as count FROM chat_history WHERE user_id = ?');
+      const chatStmt = this.db.prepare(
+        "SELECT COUNT(*) as count FROM chat_history WHERE user_id = ?",
+      );
       stats.total_chat_messages = chatStmt.get(userId).count;
 
       return stats;
     } catch (error) {
-      console.error('Error getting storage stats:', error);
+      console.error("Error getting storage stats:", error);
       return {};
     }
   }
@@ -1482,7 +1682,7 @@ class LocalDataManager {
       `);
       return stmt.all(userId);
     } catch (error) {
-      console.error('Error getting quick prompts:', error);
+      console.error("Error getting quick prompts:", error);
       return [];
     }
   }
@@ -1502,7 +1702,7 @@ class LocalDataManager {
       const result = stmt.run(userId, promptText);
       return { id: result.lastInsertRowid, success: true };
     } catch (error) {
-      console.error('Error saving quick prompt:', error);
+      console.error("Error saving quick prompt:", error);
       throw error;
     }
   }
@@ -1514,11 +1714,13 @@ class LocalDataManager {
    */
   deleteQuickPrompt(promptId) {
     try {
-      const stmt = this.db.prepare('DELETE FROM chat_quick_prompts WHERE id = ?');
+      const stmt = this.db.prepare(
+        "DELETE FROM chat_quick_prompts WHERE id = ?",
+      );
       const result = stmt.run(promptId);
       return { success: result.changes > 0 };
     } catch (error) {
-      console.error('Error deleting quick prompt:', error);
+      console.error("Error deleting quick prompt:", error);
       throw error;
     }
   }
@@ -1538,7 +1740,7 @@ class LocalDataManager {
       const result = stmt.run(promptId);
       return { success: result.changes > 0 };
     } catch (error) {
-      console.error('Error updating quick prompt usage:', error);
+      console.error("Error updating quick prompt usage:", error);
       throw error;
     }
   }
@@ -1550,13 +1752,15 @@ class LocalDataManager {
    */
   getDownloadedModels(userId) {
     try {
-      console.log(`📊 Getting downloaded models for user: ${userId}`);
-      const stmt = this.db.prepare('SELECT * FROM downloaded_models WHERE user_id = ? ORDER BY download_date DESC');
+      console.log(`Getting downloaded models for user: ${userId}`);
+      const stmt = this.db.prepare(
+        "SELECT * FROM downloaded_models WHERE user_id = ? ORDER BY download_date DESC",
+      );
       const results = stmt.all(userId);
-      console.log(`📊 Found ${results.length} downloaded models in database`);
+      console.log(`Found ${results.length} downloaded models in database`);
       return results;
     } catch (error) {
-      console.error('❌ Database Error - getDownloadedModels:', error);
+      console.error("Database Error - getDownloadedModels:", error);
       return [];
     }
   }
@@ -1569,7 +1773,7 @@ class LocalDataManager {
    */
   saveDownloadedModel(userId, modelData) {
     try {
-      console.log(`💾 Saving downloaded model for user: ${userId}`, modelData);
+      console.log(`Saving downloaded model for user: ${userId}`, modelData);
       const stmt = this.db.prepare(`
         INSERT OR REPLACE INTO downloaded_models (user_id, model_name, size_mb, status, download_date)
         VALUES (?, ?, ?, ?, ?)
@@ -1578,13 +1782,15 @@ class LocalDataManager {
         userId,
         modelData.model_name,
         modelData.size_mb || 0,
-        modelData.status || 'completed',
-        new Date().toISOString()
+        modelData.status || "completed",
+        new Date().toISOString(),
       );
-      console.log(`Saved downloaded model: ${modelData.model_name} with ID ${result.lastInsertRowid}`);
+      console.log(
+        `Saved downloaded model: ${modelData.model_name} with ID ${result.lastInsertRowid}`,
+      );
       return { success: true, id: result.lastInsertRowid };
     } catch (error) {
-      console.error('❌ Database Error - saveDownloadedModel:', error);
+      console.error("Database Error - saveDownloadedModel:", error);
       throw error;
     }
   }
@@ -1597,13 +1803,17 @@ class LocalDataManager {
    */
   deleteDownloadedModel(userId, modelName) {
     try {
-      console.log(`🗑️ Deleting downloaded model for user: ${userId}, model: ${modelName}`);
-      const stmt = this.db.prepare('DELETE FROM downloaded_models WHERE user_id = ? AND model_name = ?');
+      console.log(
+        `Deleting downloaded model for user: ${userId}, model: ${modelName}`,
+      );
+      const stmt = this.db.prepare(
+        "DELETE FROM downloaded_models WHERE user_id = ? AND model_name = ?",
+      );
       const result = stmt.run(userId, modelName);
       console.log(`Deleted model: ${modelName}, changes: ${result.changes}`);
       return { success: true, changes: result.changes };
     } catch (error) {
-      console.error('❌ Database Error - deleteDownloadedModel:', error);
+      console.error("Database Error - deleteDownloadedModel:", error);
       throw error;
     }
   }
@@ -1628,7 +1838,7 @@ class LocalDataManager {
 
       return result || {};
     } catch (error) {
-      console.error('Error getting user settings:', error);
+      console.error("Error getting user settings:", error);
       return {};
     }
   }
@@ -1649,10 +1859,15 @@ class LocalDataManager {
         const updates = [];
         const values = [];
 
-        Object.keys(settings).forEach(key => {
+        Object.keys(settings).forEach((key) => {
           updates.push(`${key} = ?`);
           // Convert booleans to integers for SQLite
-          const value = typeof settings[key] === 'boolean' ? (settings[key] ? 1 : 0) : settings[key];
+          const value =
+            typeof settings[key] === "boolean"
+              ? settings[key]
+                ? 1
+                : 0
+              : settings[key];
           values.push(value);
         });
 
@@ -1660,7 +1875,7 @@ class LocalDataManager {
 
         const stmt = this.db.prepare(`
           UPDATE user_settings 
-          SET ${updates.join(', ')}, updated_at = datetime('now')
+          SET ${updates.join(", ")}, updated_at = datetime('now')
           WHERE user_id = ?
         `);
         stmt.run(...values);
@@ -1673,16 +1888,16 @@ class LocalDataManager {
         `);
         stmt.run(
           userId,
-          settings.ai_model || 'llama3.2:1b',
+          settings.ai_model || "llama3.2:1b",
           settings.ai_model_auto_selected ? 1 : 0,
-          settings.theme || 'dark',
-          settings.notifications_enabled ? 1 : 0
+          settings.theme || "dark",
+          settings.notifications_enabled ? 1 : 0,
         );
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Error saving user settings:', error);
+      console.error("Error saving user settings:", error);
       throw error;
     }
   }
@@ -1694,18 +1909,18 @@ class LocalDataManager {
     if (this.db) {
       try {
         // Ensure all pending transactions are complete
-        this.db.pragma('optimize');
+        this.db.pragma("optimize");
 
         // Checkpoint WAL to main database file
-        this.db.pragma('wal_checkpoint(TRUNCATE)');
+        this.db.pragma("wal_checkpoint(TRUNCATE)");
 
         // Close the database connection
         this.db.close();
-        console.log('Database connection closed successfully with cleanup');
+        console.log("Database connection closed successfully with cleanup");
 
         this.db = null;
       } catch (error) {
-        console.error('❌ Error during database close:', error);
+        console.error("Error during database close:", error);
 
         // Force close if needed
         if (this.db) {
@@ -1713,7 +1928,7 @@ class LocalDataManager {
             this.db.close();
             this.db = null;
           } catch (forceError) {
-            console.error('❌ Error during force close:', forceError);
+            console.error("Error during force close:", forceError);
           }
         }
       }
@@ -1726,13 +1941,15 @@ class LocalDataManager {
    */
   clearChatHistory(userId) {
     try {
-      console.log(`🗑️ Clearing chat history for user: ${userId}`);
+      console.log(`Clearing chat history for user: ${userId}`);
 
       // Begin a transaction to ensure all operations succeed or fail together
-      this.db.exec('BEGIN TRANSACTION');
+      this.db.exec("BEGIN TRANSACTION");
 
       // Delete from chat_history table
-      const historyStmt = this.db.prepare('DELETE FROM chat_history WHERE user_id = ?');
+      const historyStmt = this.db.prepare(
+        "DELETE FROM chat_history WHERE user_id = ?",
+      );
       const historyResult = historyStmt.run(userId);
 
       // Delete messages from all sessions for this user
@@ -1743,26 +1960,30 @@ class LocalDataManager {
       const messagesResult = messagesStmt.run(userId);
 
       // Delete all sessions for this user
-      const sessionsStmt = this.db.prepare('DELETE FROM chat_sessions WHERE user_id = ?');
+      const sessionsStmt = this.db.prepare(
+        "DELETE FROM chat_sessions WHERE user_id = ?",
+      );
       const sessionsResult = sessionsStmt.run(userId);
 
       // Commit the transaction
-      this.db.exec('COMMIT');
+      this.db.exec("COMMIT");
 
-      console.log(`Chat history cleared successfully for ${userId}. Deleted: ` +
-        `${historyResult.changes} history entries, ` +
-        `${messagesResult.changes} messages, ` +
-        `${sessionsResult.changes} sessions`);
+      console.log(
+        `Chat history cleared successfully for ${userId}. Deleted: ` +
+          `${historyResult.changes} history entries, ` +
+          `${messagesResult.changes} messages, ` +
+          `${sessionsResult.changes} sessions`,
+      );
       return {
         success: true,
         deletedHistoryCount: historyResult.changes,
         deletedMessagesCount: messagesResult.changes,
-        deletedSessionsCount: sessionsResult.changes
+        deletedSessionsCount: sessionsResult.changes,
       };
     } catch (error) {
       // Rollback on error
-      this.db.exec('ROLLBACK');
-      console.error('❌ Error clearing chat history:', error);
+      this.db.exec("ROLLBACK");
+      console.error("Error clearing chat history:", error);
       throw error;
     }
   }
@@ -1774,9 +1995,9 @@ class LocalDataManager {
    * @returns {number} Minutes since midnight
    */
   timeToMinutes(timeStr) {
-    if (!timeStr || typeof timeStr !== 'string') return 0;
+    if (!timeStr || typeof timeStr !== "string") return 0;
 
-    const [hours, minutes] = timeStr.split(':').map(Number);
+    const [hours, minutes] = timeStr.split(":").map(Number);
     if (isNaN(hours) || isNaN(minutes)) return 0;
 
     return hours * 60 + minutes;
@@ -1806,13 +2027,13 @@ class LocalDataManager {
         userData.password,
         userData.created_at,
         userData.updated_at,
-        userData.last_synced_at
+        userData.last_synced_at,
       );
 
       console.log(`User credentials stored locally for user: ${userId}`);
       return result;
     } catch (error) {
-      console.error('Error storing user credentials:', error);
+      console.error("Error storing user credentials:", error);
       throw error;
     }
   }
@@ -1832,13 +2053,15 @@ class LocalDataManager {
       const user = query.get(username, password);
 
       if (user) {
-        console.log(`User credentials retrieved for offline login: ${username}`);
+        console.log(
+          `User credentials retrieved for offline login: ${username}`,
+        );
         return user;
       }
 
       return null;
     } catch (error) {
-      console.error('Error getting user credentials:', error);
+      console.error("Error getting user credentials:", error);
       throw error;
     }
   }
@@ -1862,7 +2085,7 @@ class LocalDataManager {
       console.log(`Username '${username}' exists locally: ${exists}`);
       return exists;
     } catch (error) {
-      console.error('Error checking username existence:', error);
+      console.error("Error checking username existence:", error);
       throw error;
     }
   }
@@ -1884,13 +2107,14 @@ class LocalDataManager {
       if (!user) return false;
 
       // If never synced OR updated after last sync
-      const needsSync = !user.last_synced_at ||
+      const needsSync =
+        !user.last_synced_at ||
         new Date(user.updated_at) > new Date(user.last_synced_at);
 
       console.log(`User ${userId} needs sync: ${needsSync}`);
       return needsSync;
     } catch (error) {
-      console.error('Error checking user sync status:', error);
+      console.error("Error checking user sync status:", error);
       return false;
     }
   }
@@ -1911,7 +2135,7 @@ class LocalDataManager {
       console.log(`User ${userId} marked as synced`);
       return result;
     } catch (error) {
-      console.error('Error marking user as synced:', error);
+      console.error("Error marking user as synced:", error);
       throw error;
     }
   }
@@ -1934,10 +2158,10 @@ class LocalDataManager {
         return user;
       }
 
-      console.log('No current user found locally');
+      console.log("No current user found locally");
       return null;
     } catch (error) {
-      console.error('Error getting current user:', error);
+      console.error("Error getting current user:", error);
       throw error;
     }
   }
@@ -1947,13 +2171,13 @@ class LocalDataManager {
    */
   clearUserCredentials() {
     try {
-      const query = this.db.prepare('DELETE FROM users');
+      const query = this.db.prepare("DELETE FROM users");
       const result = query.run();
 
-      console.log('Local user credentials cleared');
+      console.log("Local user credentials cleared");
       return result;
     } catch (error) {
-      console.error('Error clearing user credentials:', error);
+      console.error("Error clearing user credentials:", error);
       throw error;
     }
   }
@@ -1979,12 +2203,10 @@ class LocalDataManager {
       console.log(`No user found with ID: ${userId}`);
       return null;
     } catch (error) {
-      console.error('Error getting user by ID:', error);
+      console.error("Error getting user by ID:", error);
       throw error;
     }
   }
 }
-
-
 
 module.exports = { LocalDataManager };

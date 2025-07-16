@@ -1,7 +1,5 @@
 /**
- * DiaryDetailPopup Component Styles - Your Wingman's Memory Portal
- * TRUE viewport-centered popup system that stays in screen center regardless of page scroll
- * Always appears centered on your VISIBLE SCREEN, not the page content
+ * DiaryDetailPopup Component Styles
  */
 
 .diary-popup-overlay {
@@ -17,7 +15,6 @@
   align-items: center;
   justify-content: center;
 }
-
 
 .diary-popup-content {
   background: rgba(35, 35, 50, 0.95);
@@ -140,7 +137,6 @@
   background: rgba(239, 68, 68, 0.3);
 }
 
-
 .diary-popup-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -158,7 +154,6 @@
 .diary-popup-content::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 108, 255, 0.6);
 }
-
 
 @media (max-width: 768px) {
   .diary-popup-content {
@@ -194,7 +189,6 @@
     gap: 0.5rem;
   }
 }
-
 
 body.diary-popup-open {
   overflow: hidden !important;

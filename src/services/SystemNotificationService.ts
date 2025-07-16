@@ -1,31 +1,25 @@
 /**
- * ⚠️ DEPRECATED - Legacy System Notification Service
- * 
- * This service is now deprecated and replaced by ProfessionalNotificationService.
- * 
- * MIGRATION GUIDE:
- * - Replace `systemNotificationService` with `professionalNotificationService`
- * - Replace `testNotifications()` with `professionalNotificationService.testNotifications()`
- * - Remove manual scheduling calls - professional system handles automatically
- * 
- * NEW ARCHITECTURE:
- * - In-memory scheduling with JavaScript timers (no database polling)
- * - Real-time updates via DataContext events
- * - Background service persistence independent of app lifecycle
- * - Professional Slack/Discord-style architecture
- * 
- * @deprecated Use ProfessionalNotificationService instead
+ * System Notification Service
+ *
+ * Handles immediate notifications and task completion celebrations.
+ * Works alongside ProfessionalNotificationService:
+ * - SystemNotificationService: Immediate notifications, task celebrations
+ * - ProfessionalNotificationService: Scheduled reminders, background timing
+ *
+ * This service provides:
+ * - Browser and Electron notification fallbacks
+ * - Task completion celebrations with random messages
+ * - Immediate notification display
  */
 
-import { getCurrentUserId } from '../utils/auth';
-import { getTodayDateString } from '../utils/timeUtils';
+import { getCurrentUserId } from "../utils/auth";
 
 export interface NotificationOptions {
   id: string;
   title: string;
   body: string;
   targetTime: string;
-  type: 'task' | 'event';
+  type: "task" | "event";
   data?: any;
 }
 
@@ -34,30 +28,30 @@ class SystemNotificationService {
    * Request notification permission with dev mode handling
    */
   async requestPermission(): Promise<NotificationPermission> {
-    if ('Notification' in window) {
+    if ("Notification" in window) {
       let permission = Notification.permission;
-      
-      if (permission === 'default') {
+
+      if (permission === "default") {
         permission = await Notification.requestPermission();
       }
-      
-      if (permission === 'granted') {
-        console.log('✅ Browser notifications enabled');
-        
+
+      if (permission === "granted") {
+        console.log("✅ Browser notifications enabled");
+
         // Test notification
-        new Notification('Wingman Notifications Active! 🎉', {
-          body: 'You\'ll receive alerts for tasks and events, boss!',
-          icon: '/src/assets/productive.png',
-          tag: 'test-notification'
+        new Notification("Wingman Notifications Active! 🎉", {
+          body: "You'll receive alerts for tasks and events, boss!",
+          icon: "/src/assets/productive.png",
+          tag: "test-notification",
         });
       } else {
-        console.warn('❌ Browser notifications denied');
+        console.warn("❌ Browser notifications denied");
       }
-      
+
       return permission;
     }
-    
-    return 'denied';
+
+    return "denied";
   }
 
   /**
@@ -72,52 +66,59 @@ class SystemNotificationService {
           targetTime: options.targetTime,
           title: options.title,
           body: options.body,
-          type: options.type
+          type: options.type,
         });
       }
 
-      console.log(`Background notification registered: ${options.title} for ${options.targetTime}`);
+      console.log(
+        `Background notification registered: ${options.title} for ${options.targetTime}`,
+      );
     } catch (error) {
-      console.error('Failed to register background notification:', error);
+      console.error("Failed to register background notification:", error);
     }
   }
 
   /**
    * Shows immediate notification with fallbacks
    */
-  async showImmediate(title: string, body: string, type: 'task' | 'event' = 'task'): Promise<void> {
+  async showImmediate(
+    title: string,
+    body: string,
+    type: "task" | "event" = "task",
+  ): Promise<void> {
     try {
       console.log(`🎯 Wingman: Attempting to send notification - ${title}`);
-      
+
       // Method 1: Try Electron main process
       if (window.electronAPI?.notifications) {
         await window.electronAPI.notifications.showImmediate({
-          title, body, type
+          title,
+          body,
+          type,
         });
-        console.log('✅ Electron notification sent:', title);
+        console.log("Electron notification sent:", title);
         return;
       }
-      
+
       // Method 2: Try browser notification
-      if ('Notification' in window && Notification.permission === 'granted') {
+      if ("Notification" in window && Notification.permission === "granted") {
         new Notification(title, {
           body: body,
           icon: '/src/assets/moody.png', 
           tag: `${type}-immediate`,
-          requireInteraction: false
+          requireInteraction: false,
         });
-        console.log('✅ Browser notification sent:', title);
+        console.log("Browser notification sent:", title);
         return;
       }
-      
+
       // Method 3: Fallback alert
-      console.warn('⚠️ Using fallback alert for notification');
+      console.warn("⚠️ Using fallback alert for notification");
       setTimeout(() => {
         alert(`${title}\n\n${body}`);
       }, 100);
-      
     } catch (error) {
-      console.error('❌ All notification methods failed:', error);
+      console.error("All notification methods failed:", error);
     }
   }
 
@@ -133,22 +134,25 @@ class SystemNotificationService {
       "You're crushing it! 🔥",
       "Task mastered! 🎯",
       "Well done, leader! 👑",
-      "Perfect completion! ✨"
+      "Perfect completion! ✨",
     ];
 
-    const randomMessage = congratsMessages[Math.floor(Math.random() * congratsMessages.length)];
-    
-    console.log(`🎉 Wingman: Sending completion celebration for task: ${taskTitle}`);
-    
+    const randomMessage =
+      congratsMessages[Math.floor(Math.random() * congratsMessages.length)];
+
+    console.log(
+      `🎉 Wingman: Sending completion celebration for task: ${taskTitle}`,
+    );
+
     try {
       await this.showImmediate(
         `🎉 Task Complete!`,
         `${randomMessage}\n"${taskTitle}" has been completed successfully.`,
-        'task'
+        "task",
       );
-      console.log('✅ Task completion notification sent successfully');
+      console.log("✅ Task completion notification sent successfully");
     } catch (error) {
-      console.error('❌ Failed to send task completion notification:', error);
+      console.error("❌ Failed to send task completion notification:", error);
     }
   }
 
@@ -160,49 +164,21 @@ class SystemNotificationService {
       const userId = getCurrentUserId();
       if (!userId) return;
 
-      console.log('Registering all today\'s notifications with background service...');
+      console.log(
+        "Registering all today's notifications with background service...",
+      );
 
       // The main process will handle checking these automatically
       // We just need to ensure the user is properly stored
-      localStorage.setItem('lastActiveUser', userId);
+      localStorage.setItem("lastActiveUser", userId);
 
-      console.log('Notifications registered with background service');
+      console.log("Notifications registered with background service");
     } catch (error) {
-      console.error('Failed to register notifications with background service:', error);
-    }
-  }
-
-  /**
-   * Test notification system
-   */
-  async testNotifications(): Promise<boolean> {
-    console.log('🧪 Testing notification system...');
-    
-    try {
-      await this.showImmediate(
-        '🧪 Notification Test',
-        'If you see this, notifications are working!',
-        'task'
+      console.error(
+        "Failed to register notifications with background service:",
+        error,
       );
-      return true;
-    } catch (error) {
-      console.error('Test failed:', error);
-      return false;
     }
   }
 }
-
 export const systemNotificationService = new SystemNotificationService();
-
-/**
- * Helper function to test notifications - use this in React components
- */
-export const testNotifications = async (): Promise<boolean> => {
-  const working = await systemNotificationService.testNotifications();
-  if (working) {
-    console.log('✅ Notifications working');
-  } else {
-    console.log('❌ Notifications not working');
-  }
-  return working;
-};

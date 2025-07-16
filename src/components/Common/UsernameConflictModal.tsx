@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { updateUsername } from '../../services/hybridAuth';
-import './UsernameConflictModal.css';
+import React, { useState } from "react";
+import { updateUsername } from "../../services/hybridAuth";
+import "./UsernameConflictModal.css";
 
 interface UsernameConflictModalProps {
   isOpen: boolean;
@@ -15,22 +15,22 @@ const UsernameConflictModal: React.FC<UsernameConflictModalProps> = ({
   currentUsername,
   onClose,
   onSuccess,
-  errorMessage
+  errorMessage,
 }) => {
-  const [newUsername, setNewUsername] = useState('');
+  const [newUsername, setNewUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newUsername.trim()) {
-      setError('Please enter a username');
+      setError("Please enter a username");
       return;
     }
 
     if (newUsername === currentUsername) {
-      setError('Please choose a different username');
+      setError("Please choose a different username");
       return;
     }
 
@@ -39,24 +39,24 @@ const UsernameConflictModal: React.FC<UsernameConflictModalProps> = ({
 
     try {
       const result = await updateUsername(newUsername.trim());
-      
+
       if (result.success) {
-        console.log('Username updated successfully');
+        console.log("Username updated successfully");
         onSuccess();
         onClose();
       } else {
-        setError(result.error || 'Failed to update username');
+        setError(result.error || "Failed to update username");
       }
     } catch (error: any) {
-      console.error('Username update failed:', error);
-      setError(error.message || 'Failed to update username');
+      console.error("Username update failed:", error);
+      setError(error.message || "Failed to update username");
     }
 
     setLoading(false);
   };
 
   const handleCancel = () => {
-    setNewUsername('');
+    setNewUsername("");
     setError(null);
     onClose();
   };
@@ -68,7 +68,7 @@ const UsernameConflictModal: React.FC<UsernameConflictModalProps> = ({
       <div className="username-conflict-modal">
         <div className="modal-header">
           <h2>Username Taken</h2>
-          <button 
+          <button
             className="close-btn"
             onClick={handleCancel}
             disabled={loading}
@@ -83,7 +83,9 @@ const UsernameConflictModal: React.FC<UsernameConflictModalProps> = ({
               Boss, "<strong>{currentUsername}</strong>" is already taken
             </p>
             <p className="sub-message">
-              You might have created this account when your were offline, this username has already been in use; please change to a new username, your data will not be affected.
+              You might have created this account when your were offline, this
+              username has already been in use; please change to a new username,
+              your data will not be affected.
             </p>
           </div>
 
@@ -115,7 +117,7 @@ const UsernameConflictModal: React.FC<UsernameConflictModalProps> = ({
                 disabled={loading || !newUsername.trim()}
                 className="update-btn"
               >
-                {loading ? 'Syncing...' : 'Sync Up'}
+                {loading ? "Syncing..." : "Sync Up"}
               </button>
             </div>
           </form>

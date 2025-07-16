@@ -1,11 +1,13 @@
-// User Authentication Hub - Gateway to your digital realm
+// User Authentication Hub
 // Handles both login and registration with theme-aware background videos
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import productiveIcon from "../../assets/icons/productive.png";
-import moodyIcon from "../../assets/icons/moody.png";
 import { Auth } from "../../utils/AuthStateManager";
-import { loginUser, registerUser, getCurrentUser } from "../../services/hybridAuth";
+import {
+  loginUser,
+  registerUser,
+  getCurrentUser,
+} from "../../services/hybridAuth";
 import ConnectionStatus from "../Common/ConnectionStatus";
 import UsernameConflictModal from "../Common/UsernameConflictModal";
 import "./login.css";
@@ -15,12 +17,7 @@ import yandereVideo from "../../assets/backgrounds/videos/yandere-theme.mp4";
 import kuudereVideo from "../../assets/backgrounds/videos/kuudere-theme.mp4";
 import tsundereVideo from "../../assets/backgrounds/videos/tsundere-theme.mp4";
 import dandereVideo from "../../assets/backgrounds/videos/dandere-theme.mp4";
-import WelcomePopup from "./WelcomePopup";
-
-const moodIcons: Record<string, string> = {
-  productive: productiveIcon,
-  moody: moodyIcon,
-};
+import { themePersonalityMap } from "../../constants/themePersonalitymap";
 
 const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [step, setStep] = useState<"login" | "register">("login");
@@ -30,37 +27,15 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [mood, setMood] = useState<"productive" | "moody">("productive");
   const [currentTheme, setCurrentTheme] = useState<string>("dark");
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [autoTilt, setAutoTilt] = useState(false);
-  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [welcomeMessage, setWelcomeMessage] = useState("");
-  
+
   // Username conflict handling states
   const [showUsernameConflict, setShowUsernameConflict] = useState(false);
-  const [conflictError, setConflictError] = useState<string>('');
-  const [conflictUsername, setConflictUsername] = useState<string>('');
+  const [conflictError, setConflictError] = useState<string>("");
+  const [conflictUsername, setConflictUsername] = useState<string>("");
   const navigate = useNavigate();
-
-  // Listen for mood changes from external sources
-  useEffect(() => {
-    const handleMoodChange = (mood: string) => {
-      if (mood === "productive" || mood === "moody") setMood(mood);
-    };
-
-    let cleanup: (() => void) | undefined;
-    if (window.electronAPI?.onMoodChange) {
-      const result = window.electronAPI.onMoodChange(handleMoodChange);
-      if (typeof result === "function") {
-        cleanup = result;
-      }
-    }
-
-    return () => {
-      if (cleanup) cleanup();
-    };
-  }, []);
 
   // Apply saved theme from localStorage to maintain visual consistency
   useEffect(() => {
@@ -81,7 +56,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
               "yandere-theme",
               "kuudere-theme",
               "tsundere-theme",
-              "dandere-theme"
+              "dandere-theme",
             );
 
             if (settings.theme !== "dark") {
@@ -124,52 +99,53 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     setError(null);
 
     try {
-      console.log('Attempting hybrid login...');
-      
+      console.log("Attempting hybrid login...");
+
       const result = await loginUser(username, password);
 
       // Check for sync conflicts first (regardless of success flag)
       if (result.syncConflict) {
-        console.log('Sync conflict detected during login - showing conflict modal');
-        setConflictError(result.conflictError || 'Username conflict detected');
+        console.log(
+          "Sync conflict detected during login - showing conflict modal",
+        );
+        setConflictError(result.conflictError || "Username conflict detected");
         setConflictUsername(result.conflictUsername || username);
         setShowUsernameConflict(true);
         setLoading(false);
-        
-        // DO NOT authenticate user yet - wait for conflict resolution
-        // Don't call Auth.setAuthenticated() or onLogin() until conflict is resolved
-        
-        // Don't navigate yet - let user resolve conflict first
         return;
       }
 
       if (result.success && result.user) {
-
         // Update authentication state manager
         Auth.setAuthenticated(true, result.user.id);
 
         // Notify ThemeContext that user is authenticated
-        const authEvent = new CustomEvent('user-authenticated', { 
-          detail: { userId: result.user.id } 
+        const authEvent = new CustomEvent("user-authenticated", {
+          detail: { userId: result.user.id },
         });
         window.dispatchEvent(authEvent);
 
         onLogin(result.user);
 
         // Show connection status
-        const connectionStatus = navigator.onLine ? 'online' : 'offline';
-        console.log(`Login successful (${connectionStatus}):`, result.user.email);
+        const connectionStatus = navigator.onLine ? "online" : "offline";
+        console.log(
+          `Login successful (${connectionStatus}):`,
+          result.user.email,
+        );
 
         // Navigate to dashboard with greeting flag
         navigate("/", { state: { showGreeting: true } });
       } else {
-        setError(result.error || "Login failed. Please check your credentials.");
+        setError(
+          result.error || "Login failed. Please check your credentials.",
+        );
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       setError(
-        error.message || 
-        "Login failed. Please check your internet connection and try again."
+        error.message ||
+          "Login failed. Please check your internet connection and try again.",
       );
     }
 
@@ -198,58 +174,55 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     // Check if offline and inform user
     if (!navigator.onLine) {
       setError(
-        "Registration is only available offline for testing. Your account will sync when you connect to the internet."
+        "Registration is only available offline for testing. Your account will sync when you connect to the internet.",
       );
     }
 
     try {
-      console.log('Attempting hybrid registration...');
-      
+      console.log("Attempting hybrid registration...");
+
       const user = await registerUser(
-        name || username || "User", 
-        email, 
+        name || username || "User",
+        email,
         password,
-        username  // Pass the actual username from the form
+        username, // Pass the actual username from the form
       );
 
       // Update authentication state manager
       Auth.setAuthenticated(true, user.id);
 
       // Notify ThemeContext that user is authenticated
-      const authEvent = new CustomEvent('user-authenticated', { 
-        detail: { userId: user.id } 
+      const authEvent = new CustomEvent("user-authenticated", {
+        detail: { userId: user.id },
       });
       window.dispatchEvent(authEvent);
 
       onLogin(user);
 
       // Show connection status
-      const connectionStatus = navigator.onLine ? 'online' : 'offline';
+      const connectionStatus = navigator.onLine ? "online" : "offline";
       console.log(`Registration successful (${connectionStatus}):`, user.email);
 
-      // Show welcome popup with appropriate message
-      const mode = navigator.onLine ? 'online' : 'offline';
-      setWelcomeMessage(
-        `Welcome! Your account has been created ${mode}. ${
-          !navigator.onLine ? 'It will sync to the cloud when you connect to the internet.' : ''
-        }`
-      );
-      setShowWelcomePopup(true);
-
+      // Navigate directly to profile without popup
+      onLogin(user);
+      navigate("/profile", { state: { showSetup: false } });
     } catch (error: any) {
-      console.error('Registration error:', error);
-      
+      console.error("Registration error:", error);
+
       // Handle username conflict
-      if (error.type === 'username_conflict') {
+      if (error.type === "username_conflict") {
         setError(error.message);
-      } else if (error.message.includes('409') || error.message.includes('already exists')) {
+      } else if (
+        error.message.includes("409") ||
+        error.message.includes("already exists")
+      ) {
         setError(
-          "An account with this email already exists. Please try logging in or use a different email."
+          "An account with this email already exists. Please try logging in or use a different email.",
         );
       } else {
         setError(
-          error.message || 
-          "Registration failed. Please check your information and try again."
+          error.message ||
+            "Registration failed. Please check your information and try again.",
         );
       }
     }
@@ -257,34 +230,24 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
     setLoading(false);
   };
 
-  // Handle welcome popup completion and proceed to profile setup
-  const handleWelcomeClose = () => {
-    setShowWelcomePopup(false);
-
-    const userData = JSON.parse(localStorage.getItem("user") || "{}");
-    onLogin(userData);
-
-    navigate("/profile", { state: { showSetup: true } });
-  };
-
   // Handle username conflict resolution
   const handleConflictResolved = () => {
     setShowUsernameConflict(false);
-    setConflictError('');
-    setConflictUsername('');
-    
+    setConflictError("");
+    setConflictUsername("");
+
     // Get updated user data and proceed to app
     const userData = getCurrentUser();
     if (userData) {
       // Now authenticate the user properly
       Auth.setAuthenticated(true, userData.id);
-      
+
       // Notify ThemeContext that user is authenticated
-      const authEvent = new CustomEvent('user-authenticated', { 
-        detail: { userId: userData.id } 
+      const authEvent = new CustomEvent("user-authenticated", {
+        detail: { userId: userData.id },
       });
       window.dispatchEvent(authEvent);
-      
+
       onLogin(userData);
       navigate("/", { state: { showGreeting: true } });
     }
@@ -292,12 +255,12 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
 
   const handleConflictClosed = () => {
     setShowUsernameConflict(false);
-    setConflictError('');
-    setConflictUsername('');
-    
+    setConflictError("");
+    setConflictUsername("");
+
     // User chose to close without resolving - clear any session data and redirect back to login
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -328,7 +291,7 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
       <div className="login-connection-status">
         <ConnectionStatus className="connection-indicator" compact={true} />
       </div>
-      
+
       {themeVideos[currentTheme] && (
         <video
           className="login-bg-video"
@@ -347,7 +310,15 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
         className={`login-card animate-fade-in ${autoTilt ? "auto-tilt" : ""}`}
       >
         <div className="login-header">
-          <img src={moodIcons[mood]} alt="Logo" className="logo-img" />
+          <img
+            src={
+              themePersonalityMap[
+                currentTheme as keyof typeof themePersonalityMap
+              ]?.avatar
+            }
+            alt="Wingman Avatar"
+            className="logo-img"
+          />{" "}
           <h1 className="login-title">Wingman</h1>
           <p className="login-subtitle">
             Your advanced digital companion with AI integration
@@ -461,16 +432,6 @@ const Login: React.FC<{ onLogin: (user: any) => void }> = ({ onLogin }) => {
           <span className="theme-name">{currentTheme}</span>
         </div>
       </div>
-
-      {showWelcomePopup && (
-        <WelcomePopup
-          message={welcomeMessage}
-          onClose={handleWelcomeClose}
-          icon="🎉"
-          type="registration"
-          username={name || username}
-        />
-      )}
 
       <UsernameConflictModal
         isOpen={showUsernameConflict}

@@ -1,4 +1,4 @@
-/* Command center sidebar - your digital throne room interface */
+/* sidebar */
 
 /* Sidebar base structure with smooth transitions */
 .sidebar {
@@ -7,7 +7,11 @@
   left: -260px; /* Completely hidden by default */
   width: 260px;
   height: 100vh;
-  background: linear-gradient(145deg, rgba(15, 15, 25, 0.85) 0%, rgba(25, 25, 40, 0.9) 100%);
+  background: linear-gradient(
+    145deg,
+    rgba(15, 15, 25, 0.85) 0%,
+    rgba(25, 25, 40, 0.9) 100%
+  );
   backdrop-filter: blur(12px);
   border-right: 1px solid rgba(100, 108, 255, 0.2);
   z-index: 100;
@@ -21,16 +25,28 @@
 .sidebar.hover-expanded {
   left: 0;
   overflow-y: auto;
-  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(100, 108, 255, 0.15);
-  background: linear-gradient(145deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.98) 100%);
+  box-shadow:
+    8px 0 32px rgba(0, 0, 0, 0.3),
+    0 0 24px rgba(100, 108, 255, 0.15);
+  background: linear-gradient(
+    145deg,
+    rgba(15, 15, 25, 0.95) 0%,
+    rgba(25, 25, 40, 0.98) 100%
+  );
 }
 
 /* Pinned state - stays open when clicked */
 .sidebar.visible {
   left: 0;
   overflow-y: auto;
-  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3), 0 0 24px rgba(100, 108, 255, 0.15);
-  background: linear-gradient(145deg, rgba(15, 15, 25, 0.95) 0%, rgba(25, 25, 40, 0.98) 100%);
+  box-shadow:
+    8px 0 32px rgba(0, 0, 0, 0.3),
+    0 0 24px rgba(100, 108, 255, 0.15);
+  background: linear-gradient(
+    145deg,
+    rgba(15, 15, 25, 0.95) 0%,
+    rgba(25, 25, 40, 0.98) 100%
+  );
 }
 
 /* Main content adaptation for sidebar visibility */
@@ -43,32 +59,36 @@
   margin-left: 280px;
 }
 
-/* Floating toggle button with majestic animation */
+/* Floating toggle button with MAJESTIC animation */
 .sidebar-toggle {
-    position: fixed;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 17px;
-    height: 285px;
-    border: none;
-    border-radius: 0 50px 50px 0;
-    cursor: pointer;
-    z-index: 101;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    overflow: visible;
-    box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
-    animation: float-vertical 8s ease-in-out infinite alternate;
-    will-change: top;
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 285px;
+  border: none;
+  border-radius: 0 50px 50px 0;
+  cursor: pointer;
+  z-index: 101;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: visible;
+  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+  animation: float-vertical 8s ease-in-out infinite alternate;
+  will-change: top;
 }
 /* Majestic floating animation for the toggle button */
 @keyframes float-vertical {
-  0% { top: 20vh; }
-  100% { top: 80vh; }
+  0% {
+    top: 20vh;
+  }
+  100% {
+    top: 80vh;
+  }
 }
 
 /* Toggle button background gradient */
@@ -79,7 +99,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(53, 53, 99, 1) 0%, rgba(30, 30, 56, 1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(53, 53, 99, 1) 0%,
+    rgba(30, 30, 56, 1) 100%
+  );
   border-radius: 0 50px 50px 0;
   z-index: -1;
 }
@@ -96,8 +120,6 @@
 }
 
 /* Avatar container within toggle button */
-
-
 
 /* Fallback icon when no avatar is set */
 .sidebar-toggle-avatar:empty::before {
@@ -198,7 +220,9 @@
 .sidebar-submenu {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  transition:
+    max-height 0.3s ease,
+    padding 0.3s ease;
   margin-left: 1.5rem;
   border-left: 2px solid rgba(100, 108, 255, 0.2);
   padding-left: 0.5rem;
@@ -216,7 +240,11 @@
   border-radius: 6px;
   text-decoration: none;
   color: var(--color-text-muted, #8888aa);
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease, border-left-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease,
+    border-left-color 0.15s ease;
   font-size: 0.8rem;
   margin-bottom: 0.2rem;
   border-left: 2px solid transparent;
@@ -270,24 +298,24 @@
     left: -260px;
     width: 260px;
   }
-  
+
   .sidebar.hover-expanded,
   .sidebar.visible {
     left: 0;
   }
-  
+
   .sidebar-toggle {
     left: -20px;
     width: 45px;
     height: 70px;
     top: 30vh;
   }
-  
+
   .sidebar-toggle:hover {
     left: -10px;
     width: 50px;
   }
-  
+
   .sidebar-toggle.pinned {
     left: -5px;
   }
@@ -298,18 +326,15 @@
   .sidebar-toggle {
     animation: none;
   }
-  
+
   .sidebar-toggle-avatar {
     animation: none;
   }
-  
+
   .sidebar-toggle:hover {
     animation: none;
   }
 }
-
-
-
 
 /* Adaptive mode diagonal streaks */
 .adaptive-streaks {
@@ -327,8 +352,9 @@
   position: absolute;
   width: 3px;
   height: 60px;
-  background: linear-gradient(45deg, 
-    var(--streak-primary, rgba(100, 108, 255, 0.9)), 
+  background: linear-gradient(
+    45deg,
+    var(--streak-primary, rgba(100, 108, 255, 0.9)),
     var(--streak-secondary, rgba(138, 43, 226, 0.7)),
     transparent
   );
@@ -360,9 +386,11 @@
 }
 
 @keyframes streak-shine {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
-    transform: rotate(var(--streak-rotation, 40deg)) translateY(-20px) scale(0.8);
+    transform: rotate(var(--streak-rotation, 40deg)) translateY(-20px)
+      scale(0.8);
   }
   50% {
     opacity: 1;
@@ -377,8 +405,6 @@
   --streak-glow: rgba(100, 108, 255, 0.4);
   --streak-rotation: 40deg;
 }
-
-
 
 .yandere-theme {
   --streak-primary: rgba(255, 20, 147, 0.9);

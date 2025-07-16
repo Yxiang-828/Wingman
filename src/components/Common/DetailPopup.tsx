@@ -18,7 +18,7 @@ interface DetailPopupProps {
 }
 
 /**
- * DetailPopup Component - Your Wingman's Information Display
+ * DetailPopup Component -  Wingman's Information Display
  * Provides detailed view of tasks and events with action capabilities
  * Features mission retry functionality for failed operations
  */
@@ -31,31 +31,34 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
     // Performance optimization: calculate item type once
     const isTask = useMemo(
       () => "task_date" in item && "completed" in item,
-      [item]
-    );    // Performance optimization: format date once
+      [item],
+    ); // Performance optimization: format date once
     const formattedDate = useMemo(() => {
-      const date = isTask ? (item as Task).task_date : (item as CalendarEvent).event_date;
+      const date = isTask
+        ? (item as Task).task_date
+        : (item as CalendarEvent).event_date;
       return format(new Date(date), "MMM d, yyyy");
     }, [item, isTask]);
 
     /**
      * Navigates to calendar view with item highlighting
-     * Your Wingman provides seamless navigation between contexts
+     *  Wingman provides seamless navigation between contexts
      */
 
     const viewInCalendar = useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
-        const type = isTask ? "task" : "event";        const date = isTask
+        const type = isTask ? "task" : "event";
+        const date = isTask
           ? (item as Task).task_date
           : (item as CalendarEvent).event_date;
         const tab = isTask ? "tasks" : "events";
         navigate(
-          `/calendar/day?date=${date}&tab=${tab}&highlight=${type}-${item.id}`
+          `/calendar/day?date=${date}&tab=${tab}&highlight=${type}-${item.id}`,
         );
         onClose();
       },
-      [isTask, item, navigate, onClose]
+      [isTask, item, navigate, onClose],
     );
 
     /**
@@ -68,12 +71,12 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
         if (!isTask) return;
         setShowRetryPopup(true);
       },
-      [isTask]
+      [isTask],
     );
 
     /**
      * Processes mission retry with database updates and notifications
-     * Your Wingman ensures all systems are refreshed after rescheduling
+     *  Wingman ensures all systems are refreshed after rescheduling
      */
     const handleRetryConfirm = useCallback(
       async (newTime: string) => {
@@ -81,7 +84,7 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
 
         try {
           console.log(
-            `Wingman: Rescheduling mission ${item.id} for ${newTime}`
+            `Wingman: Rescheduling mission ${item.id} for ${newTime}`,
           );
 
           // Prepare task updates with proper data types
@@ -113,7 +116,7 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
           throw error;
         }
       },
-      [isTask, item, updateTask, onClose]
+      [isTask, item, updateTask, onClose],
     );
 
     // Optimized event handlers to prevent unnecessary re-renders
@@ -127,7 +130,7 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
           onClose();
         }
       },
-      [onClose]
+      [onClose],
     );
 
     const handlePopupClick = useCallback((e: React.MouseEvent) => {
@@ -152,16 +155,16 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
                         (item as Task).completed
                           ? "completed"
                           : (item as Task).failed
-                          ? "failed"
-                          : ""
+                            ? "failed"
+                            : ""
                       }`}
                     >
                       {" "}
                       {(item as Task).completed
                         ? "🎯 Mission Complete"
                         : (item as Task).failed
-                        ? "❌ Mission Failed"
-                        : "⏳ Mission Pending"}
+                          ? "❌ Mission Failed"
+                          : "⏳ Mission Pending"}
                     </div>
                     <div className="detail-date">{formattedDate}</div>
                   </div>{" "}
@@ -271,7 +274,7 @@ const DetailPopup: React.FC<DetailPopupProps> = React.memo(
         )}
       </Portal>
     );
-  }
+  },
 );
 
 DetailPopup.displayName = "DetailPopup";

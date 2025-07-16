@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import "../../main.css";
 import { Auth } from "../../utils/AuthStateManager";
 import { getCurrentTimeString } from "../../utils/timeUtils";
-import WingmanAvatar from "../Common/WingmanAvatar";
 import ConnectionStatus from "../Common/ConnectionStatus";
 import "./Header.css";
+import { themePersonalityMap } from "../../constants/themePersonalitymap";
 
 const Header: React.FC = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -44,19 +44,60 @@ const Header: React.FC = () => {
     return getCurrentTimeString();
   };
 
+  const [themeData, setThemeData] = useState(themePersonalityMap["dark"]);
+
+  React.useEffect(() => {
+    const updateThemeData = () => {
+      const savedSettings = localStorage.getItem("userSettings");
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          const theme = (settings.theme ||
+            "dark") as keyof typeof themePersonalityMap;
+          setThemeData(
+            themePersonalityMap[theme] || themePersonalityMap["dark"],
+          );
+        } catch {
+          setThemeData(themePersonalityMap["dark"]);
+        }
+      } else {
+        setThemeData(themePersonalityMap["dark"]);
+      }
+    };
+
+    window.addEventListener("wingman-theme-updated", updateThemeData);
+    updateThemeData();
+
+    return () => {
+      window.removeEventListener("wingman-theme-updated", updateThemeData);
+    };
+  }, []);
+
+  // const savedSettings = localStorage.getItem("userSettings");
+  // let themeData = themePersonalityMap["dark"];
+  // if (savedSettings) {
+  //   try {
+  //     const settings = JSON.parse(savedSettings);
+  //     const theme = (settings.theme ||
+  //       "dark") as keyof typeof themePersonalityMap;
+  //     themeData = themePersonalityMap[theme] || themePersonalityMap["dark"];
+  //   } catch {
+  //     themeData = themePersonalityMap["dark"];
+  //   }
+  // }
   return (
     <header className="header">
       {/* Left section contains avatar and welcome message */}
       <div className="header-left">
-        <WingmanAvatar
-          size="small"
-          mood="happy"
-          context="dashboard"
-          onClick={() => navigate("/profile")}
+        <img
+          src={themeData?.avatar}
+          alt="Wingman Avatar"
           className="header-avatar"
+          onClick={() => navigate("/profile")}
+          style={{ cursor: "pointer" }}
         />
         <div className="welcome-section">
-          {/* Personalized greeting that establishes the loyal assistant relationship */}
+          {/* greetings */}
           <h1 className="welcome-title">
             <span className="welcome-text">Welcome back,</span>
             <span className="leader-text">Leader!</span>

@@ -28,17 +28,19 @@ class ErrorBoundary extends Component<Props, State> {
   render(): ReactNode {
     if (this.state.hasError) {
       // You can render any custom fallback UI
-      return this.props.fallback || (
-        <div className="error-boundary">
-          <h2>Something went wrong</h2>
-          <p>{this.state.error?.message}</p>
-          <button 
-            onClick={() => this.setState({ hasError: false })}
-            className="action-btn"
-          >
-            Try again
-          </button>
-        </div>
+      return (
+        this.props.fallback || (
+          <div className="error-boundary">
+            <h2>Something went wrong</h2>
+            <p>{this.state.error?.message}</p>
+            <button
+              onClick={() => this.setState({ hasError: false })}
+              className="action-btn"
+            >
+              Try again
+            </button>
+          </div>
+        )
       );
     }
 

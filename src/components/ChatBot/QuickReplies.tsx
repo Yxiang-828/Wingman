@@ -4,7 +4,7 @@ import "./ChatBot.css";
 
 /**
  * QuickPrompt interface for user-defined conversation shortcuts
- * Tracks usage statistics for intelligent reordering
+ * stores prompt text and usage frequency
  */
 interface QuickPrompt {
   id: number;
@@ -56,10 +56,10 @@ const QuickReplies: React.FC<QuickRepliesProps> = ({ onQuickReply }) => {
     try {
       // Update usage statistics in database
       await window.electronAPI.db.updateQuickPromptUsage(prompt.id);
-      
+
       // Send the message to chat
       onQuickReply(prompt.prompt_text);
-      
+
       // Refresh prompts to update usage-based ordering
       loadQuickPrompts();
     } catch (error) {
@@ -75,14 +75,14 @@ const QuickReplies: React.FC<QuickRepliesProps> = ({ onQuickReply }) => {
    */
   const handleAddNewPrompt = async () => {
     if (!newPrompt.trim()) return;
-    
+
     try {
       setLoading(true);
       const userId = getCurrentUserId();
       if (!userId) return;
 
       await window.electronAPI.db.saveQuickPrompt(userId, newPrompt.trim());
-      
+
       // Reset form state
       setNewPrompt("");
       setIsAddingNew(false);
@@ -98,9 +98,12 @@ const QuickReplies: React.FC<QuickRepliesProps> = ({ onQuickReply }) => {
    * Removes custom prompt with event bubbling prevention
    * Prevents triggering parent click handlers
    */
-  const handleDeletePrompt = async (promptId: number, event: React.MouseEvent) => {
+  const handleDeletePrompt = async (
+    promptId: number,
+    event: React.MouseEvent,
+  ) => {
     event.stopPropagation();
-    
+
     try {
       await window.electronAPI.db.deleteQuickPrompt(promptId);
       loadQuickPrompts();
@@ -114,8 +117,8 @@ const QuickReplies: React.FC<QuickRepliesProps> = ({ onQuickReply }) => {
    * Supports Enter to save, Escape to cancel
    */
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAddNewPrompt();
-    if (e.key === 'Escape') {
+    if (e.key === "Enter") handleAddNewPrompt();
+    if (e.key === "Escape") {
       setIsAddingNew(false);
       setNewPrompt("");
     }
@@ -129,7 +132,11 @@ const QuickReplies: React.FC<QuickRepliesProps> = ({ onQuickReply }) => {
           className="add-prompt-btn"
           onClick={() => setIsAddingNew(true)}
           disabled={isAddingNew || quickPrompts.length >= 4}
-          title={quickPrompts.length >= 4 ? "Maximum commands reached" : "Add new command"}
+          title={
+            quickPrompts.length >= 4
+              ? "Maximum commands reached"
+              : "Add new command"
+          }
           aria-label={`Add new quick reply. ${quickPrompts.length} of 4 slots used.`}
         >
           {quickPrompts.length >= 4 ? "4/4" : `${quickPrompts.length}/4`} +

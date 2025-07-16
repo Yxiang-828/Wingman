@@ -5,7 +5,7 @@ import "./CompactList.css";
 
 /**
  * Helper function for smart title truncation
- * Your Wingman ensures text fits perfectly in compact spaces
+ * Wingman ensures text fits perfectly in compact spaces
  */
 const truncateTitle = (title: string, maxWords: number = 8): string => {
   if (!title) return "";
@@ -22,7 +22,7 @@ interface CompactTaskListProps {
 }
 
 /**
- * CompactTaskList Component - Your Wingman's Efficient Task Display
+ * CompactTaskList Component
  * Optimized for space-constrained contexts with smart loading
  * Maintains full dashboard functionality in compact form
  */
@@ -36,21 +36,21 @@ export const CompactTaskList: React.FC<CompactTaskListProps> = ({
 
   const visibleTasks = useMemo(
     () => tasks.slice(0, displayCount),
-    [tasks, displayCount]
+    [tasks, displayCount],
   );
 
   const remainingCount = Math.max(0, tasks.length - displayCount);
 
   /**
    * Handles task completion with event propagation control
-   * Your Wingman prevents accidental clicks on parent elements
+   *  Wingman prevents accidental clicks on parent elements
    */
   const handleStatusClick = useCallback(
     (e: React.MouseEvent, task: Task) => {
       e.stopPropagation();
       onCompleteTask(task);
     },
-    [onCompleteTask]
+    [onCompleteTask],
   );
 
   const handleLoadMore = useCallback(() => {
@@ -116,7 +116,7 @@ interface CompactEventListProps {
 }
 
 /**
- * CompactEventList Component - Your Wingman's Schedule Overview
+ * CompactEventList Component -  Wingman's Schedule Overview
  * Displays events efficiently with type indicators and smart pagination
  * Maintains visual consistency with task display patterns
  */
@@ -129,7 +129,7 @@ export const CompactEventList: React.FC<CompactEventListProps> = ({
 
   const visibleEvents = useMemo(
     () => events.slice(0, displayCount),
-    [events, displayCount]
+    [events, displayCount],
   );
 
   const remainingCount = Math.max(0, events.length - displayCount);
@@ -139,8 +139,7 @@ export const CompactEventList: React.FC<CompactEventListProps> = ({
   }, [events.length]);
 
   /**
-   * Maps event types to appropriate visual indicators
-   * Your Wingman understands different event contexts
+   * Maps event types to appropriate visual indicators:Wingman understands different event contexts
    */
   const getEventIcon = (type: string) => {
     const icons = {
@@ -213,7 +212,7 @@ interface CompactListProps {
 }
 
 /**
- * CompactList Component - Your Wingman's Condensed View
+ * CompactList Component - Wingman's Condensed View
  * Space-efficient display for tasks and events in limited contexts
  * Perfect for sidebar or modal displays where space is precious
  */
@@ -226,8 +225,7 @@ const CompactList: React.FC<CompactListProps> = ({
   const items = type === "tasks" ? tasks : events;
 
   /**
-   * Handles item click with proper type casting
-   * Your Wingman ensures smooth navigation between different views
+   * Handles item click with proper type casting - Wingman ensures smooth navigation between different views
    */
   const handleItemClick = (item: Task | CalendarEvent) => {
     if (onItemClick) {

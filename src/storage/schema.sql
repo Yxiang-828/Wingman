@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS tasks (
     task_type TEXT,
     due_date TEXT,
     last_reset_date TEXT,
-    urgency_level INTEGER,
     status TEXT,
     recurring_id INTEGER
 );

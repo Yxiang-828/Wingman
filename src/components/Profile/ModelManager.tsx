@@ -1,4 +1,4 @@
-// AI Model Management Hub - Your Wingman's brain selection center
+// AI Model Management Hub -  Wingman's brain selection center
 // Handles downloading, switching, and managing AI models for optimal performance
 import React, { useState, useEffect } from "react";
 import { getCurrentUserId } from "../../utils/auth";
@@ -38,7 +38,7 @@ interface AvailableModel {
 
 const ModelManager: React.FC = () => {
   const [downloadedModels, setDownloadedModels] = useState<DownloadedModel[]>(
-    []
+    [],
   );
   const [downloadProgress, setDownloadProgress] = useState<
     Record<string, ModelDownloadProgress>
@@ -48,8 +48,7 @@ const ModelManager: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [currentModel, setCurrentModel] = useState<string | null>(null);
 
-  // Available AI models ranked by capability and resource requirements
-  // Your Wingman recommends based on your system specifications
+  // Available AI models ranked by capability and resource requirements: Wingman recommends based on your system specifications
   const availableModels: AvailableModel[] = [
     {
       name: "deepseek-r1:1.5b",
@@ -105,6 +104,15 @@ const ModelManager: React.FC = () => {
       size: "8.2GB",
       ramRequired: 12,
       provider: "DeepSeek",
+    },
+    {
+      name: "mistral:7b",
+      displayName: "Mistral 7B (Multilingual Pro)",
+      description:
+        "Advanced multilingual model with excellent instruction following. Great for diverse language tasks. Great for database queries.",
+      size: "4.1GB",
+      ramRequired: 6,
+      provider: "Mistral AI",
     },
   ];
 
@@ -279,7 +287,7 @@ const ModelManager: React.FC = () => {
                 await window.electronAPI.db.saveDownloadedModel(userId, {
                   model_name: modelName,
                   size_mb: Math.round(
-                    (progress.total_size || 0) / (1024 * 1024)
+                    (progress.total_size || 0) / (1024 * 1024),
                   ),
                   status: "completed",
                 });
@@ -324,9 +332,9 @@ const ModelManager: React.FC = () => {
   // Remove AI model from system to free up disk space
   const handleDeleteModel = async (modelName: string) => {
     const confirmed = await window.electronAPI.dialogs.confirm(
-      `Are you sure you want to delete ${modelName}? This will free up disk space.`
+      `Are you sure you want to delete ${modelName}? This will free up disk space.`,
     );
-    
+
     if (!confirmed) {
       return;
     }
@@ -361,7 +369,7 @@ const ModelManager: React.FC = () => {
   // Verify if model is already downloaded and ready for use
   const isModelDownloaded = (modelName: string) => {
     return downloadedModels.some(
-      (m) => m.name === modelName || m.model_name === modelName
+      (m) => m.name === modelName || m.model_name === modelName,
     );
   };
 
@@ -410,7 +418,9 @@ const ModelManager: React.FC = () => {
     const downloaded = isModelDownloaded(modelName);
 
     if (!downloaded) {
-      await window.electronAPI.dialogs.alert(`Cannot select ${modelName}. Please download it first, boss.`);
+      await window.electronAPI.dialogs.alert(
+        `Cannot select ${modelName}. Please download it first, boss.`,
+      );
       return;
     }
 

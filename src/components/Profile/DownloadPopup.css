@@ -17,7 +17,11 @@
 }
 
 .download-popup-container {
-  background: linear-gradient(135deg, rgba(25, 25, 45, 0.98), rgba(35, 35, 60, 0.98));
+  background: linear-gradient(
+    135deg,
+    rgba(25, 25, 45, 0.98),
+    rgba(35, 35, 60, 0.98)
+  );
   border-radius: 24px;
   padding: 3rem;
   width: 500px;
@@ -103,8 +107,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Ensure body doesn't scroll when popup is open */

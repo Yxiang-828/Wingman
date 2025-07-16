@@ -11,9 +11,9 @@ interface CompletedTasksCardProps {
 }
 
 /**
- * CompletedTasksCard Component - Your Wingman's Achievement Gallery
- * Displays completed missions with uncomplete functionality and detail popups
- * Your victories organized and ready for review, boss
+ * CompletedTasksCard Component
+ * Displays completed missions
+ * All glories are stored here for the day (only showing today's completed tasks)
  */
 const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
       .sort(
         (a, b) =>
           new Date(b.updated_at || b.created_at || "").getTime() -
-          new Date(a.updated_at || a.created_at || "").getTime()
+          new Date(a.updated_at || a.created_at || "").getTime(),
       )
       .slice(0, 12);
   }, [localTasks]);
@@ -59,12 +59,12 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
     (task: Task) => {
       showPopupFor(task);
     },
-    [showPopupFor]
+    [showPopupFor],
   );
 
   /**
    * Handles task uncomplete with dashboard refresh
-   * Your Wingman restores missions to active status
+   *  Wingman restores missions to active status
    */
   const handleStatusClick = useCallback(
     async (e: React.MouseEvent, task: Task) => {
@@ -85,7 +85,7 @@ const CompletedTasksCard: React.FC<CompletedTasksCardProps> = ({ tasks }) => {
         console.error("Wingman: Error restoring task:", error);
       }
     },
-    []
+    [],
   );
 
   const formatDate = (dateStr: string) => {

@@ -6,7 +6,8 @@
   color: var(--text-light);
 }
 
-.app, .dashboard {
+.app,
+.dashboard {
   align-items: flex-start !important;
   justify-content: flex-start !important;
 }

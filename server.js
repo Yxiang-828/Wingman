@@ -47,7 +47,10 @@ const createApiProxy = (endpoint) => {
 // AUTH ENDPOINTS
 app.post("/api/v1/user/login", createApiProxy("/user/login"));
 app.post("/api/v1/user/register", createApiProxy("/user/register"));
-app.delete("/api/v1/user/delete-account/:user_id", createApiProxy("/user/delete-account/:user_id"));
+app.delete(
+  "/api/v1/user/delete-account/:user_id",
+  createApiProxy("/user/delete-account/:user_id"),
+);
 app.get("/api/v1/user/me", createApiProxy("/user/me"));
 
 // DIARY ENDPOINTS

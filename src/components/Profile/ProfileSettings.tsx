@@ -12,6 +12,7 @@ import { deleteUserAccount } from "../../api/user";
 import { RecurringTask } from "../../api/Task";
 import ModelManager from "./ModelManager";
 import "./Settings.css";
+import { themePersonalityMap } from "../../constants/themePersonalitymap";
 
 type Theme = "dark" | "light" | "yandere" | "kuudere" | "tsundere" | "dandere";
 
@@ -98,12 +99,12 @@ const ProfileSettings: React.FC = () => {
   // Memoize expensive calculations
   const isAnyDeleteOperationActive = useMemo(
     () => Object.values(deleteOperations).some(Boolean),
-    [deleteOperations]
+    [deleteOperations],
   );
 
   const themes: Theme[] = useMemo(
     () => ["dark", "light", "yandere", "kuudere", "tsundere", "dandere"],
-    []
+    [],
   );
   useEffect(() => {
     loadUserSettings();
@@ -160,7 +161,7 @@ const ProfileSettings: React.FC = () => {
       await loadRecurringTasks();
       showMessage(
         "Recurring task template created! Tasks will be automatically generated on the specified days.",
-        5000
+        5000,
       );
     } catch (error) {
       console.error("Failed to create recurring task:", error);
@@ -180,7 +181,7 @@ const ProfileSettings: React.FC = () => {
       try {
         setDeletingId(id);
         const confirmed = await window.electronAPI.dialogs.confirm(
-          "Are you sure you want to delete this recurring task template? This will not affect tasks that have already been created from this template."
+          "Are you sure you want to delete this recurring task template? This will not affect tasks that have already been created from this template.",
         );
 
         if (!confirmed) {
@@ -198,12 +199,12 @@ const ProfileSettings: React.FC = () => {
         setDeletingId(null);
       }
     },
-    [deleteRecurringTask, loadRecurringTasks]
+    [deleteRecurringTask, loadRecurringTasks],
   ); // Delete account functions - using useCallback to prevent re-renders that break inputs
   const handleDeleteAllTasks = useCallback(async () => {
     // Double confirmation for safety
     const confirmed = await window.electronAPI.dialogs.confirm(
-      "⚠️ DELETE ALL TASKS - This will permanently delete ALL your tasks across all dates. This action cannot be undone. Are you absolutely sure?"
+      "⚠️ DELETE ALL TASKS - This will permanently delete ALL your tasks across all dates. This action cannot be undone. Are you absolutely sure?",
     );
 
     if (!confirmed) {
@@ -242,7 +243,7 @@ const ProfileSettings: React.FC = () => {
   const handleDeleteAllEvents = useCallback(async () => {
     // Double confirmation for safety
     const confirmed = await window.electronAPI.dialogs.confirm(
-      "⚠️ DELETE ALL EVENTS - This will permanently delete ALL your events across all dates. This action cannot be undone. Are you absolutely sure?"
+      "⚠️ DELETE ALL EVENTS - This will permanently delete ALL your events across all dates. This action cannot be undone. Are you absolutely sure?",
     );
 
     if (!confirmed) {
@@ -284,7 +285,7 @@ const ProfileSettings: React.FC = () => {
   const handleDeleteAllDiaryEntries = useCallback(async () => {
     // Double confirmation for safety
     const confirmed = await window.electronAPI.dialogs.confirm(
-      "⚠️ DELETE ALL DIARY ENTRIES - This will permanently delete ALL your diary entries across all dates. This action cannot be undone. Are you absolutely sure?"
+      "⚠️ DELETE ALL DIARY ENTRIES - This will permanently delete ALL your diary entries across all dates. This action cannot be undone. Are you absolutely sure?",
     );
 
     if (!confirmed) {
@@ -325,7 +326,7 @@ const ProfileSettings: React.FC = () => {
   const handleDeleteAllRecurringTasks = useCallback(async () => {
     // Double confirmation for safety
     const confirmed = await window.electronAPI.dialogs.confirm(
-      "⚠️ DELETE ALL RECURRING TASK TEMPLATES - This will permanently delete ALL your recurring task templates. This action cannot be undone. Are you absolutely sure?"
+      "⚠️ DELETE ALL RECURRING TASK TEMPLATES - This will permanently delete ALL your recurring task templates. This action cannot be undone. Are you absolutely sure?",
     );
 
     if (!confirmed) {
@@ -354,7 +355,7 @@ const ProfileSettings: React.FC = () => {
       await loadRecurringTasks(); // Refresh the list
 
       setMessage(
-        `Successfully deleted ${deletedCount} recurring task templates`
+        `Successfully deleted ${deletedCount} recurring task templates`,
       );
       setTimeout(() => setMessage(""), 5000);
     } catch (error) {
@@ -371,7 +372,7 @@ const ProfileSettings: React.FC = () => {
   const handleClearChatHistory = useCallback(async () => {
     // Double confirmation for safety
     const confirmed = await window.electronAPI.dialogs.confirm(
-      "⚠️ CLEAR ALL CHAT HISTORY - This will permanently delete ALL your chat conversations. This action cannot be undone. Are you absolutely sure?"
+      "⚠️ CLEAR ALL CHAT HISTORY - This will permanently delete ALL your chat conversations. This action cannot be undone. Are you absolutely sure?",
     );
 
     if (!confirmed) {
@@ -391,7 +392,7 @@ const ProfileSettings: React.FC = () => {
       await window.electronAPI.db.clearChatHistory(userId);
 
       setMessage(
-        "Chat history cleared successfully. All conversation data has been permanently deleted."
+        "Chat history cleared successfully. All conversation data has been permanently deleted.",
       );
       setTimeout(() => setMessage(""), 5000);
     } catch (error) {
@@ -406,7 +407,7 @@ const ProfileSettings: React.FC = () => {
   const handleDeleteAccount = useCallback(async () => {
     // Safety confirmation using our custom dialog system
     const confirmed = await window.electronAPI.dialogs.confirm(
-      "Delete Account Forever - This will permanently delete your account and ALL data: All tasks and events, All diary entries, All recurring task templates, Chat history, User account from Supabase. This action cannot be undone. Are you absolutely sure?"
+      "Delete Account Forever - This will permanently delete your account and ALL data: All tasks and events, All diary entries, All recurring task templates, Chat history, User account from Supabase. This action cannot be undone. Are you absolutely sure?",
     );
 
     if (!confirmed) {
@@ -429,11 +430,11 @@ const ProfileSettings: React.FC = () => {
         const userId = getCurrentUserId();
         if (!userId) throw new Error("User ID not found");
         await deleteUserAccount(userId);
-        setMessage("✅ User account successfully deleted from Supabase!");
+        setMessage("User account successfully deleted from Supabase!");
       } catch (supabaseError) {
         console.error("Failed to delete Supabase account:", supabaseError);
         setMessage(
-          "⚠️ Local data deleted, but failed to delete Supabase account. You may need to contact support."
+          "⚠️ Local data deleted, but failed to delete Supabase account. You may need to contact support.",
         );
         setTimeout(() => setMessage(""), 7000);
       } // Clear local session
@@ -450,7 +451,7 @@ const ProfileSettings: React.FC = () => {
         } catch (logoutError) {
           console.error(
             "Failed to logout after account deletion:",
-            logoutError
+            logoutError,
           );
           window.location.href = "/login";
         }
@@ -458,7 +459,7 @@ const ProfileSettings: React.FC = () => {
     } catch (error) {
       console.error("Failed to delete account:", error);
       setMessage(
-        "Error: Failed to complete account deletion. Some data may remain."
+        "Error: Failed to complete account deletion. Some data may remain.",
       );
       setTimeout(() => setMessage(""), 5000);
     } finally {
@@ -478,13 +479,13 @@ const ProfileSettings: React.FC = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       dispatch({ type: "SET_TITLE", payload: e.target.value });
     },
-    []
+    [],
   );
   const handleTaskTimeChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       dispatch({ type: "SET_TIME", payload: e.target.value });
     },
-    []
+    [],
   );
 
   const formatWeekdays = (weekdays: number[]) => {
@@ -493,12 +494,12 @@ const ProfileSettings: React.FC = () => {
   };
   const getThemeDisplayName = (themeValue: Theme) => {
     const themeNames = {
-      dark: "Dark",
-      light: "Light",
-      yandere: "Yandere",
-      kuudere: "Kuudere",
-      tsundere: "Tsundere",
-      dandere: "Dandere",
+      dark: "Dark 🌙",
+      light: "Light ☀️",
+      yandere: "Yandere 🌸",
+      kuudere: "Kuudere ❄️",
+      tsundere: "Tsundere 🧡",
+      dandere: "Dandere 💜",
     };
     return themeNames[themeValue];
   };
@@ -513,6 +514,31 @@ const ProfileSettings: React.FC = () => {
       dandere: "Gentle purple for shy personalities",
     };
     return descriptions[themeValue];
+  };
+
+  const themeQuotes: Record<string, string> = {
+    light:
+      "Good morning! ✨ I see you have some exciting plans today - ready to tackle them together?",
+    dark: "Your schedule is analyzed. Proceed.",
+    tsundere:
+      "Don't think I organized this perfectly for you! It's just... logical efficiency! 😤",
+    kuudere: "I've analyzed your schedule. Efficiency levels are... adequate.",
+    yandere: "I've been watching over everything... you're here. 💖",
+    dandere: "Um... h-hello... how can I help you today? 🌸",
+  };
+
+  const themeDescriptions: Record<string, string> = {
+    light:
+      "Optimistic and encouraging, aims to be a warm and supportive presence to help you stay motivated.",
+    dark: "Analytical and direct, focused on efficiency and providing minimal but insightful guidance.",
+    tsundere:
+      "Appears distant and defensive at first but is secretly caring, offering reluctant help with underlying affection.",
+    kuudere:
+      " Reserved and logical with a professional demeanor, gradually revealing a more caring side through its analytical support.",
+    yandere:
+      "Intensely loyal and protective, it is deeply observant and provides highly personalized, caring support.",
+    dandere:
+      "A shy and soft-spoken helper who offers gentle suggestions and encouragement with deep, caring undertones.",
   };
 
   return (
@@ -542,28 +568,49 @@ const ProfileSettings: React.FC = () => {
       </div>
       {/* Theme Selection */}
       <div className="settings-card">
-        <h2 className="settings-card-title">Theme Selection</h2>
+        <h2 className="settings-card-title">Avatar Selection</h2>
         <div className="setting-group">
-          <label className="setting-label">Choose Your Theme</label>
+          <label className="setting-label">Choose Your Avatar</label>
           <div className="theme-grid">
-            {themes.map((themeOption) => (
-              <div
-                key={themeOption}
-                className={`theme-option ${
-                  theme === themeOption ? "active" : ""
-                }`}
-                onClick={() => setTheme(themeOption)}
-              >
-                <div className="theme-option-header">
-                  <span className="theme-name">
-                    {getThemeDisplayName(themeOption)}
-                  </span>
+            {themes.map((themeOption) => {
+              const themeData = themePersonalityMap[themeOption];
+              return (
+                <div
+                  key={themeOption}
+                  className={`theme-option ${
+                    theme === themeOption ? "active" : ""
+                  }`}
+                  onClick={() => setTheme(themeOption)}
+                >
+                  <div className="theme-avatar-preview">
+                    <img
+                      src={themeData.avatar}
+                      alt={themeData.name}
+                      className="theme-avatar-img"
+                      style={{ width: 200, height: 200, borderRadius: "8px" }}
+                    />
+                  </div>
+                  <div className="theme-option-header">
+                    <span className="theme-name">{themeData.name}</span>
+                  </div>
+
+                  <p className="theme-description">
+                    Wingman AI chat personality:{" "}
+                    {themeDescriptions[themeOption]}
+                  </p>
+                  <div className="theme-quote">
+                    <span style={{ fontStyle: "italic", color: "#8a2be2" }}>
+                      "{themeQuotes[themeOption]}"
+                    </span>
+                  </div>
+                  <div className="theme-mapped">
+                    <span style={{ fontSize: "0.9em", color: "#888" }}>
+                      Theme: {getThemeDisplayName(themeOption)}
+                    </span>
+                  </div>
                 </div>
-                <p className="theme-description">
-                  {getThemeDescription(themeOption)}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -624,12 +671,11 @@ const ProfileSettings: React.FC = () => {
                     >
                       {day}
                     </button>
-                  )
+                  ),
                 )}
               </div>
             </div>{" "}
-            <div className="form-group">
-            </div>
+            <div className="form-group"></div>
             <div className="form-actions">
               <button onClick={handleCreateRecurringTask} className="save-btn">
                 Create Template

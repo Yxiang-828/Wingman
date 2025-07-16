@@ -135,7 +135,7 @@ const ProfileAvatar: React.FC = () => {
       window.dispatchEvent(
         new CustomEvent("wingman-updated", {
           detail: wingmanConfig,
-        })
+        }),
       );
 
       setSaveStatus("Wingman customized successfully! 🎉");
@@ -299,8 +299,6 @@ const ProfileAvatar: React.FC = () => {
 
         {saveStatus && <div className="settings-saved">{saveStatus}</div>}
       </div>
-
-
     </div>
   );
 };

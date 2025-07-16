@@ -1,8 +1,6 @@
 // Navigation section builder with async action support and loading states
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useCalendarCache } from "../../Hooks/useCalendar";
-import { getTodayDateString } from "../../utils/timeUtils";
 
 // Navigation item structure with optional async handlers
 export interface MenuItem {
@@ -10,7 +8,7 @@ export interface MenuItem {
   path?: string;
   icon?: React.ReactNode;
   badge?: number;
-  onClick?: () => Promise<void>; // Custom async click handler for special actions
+  onClick?: () => Promise<void>;
   submenu?: Array<{
     title: string;
     path: string;
@@ -29,7 +27,7 @@ const NavSection: React.FC<NavSectionProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
-    {}
+    {},
   );
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({}); // Loading state management
 

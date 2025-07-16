@@ -17,10 +17,14 @@ export const navigateToDayView = (date: string) => {
 
 export const navigateToTask = (task: Task) => {
   if (!navigateInstance) return;
-  navigateInstance(`/calendar/day?date=${task.task_date}&highlight=task-${task.id}`);
+  navigateInstance(
+    `/calendar/day?date=${task.task_date}&highlight=task-${task.id}`,
+  );
 };
 
 export const navigateToEvent = (event: CalendarEvent) => {
   if (!navigateInstance) return;
-  navigateInstance(`/calendar/day?date=${event.event_date}&highlight=event-${event.id}`);
+  navigateInstance(
+    `/calendar/day?date=${event.event_date}&highlight=event-${event.id}`,
+  );
 };

@@ -1,144 +1,161 @@
-import React, { useEffect, useState } from "react";
-import { useCalendarCache } from "../../Hooks/useCalendar";
+import React, { useEffect, useState, useCallback } from "react";
+import type { Task } from "../../api/Task";
+import type { CalendarEvent } from "../../api/Calendar";
 import { useDiary } from "../../context/DiaryContext";
-import { getCurrentUserId } from "../../utils/auth";
+import { getCurrentUserId } from "../../utils/helpers";
+import { getTodayDateString } from "../../utils/timeUtils";
 import DiaryCard from "./DiaryCard";
 import TasksCard from "./TasksCard";
 import EventsCard from "./EventsCard";
 import SummaryCard from "./SummaryCard";
 import CompletedTasksCard from "./CompletedTasksCard";
-import { getTodayDateString } from "../../utils/timeUtils";
-import type { Task } from "../../api/Task";
-import type { CalendarEvent } from "../../api/Calendar";
-// import { logout } from "../../utils/logout";
+import "./Dashboard.css";
 
-import "./Dashboard.css"; // This now contains only Dashboard-specific styles
+/**
+ * Dashboard Component
+ */
 const Dashboard: React.FC = () => {
   const { entries, refreshEntries, loading: diaryLoading } = useDiary();
-
-  // Use shared cache to copy from DayView
-  const { getDayData, loading: cacheLoading } = useCalendarCache("Dashboard");
 
   const [todaysTasks, setTodaysTasks] = useState<Task[]>([]);
   const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
   const [recentDiaryEntries, setRecentDiaryEntries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Single loading state with timeout
   const [isReady, setIsReady] = useState(false);
 
-  // Fetch today's data using shared cache
-  useEffect(() => {
-    const loadDashboard = async () => {
-      // Get current user ID first
-      const userId = getCurrentUserId();
-      if (!userId) {
-        console.log("Dashboard: User not authenticated, skipping data fetch");
-        setIsReady(true); // SET READY EVEN IF NO USER
-        return;
-      }
+  /**
+   * Fetches comprehensive dashboard data from database
+   */
+  const fetchDashboardData = useCallback(async () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.log("Wingman: User not authenticated, skipping data fetch");
+      setIsReady(true);
+      return;
+    }
 
-      try {
-        // Use standardized time utility
-        const today = getTodayDateString();
-        console.log(`📊 Dashboard: Loading data for ${today}`);
+    try {
+      const today = getTodayDateString();
+      console.log("Wingman: Loading data for today");
 
-        // Copy data from shared cache (DayView is primary owner)
-        const todayData = await getDayData(today);
+      const [tasksData, eventsData] = await Promise.all([
+        window.electronAPI.db.getTasks(userId, today),
+        window.electronAPI.db.getEvents(userId, today),
+      ]);
 
-        setTodaysTasks(todayData.tasks);
-        setTodaysEvents(todayData.events);
+      setTodaysTasks(tasksData || []);
+      setTodaysEvents(eventsData || []);
 
-        console.log(
-          `📊 Dashboard: Loaded ${todayData.tasks.length} tasks, ${todayData.events.length} events`
-        );
+      console.log("Wingman: Data loaded successfully");
 
-        // Load diary entries
-        await refreshEntries();
-      } catch (error) {
-        console.error("Dashboard load error:", error);
-        setTodaysTasks([]);
-        setTodaysEvents([]);
-      } finally {
-        setIsReady(true); //  ALWAYS end loading
-      }
-    };
+      await refreshEntries();
+    } catch (error) {
+      console.error("Wingman: Dashboard load error:", error);
+      setTodaysTasks([]);
+      setTodaysEvents([]);
+    } finally {
+      setIsReady(true);
+    }
+  }, [refreshEntries]);
 
-    loadDashboard();
-  }, [getDayData, refreshEntries]);
-
-  // Update diary entries when entries change
-  useEffect(() => {
+  /**
+   * Organizes diary entries by recency
+   */ useEffect(() => {
     if (entries && entries.length > 0) {
-      // Sort by date (newest first) and take the most recent
       const recent = [...entries]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => {
+          const dateA = a.date ? new Date(a.date).getTime() : 0;
+          const dateB = b.date ? new Date(b.date).getTime() : 0;
+          return dateB - dateA;
+        })
         .slice(0, 3);
       setRecentDiaryEntries(recent);
     }
   }, [entries]);
 
-  // Better loading condition with individual states
   useEffect(() => {
-    console.log(
-      `📊 Dashboard Loading States: cache=${cacheLoading}, diary=${diaryLoading}, isReady=${isReady}`
-    );
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
-    // Set loading to false when:
-    // 1. Cache is not loading AND data is loaded
-    // 2. Diary is loaded (regardless of diaryLoading from context)
-    if (!cacheLoading && isReady) {
-      console.log("📊 Dashboard: All data loaded, hiding loading screen");
+  useEffect(() => {
+    if (isReady && !diaryLoading) {
       setIsLoading(false);
     }
-  }, [cacheLoading, diaryLoading, isReady]);
+  }, [isReady, diaryLoading]);
 
- 
-  console.log("Dashboard Loading Debug:", {
-    cacheLoading,
-    dataLoaded: isReady,
-    diaryLoaded: !diaryLoading,
-    isLoading,
-  });
+  /**
+   * Handles task completion with comprehensive dashboard refresh
+   */
+  const handleToggleTask = useCallback(
+    async (task: Task) => {
+      try {
+        console.log("Wingman: Updating task status:", task.id);
+        const updatedTask = await window.electronAPI.db.updateTask(task.id, {
+          completed: !task.completed,
+        });
 
-  // Handle task toggle with cache awareness
-  const handleToggleTask = (updatedTask: Task) => {
-    // Update ALL tasks, not just displayed ones
-    setTodaysTasks((prev) =>
-      prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-    );
+        // Send congratulation notification if task was just completed
+        if (!task.completed && updatedTask?.completed) {
+          try {
+            const { systemNotificationService } = await import(
+              "../../services/SystemNotificationService"
+            );
+            await systemNotificationService.showTaskCompletion(
+              updatedTask.title || task.title,
+            );
+            console.log(
+              `WINGMAN SUCCESS: Congratulation notification sent for task: ${
+                updatedTask.title || task.title
+              }`,
+            );
+          } catch (error) {
+            console.error(
+              "WINGMAN ERROR: Failed to send congratulation notification:",
+              error,
+            );
+          }
+        }
 
-    // Force refresh the cache for today to ensure consistency
-    const today = getTodayDateString();
-    getDayData(today, true).catch(console.error);
-  };
+        await fetchDashboardData();
 
-  if (!isReady) {
+        console.log("Wingman: Task updated and dashboard refreshed");
+
+        return updatedTask || { ...task, completed: !task.completed };
+      } catch (error) {
+        console.error("Wingman: Error updating task:", error);
+        throw error;
+      }
+    },
+    [fetchDashboardData],
+  );
+
+  /**
+   * Listens for external refresh requests
+   */
+  useEffect(() => {
+    const handleDashboardRefresh = () => {
+      console.log("Wingman: External refresh triggered");
+      fetchDashboardData();
+    };
+
+    window.addEventListener("dashboard-refresh", handleDashboardRefresh);
+    return () =>
+      window.removeEventListener("dashboard-refresh", handleDashboardRefresh);
+  }, [fetchDashboardData]);
+
+  if (isLoading) {
     return (
       <div className="dashboard-container">
         <div className="dashboard-loading">
           <div className="loading-spinner"></div>
-          <p>Loading today's schedule...</p>
-          {/* Debug info */}
-          <small style={{ color: "#666", marginTop: "10px" }}>
-            Cache: {cacheLoading ? "loading..." : "ready"} | Data:{" "}
-            {isReady ? "loaded" : "loading..."} | Diary:{" "}
-            {diaryLoading ? "loading..." : "loaded"}
-          </small>
+          <p>Your Wingman is preparing today's briefing...</p>
         </div>
       </div>
     );
   }
 
-  // Filter completed tasks for today only
-  const todaysCompletedTasks = todaysTasks.filter((task) => task.completed);
   const pendingTasks = todaysTasks.filter((t) => !t.completed);
-
-
-  console.log(
-    `📊 Dashboard DEBUG: Passing ${pendingTasks.length} pending tasks to TasksCard`
-  );
-  console.log(`📊 Dashboard DEBUG: Total tasks: ${todaysTasks.length}`);
+  const completedTasks = todaysTasks.filter((t) => t.completed);
 
   return (
     <div className="dashboard-container">
@@ -146,7 +163,7 @@ const Dashboard: React.FC = () => {
       <div className="dashboard">
         <TasksCard tasks={pendingTasks} onToggleTask={handleToggleTask} />
         <EventsCard events={todaysEvents} />
-        <CompletedTasksCard tasks={todaysCompletedTasks} />
+        <CompletedTasksCard tasks={completedTasks} />
         <DiaryCard entries={recentDiaryEntries} />
       </div>
     </div>

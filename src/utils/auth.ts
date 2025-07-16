@@ -11,13 +11,12 @@ export const getCurrentUser = () => {
   }
 };
 
-// Get current user ID - Modified to NOT redirect automatically
+// Get current user ID
 export const getCurrentUserId = (): string => {
   try {
     const user = getCurrentUser();
     if (!user || !user.id) {
       console.warn("User not authenticated or missing ID");
-      // Remove auto-redirect - let React Router handle this
       return "";
     }
     return user.id;
@@ -45,7 +44,7 @@ export const setCurrentUser = (userData: any) => {
 };
 
 export const waitForAuthentication = async (
-  maxWaitTime = 5000
+  maxWaitTime = 5000,
 ): Promise<boolean> => {
   const startTime = Date.now();
 

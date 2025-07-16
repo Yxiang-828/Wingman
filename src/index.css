@@ -1,7 +1,7 @@
 /* Only essential resets and font imports */
 
 /* Font imports would go here */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 /* Basic reset */
 * {

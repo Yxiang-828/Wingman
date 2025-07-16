@@ -9,7 +9,7 @@ if sys.platform == "win32":
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import user, chat  # Add chat import
+from app.api.v1.endpoints import user, chat  
 from app.core.responses import CustomJSONResponse
 from fastapi.responses import JSONResponse
 import logging
@@ -64,13 +64,13 @@ async def add_global_exception_handler(request, call_next):
             content={"detail": "Internal server error"}
         )
 
-#  DATA ENDPOINT STATUS (updated for AI)
+#  DATA ENDPOINT STATUS
 @app.get("/api/v1/status")
 def data_endpoint_status():
     return {
         "active_endpoints": [
             "/api/v1/user/*",
-            "/api/v1/chat/*"  # Added
+            "/api/v1/chat/*"  
         ],
         "data_operations": "Handled by LocalDataManager via Electron IPC",
         "ai_integration": "Ollama-powered chat with context building",

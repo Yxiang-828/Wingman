@@ -1,6 +1,5 @@
-
-import { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 
 interface UsePageRefreshOptions {
   refreshOnMount?: boolean;
@@ -11,13 +10,13 @@ interface UsePageRefreshOptions {
 
 export const usePageRefresh = (
   fetchFunction: () => Promise<void>,
-  options: UsePageRefreshOptions = {}
+  options: UsePageRefreshOptions = {},
 ) => {
   const {
     refreshOnMount = true,
     refreshOnNavigation = true,
-    refreshOnEvents = ['dashboard-refresh', 'notifications-refresh'],
-    minLoadingTime = 300
+    refreshOnEvents = ["dashboard-refresh", "notifications-refresh"],
+    minLoadingTime = 300,
   } = options;
 
   const [loading, setLoading] = useState(true);
@@ -31,14 +30,16 @@ export const usePageRefresh = (
 
     try {
       await fetchFunction();
-      
+
       // Ensure minimum loading time for smooth UX
       const elapsed = Date.now() - startTime;
       if (elapsed < minLoadingTime) {
-        await new Promise(resolve => setTimeout(resolve, minLoadingTime - elapsed));
+        await new Promise((resolve) =>
+          setTimeout(resolve, minLoadingTime - elapsed),
+        );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      setError(err instanceof Error ? err.message : "Failed to load data");
     } finally {
       setLoading(false);
     }
@@ -62,12 +63,12 @@ export const usePageRefresh = (
   useEffect(() => {
     const handleRefresh = () => refresh();
 
-    refreshOnEvents.forEach(event => {
+    refreshOnEvents.forEach((event) => {
       window.addEventListener(event, handleRefresh);
     });
 
     return () => {
-      refreshOnEvents.forEach(event => {
+      refreshOnEvents.forEach((event) => {
         window.removeEventListener(event, handleRefresh);
       });
     };

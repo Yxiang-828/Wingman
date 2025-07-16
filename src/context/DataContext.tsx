@@ -1,4 +1,4 @@
-// Data command center - pure CRUD operations for your digital realm
+// Pure CRUD operations
 import React, {
   createContext,
   useContext,
@@ -12,7 +12,7 @@ import type { CalendarEvent } from "../api/Calendar";
 import { getCurrentUserId } from "../utils/auth";
 import { systemNotificationService } from "../services/SystemNotificationService";
 
-// Simplified: Pure CRUD interface - no cache, no subscriptions
+// Pure CRUD interface
 interface DataContextType {
   // CRUD Operations (direct SQLite calls)
   createTask: (task: Omit<Task, "id">) => Promise<Task>;
@@ -21,19 +21,19 @@ interface DataContextType {
   toggleTask: (task: Task) => Promise<Task>;
   // Recurring Task Operations
   createRecurringTask: (
-    recurringTask: Omit<RecurringTask, "id">
+    recurringTask: Omit<RecurringTask, "id">,
   ) => Promise<RecurringTask>;
   getRecurringTasks: () => Promise<RecurringTask[]>;
   updateRecurringTask: (
     id: number,
-    updates: Partial<RecurringTask>
+    updates: Partial<RecurringTask>,
   ) => Promise<RecurringTask>;
   deleteRecurringTask: (id: number) => Promise<void>;
   generateTodaysRecurringTasks: (
-    targetDate?: string
+    targetDate?: string,
   ) => Promise<{ success: boolean; createdTasks: number }>;
   handleRecurringTaskCompletion: (
-    taskId: number
+    taskId: number,
   ) => Promise<{ success: boolean; task?: any; message: string }>;
 
   createEvent: (event: Omit<CalendarEvent, "id">) => Promise<CalendarEvent>;
@@ -43,7 +43,7 @@ interface DataContextType {
   // Data Fetching (for components that need it)
   fetchDayData: (
     date: string,
-    page?: number
+    page?: number,
   ) => Promise<{
     tasks: Task[];
     events: CalendarEvent[];
@@ -66,7 +66,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   // Define generateTodaysRecurringTasks before useEffect that uses it
   const generateTodaysRecurringTasks = useCallback(
     async (
-      targetDate?: string
+      targetDate?: string,
     ): Promise<{ success: boolean; createdTasks: number }> => {
       try {
         const userId = getCurrentUserId();
@@ -79,10 +79,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
         const result = await window.electronAPI.db.generateRecurringTasks(
           userId,
-          date
+          date,
         );
         console.log(
-          `DataContext: Generated ${result.createdTasks} recurring tasks for ${date}`
+          `DataContext: Generated ${result.createdTasks} recurring tasks for ${date}`,
         );
 
         return {
@@ -94,7 +94,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         return { success: false, createdTasks: 0 };
       }
     },
-    []
+    [],
   );
 
   // Auto-generate recurring tasks on app startup/authentication
@@ -104,14 +104,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         const userId = getCurrentUserId();
         if (!userId) {
           console.log(
-            "DataContext: No authenticated user, skipping auto-generation"
+            "DataContext: No authenticated user, skipping auto-generation",
           );
           return;
         }
 
         console.log(
           "DataContext: Auto-generating recurring tasks on startup for user:",
-          userId
+          userId,
         );
 
         // Generate recurring tasks for today
@@ -119,7 +119,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
         if (result.success && result.createdTasks > 0) {
           console.log(
-            `DataContext: Auto-generated ${result.createdTasks} recurring tasks on startup`
+            `DataContext: Auto-generated ${result.createdTasks} recurring tasks on startup`,
           );
 
           // Dispatch refresh event for dashboard and other components
@@ -131,7 +131,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       } catch (error) {
         console.error(
           "DataContext: Error auto-generating recurring tasks:",
-          error
+          error,
         );
         // Don't set error state as this is not critical to app functionality
       }
@@ -152,7 +152,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
       if (currentDate !== lastCheckedDate) {
         console.log(
-          `DataContext: Date changed from ${lastCheckedDate} to ${currentDate}`
+          `DataContext: Date changed from ${lastCheckedDate} to ${currentDate}`,
         );
 
         const userId = getCurrentUserId();
@@ -161,7 +161,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
             const result = await generateTodaysRecurringTasks(currentDate);
             if (result.success && result.createdTasks > 0) {
               console.log(
-                `DataContext: Auto-generated ${result.createdTasks} recurring tasks for new date`
+                `DataContext: Auto-generated ${result.createdTasks} recurring tasks for new date`,
               );
 
               // Refresh all relevant components
@@ -170,13 +170,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
               window.dispatchEvent(
                 new CustomEvent("date-changed", {
                   detail: { newDate: currentDate },
-                })
+                }),
               );
             }
           } catch (error) {
             console.error(
               "DataContext: Error generating tasks for date change:",
-              error
+              error,
             );
           }
         }
@@ -191,7 +191,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     return () => clearInterval(intervalId);
   }, [generateTodaysRecurringTasks]);
 
-  // Simplified: Create Task using direct SQLite
+  // Create Task using direct SQLite
   const createTask = useCallback(
     async (task: Omit<Task, "id">): Promise<Task> => {
       setLoading(true);
@@ -211,9 +211,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
           user_id: String(userId),
           task_type: task.task_type ? String(task.task_type) : undefined,
           due_date: task.due_date ? String(task.due_date) : undefined,
-          urgency_level: task.urgency_level
-            ? Number(task.urgency_level)
-            : undefined,
           status: task.status ? String(task.status) : undefined,
           last_reset_date: task.last_reset_date
             ? String(task.last_reset_date)
@@ -230,7 +227,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
         console.log(
           "DataContext: Sending sanitized task to SQLite:",
-          sanitizedTask
+          sanitizedTask,
         );
 
         // Create via SQLite with sanitized data
@@ -242,7 +239,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         window.dispatchEvent(
           new CustomEvent("task-created", {
             detail: newTask,
-          })
+          }),
         );
 
         return newTask;
@@ -257,10 +254,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
-  // Simplified: Update Task using direct SQLite
+  // Update Task using direct SQLite
   const updateTask = useCallback(async (task: Task): Promise<Task> => {
     setLoading(true);
     try {
@@ -276,16 +273,13 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         failed: Boolean(task.failed),
         task_type: task.task_type ? String(task.task_type) : undefined,
         due_date: task.due_date ? String(task.due_date) : undefined,
-        urgency_level: task.urgency_level
-          ? Number(task.urgency_level)
-          : undefined,
         status: task.status ? String(task.status) : undefined,
         updated_at: String(new Date().toISOString()),
       };
 
       const updatedTask = await window.electronAPI.db.updateTask(
         Number(task.id),
-        updates
+        updates,
       );
 
       if (!updatedTask) {
@@ -298,12 +292,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         try {
           await systemNotificationService.showTaskCompletion(updatedTask.title);
           console.log(
-            `WINGMAN SUCCESS: Congratulation notification sent for updated task: ${updatedTask.title}`
+            `WINGMAN SUCCESS: Congratulation notification sent for updated task: ${updatedTask.title}`,
           );
         } catch (error) {
           console.error(
             "WINGMAN ERROR: Failed to send congratulation notification:",
-            error
+            error,
           );
         }
       }
@@ -312,7 +306,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       window.dispatchEvent(
         new CustomEvent("task-updated", {
           detail: updatedTask,
-        })
+        }),
       );
 
       return updatedTask;
@@ -327,7 +321,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // Simplified: Delete Task using direct SQLite
+  // Delete Task using direct SQLite
   const deleteTask = useCallback(async (id: number): Promise<void> => {
     setLoading(true);
     try {
@@ -340,7 +334,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       window.dispatchEvent(
         new CustomEvent("task-deleted", {
           detail: { taskId: id },
-        })
+        }),
       );
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -351,7 +345,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // Simplified: Toggle Task using direct SQLite
+  // Toggle Task using direct SQLite
   const toggleTask = useCallback(
     async (task: Task): Promise<Task> => {
       try {
@@ -364,22 +358,22 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
           // Send immediate congratulation notification
           try {
             await systemNotificationService.showTaskCompletion(
-              updatedTask.title
+              updatedTask.title,
             );
             console.log(
-              `WINGMAN SUCCESS: Congratulation notification sent for task: ${updatedTask.title}`
+              `WINGMAN SUCCESS: Congratulation notification sent for task: ${updatedTask.title}`,
             );
           } catch (error) {
             console.error(
               "WINGMAN ERROR: Failed to send congratulation notification:",
-              error
+              error,
             );
           }
 
           window.dispatchEvent(
             new CustomEvent("task-completed", {
               detail: { taskId: updatedTask.id, title: updatedTask.title },
-            })
+            }),
           );
         }
 
@@ -389,10 +383,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         throw error;
       }
     },
-    [updateTask]
+    [updateTask],
   );
 
-  // Simplified: Create Event using direct SQLite
+  // Create Event using direct SQLite
   const createEvent = useCallback(
     async (event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> => {
       setLoading(true);
@@ -402,7 +396,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
           throw new Error("User not authenticated");
         }
 
-        // Match your actual SQLite schema
+        // Match  actual SQLite schema
         const eventData = {
           title: event.title || "",
           event_date: event.event_date || "",
@@ -424,7 +418,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         window.dispatchEvent(
           new CustomEvent("event-created", {
             detail: newEvent,
-          })
+          }),
         );
 
         return newEvent;
@@ -435,10 +429,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
-  // Simplified: Update Event using direct SQLite
+  // Update Event using direct SQLite
   const updateEvent = useCallback(
     async (event: CalendarEvent): Promise<CalendarEvent> => {
       setLoading(true);
@@ -452,7 +446,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         window.dispatchEvent(
           new CustomEvent("event-updated", {
             detail: updatedEvent,
-          })
+          }),
         );
 
         return updatedEvent;
@@ -464,10 +458,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
-  // Simplified: Delete Event using direct SQLite
+  // Delete Event using direct SQLite
   const deleteEvent = useCallback(async (id: number): Promise<void> => {
     setLoading(true);
     try {
@@ -480,7 +474,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       window.dispatchEvent(
         new CustomEvent("event-deleted", {
           detail: { eventId: id },
-        })
+        }),
       );
     } catch (error) {
       console.error("Error deleting event:", error);
@@ -492,14 +486,14 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   }, []); // Fetch Day Data using SQLite (unchanged - works perfectly)
   const fetchDayData = useCallback(async (date: string) => {
     try {
-      // Get user ID - CRITICAL
+      // Get user ID
       const userId = getCurrentUserId();
       if (!userId) {
         throw new Error("User not authenticated");
       }
 
       console.log(
-        `DataContext: Fetching data for ${date} with user_id: ${userId} (SQLite)`
+        `DataContext: Fetching data for ${date} with user_id: ${userId} (SQLite)`,
       );
 
       // Auto-generate recurring tasks for this date (runs silently)
@@ -508,9 +502,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       } catch (recurringError) {
         console.error(
           "DataContext: Error generating recurring tasks:",
-          recurringError
+          recurringError,
         );
-        // Don't throw - continue with normal data fetch
+        // continue with normal data fetch
       }
 
       // Get data from SQLite
@@ -526,7 +520,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       ]);
 
       console.log(
-        `DataContext: Fetched ${tasks.length} tasks, ${events.length} events for ${date} (SQLite)`
+        `DataContext: Fetched ${tasks.length} tasks, ${events.length} events for ${date} (SQLite)`,
       );
 
       return {
@@ -550,7 +544,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   // Recurring Task Operations
   const createRecurringTask = useCallback(
     async (
-      recurringTask: Omit<RecurringTask, "id">
+      recurringTask: Omit<RecurringTask, "id">,
     ): Promise<RecurringTask> => {
       setLoading(true);
       try {
@@ -574,10 +568,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         };
 
         const newRecurringTask = await window.electronAPI.db.saveRecurringTask(
-          sanitizedRecurringTask
+          sanitizedRecurringTask,
         );
         console.log(
-          `DataContext: Recurring task ${newRecurringTask.id} created successfully`
+          `DataContext: Recurring task ${newRecurringTask.id} created successfully`,
         );
 
         return newRecurringTask;
@@ -593,7 +587,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   const getRecurringTasks = useCallback(async (): Promise<RecurringTask[]> => {
@@ -604,11 +598,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       }
 
       console.log("DataContext: Fetching recurring tasks for user:", userId);
-      const recurringTasks = await window.electronAPI.db.getRecurringTasks(
-        userId
-      );
+      const recurringTasks =
+        await window.electronAPI.db.getRecurringTasks(userId);
       console.log(
-        `DataContext: Fetched ${recurringTasks.length} recurring tasks`
+        `DataContext: Fetched ${recurringTasks.length} recurring tasks`,
       );
 
       return recurringTasks || [];
@@ -621,7 +614,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   const updateRecurringTask = useCallback(
     async (
       id: number,
-      updates: Partial<RecurringTask>
+      updates: Partial<RecurringTask>,
     ): Promise<RecurringTask> => {
       setLoading(true);
       try {
@@ -672,7 +665,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(false);
       }
     },
-    []
+    [],
   );
   const deleteRecurringTask = useCallback(async (id: number): Promise<void> => {
     setLoading(true);
@@ -683,7 +676,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       }
 
       console.log(
-        `DataContext: Deleting recurring task ${id} - this may take a moment for templates with many generated tasks`
+        `DataContext: Deleting recurring task ${id} - this may take a moment for templates with many generated tasks`,
       );
 
       const result = await window.electronAPI.db.deleteRecurringTask(id);
@@ -695,7 +688,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       console.log(
         `DataContext: Recurring task ${id} deleted successfully. Removed ${
           result.deletedTasks || 0
-        } generated tasks.`
+        } generated tasks.`,
       );
     } catch (error) {
       console.error("DataContext: Error deleting recurring task:", error);
@@ -712,7 +705,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
 
   const handleRecurringTaskCompletion = useCallback(
     async (
-      taskId: number
+      taskId: number,
     ): Promise<{ success: boolean; task?: any; message: string }> => {
       try {
         const userId = getCurrentUserId();
@@ -721,39 +714,38 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         console.log(
-          `DataContext: Handling completion for recurring task ${taskId}`
+          `DataContext: Handling completion for recurring task ${taskId}`,
         );
         const result =
           await window.electronAPI.db.handleRecurringTaskCompletion(taskId);
         console.log(
           `DataContext: Recurring task completion handled for ${taskId}:`,
-          result
+          result,
         );
 
-        // Enhanced: Check if we need to generate tomorrow's recurring tasks
+        // Check if we need to generate tomorrow's recurring tasks
         if (result.success && result.task?.recurring_id) {
           const tomorrow = new Date();
           tomorrow.setDate(tomorrow.getDate() + 1);
           const tomorrowDate = tomorrow.toISOString().split("T")[0];
 
           console.log(
-            `DataContext: Checking if recurring task needs generation for ${tomorrowDate}`
+            `DataContext: Checking if recurring task needs generation for ${tomorrowDate}`,
           );
 
           // Generate recurring tasks for tomorrow to ensure continuity
           try {
-            const generateResult = await generateTodaysRecurringTasks(
-              tomorrowDate
-            );
+            const generateResult =
+              await generateTodaysRecurringTasks(tomorrowDate);
             if (generateResult.success && generateResult.createdTasks > 0) {
               console.log(
-                `DataContext: Pre-generated ${generateResult.createdTasks} recurring tasks for tomorrow`
+                `DataContext: Pre-generated ${generateResult.createdTasks} recurring tasks for tomorrow`,
               );
             }
           } catch (genError) {
             console.warn(
               "DataContext: Could not pre-generate tomorrow's recurring tasks:",
-              genError
+              genError,
             );
             // Non-critical error, continue normally
           }
@@ -763,7 +755,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       } catch (error) {
         console.error(
           "DataContext: Error handling recurring task completion:",
-          error
+          error,
         );
         return {
           success: false,
@@ -774,9 +766,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         };
       }
     },
-    [generateTodaysRecurringTasks]
+    [generateTodaysRecurringTasks],
   );
-  // Simplified: Clean value object - removed all cache-related properties
+  // Clean value object - removed all cache-related properties
   const value: DataContextType = {
     createTask,
     updateTask,

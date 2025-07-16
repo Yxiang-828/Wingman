@@ -101,6 +101,16 @@ if %errorlevel% neq 0 (
 )
 echo [DEBUG] ✅ Node.js dependencies installed
 
+REM Ensure Jest is installed for testing
+echo [DEBUG] Ensuring Jest is installed...
+call npm install --save-dev jest
+if %errorlevel% neq 0 (
+  echo ERROR: Jest install failed!
+  pause
+  exit /b 1
+)
+echo [DEBUG] ✅ Jest installed
+
 REM Apply Python 3.13 compatibility patch
 echo [DEBUG] Step 6: Applying Python 3.13 compatibility...
 python-dist\python.exe Wingman-backend\patch-orjson.py

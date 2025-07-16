@@ -273,7 +273,9 @@
 
 /* Enhanced animations for smooth user experience */
 @keyframes spin-smooth {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeInItem {
@@ -309,25 +311,25 @@
   .virtualized-scroll-container {
     -webkit-overflow-scrolling: touch;
   }
-  
+
   .load-more-trigger {
     padding: 0.8rem;
     min-height: 50px;
   }
-  
+
   .loading-more {
     font-size: 0.8rem;
   }
-  
+
   .empty-list-message {
     padding: 2rem 1rem;
     margin: 0.5rem;
   }
-  
+
   .empty-icon {
     font-size: 2.5rem;
   }
-  
+
   .virtualized-item {
     margin-bottom: 0.4rem;
   }

@@ -1,31 +1,38 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './', // Important for Electron builds
+  base: "./", // Important for Electron builds
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
-  assetsInclude: ['**/*.mp4', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.ico', '**/*.icns'],
+  assetsInclude: [
+    "**/*.mp4",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.jpeg",
+    "**/*.ico",
+    "**/*.icns",
+  ],
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html'),
+        main: path.resolve(__dirname, "index.html"),
       },
       output: {
         assetFileNames: (assetInfo) => {
           // Keep video files with their original names for easier access
-          if (assetInfo.name?.endsWith('.mp4')) {
-            return 'assets/videos/[name].[ext]';
+          if (assetInfo.name?.endsWith(".mp4")) {
+            return "assets/videos/[name].[ext]";
           }
-          return 'assets/[name].[hash].[ext]';
+          return "assets/[name].[hash].[ext]";
         },
       },
     },
@@ -33,12 +40,12 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
+      "/api": {
+        target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path
-      }
+        rewrite: (path) => path,
+      },
     },
   },
   // Disable CSS code splitting for better Electron compatibility
@@ -48,11 +55,11 @@ export default defineConfig({
   // Optimize dependencies
   optimizeDeps: {
     include: [
-      'react', 
-      'react-dom', 
-      'react-router-dom', 
-      'date-fns',
-      '@supabase/supabase-js'
-    ]
-  }
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "date-fns",
+      "@supabase/supabase-js",
+    ],
+  },
 });

@@ -1,21 +1,14 @@
+// Diary vault manager
 import React, {
   createContext,
   useContext,
   useState,
   useEffect,
-  useRef,
   useCallback,
   type ReactNode,
 } from "react";
-import {
-  fetchDiaryEntries,
-  fetchDiaryEntry,
-  addDiaryEntry,
-  updateDiaryEntry,
-  deleteDiaryEntry,
-  type DiaryEntry,
-} from "../api/Diary";
-import { getCurrentUser } from "../utils/auth";
+import type { DiaryEntry } from "../api/Diary";
+import { getCurrentUserId } from "../utils/auth";
 
 interface DiaryContextProps {
   entries: DiaryEntry[];
@@ -34,50 +27,46 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const lastFetchedRef = useRef<Record<string, number>>({});
 
-  useEffect(() => {
-    refreshEntries();
-  }, []);
-
-  // Remove throttling for initial load
+  // Direct SQLite data fetching
   const refreshEntries = useCallback(async () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      console.log("DiaryContext: No user authenticated");
+      setEntries([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Get user synchronously first
-      const user = getCurrentUser();
-      if (!user || !user.id) {
-        console.log("DiaryContext: User not authenticated, skipping fetch");
-        setLoading(false);
-        return;
-      }
-
-      // Throttle check that was blocking fetches
-      // Only throttle if this is NOT the first fetch
-      const now = Date.now();
-      const lastFetched = lastFetchedRef.current["entries"] || 0;
-      const isFirstFetch = lastFetched === 0;
-
-      if (!isFirstFetch && now - lastFetched < 5000) {
-        console.log("Skipping diary fetch - recently fetched");
-        setLoading(false);
-        return;
-      }
-
-      lastFetchedRef.current["entries"] = now;
-      const data = await fetchDiaryEntries();
-      setEntries(data);
-      console.log(`DiaryContext: Successfully loaded ${data.length} entries`);
+      console.log("DiaryContext: Fetching entries (direct SQLite)");
+      const data = await window.electronAPI.db.getDiaryEntries(userId);
+      setEntries(data || []);
+      console.log(`DiaryContext: Loaded ${data?.length || 0} entries`);
     } catch (error) {
-      console.error("Error fetching diary entries:", error);
+      console.error("DiaryContext: Error fetching entries:", error);
+      setEntries([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const getEntryById = async (id: number) => {
+  // Initial load
+  useEffect(() => {
+    refreshEntries();
+  }, [refreshEntries]);
+
+  // Direct SQLite operations
+  const getEntryById = async (id: number): Promise<DiaryEntry> => {
     try {
-      const entry = await fetchDiaryEntry(id);
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
+
+      const allEntries = await window.electronAPI.db.getDiaryEntries(userId);
+      const entry = allEntries.find((e: DiaryEntry) => e.id === id);
+
+      if (!entry) throw new Error(`Diary entry with ID ${id} not found`);
       return entry;
     } catch (error) {
       console.error(`Error fetching diary entry ${id}:`, error);
@@ -85,10 +74,22 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const addEntry = async (entry: Omit<DiaryEntry, "id">) => {
+  const addEntry = async (
+    entry: Omit<DiaryEntry, "id">,
+  ): Promise<DiaryEntry> => {
     try {
-      const newEntry = await addDiaryEntry(entry);
-      await refreshEntries(); // Refresh the entries list
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
+
+      const entryWithUserId = {
+        ...entry,
+        user_id: userId,
+        entry_date: entry.entry_date || new Date().toISOString().split("T")[0],
+      };
+
+      const newEntry =
+        await window.electronAPI.db.saveDiaryEntry(entryWithUserId);
+      await refreshEntries();
       return newEntry;
     } catch (error) {
       console.error("Error adding diary entry:", error);
@@ -96,10 +97,23 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const updateEntry = async (id: number, entry: Partial<DiaryEntry>) => {
+  const updateEntry = async (
+    id: number,
+    entry: Partial<DiaryEntry>,
+  ): Promise<DiaryEntry> => {
     try {
-      const updatedEntry = await updateDiaryEntry(id, entry);
-      await refreshEntries(); // Refresh the entries list
+      const userId = getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
+
+      const entryWithIdAndUserId = {
+        ...entry,
+        id,
+        user_id: userId,
+      };
+
+      const updatedEntry =
+        await window.electronAPI.db.saveDiaryEntry(entryWithIdAndUserId);
+      await refreshEntries();
       return updatedEntry;
     } catch (error) {
       console.error(`Error updating diary entry ${id}:`, error);
@@ -107,16 +121,30 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
-  const deleteEntry = async (id: number) => {
+  // Deletes diary entry from SQLite database
+  const deleteEntry = useCallback(async (id: number): Promise<void> => {
     try {
-      await deleteDiaryEntry(id);
-      // Update local state without refreshing from server
-      setEntries(entries.filter((entry) => entry.id !== id));
+      console.log("Wingman: Deleting diary entry:", id);
+
+      const userId = getCurrentUserId();
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      // SQLite deletion via electronAPI
+      await window.electronAPI.db.deleteDiaryEntry(id);
+
+      // Remove from local state
+      setEntries((prevEntries) =>
+        prevEntries.filter((entry) => entry.id !== id),
+      );
+
+      console.log("Wingman: Entry deleted successfully from SQLite:", id);
     } catch (error) {
-      console.error(`Error deleting diary entry ${id}:`, error);
+      console.error("Wingman: Error deleting diary entry:", error);
       throw error;
     }
-  };
+  }, []);
 
   return (
     <DiaryContext.Provider

@@ -25,13 +25,10 @@
     /* Interop settings */
     "esModuleInterop": true,
     "isolatedModules": true,
-    
+
     /* Type Declarations */
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src", "src/types"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
-
-
-

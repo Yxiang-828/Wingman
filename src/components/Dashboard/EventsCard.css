@@ -1,7 +1,11 @@
 /* EventsCard following DiaryCard gentle hover pattern */
 
 .events-card {
-  background: linear-gradient(135deg, rgba(20, 20, 40, 0.85) 0%, rgba(15, 15, 35, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(20, 20, 40, 0.85) 0%,
+    rgba(15, 15, 35, 0.9) 100%
+  );
 }
 
 .events-list {
@@ -29,25 +33,29 @@
   border-left: 3px solid transparent;
 }
 
-.event-item.meeting { border-left-color: #646cff; }
-.event-item.personal { border-left-color: #4ade80; }
-.event-item.reminder { border-left-color: #f87171; }
-
+.event-item.meeting {
+  border-left-color: #646cff;
+}
+.event-item.personal {
+  border-left-color: #4ade80;
+}
+.event-item.reminder {
+  border-left-color: #f87171;
+}
 
 .event-item:hover {
-  background: rgba(30, 30, 50, 0.6); 
-  transform: translateX(2px); 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+  background: rgba(30, 30, 50, 0.6);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-left-color: rgba(147, 51, 234, 0.7);
 }
 
-
 .events-card .dashboard-item:hover {
   background: rgba(30, 30, 50, 0.6);
-  transform: translateX(2px); 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-left-color: rgba(147, 51, 234, 0.6);
-  transition: all 0.2s ease; 
+  transition: all 0.2s ease;
 }
 
 .events-card .card-action-btn:hover {
@@ -58,8 +66,8 @@
 
 .events-card .view-more-btn:hover {
   background: rgba(100, 108, 255, 0.25);
-  transform: translateY(-1px); 
-  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.1); 
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.1);
 }
 
 /* Event type styling */

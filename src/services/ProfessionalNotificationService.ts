@@ -1,16 +1,16 @@
 /**
  * Professional Frontend Notification Service
- * 
+ *
  * Lightweight wrapper that communicates with the professional background service
  * instead of doing its own database polling.
- * 
+ *
  * Based on Slack/Discord patterns where frontend shows immediate notifications
  * and background service handles scheduling/persistence.
  */
 
-import { notificationScheduler } from './NotificationScheduler';
-import { notificationDataBridge } from './NotificationDataBridge';
-import { getCurrentUserId } from '../utils/auth';
+import { notificationScheduler } from "./NotificationScheduler";
+import { notificationDataBridge } from "./NotificationDataBridge";
+import { getCurrentUserId } from "../utils/auth";
 
 export interface NotificationStatus {
   isActive: boolean;
@@ -30,7 +30,8 @@ class ProfessionalNotificationService {
 
   public static getInstance(): ProfessionalNotificationService {
     if (!ProfessionalNotificationService.instance) {
-      ProfessionalNotificationService.instance = new ProfessionalNotificationService();
+      ProfessionalNotificationService.instance =
+        new ProfessionalNotificationService();
     }
     return ProfessionalNotificationService.instance;
   }
@@ -40,17 +41,21 @@ class ProfessionalNotificationService {
    */
   public async initialize(): Promise<void> {
     if (this.initialized) {
-      console.log('📱 ProfessionalNotificationService: Already initialized');
+      console.log("ProfessionalNotificationService: Already initialized");
       return;
     }
 
-    console.log('🚀 ProfessionalNotificationService: Initializing professional notification system');
+    console.log(
+      "ProfessionalNotificationService: Initializing professional notification system",
+    );
 
     try {
       // Get current user
       const userId = getCurrentUserId();
       if (!userId) {
-        console.log('📱 No user logged in - notifications will initialize when user logs in');
+        console.log(
+          "📱 No user logged in - notifications will initialize when user logs in",
+        );
         return;
       }
 
@@ -58,8 +63,11 @@ class ProfessionalNotificationService {
       await notificationScheduler.initialize(userId);
 
       // Setup event bridge for real-time updates
-      notificationDataBridge.activate();      // Register notification event handler
-      notificationScheduler.onNotificationEvent('frontend', this.handleNotificationEvent.bind(this));
+      notificationDataBridge.activate(); // Register notification event handler
+      notificationScheduler.onNotificationEvent(
+        "frontend",
+        this.handleNotificationEvent.bind(this),
+      );
 
       // Store user for background service
       if (window.electronAPI?.user?.storeActiveUser) {
@@ -69,10 +77,12 @@ class ProfessionalNotificationService {
       this.isActive = true;
       this.initialized = true;
 
-      console.log('✅ Professional notification system initialized');
-      
+      console.log("Professional notification system initialized");
     } catch (error) {
-      console.error('❌ Failed to initialize professional notification system:', error);
+      console.error(
+        "Failed to initialize professional notification system:",
+        error,
+      );
       throw error;
     }
   }
@@ -82,49 +92,67 @@ class ProfessionalNotificationService {
    */
   private async handleNotificationEvent(event: any): Promise<void> {
     try {
-      console.log(`📱 Handling notification event: ${event.type} for ${event.notification.title}`);
+      console.log(
+        `📱 Handling notification event: ${event.type} for ${event.notification.title}`,
+      );
 
       let title: string;
       let body: string;
       let icon: string;
 
       switch (event.type) {
-        case 'reminder30min':
-          title = `⏰ ${event.notification.type === 'task' ? 'Task' : 'Event'} Reminder`;
-          body = `"${event.notification.title}" ${event.notification.type === 'task' ? 'is due' : 'starts'} in 30 minutes`;
-          icon = '⏰';
+        case "reminder30min":
+          title = `⏰ ${
+            event.notification.type === "task" ? "Task" : "Event"
+          } Reminder`;
+          body = `"${event.notification.title}" ${
+            event.notification.type === "task" ? "is due" : "starts"
+          } in 30 minutes`;
+          icon = "⏰";
           break;
 
-        case 'reminder5min':
-          title = `🚨 ${event.notification.type === 'task' ? 'Task' : 'Event'} Alert`;
-          body = `"${event.notification.title}" ${event.notification.type === 'task' ? 'is due' : 'starts'} in 5 minutes`;
-          icon = '🚨';
+        case "reminder5min":
+          title = `🚨 ${
+            event.notification.type === "task" ? "Task" : "Event"
+          } Alert`;
+          body = `"${event.notification.title}" ${
+            event.notification.type === "task" ? "is due" : "starts"
+          } in 5 minutes`;
+          icon = "🚨";
           break;
 
-        case 'task_overdue':
-          title = '❌ Task Failed';
+        case "task_overdue":
+          title = "❌ Task Failed";
           body = `"${event.notification.title}" was due at ${event.notification.targetTime} and has failed`;
-          icon = '❌';
-          
+          icon = "❌";
+
           // Mark task as failed in database
           if (window.electronAPI?.db?.updateTask) {
-            await window.electronAPI.db.updateTask(event.notification.originalId, { failed: true });
+            await window.electronAPI.db.updateTask(
+              event.notification.originalId,
+              { failed: true },
+            );
           }
-          
+
           // Dispatch UI update events
-          window.dispatchEvent(new CustomEvent('task-failed', {
-            detail: { taskId: event.notification.originalId, title: event.notification.title }
-          }));
+          window.dispatchEvent(
+            new CustomEvent("task-failed", {
+              detail: {
+                taskId: event.notification.originalId,
+                title: event.notification.title,
+              },
+            }),
+          );
           break;
 
-        case 'event_start':
-          title = '🎯 Event Starting';
+        case "event_start":
+          title = "🎯 Event Starting";
           body = `"${event.notification.title}" is starting now!`;
-          icon = '🎯';
+          icon = "🎯";
           break;
 
         default:
-          console.warn('📱 Unknown notification event type:', event.type);
+          console.warn("📱 Unknown notification event type:", event.type);
           return;
       }
 
@@ -132,30 +160,33 @@ class ProfessionalNotificationService {
       await this.showImmediateNotification(title, body, icon);
 
       // Dispatch general refresh events
-      window.dispatchEvent(new CustomEvent('dashboard-refresh'));
-      window.dispatchEvent(new CustomEvent('notifications-refresh'));
-
+      window.dispatchEvent(new CustomEvent("dashboard-refresh"));
+      window.dispatchEvent(new CustomEvent("notifications-refresh"));
     } catch (error) {
-      console.error('📱 Error handling notification event:', error);
+      console.error("📱 Error handling notification event:", error);
     }
   }
   /**
    * Show immediate browser notification
    */
-  private async showImmediateNotification(title: string, body: string, _icon: string): Promise<void> {
+  private async showImmediateNotification(
+    title: string,
+    body: string,
+    _icon: string,
+  ): Promise<void> {
     try {
       // Request permission if needed
-      if ('Notification' in window) {
-        if (Notification.permission === 'default') {
+      if ("Notification" in window) {
+        if (Notification.permission === "default") {
           await Notification.requestPermission();
         }
 
-        if (Notification.permission === 'granted') {
+        if (Notification.permission === "granted") {
           const notification = new Notification(title, {
             body: body,
-            icon: '/src/assets/productive.png',
+            icon: "/src/assets/productive.png",
             tag: `wingman-${Date.now()}`,
-            requireInteraction: false
+            requireInteraction: false,
           });
 
           // Auto-close after 8 seconds
@@ -176,13 +207,12 @@ class ProfessionalNotificationService {
         await window.electronAPI.notifications.showImmediate({
           title,
           body,
-          type: 'info',
-          iconPath: '/src/assets/productive.png'
+          type: "info",
+          iconPath: "/src/assets/productive.png",
         });
       }
-
     } catch (error) {
-      console.error('📱 Error showing immediate notification:', error);
+      console.error("📱 Error showing immediate notification:", error);
     }
   }
 
@@ -191,7 +221,7 @@ class ProfessionalNotificationService {
    */
   public async activate(userId: string): Promise<void> {
     if (this.isActive) {
-      console.log('📱 Notifications already active');
+      console.log("📱 Notifications already active");
       return;
     }
 
@@ -199,7 +229,7 @@ class ProfessionalNotificationService {
       console.log(`📱 Activating notifications for user ${userId}`);
 
       // Initialize scheduler for this user
-      await notificationScheduler.initialize(userId);      // Activate data bridge
+      await notificationScheduler.initialize(userId); // Activate data bridge
       notificationDataBridge.activate();
 
       // Store user for background service
@@ -208,10 +238,9 @@ class ProfessionalNotificationService {
       }
 
       this.isActive = true;
-      console.log('✅ Notifications activated');
-
+      console.log("✅ Notifications activated");
     } catch (error) {
-      console.error('❌ Failed to activate notifications:', error);
+      console.error("❌ Failed to activate notifications:", error);
       throw error;
     }
   }
@@ -220,16 +249,16 @@ class ProfessionalNotificationService {
    * Deactivate notifications
    */
   public deactivate(): void {
-    console.log('📱 Deactivating notifications');
+    console.log("📱 Deactivating notifications");
 
     // Deactivate data bridge
     notificationDataBridge.deactivate();
 
     // Unregister event handler
-    notificationScheduler.offNotificationEvent('frontend');
+    notificationScheduler.offNotificationEvent("frontend");
 
     this.isActive = false;
-    console.log('✅ Notifications deactivated');
+    console.log("✅ Notifications deactivated");
   }
 
   /**
@@ -237,43 +266,42 @@ class ProfessionalNotificationService {
    */
   public async testNotifications(): Promise<boolean> {
     try {
-      console.log('📱 Testing notification system...');
+      console.log("📱 Testing notification system...");
 
       // Test browser notifications
-      if ('Notification' in window) {
-        if (Notification.permission !== 'granted') {
+      if ("Notification" in window) {
+        if (Notification.permission !== "granted") {
           const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            console.log('❌ Browser notifications denied');
+          if (permission !== "granted") {
+            console.log("❌ Browser notifications denied");
             return false;
           }
         }
 
         // Show test notification
-        const notification = new Notification('🧪 Test Notification', {
-          body: 'Professional notification system is working!',
-          icon: '/src/assets/productive.png',
-          tag: 'wingman-test'
+        const notification = new Notification("🧪 Test Notification", {
+          body: "Professional notification system is working!",
+          icon: "/src/assets/productive.png",
+          tag: "wingman-test",
         });
 
         setTimeout(() => notification.close(), 3000);
-        console.log('✅ Browser notifications working');
+        console.log("✅ Browser notifications working");
       }
 
       // Test Electron notifications
       if (window.electronAPI?.notifications?.showImmediate) {
         await window.electronAPI.notifications.showImmediate({
-          title: '🧪 Test Notification',
-          body: 'Electron notifications working!',
-          type: 'info'
+          title: "🧪 Test Notification",
+          body: "Electron notifications working!",
+          type: "info",
         });
-        console.log('✅ Electron notifications working');
+        console.log("✅ Electron notifications working");
       }
 
       return true;
-
     } catch (error) {
-      console.error('❌ Notification test failed:', error);
+      console.error("❌ Notification test failed:", error);
       return false;
     }
   }
@@ -289,7 +317,7 @@ class ProfessionalNotificationService {
       isActive: this.isActive && bridgeStatus.isActive,
       userId: schedulerStatus.userId,
       activeNotifications: schedulerStatus.activeNotifications,
-      lastUpdate: new Date().toISOString()
+      lastUpdate: new Date().toISOString(),
     };
   }
 
@@ -298,9 +326,9 @@ class ProfessionalNotificationService {
    */
   public async showTaskCompletion(taskTitle: string): Promise<void> {
     await this.showImmediateNotification(
-      '🎉 Task Completed!',
+      "🎉 Task Completed!",
       `Great job completing "${taskTitle}"!`,
-      '🎉'
+      "🎉",
     );
   }
 
@@ -309,14 +337,14 @@ class ProfessionalNotificationService {
    */
   public async requestPermissions(): Promise<boolean> {
     try {
-      if ('Notification' in window) {
+      if ("Notification" in window) {
         const permission = await Notification.requestPermission();
         console.log(`📱 Notification permission: ${permission}`);
-        return permission === 'granted';
+        return permission === "granted";
       }
       return false;
     } catch (error) {
-      console.error('📱 Error requesting notification permissions:', error);
+      console.error("📱 Error requesting notification permissions:", error);
       return false;
     }
   }
@@ -325,9 +353,9 @@ class ProfessionalNotificationService {
    * Setup cleanup handlers
    */
   private setupCleanupHandlers(): void {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', () => this.deactivate());
-      window.addEventListener('unload', () => this.deactivate());
+    if (typeof window !== "undefined") {
+      window.addEventListener("beforeunload", () => this.deactivate());
+      window.addEventListener("unload", () => this.deactivate());
     }
   }
 
@@ -341,7 +369,8 @@ class ProfessionalNotificationService {
 }
 
 // Export singleton instance
-export const professionalNotificationService = ProfessionalNotificationService.getInstance();
+export const professionalNotificationService =
+  ProfessionalNotificationService.getInstance();
 
 // Export test function for React components
 export const testNotifications = async (): Promise<boolean> => {

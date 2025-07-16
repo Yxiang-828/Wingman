@@ -58,6 +58,7 @@ ehthumbs.db
 # Logs
 logs/
 *.log
+error-log/
 
 # Testing
 coverage/
@@ -70,6 +71,12 @@ coverage/
 # Documentation builds
 docs/_build/
 
-# Project-specific temporary files
-debug-wingman.bat
+
+# Ignore all .txt files except requirements.txt
 *.txt
+!requirements.txt
+
+# Ignore all .bat files except complete-build.bat
+*.bat
+!complete-build.bat
+!download-python.bat

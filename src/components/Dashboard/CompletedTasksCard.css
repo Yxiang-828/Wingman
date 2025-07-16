@@ -196,13 +196,11 @@
   cursor: pointer;
 }
 
-
 .cpt-task-item:hover {
   background: rgba(30, 30, 50, 0.6);
   transform: translateX(2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
 
 .completed-tasks-card .dashboard-item:hover {
   background: rgba(30, 30, 50, 0.6);

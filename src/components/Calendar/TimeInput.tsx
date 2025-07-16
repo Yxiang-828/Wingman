@@ -245,7 +245,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
           }
         >
           :{i.toString().padStart(2, "0")}
-        </button>
+        </button>,
       );
     }
     return presets;

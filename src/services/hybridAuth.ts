@@ -4,7 +4,8 @@
  * Only stores current user's credentials locally for offline access
  */
 
-import { api } from '../api/apiClient';
+import { api } from "../api/apiClient";
+import { getApiUrl } from "../config";
 
 /**
  * Check if device is online AND server is reachable
@@ -16,16 +17,16 @@ const isOnline = async (): Promise<boolean> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch('/api/v1/user/health', {
-      method: 'GET',
-      signal: controller.signal
+    const response = await fetch(getApiUrl("/api/v1/user/health"), {
+      method: "GET",
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
     const health = await response.json();
-    return health.status === 'online';
+    return health.status === "online";
   } catch (error) {
-    console.log('Server health check failed:', error);
+    console.log("Server health check failed:", error);
     return false;
   }
 };
@@ -33,35 +34,39 @@ const isOnline = async (): Promise<boolean> => {
 /**
  * Get current connection status
  */
-export const getConnectionStatus = async (): Promise<'online' | 'offline' | 'server-offline'> => {
-  if (!navigator.onLine) return 'offline';
+export const getConnectionStatus = async (): Promise<
+  "online" | "offline" | "server-offline"
+> => {
+  if (!navigator.onLine) return "offline";
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    const response = await fetch('/api/v1/user/health', {
-      method: 'GET',
-      signal: controller.signal
+    const response = await fetch(getApiUrl("/api/v1/user/health"), {
+      method: "GET",
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
     const health = await response.json();
-    return health.status === 'online' ? 'online' : 'server-offline';
+    return health.status === "online" ? "online" : "server-offline";
   } catch (error) {
-    return 'server-offline';
+    return "server-offline";
   }
 };
 
 /**
  * Check username availability
  */
-export const checkUsernameAvailability = async (username: string): Promise<any> => {
+export const checkUsernameAvailability = async (
+  username: string,
+): Promise<any> => {
   try {
     const response = await api.get(`/api/v1/user/check-username/${username}`);
     return response;
   } catch (error: any) {
-    console.error('Username check failed:', error);
+    console.error("Username check failed:", error);
     throw error;
   }
 };
@@ -79,9 +84,11 @@ const generateUUID = (): string => {
  */
 let syncInProgress = false; // Guard against multiple simultaneous syncs
 
-export const syncUserToSupabase = async (userToSync?: any): Promise<{ success: boolean; error?: string }> => {
+export const syncUserToSupabase = async (
+  userToSync?: any,
+): Promise<{ success: boolean; error?: string }> => {
   if (syncInProgress) {
-    return { success: false, error: 'Sync already in progress' };
+    return { success: false, error: "Sync already in progress" };
   }
 
   syncInProgress = true;
@@ -89,13 +96,13 @@ export const syncUserToSupabase = async (userToSync?: any): Promise<{ success: b
   try {
     const online = await isOnline();
     if (!online) {
-      return { success: false, error: 'Device is offline' };
+      return { success: false, error: "Device is offline" };
     }
 
     if (!userToSync) {
       const sessionUser = getCurrentUser();
       if (!sessionUser || !sessionUser.id) {
-        return { success: false, error: 'No current user in session' };
+        return { success: false, error: "No current user in session" };
       }
       userToSync = sessionUser;
     }
@@ -103,25 +110,27 @@ export const syncUserToSupabase = async (userToSync?: any): Promise<{ success: b
     if (!userToSync.password) {
       return {
         success: false,
-        error: 'Session data incomplete. Please log out and log back in to enable sync.'
+        error:
+          "Session data incomplete. Please log out and log back in to enable sync.",
       };
     }
 
-    const needsSync = !userToSync.last_synced_at ||
+    const needsSync =
+      !userToSync.last_synced_at ||
       new Date(userToSync.updated_at) > new Date(userToSync.last_synced_at);
 
-    console.log('Sync check:', {
+    console.log("Sync check:", {
       username: userToSync.username,
       needsSync,
-      last_synced_at: userToSync.last_synced_at ? 'set' : 'null'
+      last_synced_at: userToSync.last_synced_at ? "set" : "null",
     });
 
     if (!needsSync) {
-      console.log('User is already synced, skipping');
+      console.log("User is already synced, skipping");
       return { success: true };
     }
 
-    console.log('Syncing user to Supabase...');
+    console.log("Syncing user to Supabase...");
 
     // Check username availability before sync (same as online registration)
     try {
@@ -129,23 +138,23 @@ export const syncUserToSupabase = async (userToSync?: any): Promise<{ success: b
       if (!availability.available) {
         return {
           success: false,
-          error: `Username '${userToSync.username}' is already taken. Please choose a different username.`
+          error: `Username '${userToSync.username}' is already taken. Please choose a different username.`,
         };
       }
     } catch (error: any) {
       return {
         success: false,
-        error: `Failed to check username availability: ${error.message}`
+        error: `Failed to check username availability: ${error.message}`,
       };
     }
 
     // Use sync endpoint that bypasses username checking and relies on UUID uniqueness
-    await api.post('/api/v1/user/sync', {
+    await api.post("/api/v1/user/sync", {
       id: userToSync.id, // Include the unique UUID
       username: userToSync.username,
       name: userToSync.name,
       email: userToSync.email,
-      password: userToSync.password
+      password: userToSync.password,
     });
 
     await window.electronAPI.db.markUserSynced(userToSync.id);
@@ -155,18 +164,17 @@ export const syncUserToSupabase = async (userToSync?: any): Promise<{ success: b
     if (currentSessionUser && currentSessionUser.id === userToSync.id) {
       const updatedSessionUser = {
         ...currentSessionUser,
-        last_synced_at: new Date().toISOString()
+        last_synced_at: new Date().toISOString(),
       };
-      localStorage.setItem('user', JSON.stringify(updatedSessionUser));
-      console.log('Session user updated with sync timestamp');
+      localStorage.setItem("user", JSON.stringify(updatedSessionUser));
+      console.log("Session user updated with sync timestamp");
     }
 
     return { success: true };
-
   } catch (error: any) {
     return {
       success: false,
-      error: error.message || 'Failed to sync to cloud'
+      error: error.message || "Failed to sync to cloud",
     };
   } finally {
     syncInProgress = false;
@@ -176,7 +184,12 @@ export const syncUserToSupabase = async (userToSync?: any): Promise<{ success: b
 /**
  * Register new user - hybrid online/offline approach
  */
-export const registerUser = async (name: string, email: string, password: string, username?: string): Promise<any> => {
+export const registerUser = async (
+  name: string,
+  email: string,
+  password: string,
+  username?: string,
+): Promise<any> => {
   const userId = generateUUID();
   const now = new Date().toISOString();
 
@@ -184,26 +197,26 @@ export const registerUser = async (name: string, email: string, password: string
     const online = await isOnline();
 
     if (online) {
-      console.log('Online registration - storing in both Supabase and local');
+      console.log("Online registration - storing in both Supabase and local");
 
       // Use provided username or generate from email as fallback
-      const finalUsername = username || email.split('@')[0];
+      const finalUsername = username || email.split("@")[0];
 
       try {
         // Try Supabase first - send plain password, backend handles hashing
-        const user = await api.post('/api/v1/user/register', {
+        const user = await api.post("/api/v1/user/register", {
           username: finalUsername,
           name,
           email,
-          password // Send plain password, not hashed
+          password, // Send plain password, not hashed
         });
 
-        console.log('Supabase registration response:', user);
-        console.log('User timestamps:', {
+        console.log("Supabase registration response:", user);
+        console.log("User timestamps:", {
           created_at: user.created_at,
           updated_at: user.updated_at,
           created_at_type: typeof user.created_at,
-          updated_at_type: typeof user.updated_at
+          updated_at_type: typeof user.updated_at,
         });
 
         // Store locally with same password format as Supabase (plain text)
@@ -214,48 +227,56 @@ export const registerUser = async (name: string, email: string, password: string
           password: password, // Store same plain text password as Supabase
           created_at: user.created_at,
           updated_at: user.updated_at, // Use Supabase timestamp
-          last_synced_at: user.updated_at // Set to Supabase's updated_at since we just synced
+          last_synced_at: user.updated_at, // Set to Supabase's updated_at since we just synced
         };
 
-        console.log('Storing local user data:', localUserData);
-        console.log('Local data timestamp types:', {
+        console.log("Storing local user data:", localUserData);
+        console.log("Local data timestamp types:", {
           created_at_type: typeof localUserData.created_at,
           updated_at_type: typeof localUserData.updated_at,
-          last_synced_at_type: typeof localUserData.last_synced_at
+          last_synced_at_type: typeof localUserData.last_synced_at,
         });
-        await window.electronAPI.db.storeUserCredentials(user.id, localUserData);
+        await window.electronAPI.db.storeUserCredentials(
+          user.id,
+          localUserData,
+        );
 
         // Set user session
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', user.token || '');
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", user.token || "");
 
-        console.log('User registered successfully (online):', user.email);
+        console.log("User registered successfully (online):", user.email);
         return user;
-
       } catch (error: any) {
         // Handle username conflict
-        if (error.response?.status === 409 && error.response?.data?.error === 'username_taken') {
-          console.log('Username conflict during registration:', error.response.data);
+        if (
+          error.response?.status === 409 &&
+          error.response?.data?.error === "username_taken"
+        ) {
+          console.log(
+            "Username conflict during registration:",
+            error.response.data,
+          );
           throw {
-            type: 'username_conflict',
-            message: error.response.data.message
+            type: "username_conflict",
+            message: error.response.data.message,
           };
         }
         throw error;
       }
-
     } else {
-      console.log('Offline registration - storing locally only');
+      console.log("Offline registration - storing locally only");
 
       // Offline: store locally only (will sync when online) - plain text password
-      const finalUsername = username || email.split('@')[0]; // Use provided username or fallback
+      const finalUsername = username || email.split("@")[0]; // Use provided username or fallback
 
       // Check for username conflict in local SQLite
-      const usernameExists = await window.electronAPI.db.usernameExistsLocally(finalUsername);
+      const usernameExists =
+        await window.electronAPI.db.usernameExistsLocally(finalUsername);
       if (usernameExists) {
         throw {
-          type: 'username_conflict',
-          message: `Username '${finalUsername}' is already taken locally. Please choose a different username.`
+          type: "username_conflict",
+          message: `Username '${finalUsername}' is already taken locally. Please choose a different username.`,
         };
       }
 
@@ -266,7 +287,7 @@ export const registerUser = async (name: string, email: string, password: string
         password: password, // Store plain text password (same as Supabase format)
         created_at: now,
         updated_at: now,
-        last_synced_at: null // NULL = needs sync when online
+        last_synced_at: null, // NULL = needs sync when online
       };
 
       await window.electronAPI.db.storeUserCredentials(userId, userData);
@@ -280,21 +301,21 @@ export const registerUser = async (name: string, email: string, password: string
         password: password, // Include password for sync
         created_at: now,
         updated_at: now,
-        last_synced_at: null // NULL = needs sync when online
+        last_synced_at: null, // NULL = needs sync when online
       };
 
       // Set user session
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(user));
 
-      console.log('User registered successfully (offline):', email);
+      console.log("User registered successfully (offline):", email);
       return user;
     }
   } catch (error) {
-    console.error('Registration failed:', error);
+    console.error("Registration failed:", error);
 
     // Clean up any stale data
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
 
     throw error;
   }
@@ -304,59 +325,69 @@ export const registerUser = async (name: string, email: string, password: string
  * Login user - hybrid online/offline approach
  * Prioritizes local storage first, then cloud
  */
-export const loginUser = async (username: string, password: string): Promise<any> => {
+export const loginUser = async (
+  username: string,
+  password: string,
+): Promise<any> => {
   try {
-    // Always try local authentication first (faster and works offline)da 
-    console.log('Trying local login first...');
+    // Always try local authentication first (faster and works offline)da
+    console.log("Trying local login first...");
 
-    const localUser = await window.electronAPI.db.getUserCredentials(username, password);
+    const localUser = await window.electronAPI.db.getUserCredentials(
+      username,
+      password,
+    );
 
     if (localUser) {
       // Create complete user object for session (including password for sync)
       const completeUser = {
         ...localUser,
-        password: password // Include password in session for sync operations
+        password: password, // Include password in session for sync operations
       };
 
       // Set user session
-      localStorage.setItem('user', JSON.stringify(completeUser));
+      localStorage.setItem("user", JSON.stringify(completeUser));
 
-      console.log('User logged in successfully (local):', localUser.email);
+      console.log("User logged in successfully (local):", localUser.email);
 
       // Check if user needs sync to cloud (check directly from localUser data)
       const online = await isOnline();
-      const needsSync = !localUser.last_synced_at ||
+      const needsSync =
+        !localUser.last_synced_at ||
         new Date(localUser.updated_at) > new Date(localUser.last_synced_at);
 
-      console.log('Login sync check:', {
+      console.log("Login sync check:", {
         online,
         needsSync,
-        last_synced: localUser.last_synced_at ? 'set' : 'null'
+        last_synced: localUser.last_synced_at ? "set" : "null",
       });
 
       if (online && needsSync) {
-        console.log('Syncing user during login...');
+        console.log("Syncing user during login...");
         try {
           const syncResult = await syncUserToSupabase(completeUser);
           if (syncResult.success) {
-            console.log('Login sync completed successfully');
+            console.log("Login sync completed successfully");
           } else {
-            console.error('Login sync failed:', syncResult.error);
-            
+            console.error("Login sync failed:", syncResult.error);
+
             // Check if it's a username conflict error
-            if (syncResult.error && syncResult.error.includes('already taken')) {
-              console.log('Username conflict detected during login sync');
-              return { 
-                success: false, 
+            if (
+              syncResult.error &&
+              syncResult.error.includes("already taken")
+            ) {
+              console.log("Username conflict detected during login sync");
+              return {
+                success: false,
                 syncConflict: true,
                 conflictUsername: completeUser.username,
                 conflictError: syncResult.error,
-                user: localUser // Include user data for potential use
+                user: localUser, // Include user data for potential use
               };
             }
           }
         } catch (error) {
-          console.error('Sync failed during login:', error);
+          console.error("Sync failed during login:", error);
         }
       }
 
@@ -367,13 +398,13 @@ export const loginUser = async (username: string, password: string): Promise<any
     const online = await isOnline();
 
     if (online) {
-      console.log('Local login failed, trying cloud login...');
+      console.log("Local login failed, trying cloud login...");
 
       try {
         // Try Supabase - send plain password, backend handles hashing
-        const user = await api.post('/api/v1/user/login', {
+        const user = await api.post("/api/v1/user/login", {
           username,
-          password // Send plain password, not hashed
+          password, // Send plain password, not hashed
         });
 
         // Update/create local copy with same password format as Supabase (plain text)
@@ -384,37 +415,35 @@ export const loginUser = async (username: string, password: string): Promise<any
           password: password, // Store same plain text password as Supabase
           created_at: user.created_at,
           updated_at: user.updated_at, // Use Supabase timestamp
-          last_synced_at: user.updated_at // Set to Supabase's updated_at since we just got the latest data
+          last_synced_at: user.updated_at, // Set to Supabase's updated_at since we just got the latest data
         });
 
         // Create complete user object for session (including password for sync)
         const completeUser = {
           ...user,
-          password: password // Include password in session for sync operations
+          password: password, // Include password in session for sync operations
         };
 
         // Set user session
-        localStorage.setItem('user', JSON.stringify(completeUser));
-        localStorage.setItem('token', user.token || '');
+        localStorage.setItem("user", JSON.stringify(completeUser));
+        localStorage.setItem("token", user.token || "");
 
-        console.log('User logged in successfully (cloud):', user.email);
+        console.log("User logged in successfully (cloud):", user.email);
         return { success: true, user };
-
       } catch (error) {
-        console.log('Cloud login also failed');
+        console.log("Cloud login also failed");
       }
     }
 
     // Both local and cloud login failed
-    console.log('Login failed - invalid credentials');
-    return { success: false, error: 'Invalid username or password' };
-
+    console.log("Login failed - invalid credentials");
+    return { success: false, error: "Invalid username or password" };
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
 
     // Clean up any stale data
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
 
     throw error;
   }
@@ -425,22 +454,22 @@ export const loginUser = async (username: string, password: string): Promise<any
  */
 export const logoutUser = async (): Promise<void> => {
   try {
-    console.log('Logging out user...');
+    console.log("Logging out user...");
 
     // Clear session data
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
 
     // Clear local credentials
     await window.electronAPI.db.clearUserCredentials();
 
-    console.log('User logged out successfully');
+    console.log("User logged out successfully");
   } catch (error) {
-    console.error('Error during logout:', error);
+    console.error("Error during logout:", error);
 
     // Force cleanup even if there's an error
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   }
 };
 
@@ -449,11 +478,11 @@ export const logoutUser = async (): Promise<void> => {
  */
 export const getCurrentUser = () => {
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     if (!userStr) return null;
     return JSON.parse(userStr);
   } catch (error) {
-    console.error('Error getting current user:', error);
+    console.error("Error getting current user:", error);
     return null;
   }
 };
@@ -470,46 +499,50 @@ export const isLoggedIn = (): boolean => {
  */
 export const getCurrentUserId = (): string => {
   const user = getCurrentUser();
-  return user?.id || '';
+  return user?.id || "";
 };
 
 // Removed background sync functionality - sync only happens on login/registration
 
 // Wait for authentication utilities
-export const waitForAuthentication = async (maxWaitTime = 5000): Promise<boolean> => {
+export const waitForAuthentication = async (
+  maxWaitTime = 5000,
+): Promise<boolean> => {
   const startTime = Date.now();
 
   while (Date.now() - startTime < maxWaitTime) {
     const userId = getCurrentUserId();
     if (userId) return true;
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  console.warn('Authentication timed out');
+  console.warn("Authentication timed out");
   return false;
 };
 
 // Set user data utility
 export const setCurrentUser = (userData: any) => {
-  localStorage.setItem('user', JSON.stringify(userData));
+  localStorage.setItem("user", JSON.stringify(userData));
 };
 
 /**
  * Update username for a user (both locally and in Supabase if online)
  */
-export const updateUsername = async (newUsername: string): Promise<{ success: boolean; error?: string }> => {
+export const updateUsername = async (
+  newUsername: string,
+): Promise<{ success: boolean; error?: string }> => {
   try {
     // Get current user ID from session storage
     const currentSessionUser = getCurrentUser();
     if (!currentSessionUser || !currentSessionUser.id) {
-      return { success: false, error: 'No current user in session' };
+      return { success: false, error: "No current user in session" };
     }
 
     // Use session user data directly since we can't get specific user from DB without getUserById
     const localUser = currentSessionUser;
     if (!localUser) {
-      return { success: false, error: 'No local user data available' };
+      return { success: false, error: "No local user data available" };
     }
 
     const online = await isOnline();
@@ -520,7 +553,8 @@ export const updateUsername = async (newUsername: string): Promise<{ success: bo
       if (!availability.available) {
         return {
           success: false,
-          error: 'Username is already taken. Please choose a different username.'
+          error:
+            "Username is already taken. Please choose a different username.",
         };
       }
 
@@ -529,7 +563,7 @@ export const updateUsername = async (newUsername: string): Promise<{ success: bo
         ...localUser,
         username: newUsername,
         updated_at: new Date().toISOString(),
-        last_synced_at: null // Mark as needing sync
+        last_synced_at: null, // Mark as needing sync
       };
 
       // Try to sync to Supabase FIRST
@@ -537,50 +571,51 @@ export const updateUsername = async (newUsername: string): Promise<{ success: bo
       if (!syncResult.success) {
         return {
           success: false,
-          error: syncResult.error || 'Failed to sync username change to cloud'
+          error: syncResult.error || "Failed to sync username change to cloud",
         };
       }
 
       // Only update local storage AFTER successful sync
       await window.electronAPI.db.storeUserCredentials(localUser.id, {
         ...updatedUserData,
-        last_synced_at: new Date().toISOString() // Mark as synced since we just synced successfully
+        last_synced_at: new Date().toISOString(), // Mark as synced since we just synced successfully
       });
 
       // Update session storage
-      const sessionUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const sessionUser = JSON.parse(localStorage.getItem("user") || "{}");
       sessionUser.username = newUsername;
       sessionUser.last_synced_at = new Date().toISOString();
-      localStorage.setItem('user', JSON.stringify(sessionUser));
-
+      localStorage.setItem("user", JSON.stringify(sessionUser));
     } else {
       // If offline, just update locally
       const updatedUserData = {
         ...localUser,
         username: newUsername,
         updated_at: new Date().toISOString(),
-        last_synced_at: null // Mark as needing sync when online
+        last_synced_at: null, // Mark as needing sync when online
       };
 
       // Store updated user data locally
-      await window.electronAPI.db.storeUserCredentials(localUser.id, updatedUserData);
+      await window.electronAPI.db.storeUserCredentials(
+        localUser.id,
+        updatedUserData,
+      );
 
       // Update session storage
-      const sessionUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const sessionUser = JSON.parse(localStorage.getItem("user") || "{}");
       sessionUser.username = newUsername;
       sessionUser.updated_at = updatedUserData.updated_at;
       sessionUser.last_synced_at = null;
-      localStorage.setItem('user', JSON.stringify(sessionUser));
+      localStorage.setItem("user", JSON.stringify(sessionUser));
     }
 
     console.log(`Username updated to: ${newUsername}`);
     return { success: true };
-
   } catch (error: any) {
-    console.error('Failed to update username:', error);
+    console.error("Failed to update username:", error);
     return {
       success: false,
-      error: error.message || 'Failed to update username'
+      error: error.message || "Failed to update username",
     };
   }
 };

@@ -15,8 +15,8 @@ export const getTodayDateString = (): string => {
  */
 export const formatDateToString = (date: Date): string => {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
@@ -25,7 +25,7 @@ export const formatDateToString = (date: Date): string => {
  */
 export const parseLocalDateString = (dateStr: string): Date => {
   // Split by the dash to get year, month, day
-  const [year, month, day] = dateStr.split('-').map(Number);
+  const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(year, month - 1, day);
 };
 
@@ -33,27 +33,27 @@ export const parseLocalDateString = (dateStr: string): Date => {
  * Format time in 24h format (HH:MM)
  */
 export const formatTimeString = (timeStr: string): string => {
-  if (!timeStr) return '';
-  
+  if (!timeStr) return "";
+
   // If already in correct format, return as-is
   if (/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
-  
+
   // Handle AM/PM format
   const match = timeStr.match(/^(\d{1,2}):(\d{2})(?:\s*(am|pm|AM|PM))?$/);
   if (match) {
     const [_, hours, minutes, period] = match;
     let hoursNum = parseInt(hours, 10);
-    
+
     // Convert to 24h format
-    if (period?.toLowerCase() === 'pm' && hoursNum < 12) {
+    if (period?.toLowerCase() === "pm" && hoursNum < 12) {
       hoursNum += 12;
-    } else if (period?.toLowerCase() === 'am' && hoursNum === 12) {
+    } else if (period?.toLowerCase() === "am" && hoursNum === 12) {
       hoursNum = 0;
     }
-    
-    return `${String(hoursNum).padStart(2, '0')}:${minutes}`;
+
+    return `${String(hoursNum).padStart(2, "0")}:${minutes}`;
   }
-  
+
   return timeStr;
 };
 
@@ -62,8 +62,8 @@ export const formatTimeString = (timeStr: string): string => {
  */
 export const getCurrentTimeString = (): string => {
   const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 };
 
@@ -72,7 +72,7 @@ export const getCurrentTimeString = (): string => {
  */
 export const isTimeInFuture = (timeStr: string): boolean => {
   if (!timeStr) return false;
-  
+
   const currentTime = getCurrentTimeString();
   return timeStr > currentTime;
 };
@@ -83,7 +83,7 @@ export const isTimeInFuture = (timeStr: string): boolean => {
 export const getNextAvailableTime = (): string => {
   const now = new Date();
   now.setMinutes(now.getMinutes() + 30);
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 };

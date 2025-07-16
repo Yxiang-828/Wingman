@@ -38,7 +38,7 @@ const AppContent = ({
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
   const [notificationManagerReady, setNotificationManagerReady] =
-    useState(false); //  NEW: Track notification manager state
+    useState(false); // Track notification manager state
 
   // Modified useEffect to properly update auth state and call onAuthChange
   useEffect(() => {
@@ -77,7 +77,7 @@ const AppContent = ({
       );
     };
   }, []);
-  // **PROFESSIONAL: Notification System Integration**
+  // Check auth state and initialize notification system
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const isAuthenticated = authInitialized && !!storedUser;
@@ -95,7 +95,7 @@ const AppContent = ({
       try {
         userData = JSON.parse(storedUser);
       } catch (error) {
-        console.error("❌ AppContent: Error parsing user data:", error);
+        console.error("AppContent: Error parsing user data:", error);
         setNotificationManagerReady(true);
         return;
       }
@@ -111,16 +111,16 @@ const AppContent = ({
               );
               if (result?.success) {
                 console.log(
-                  "✅ AppContent: User ID stored for background service"
+                  "AppContent: User ID stored for background service"
                 );
               } else {
                 console.error(
-                  "❌ AppContent: Failed to store user ID:",
+                  "AppContent: Failed to store user ID:",
                   result?.error
                 );
               }
             } catch (error) {
-              console.error("❌ AppContent: Error storing user ID:", error);
+              console.error("AppContent: Error storing user ID:", error);
             }
           } // Initialize professional notification service
           await professionalNotificationService.initialize();
@@ -136,14 +136,14 @@ const AppContent = ({
           taskFailureManager.start();
 
           console.log(
-            "✅ AppContent: Professional notification system and TaskFailureManager started"
+            "AppContent: Professional notification system and TaskFailureManager started"
           );
 
           // Mark as ready after successful initialization
           setNotificationManagerReady(true);
         } catch (error) {
           console.error(
-            "❌ AppContent: Failed to start professional notification system:",
+            "AppContent: Failed to start professional notification system:",
             error
           );
           // Still mark as ready to prevent infinite loading
@@ -160,7 +160,7 @@ const AppContent = ({
     return () => {
       if (isAuthenticated) {
         console.log(
-          "⏹️ AppContent: Deactivating notification system and TaskFailureManager due to auth change"
+          "AppContent: Deactivating notification system and TaskFailureManager due to auth change"
         );
         professionalNotificationService.deactivate();
 
@@ -172,7 +172,7 @@ const AppContent = ({
       }
     };
   }, [authInitialized]);
-  //  SHOW LOADING SCREEN WHILE NOTIFICATION SYSTEM INITIALIZES
+  // Show loading screen if auth not initialized or notification manager not ready
   if (!authInitialized || !notificationManagerReady) {
     const loadingMessage = !authInitialized
       ? "Initializing..."
@@ -185,7 +185,7 @@ const AppContent = ({
     throw new Error("Function not implemented.");
   }
 
-  // Return the app content with FIXED routing structure
+  // Main content with routes
   return (
     <div className="app flex h-screen">
       {" "}
@@ -205,7 +205,8 @@ const AppContent = ({
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/calendar/*" element={<Calendar />} />
               <Route path="/diary/*" element={<Diary />} />
-              <Route path="/chatbot" element={<ChatBot />} />              <Route path="/profile/*" element={<Profile />}>
+              <Route path="/chatbot" element={<ChatBot />} />{" "}
+              <Route path="/profile/*" element={<Profile />}>
                 <Route index element={<ProfileSettings />} />
                 <Route path="settings" element={<ProfileSettings />} />
                 <Route path="avatar" element={<ProfileAvatar />} />
@@ -311,7 +312,6 @@ const App = () => {
     );
   }
 
-  // Replace the non-implemented function with a working one
   function setUser(user: any) {
     console.log("User authenticated:", user);
     // Store the user if needed

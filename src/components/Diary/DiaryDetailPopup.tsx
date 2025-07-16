@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { format } from "date-fns";
+import Portal from "../Common/Portal";
 import "./DiaryDetailPopup.css";
 
 interface DiaryEntry {
@@ -20,8 +21,7 @@ interface DiaryDetailPopupProps {
 }
 
 /**
- * DiaryDetailPopup Component - Your Wingman's Memory Portal
- * Fast viewport-centered popup with no lag
+ * DiaryDetailPopup Component
  */
 const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({
   entry,
@@ -30,7 +30,6 @@ const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({
   onDelete,
 }) => {
   const popupRef = useRef<HTMLDivElement>(null);
-
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -74,50 +73,63 @@ const DiaryDetailPopup: React.FC<DiaryDetailPopupProps> = ({
       }
       return format(new Date(dateStr), "EEEE, MMMM d, yyyy");
     } catch {
-      return entry.created_at || entry.entry_date || entry.date || "Invalid date";
+      return (
+        entry.created_at || entry.entry_date || entry.date || "Invalid date"
+      );
     }
   };
   const handleDelete = async () => {
-    const confirmed = await window.electronAPI.dialogs.confirm("Are you sure you want to delete this entry, boss?");
-    
+    const confirmed = await window.electronAPI.dialogs.confirm(
+      "Are you sure you want to delete this entry, boss?",
+    );
+
     if (confirmed) {
       onClose(); // Close popup immediately after confirmation
       try {
         await onDelete(entry.id);
       } catch (error) {
         console.error("Error deleting entry:", error);
-        await window.electronAPI.dialogs.alert("Failed to delete entry. Please try again.");
+        await window.electronAPI.dialogs.alert(
+          "Failed to delete entry. Please try again.",
+        );
       }
     }
   };
 
   return (
-    <div className="diary-popup-overlay">
-      <div ref={popupRef} className="diary-popup-content">
-        <button className="diary-popup-close" onClick={onClose}>
-          ✕
-        </button>
+    <Portal>
+      <div className="diary-popup-overlay">
+        <div ref={popupRef} className="diary-popup-content">
+          <button className="diary-popup-close" onClick={onClose}>
+            ✕
+          </button>
 
-        <div className="diary-popup-header">
-          <h2 className="diary-popup-title">{entry.title}</h2>
-          <div className="diary-popup-meta">
-            <span className="diary-popup-mood">{getMoodEmoji(entry.mood)}</span>
-            <span className="diary-popup-date">{formatDate(entry)}</span>
+          <div className="diary-popup-header">
+            <h2 className="diary-popup-title">{entry.title}</h2>
+            <div className="diary-popup-meta">
+              <span className="diary-popup-mood">
+                {getMoodEmoji(entry.mood)}
+              </span>
+              <span className="diary-popup-date">{formatDate(entry)}</span>
+            </div>
+          </div>
+
+          <div className="diary-popup-content-text">{entry.content}</div>
+
+          <div className="diary-popup-actions">
+            <button
+              className="diary-popup-edit"
+              onClick={() => onEdit(entry.id)}
+            >
+              Edit Entry
+            </button>
+            <button className="diary-popup-delete" onClick={handleDelete}>
+              Delete Entry
+            </button>
           </div>
         </div>
-
-        <div className="diary-popup-content-text">{entry.content}</div>
-
-        <div className="diary-popup-actions">
-          <button className="diary-popup-edit" onClick={() => onEdit(entry.id)}>
-            Edit Entry
-          </button>
-          <button className="diary-popup-delete" onClick={handleDelete}>
-            Delete Entry
-          </button>
-        </div>
       </div>
-    </div>
+    </Portal>
   );
 };
 

@@ -1,5 +1,5 @@
 /**
  * TasksCard Component Styles
- * All styling inherited from unified Dashboard.css system
  * No component-specific overrides needed - maintaining consistency
+ * All previous styles are removed for the sake of efficiency, we are now inheriting from Dashboard.css
  */

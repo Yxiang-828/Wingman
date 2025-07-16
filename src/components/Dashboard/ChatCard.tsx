@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
 /**
- * ChatCard Component - Your Wingman's Communication Portal
- * Quick access to start conversations with your loyal AI assistant
- * Features instant navigation to full chat interface with message forwarding
+ * ChatCard Component
+ * Provides a simple interface for users to interact with their Wingman
  */
 const ChatCard: React.FC = () => {
   const [chatInput, setChatInput] = useState("");

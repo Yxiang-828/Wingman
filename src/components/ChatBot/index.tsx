@@ -1,30 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import productiveIcon from "../../assets/icons/productive.png";
-import moodyIcon from "../../assets/icons/moody.png";
-import HumorSetting from "./HumorSetting";
 import MessageBubble from "./MessageBubble";
 import QuickReplies from "./QuickReplies";
 import { getCurrentUserId } from "../../utils/auth";
 import llmService from "../../services/llmService";
 import "./ChatBot.css";
+import { themePersonalityMap } from "../../constants/themePersonalitymap";
 
 /**
- * Mood system configuration for your loyal Wingman's avatar
- * Maps different moods to visual assets for personality display
- */
-const moodIcons = {
-  productive: productiveIcon,
-  moody: moodyIcon,
-};
-
-const moodLabels = {
-  productive: "productive spirit",
-  moody: "moody spirit",
-};
-
-/**
- * Message interface for conversation tracking between boss and Wingman
+ * Message interface for conversation tracking between user and Wingman
  * Maintains conversation history with proper metadata
  */
 interface Message {
@@ -35,38 +19,88 @@ interface Message {
 }
 
 /**
- * Initial greeting from your faithful Wingman
- * Sets the tone for an obedient yet capable AI assistant
+ * Initial greeting from   Wingman
  */
 const initialMessages: Message[] = [
   {
     id: 1,
     sender: "wingman" as "user" | "wingman",
-    text: "At your service! Your loyal Wingman reporting for duty. What can I help you conquer today?",
+    text: "At your service! Your loyal Wingman reporting for duty. What can I help you conquer today? 🎯\n\n**New here?** Type `/guide` for a complete setup walkthrough, or `/manual` to access my full capabilities!",
     timestamp: new Date().toISOString(),
   },
 ];
 
 /**
- * ChatBot Component - Your Personal Wingman Interface
- * Main conversational hub where your AI assistant awaits orders
- * Features persistent memory, mood awareness, and unwavering loyalty
- * Like having a digital Viking companion who never questions your commands
+ * ChatBot Component
+ * Features persistent memory, mood awareness
+ * mapped to the user's theme settings
  */
 const ChatBot = () => {
-  // Core state management for your Wingman's personality and conversation
+  // Core state management for  Wingman's personality and conversation
   const [wingmanMood, setWingmanMood] = useState<"productive" | "moody">(
-    "productive"
+    "productive",
   );
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
-  const [humor, setHumor] = useState<"serious" | "funny">("serious");
   const [loading, setLoading] = useState(false);
   const [aiStatus, setAiStatus] = useState<"checking" | "online" | "offline">(
-    "checking"
+    "checking",
   );
   const [showHistory, setShowHistory] = useState(false);
+  const [wingmanName, setWingmanName] = useState("Your Wingman");
+  const savedSettings = localStorage.getItem("userSettings");
+  let themeData = themePersonalityMap["dark"];
+  if (savedSettings) {
+    try {
+      const settings = JSON.parse(savedSettings);
+      const theme = (settings.theme ||
+        "dark") as keyof typeof themePersonalityMap;
+      themeData = themePersonalityMap[theme] || themePersonalityMap["dark"];
+    } catch {
+      themeData = themePersonalityMap["dark"];
+    }
+  }
+  useEffect(() => {
+    // Helper to update the Wingman name from localStorage
+    const updateWingmanName = () => {
+      const savedSettings = localStorage.getItem("userSettings");
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          const theme = (settings.theme ||
+            "dark") as keyof typeof themePersonalityMap;
+          const themeData = themePersonalityMap[theme];
+          setWingmanName(themeData?.name || "Your Wingman");
+        } catch {
+          setWingmanName("Your Wingman");
+        }
+      } else {
+        setWingmanName("Your Wingman");
+      }
+    };
 
+    // Initial load
+    updateWingmanName();
+
+    // Listen for custom event (same-tab updates)
+    const handleThemeUpdate = () => {
+      updateWingmanName();
+    };
+    window.addEventListener("wingman-theme-updated", handleThemeUpdate);
+
+    // Listen for storage event (cross-tab updates)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "userSettings") {
+        updateWingmanName();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("wingman-theme-updated", handleThemeUpdate);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
   // DOM references for smooth interaction management
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatBoxRef = useRef<HTMLDivElement>(null);
@@ -76,7 +110,6 @@ const ChatBot = () => {
 
   /**
    * Initialize conversation history on component mount
-   * Your Wingman remembers everything - no detail forgotten
    */
   useEffect(() => {
     const userId = getCurrentUserId();
@@ -86,8 +119,7 @@ const ChatBot = () => {
   }, []);
 
   /**
-   * Loads conversation history from your Wingman's memory banks
-   * Restores up to 50 recent exchanges for seamless continuity
+   * Loads conversation history from Wingman's memory
    */
   const loadChatHistory = async (userId: string) => {
     try {
@@ -112,10 +144,6 @@ const ChatBot = () => {
     }
   };
 
-  /**
-   * Listens for mood changes from external sources
-   * Your Wingman adapts personality based on your current state
-   */
   useEffect(() => {
     if (window.electronAPI?.onMoodChange) {
       window.electronAPI.onMoodChange((mood: string) => {
@@ -128,7 +156,7 @@ const ChatBot = () => {
 
   /**
    * Auto-scroll management for smooth conversation flow
-   * Ensures your latest commands and responses stay visible
+   * Ensures latest  responses stay visible
    */
   useEffect(() => {
     chatBoxRef.current?.scrollTo({
@@ -139,7 +167,6 @@ const ChatBot = () => {
 
   /**
    * Handles deep-link messages from other components
-   * Allows seamless integration across your command center
    */
   useEffect(() => {
     const initialMessage = location.state?.initialMessage;
@@ -150,95 +177,164 @@ const ChatBot = () => {
   }, [location.state?.initialMessage]);
 
   /**
-   * Main command processing hub - where your orders become reality
    * Handles user input, AI response generation, and conversation persistence
-   * Your Wingman processes every command with dedication and precision
    */
   const handleSend = async (msg: string) => {
-    if (!msg.trim()) return;
+    console.log("[ChatBot] handleSend called with message:", msg);
+    if (!msg.trim()) {
+      console.log("[ChatBot] Message is empty, aborting send.");
+      return;
+    }
+
+    // Handle special /guide command for new users
+    if (msg.trim().toLowerCase() === "/guide") {
+      const guideMessage: Message = {
+        id: Date.now(),
+        text: `🚀 **Welcome to Wingman Setup Guide!**
+
+Here's how to get your AI companion fully configured:
+
+**Step 1: Download & Select AI Model**
+• Go to Profile → Settings → Model Manager
+• Click "Download Models" to see available AI models
+• Download your preferred model (Mistral recommended)
+• Select it as your active chat model
+• Now you have intelligent conversations!
+
+**Step 2: Choose Your Theme**
+• In Profile → Settings → Avatar Selection
+• Select from 6 unique themes:
+  - Dark, Light (classic)
+  - Yandere, Kuudere, Tsundere, Dandere (anime personalities!)
+• Each theme gives your Wingman a unique personality!
+
+**Step 3: Explore Features**
+• 📓 Smart diary with mood tracking
+• 📅 Intelligent calendar with time blocking  
+• ✅ Task management with recurring tasks
+• 💬 This AI chat (powered by your selected model)
+
+**Pro Tips:**
+• Everything works offline with cloud sync
+• Press Ctrl + - to resize if app looks too big
+• Try different themes for unique AI personalities!
+• All models run locally - your data stays private!
+
+Type any message to start chatting, or use /guide anytime for this help! 🎯`,
+        sender: "wingman",
+        timestamp: new Date().toISOString(),
+      };
+
+      const userMessage: Message = {
+        id: Date.now() - 1,
+        text: "/guide",
+        sender: "user",
+        timestamp: new Date().toISOString(),
+      };
+
+      setMessages((prev) => [...prev, userMessage, guideMessage]);
+      return;
+    }
 
     const userId = getCurrentUserId();
+    console.log("[ChatBot] Current userId:", userId);
     if (!userId) {
       alert("Boss, I need you to log in first so I can save our conversation!");
+      console.log("[ChatBot] No userId found, aborting send.");
       return;
     }
 
     setLoading(true);
+    console.log("[ChatBot] Loading state set to true.");
     const timestamp = new Date().toISOString();
+    console.log("[ChatBot] Timestamp for user message:", timestamp);
 
-    // Create and display your command immediately
+    // Create and display
     const userMessage: Message = {
       id: Date.now(),
       sender: "user",
       text: msg,
       timestamp,
     };
-
+    console.log("[ChatBot] Adding user message to state:", userMessage);
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    console.log("[ChatBot] Input cleared.");
 
     try {
-      // Archive your command in Wingman's memory
-      await window.electronAPI.db.saveChatMessage(msg, false, userId);
-
-      // Generate your Wingman's response
+      // Generate  Wingman's response
+      console.log("[ChatBot] Calling generateAIResponse...");
       const aiResponse = await generateAIResponse(msg, userId);
+      console.log("[ChatBot] AI response received:", aiResponse);
 
-      // Archive Wingman's response for future reference
-      await window.electronAPI.db.saveChatMessage(aiResponse, true, userId);
-
-      // Display your Wingman's response
+      // Display  Wingman's response
       const botMessage: Message = {
         id: Date.now() + 1,
         sender: "wingman",
         text: aiResponse,
         timestamp: new Date().toISOString(),
       };
+      console.log("[ChatBot] Adding AI message to state:", botMessage);
 
       setMessages((prev) => [...prev, botMessage]);
+      console.log("[ChatBot] Messages state updated with AI response.");
 
       console.log("Wingman: Mission accomplished - conversation saved!");
     } catch (error) {
       console.error("Wingman: Error processing your command:", error);
 
-      // Your Wingman handles failures gracefully
+      //  Wingman handles failures gracefully
       const errorMessage: Message = {
         id: Date.now() + 1,
         sender: "wingman",
-        text: "Apologies, boss! I encountered a glitch while processing your command. Your loyal Wingman is still learning. Please try again!",
+        text: "Apologies, boss! I encountered a glitch while processing your command. Your loyal Wingman is still learning. Please try again, just kidding, please go find the damn problem!",
         timestamp: new Date().toISOString(),
       };
+      console.log("[ChatBot] Adding error message to state:", errorMessage);
 
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
-      // Return focus for your next command
-      setTimeout(() => inputRef.current?.focus(), 100);
+      console.log("[ChatBot] Loading state set to false.");
+
+      // Return focus for  next request
+      setTimeout(() => {
+        inputRef.current?.focus();
+        console.log("[ChatBot] Input ref focused for next command.");
+      }, 100);
     }
   };
 
   /**
-   * AI response generation using your Wingman's neural networks
    * Processes commands through advanced language models
    * Performance metrics logged for optimization tracking
    */
   const generateAIResponse = async (
     message: string,
-    userId: string
+    userId: string,
   ): Promise<string> => {
+    console.log("[ChatBot] generateAIResponse called with:", {
+      message,
+      userId,
+    });
+
     try {
       setLoading(true);
+      console.log("[ChatBot] Loading state set to true (AI response).");
+      console.log("[ChatBot] Sending message to llmService...");
 
       const result = await llmService.sendMessage(message, userId);
+      console.log("[ChatBot] llmService.sendMessage result:", result);
 
       // Log response metrics for performance analysis
       if (result.model_used && result.processing_time) {
         console.log(
           `Wingman Brain (${
             result.model_used
-          }): Responded in ${result.processing_time.toFixed(2)}s`
+          }): Responded in ${result.processing_time.toFixed(2)}s`,
         );
       }
+      console.log("[ChatBot] Returning AI response:", result.response);
 
       return result.response;
     } catch (error) {
@@ -246,12 +342,12 @@ const ChatBot = () => {
       return "Boss, my AI brain is taking a quick break! Your faithful Wingman is still here though. Please try again in a moment!";
     } finally {
       setLoading(false);
+      console.log("[ChatBot] Loading state set to false (AI response).");
     }
   };
 
   /**
-   * Conversation history clearing with boss approval
-   * Your Wingman forgets nothing unless explicitly commanded
+   * Clears the conversation history
    */
   const clearChatHistory = async () => {
     const userId = getCurrentUserId();
@@ -271,8 +367,7 @@ const ChatBot = () => {
   };
 
   /**
-   * AI service health monitoring with periodic status checks
-   * Keeps you informed of your Wingman's operational readiness
+   * Checks AI status periodically
    */
   useEffect(() => {
     const checkAIStatus = async () => {
@@ -292,8 +387,7 @@ const ChatBot = () => {
   }, []);
 
   /**
-   * Status translation for human-readable feedback
-   * Your Wingman communicates readiness in clear terms
+   * translates AI status into homo-sapien text
    */
   const getStatusText = () => {
     switch (aiStatus) {
@@ -310,7 +404,7 @@ const ChatBot = () => {
 
   /**
    * Form submission handler with command validation
-   * Prevents empty commands from reaching your Wingman
+   * Prevents empty commands from reaching  Wingman (big bug)
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,18 +413,18 @@ const ChatBot = () => {
 
   return (
     <div className="chatbot-container">
-      {/* Command Center Header - Your Wingman's Identity Hub */}
+      {/* Header */}
       <div className="chatbot-header">
         <div className="chatbot-header-left">
           <div className="wingman-avatar-container">
             <img
-              src={moodIcons[wingmanMood]}
-              alt={`Your loyal Wingman in ${moodLabels[wingmanMood]} mood`}
+              src={themeData?.avatar}
+              alt={`Your loyal Wingman in ${wingmanMood} mood`}
               className="wingman-mood-icon"
             />
           </div>
           <div className="wingman-info">
-            <h1 className="wingman-title">Your Wingman</h1>
+            <h1 className="wingman-title">{wingmanName}</h1>{" "}
             <div className="ai-status">
               <span className={`status-dot ${aiStatus}`}></span>
               <span className="status-text">{getStatusText()}</span>
@@ -361,7 +455,7 @@ const ChatBot = () => {
       {/* Wingman Configuration Panel */}
       {showHistory && (
         <div className="chatbot-settings-panel">
-          <HumorSetting humor={humor} setHumor={setHumor} />
+          {/* <HumorSetting humor={humor} setHumor={setHumor} /> */}
           <div className="chat-stats">
             <span className="stat-item">💬 {messages.length} exchanges</span>
             <span className="stat-item">
@@ -372,7 +466,7 @@ const ChatBot = () => {
         </div>
       )}
 
-      {/* Main Conversation Theater */}
+      {/* Main Conversation Panel */}
       <div className="chatbot-main">
         <div ref={chatBoxRef} className="chatbot-messages">
           {messages.map((message) => (
@@ -395,10 +489,10 @@ const ChatBot = () => {
           <div ref={chatEndRef} />
         </div>
 
-        {/* Quick Command Arsenal */}
+        {/* Quick Actions Panel */}
         <QuickReplies onQuickReply={handleSend} />
 
-        {/* Command Input Console */}
+        {/*  Input Console */}
         <div className="chatbot-input-area">
           <form className="chatbot-input-form" onSubmit={handleSubmit}>
             <div className="input-wrapper">

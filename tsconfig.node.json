@@ -15,11 +15,11 @@
 
     /* Linting - ERRORS ONLY */
     "strict": true,
-    "noUnusedLocals": false,             // Disable unused warnings
-    "noUnusedParameters": false,         // Disable unused warnings
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": false, 
+    "noUncheckedSideEffectImports": false,
 
     "composite": true,
     "allowSyntheticDefaultImports": true,

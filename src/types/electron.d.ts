@@ -5,40 +5,67 @@ interface ElectronAPI {
     getAllTasks: (userId: string) => Promise<any[]>;
     saveTask: (task: any) => Promise<any>;
     updateTask: (id: number, updates: any) => Promise<any>;
-    deleteTask: (id: number) => Promise<{ success: boolean; deletedId: number }>;
+    deleteTask: (
+      id: number,
+    ) => Promise<{ success: boolean; deletedId: number }>;
 
     // Event methods
     getEvents: (userId: string, date: string) => Promise<any[]>;
     getAllEvents: (userId: string) => Promise<any[]>;
     saveEvent: (event: any) => Promise<any>;
     updateEvent: (event: any) => Promise<any>;
-    deleteEvent: (id: number) => Promise<{ success: boolean; deletedId: number }>;
+    deleteEvent: (
+      id: number,
+    ) => Promise<{ success: boolean; deletedId: number }>;
 
     // Diary methods
     getDiaryEntries: (userId: string, date: string) => Promise<any[]>;
     getAllDiaryEntries: (userId: string) => Promise<any[]>;
     saveDiaryEntry: (entry: any) => Promise<any>;
-    deleteDiaryEntry: (id: number) => Promise<{ success: boolean; deletedId: number }>;
+    deleteDiaryEntry: (
+      id: number,
+    ) => Promise<{ success: boolean; deletedId: number }>;
 
     // Chat methods
     getChatHistory: (userId: string, limit?: number) => Promise<any[]>;
-    saveChatMessage: (message: string, isAi: boolean, userId: string, sessionId: string) => Promise<any>;
+    saveChatMessage: (
+      message: string,
+      isAi: boolean,
+      userId: string,
+      sessionId: string,
+    ) => Promise<any>;
     clearChatHistory: (userId: string) => Promise<{ success: boolean }>;
 
     // Recurring task methods
     saveRecurringTask: (recurringTask: any) => Promise<any>;
     getRecurringTasks: (userId: string) => Promise<any[]>;
     updateRecurringTask: (id: number, updates: any) => Promise<any>;
-    deleteRecurringTask: (id: number) => Promise<{ success: boolean; deleted?: boolean; error?: string }>;
+    deleteRecurringTask: (
+      id: number,
+    ) => Promise<{ success: boolean; deleted?: boolean; error?: string }>;
 
-    generateRecurringTasks: (userId: string, targetDate?: string) => Promise<any>;
-    handleRecurringTaskCompletion: (taskId: number) => Promise<{ success: boolean; task?: any; message: string }>;
+    generateRecurringTasks: (
+      userId: string,
+      targetDate?: string,
+    ) => Promise<any>;
+    handleRecurringTaskCompletion: (
+      taskId: number,
+    ) => Promise<{ success: boolean; task?: any; message: string }>;
 
     // User methods
-    createUser: (userData: any) => Promise<{ success: boolean; userId?: string; error?: string }>;
-    getUser: (userId: string) => Promise<{ success: boolean; user?: any; error?: string }>;
-    updateUser: (userId: string, updates: any) => Promise<{ success: boolean; error?: string }>;
-    deleteUser: (userId: string) => Promise<{ success: boolean; error?: string }>;
+    createUser: (
+      userData: any,
+    ) => Promise<{ success: boolean; userId?: string; error?: string }>;
+    getUser: (
+      userId: string,
+    ) => Promise<{ success: boolean; user?: any; error?: string }>;
+    updateUser: (
+      userId: string,
+      updates: any,
+    ) => Promise<{ success: boolean; error?: string }>;
+    deleteUser: (
+      userId: string,
+    ) => Promise<{ success: boolean; error?: string }>;
 
     // Authentication methods
     storeUserCredentials: (userId: string, userData: any) => Promise<any>;

@@ -32,7 +32,8 @@
     );
   overflow: hidden;
   transition: all 0.5s ease;
-  box-shadow: 0 0 20px
+  box-shadow:
+    0 0 20px
       var(
         --avatar-glow,
         var(--color-accent-primary-glow, rgba(100, 108, 255, 0.4))
@@ -87,7 +88,8 @@
   padding: 0.75rem 1rem;
   font-size: 0.85rem;
   color: var(--color-text, rgba(255, 255, 255, 0.9));
-  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.3)),
+  box-shadow:
+    0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.3)),
     0 0 15px var(--color-accent-primary-glow, rgba(100, 108, 255, 0.2));
   backdrop-filter: blur(10px);
   white-space: nowrap;
@@ -191,7 +193,8 @@
 /* Hover effects */
 .wingman-avatar:hover .wingman-avatar__image-wrapper {
   transform: scale(1.05);
-  box-shadow: 0 0 30px
+  box-shadow:
+    0 0 30px
       var(
         --avatar-glow,
         var(--color-accent-primary-glow, rgba(100, 108, 255, 0.6))
@@ -332,7 +335,8 @@
 [data-theme="light"] .wingman-avatar__message-bubble {
   background: var(--color-bg-tooltip, rgba(255, 255, 255, 0.95));
   color: var(--color-text, rgba(0, 0, 0, 0.85));
-  box-shadow: 0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.15)),
+  box-shadow:
+    0 4px 20px var(--color-shadow, rgba(0, 0, 0, 0.15)),
     0 0 15px var(--color-accent-primary-glow, rgba(100, 108, 255, 0.1));
 }
 

@@ -11,9 +11,8 @@ interface TasksCardProps {
 }
 
 /**
- * TasksCard Component - Your Wingman's Mission Control
+ * TasksCard Component
  * Displays today's tasks with instant completion feedback and failure detection
- * Your faithful assistant tracks every mission status
  */
 const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
   const navigate = useNavigate();
@@ -23,7 +22,6 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
 
   /**
    * Keeps local state synchronized with parent data
-   * Your Wingman maintains real-time task status
    */
   useEffect(() => {
     setLocalTasks(tasks);
@@ -49,7 +47,7 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     return () => {
       window.removeEventListener(
         "tasks-failed-update",
-        handleTaskFailureUpdate
+        handleTaskFailureUpdate,
       );
       window.removeEventListener("dashboard-refresh", handleDashboardRefresh);
     };
@@ -115,12 +113,11 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
     (task: Task) => {
       showPopupFor(task);
     },
-    [showPopupFor]
+    [showPopupFor],
   );
 
   /**
    * Handles task completion with immediate UI feedback
-   * Your Wingman provides instant visual confirmation
    */
   const handleTaskCompletion = useCallback(
     async (e: React.MouseEvent, task: Task): Promise<void> => {
@@ -132,8 +129,10 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         console.log(`Wingman: Completing task ${task.id}`); // Immediate state update for instant UI feedback
         setLocalTasks((prevTasks) =>
           prevTasks.map((t) =>
-            t.id === task.id ? { ...t, completed: true, isProcessing: true } : t
-          )
+            t.id === task.id
+              ? { ...t, completed: true, isProcessing: true }
+              : t,
+          ),
         );
 
         // Use parent's toggle function for consistency
@@ -146,18 +145,18 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           );
           await systemNotificationService.showTaskCompletion(task.title);
           console.log(
-            `WINGMAN SUCCESS: Congratulation notification sent for task: ${task.title}`
+            `WINGMAN SUCCESS: Congratulation notification sent for task: ${task.title}`,
           );
         } catch (error) {
           console.error(
             "WINGMAN ERROR: Failed to send congratulation notification:",
-            error
+            error,
           );
         } // Dispatch completion event for OSNotificationManager
         window.dispatchEvent(
           new CustomEvent("task-completed", {
             detail: { taskId: task.id, title: task.title },
-          })
+          }),
         );
 
         // Dispatch dashboard refresh event to update CompletedTasksCard
@@ -166,12 +165,12 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
         // Clear processing state (refresh handled by NotificationDataBridge)
         setLocalTasks((prevTasks) =>
           prevTasks.map((t) =>
-            t.id === task.id ? { ...t, isProcessing: false } : t
-          )
+            t.id === task.id ? { ...t, isProcessing: false } : t,
+          ),
         );
 
         console.log(
-          `Wingman: Task ${task.id} completed with immediate UI update`
+          `Wingman: Task ${task.id} completed with immediate UI update`,
         );
       } catch (error) {
         console.error(`Wingman: Error completing task ${task.id}:`, error);
@@ -181,16 +180,15 @@ const TasksCard: React.FC<TasksCardProps> = ({ tasks, onToggleTask }) => {
           prevTasks.map((t) =>
             t.id === task.id
               ? { ...t, completed: false, isProcessing: false }
-              : t
-          )
+              : t,
+          ),
         );
       }
     },
-    [onToggleTask]
+    [onToggleTask],
   );
   /**
    * Auto-detects failed tasks based on current time
-   * Your Wingman never misses a deadline
    * NOTE: This is now handled by the centralized TaskFailureManager in App.tsx
    */
   // Removed local failure detection - now handled by TaskFailureManager

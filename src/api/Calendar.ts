@@ -1,158 +1,191 @@
-import { api } from './apiClient';
+/**
+ * Calendar types and utilities for events
+ */
 
-
+/**
+ * Calendar event types
+ */
 export interface CalendarEvent {
   id: number;
-  title: string;        
-  event_date: string;   
-  event_time: string;   
-  type: string;         
-  description: string; 
-  user_id: string;      
+  title: string;
+  event_date: string; // (YYYY-MM-DD format)
+  event_time: string;
+  type: string;
+  description: string;
+  user_id: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-export const fetchEvents = async (date: string): Promise<CalendarEvent[]> => {
+// Helper functions for working with calendar events
+
+/**
+ * Make sure an event has all the required fields
+ */
+export const validateEvent = (
+  event: Partial<CalendarEvent>,
+): event is CalendarEvent => {
+  return !!(
+    event.id &&
+    event.title &&
+    event.event_date &&
+    event.type &&
+    event.user_id
+  );
+};
+
+/**
+ * Create a default event with today's date
+ */
+export const createDefaultEvent = (
+  overrides: Partial<CalendarEvent> = {},
+): Omit<CalendarEvent, "id"> => {
+  const today = new Date().toISOString().split("T")[0];
+
+  return {
+    title: "",
+    event_date: today,
+    event_time: "",
+    type: "Personal",
+    description: "",
+    user_id: "",
+    ...overrides,
+  };
+};
+
+/**
+ * Check if an event is happening today
+ */
+export const isEventToday = (event: CalendarEvent): boolean => {
+  const today = new Date().toISOString().split("T")[0];
+  return event.event_date === today;
+};
+
+/**
+ * Check if an event already happened
+ */
+export const isEventPast = (event: CalendarEvent): boolean => {
+  const today = new Date().toISOString().split("T")[0];
+  const eventDate = new Date(event.event_date);
+  const todayDate = new Date(today);
+
+  // If it's the same day, check time
+  if (event.event_date === today && event.event_time) {
+    const now = new Date();
+    const eventDateTime = new Date(`${event.event_date}T${event.event_time}`);
+    return eventDateTime < now;
+  }
+
+  return eventDate < todayDate;
+};
+
+/**
+ * Format event time for display
+ */
+export const formatEventTime = (event: CalendarEvent): string => {
+  if (!event.event_time) return "All day";
+
+  // Return the time in standardized HH:MM format
+  if (/^\d{2}:\d{2}$/.test(event.event_time)) {
+    return event.event_time;
+  }
+
   try {
-    // Get current user from localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (!user.id) {
-      throw new Error('User not authenticated');
-    }
-    
-    // Use api client instead of raw fetch
-    const events = await api.get(`/v1/calendar?date=${date}&user_id=${user.id}`);
-    
-    // Map backend fields to frontend
-    return events.map((event: any) => ({
-      ...event,
-      event_date: event.event_date, // Map event_date to date
-      event_time: event.event_time  // Map event_time to time
-    }));
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    return [];
+    const time = new Date(`2000-01-01T${event.event_time}`);
+    const hours = String(time.getHours()).padStart(2, "0");
+    const minutes = String(time.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  } catch {
+    return event.event_time;
   }
 };
 
-// Ensure we're transforming fields correctly both ways
-export const addEvent = async (event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> => {
-  try {
-    // Get current user from localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (!user.id) {
-      throw new Error('User not authenticated');
-    }
-    
-    // Transform frontend fields to backend fields
-    const backendEvent = {
-      user_id: user.id,
-      title: event.title,
-      event_date: event.event_date,
-      event_time: event.event_time || '',
-      type: event.type,
-      description: event.description
-    };
-    
-    // Use api client instead of raw fetch
-    const data = await api.post('/v1/calendar', backendEvent);
-    
-    // Transform backend response to frontend format
-    return {
-      ...data,
-      id: data.id,
-      event_date: data.event_date,
-      event_time: data.event_time || ''
-    };
-  } catch (error) {
-    console.error('Error adding event:', error);
-    throw error;
-  }
+/**
+ * Get event duration if end time is available
+ */
+export const getEventDuration = (_event: CalendarEvent): string => {
+  return "";
 };
 
-export const updateEvent = async (event: CalendarEvent): Promise<CalendarEvent> => {
-  try {
-    console.log("API: Updating event:", event);
-    
-    // Create a copy and remove the id field to prevent Supabase identity column error
-    const { id, ...rest } = event;
-    
-    // Map frontend fields to backend fields
-    const backendEvent: Record<string, any> = {
-      user_id: event.user_id || JSON.parse(localStorage.getItem('user') || '{}').id,
-      title: rest.title,
-      event_date: rest.event_date,
-      event_time: rest.event_time || '',
-      type: rest.type,
-      description: rest.description
-    };
-    
-    // Use api client instead of raw fetch
-    const result = await api.put(`/v1/calendar/${id}`, backendEvent);
-    
-    // Map backend fields to frontend
-    return {
-      ...result,
-      id: result.id || id,
-      event_date: result.event_date,
-      event_time: result.event_time || ''
-    };
-  } catch (error) {
-    console.error('Error updating event:', error);
-    throw error;
-  }
+/**
+ * Sort events by time for a given day
+ */
+export const sortEventsByTime = (events: CalendarEvent[]): CalendarEvent[] => {
+  return [...events].sort((a, b) => {
+    // Events without time go to the end
+    if (!a.event_time) return 1;
+    if (!b.event_time) return -1;
+
+    return a.event_time.localeCompare(b.event_time);
+  });
 };
 
-export const deleteEvent = async (id: number): Promise<void> => {
-  try {
-    console.log("API: Deleting event:", id);
-    // Use api client instead of raw fetch
-    await api.delete(`/v1/calendar/${id}`);
-  } catch (error) {
-    console.error('Error deleting event:', error);
-    throw error;
-  }
+/**
+ * Group events by date
+ */
+export const groupEventsByDate = (
+  events: CalendarEvent[],
+): Record<string, CalendarEvent[]> => {
+  return events.reduce(
+    (groups, event) => {
+      const date = event.event_date;
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(event);
+      return groups;
+    },
+    {} as Record<string, CalendarEvent[]>,
+  );
 };
 
-// Replace the failing fetchMultipleDaysData function with this implementation
-
-export const fetchMultipleDaysData = async (dates: string[]): Promise<Record<string, any>> => {
-  try {
-    // Get current user from localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (!user.id) {
-      throw new Error('User not authenticated');
-    }
-    
-    // Make parallel requests using the existing single-date endpoint
-    const promises = dates.map(date => 
-      api.get(`/v1/calendar?date=${date}&user_id=${user.id}`)
-        .then(events => ({
-          date,
-          data: {
-            events: events.map((event: any) => ({
-              ...event,
-              event_date: event.event_date,
-              event_time: event.event_time || ''
-            }))
-          }
-        }))
-    );
-    
-    // Wait for all requests to complete
-    const results = await Promise.all(promises);
-    
-    // Convert array of results to an object keyed by date
-    const combinedData: Record<string, any> = {};
-    results.forEach(result => {
-      combinedData[result.date] = result.data;
-    });
-    
-    return combinedData;
-  } catch (error) {
-    console.error('Error fetching multiple days data:', error);
-    throw error;
-  }
+/**
+ * Get events for a specific date range
+ */
+export const filterEventsByDateRange = (
+  events: CalendarEvent[],
+  startDate: string,
+  endDate: string,
+): CalendarEvent[] => {
+  return events.filter((event) => {
+    const eventDate = event.event_date;
+    return eventDate >= startDate && eventDate <= endDate;
+  });
 };
+
+/**
+ * colour mapping for event types (NOTE: some types may not be used, just listing here in case need to use)
+ */
+export const getEventTypeColor = (type: string): string => {
+  const colorMap: Record<string, string> = {
+    Personal: "#3b82f6", // Blue
+    Work: "#ef4444", // Red
+    Meeting: "#f59e0b", // Orange
+    Reminder: "#10b981", // Green
+    Social: "#8b5cf6", // Purple
+    Health: "#06b6d4", // Cyan
+    Travel: "#f97316", // Orange
+    Other: "#6b7280", // Gray
+  };
+
+  return colorMap[type] || colorMap["Other"];
+};
+
+// Export type utilities for other files
+export type CalendarEventWithoutId = Omit<CalendarEvent, "id">;
+export type CalendarEventUpdate = Partial<CalendarEvent>;
+export type EventValidation = {
+  isValid: boolean;
+  errors: string[];
+};
+
+export type EventType =
+  | "Personal"
+  | "Work"
+  | "Meeting"
+  | "Reminder"
+  | "Social"
+  | "Health"
+  | "Travel"
+  | "Other";
+// some types may not be used in the future, but included for consistency

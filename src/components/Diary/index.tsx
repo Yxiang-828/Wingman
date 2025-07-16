@@ -7,9 +7,7 @@ import EditEntry from "./EditEntry";
 import "./DiaryEntry.css";
 
 /**
- * Diary Component - Your Wingman's Memory Management Hub
- * Central router for all diary functionality with unified styling
- * Where thoughts flow seamlessly between writing, viewing, and searching
+ * Diary Component
  */
 const Diary: React.FC = () => {
   return (

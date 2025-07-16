@@ -90,7 +90,7 @@ export const VirtualizedTaskList: React.FC<{
     if (typeof onCompleteTask !== "function") {
       console.error(
         "VirtualizedTaskList: onCompleteTask is not a function",
-        typeof onCompleteTask
+        typeof onCompleteTask,
       );
       return;
     }

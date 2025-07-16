@@ -4,7 +4,6 @@ import productiveIcon from "../../assets/icons/productive.png";
 import moodyIcon from "../../assets/icons/moody.png";
 import "./WelcomePopup.css";
 
-// Icon mapping for different moods - your Wingman adapts to your vibe
 const moodIcons: Record<string, string> = {
   productive: productiveIcon,
   moody: moodyIcon,
@@ -34,18 +33,18 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
       window.electronAPI.onMoodChange((mood: string) => {
         if (mood === "productive" || mood === "moody") setMood(mood);
       });
-    }    // Optimized entrance animation with shorter delay
+    }
     setTimeout(() => setIsVisible(true), 50); // Reduced from 100ms
   }, []);
   // Graceful exit with optimized fade animation
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(onClose, 200); // Reduced from 300ms to match CSS transition
+    setTimeout(onClose, 200);
   };
   // Auto-dismiss for non-critical popups with reduced timer
   useEffect(() => {
     if (type !== "registration") {
-      const timer = setTimeout(handleClose, 5000); // Reduced from 6000ms
+      const timer = setTimeout(handleClose, 5000);
       return () => clearTimeout(timer);
     }
   }, [type]);
@@ -109,28 +108,71 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({
           ))}
         </div>
 
-        {/* Feature showcase for new users */}
+        {/* Step-by-step setup guide for new users */}
         {type === "registration" && (
           <div className="registration-info">
             <p className="info-text">
-              Your Wingman is armed with advanced productivity tools:
+              🚀 Let's get your Wingman fully configured! Follow these steps:
             </p>
-            <ul className="feature-list">
-              <li>Smart diary with mood tracking</li>
-              <li>Intelligent calendar with time blocking</li>
-              <li>AI assistant powered by Ollama</li>
-              <li>
-                6 beautiful themes (Dark, Light, Yandere, Kuudere, Tsundere,
-                Dandere)
+            <ol className="setup-steps">
+              <li className="setup-step">
+                <span className="step-number">1</span>
+                <div className="step-content">
+                  <strong>Download AI Model</strong>
+                  <p>
+                    Download Ollama and install <strong>Mistral AI</strong> for
+                    your chat assistant
+                  </p>
+                  <div className="step-actions">
+                    <span className="file-path">
+                      Visit: ollama.ai → Install → Run:{" "}
+                      <code>ollama pull mistral</code>
+                    </span>
+                  </div>
+                </div>
               </li>
-              <li>Hybrid architecture: Local data with cloud auth</li>
-              <li>Complete offline functionality</li>
-            </ul>
+              <li className="setup-step">
+                <span className="step-number">2</span>
+                <div className="step-content">
+                  <strong>Choose Your Theme</strong>
+                  <p>
+                    Go to Profile → Settings and select from 6 beautiful themes
+                  </p>
+                  <div className="step-hint">
+                    💡 Try Yandere, Kuudere, Tsundere, or Dandere for unique
+                    personalities!
+                  </div>
+                </div>
+              </li>
+              <li className="setup-step">
+                <span className="step-number">3</span>
+                <div className="step-content">
+                  <strong>Configure AI Chat</strong>
+                  <p>
+                    In Settings → Model Manager, select Mistral as your chat
+                    model
+                  </p>
+                  <div className="step-hint">
+                    🤖 This enables your intelligent assistant!
+                  </div>
+                </div>
+              </li>
+              <li className="setup-step">
+                <span className="step-number">4</span>
+                <div className="step-content">
+                  <strong>Start Exploring</strong>
+                  <p>Try the diary, calendar, tasks, and chat features</p>
+                  <div className="step-hint">
+                    ⭐ Everything works offline with cloud sync!
+                  </div>
+                </div>
+              </li>
+            </ol>
 
             <div className="pro-tip">
               <p className="tip-text">
-                <strong>Pro Tip:</strong> Press <kbd>'Ctrl' + '-'</kbd> to make the
-                app smaller if it looks too big!
+                <strong>Pro Tip:</strong> Press <kbd>Ctrl + -</kbd> to make the
+                app smaller if needed!
               </p>
             </div>
           </div>

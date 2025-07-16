@@ -45,7 +45,7 @@ def create_entry(entry_data: dict):
         data = dict(entry_data)
         
         # Update the valid_moods list to match the actual database enum
-        valid_moods = ["happy", "sad", "neutral", "excited", "anxious"]  # Remove "relaxed"
+        valid_moods = ["happy", "sad", "neutral", "excited", "anxious"]  # Removed "relaxed"
         if "mood" in data and data["mood"] not in valid_moods:
             # Set to default if invalid
             print(f"Warning: Invalid mood value '{data['mood']}', using default 'neutral'")

@@ -13,7 +13,7 @@ class WingmanOllamaService:
         self.current_model = None
         self.client = httpx.AsyncClient(timeout=60.0)  # Increased timeout
         
-        # EXPANDED: Model configurations with DeepSeek
+        # Model configurations
         self.models = {
             # Llama models
             "llama3.2:1b": {
@@ -58,6 +58,14 @@ class WingmanOllamaService:
                 "ram_required": 12,
                 "description": "Top-tier reasoning model for complex problems",
                 "provider": "DeepSeek"
+            },
+            # Mistral models
+            "mistral:7b": {
+                "name": "mistral:7b",
+                "size": "4.1GB",
+                "ram_required": 6,
+                "description": "Advanced multilingual model with excellent instruction following",
+                "provider": "Mistral AI"
             }
         }
 
@@ -73,6 +81,12 @@ class WingmanOllamaService:
             model = self._get_recommended_model()
         
         full_prompt = self._build_prompt(prompt, context)
+        YELLOW = "\033[93m"
+        BOLD = "\033[1m"
+        RESET = "\033[0m"
+        border = f"{YELLOW}{BOLD}" + "=" * 40 + " OLLAMA PROMPT START " + "=" * 40 + f"{RESET}"
+        end_border = f"{YELLOW}{BOLD}" + "=" * 41 + " OLLAMA PROMPT END " + "=" * 41 + f"{RESET}"
+        print(f"\n{border}\n{full_prompt}\n{end_border}\n")
         
         try:
             start_time = datetime.now()
@@ -84,15 +98,15 @@ class WingmanOllamaService:
                     "prompt": full_prompt,
                     "stream": False,
                     "options": {
-                        "num_predict": -1,      # 🔥 UNLIMITED TOKENS!
+                        "num_predict": -1,      
                         "temperature": 0.7,
                         "top_p": 0.9,
-                        "num_ctx": 8192,       # 🔥 MASSIVE context window
+                        "num_ctx": 8192,       
                         "repeat_penalty": 1.1,
-                        "stop": ["Human:", "User:"]  # Natural stopping points
+                        "stop": ["Human:", "User:"]
                     }
                 },
-                timeout=120.0  # 🔥 2 MINUTE timeout for detailed responses
+                timeout=300.0  
             )
             
             processing_time = (datetime.now() - start_time).total_seconds()
@@ -100,6 +114,13 @@ class WingmanOllamaService:
             if response.status_code == 200:
                 result = response.json()
                 ai_response = result.get("response", "No response generated")
+                print("\n" + "="*80)
+                print(" " * 20 + "OLLAMA AI RESPONSE BELOW")
+                print("="*80)
+                print(ai_response)
+                print("="*80)
+                print(" " * 20 + "END OF OLLAMA AI RESPONSE")
+                print("="*80 + "\n")
                 
                 # Log response length for debugging
                 print(f"Generated response length: {len(ai_response)} characters")
@@ -113,6 +134,13 @@ class WingmanOllamaService:
                     "response_length": len(ai_response)
                 }
             else:
+                print("\n" + "="*80)
+                print(" " * 20 + "OLLAMA AI RESPONSE BELOW")
+                print("="*80)
+                print("ollama fails")
+                print("="*80)
+                print(" " * 20 + "END OF OLLAMA AI RESPONSE")
+                print("="*80 + "\n")
                 return {
                     "success": False,
                     "fallback_response": self._fallback_response(prompt),
@@ -121,6 +149,13 @@ class WingmanOllamaService:
                 }
                 
         except httpx.TimeoutException:
+            print("\n" + "="*80)
+            print(" " * 20 + "OLLAMA AI RESPONSE BELOW")
+            print("="*80)
+            print("ollama fails")
+            print("="*80)
+            print(" " * 20 + "END OF OLLAMA AI RESPONSE")
+            print("="*80 + "\n")
             return {
                 "success": False,
                 "fallback_response": f"I'm taking longer to provide a detailed response. {self._fallback_response(prompt)}",
@@ -128,6 +163,13 @@ class WingmanOllamaService:
                 "error": "timeout"
             }
         except Exception as e:
+            print("\n" + "="*80)
+            print(" " * 20 + "OLLAMA AI RESPONSE BELOW")
+            print("="*80)
+            print("ollama fails")
+            print("="*80)
+            print(" " * 20 + "END OF OLLAMA AI RESPONSE")
+            print("="*80 + "\n")
             return {
                 "success": False,
                 "fallback_response": self._fallback_response(prompt),
@@ -317,16 +359,17 @@ ALWAYS REMEMBER:
             }
 
     def _get_recommended_model(self) -> str:
-        """Determine best model based on system RAM"""
+        """Determine best model based on system RAM - using Mistral 7B as primary model"""
         try:
             total_ram_gb = psutil.virtual_memory().total / (1024**3)
             
-            if total_ram_gb >= 12:
-                return "deepseek-r1:7b"
-            elif total_ram_gb >= 8:
+            # User requested Mistral 7B as primary model
+            if total_ram_gb >= 6:
+                return "mistral:7b"
+            elif total_ram_gb >= 4:
                 return "llama3.2:3b"
             else:
-                return "deepseek-r1:1.5b"
+                return "llama3.2:1b"  # Safe fallback
         except:
             return "llama3.2:1b"  # Safe fallback
 

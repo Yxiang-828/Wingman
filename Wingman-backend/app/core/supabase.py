@@ -32,39 +32,12 @@ except Exception as e:
     logger.error(f"Failed to initialize Supabase client: {str(e)}")
     logger.error(f"Traceback: {traceback.format_exc()}")
     
-    # Provide a fake client for development/testing
-    from unittest.mock import MagicMock
-    
-    # Create a mock that behaves like the supabase client
-    mock_data = []
-    
-    class MockExecute:
-        def __init__(self):
-            self.data = []
-    
-    class MockTable:
-        def select(self, *args):
-            return self
-        
-        def eq(self, *args):
-            return self
-        
-        def limit(self, *args):
-            return self
-            
-        def insert(self, *args):
-            return self
-            
-        def execute(self):
-            result = MockExecute()
-            return result
-    
-    supabase = MagicMock()
-    supabase.table.return_value = MockTable()
-    supabase.from_.return_value = MockTable()
-    
-    logger.warning("Using mock Supabase client due to initialization error")
+    # NO MORE FAKE CLIENTS - Let it fail properly
+    logger.critical("Supabase connection failed. Services using Supabase will not work.")
+    supabase = None  # This will cause proper errors instead of fake responses
 
 def get_supabase_client():
     """Return the Supabase client instance."""
+    if supabase is None:
+        raise RuntimeError("Supabase client is not available. Check your SUPABASE_URL and SUPABASE_KEY environment variables.")
     return supabase

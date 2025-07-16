@@ -18,7 +18,7 @@ const MiniCalendar: React.FC = () => {
       const dateStr = formatDateKey(date);
       navigate(`/calendar/day?date=${dateStr}`);
     },
-    [navigate]
+    [navigate],
   );
 
   // Highlight today's date for quick reference

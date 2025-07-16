@@ -1,13 +1,15 @@
-/* Mini calendar component - Multi theme system for all occasions */
+/* Mini calendar component - Multi theme system */
 
-/* Base dark theme styling */
-
-/* Calendar container with modern glassmorphism effect */
+/* Calendar container*/
 .react-calendar--small {
   font-size: 10px;
   max-width: 220px;
   overflow: visible;
-  background: linear-gradient(145deg, rgba(15, 15, 25, 0.85), rgba(25, 25, 40, 0.9));
+  background: linear-gradient(
+    145deg,
+    rgba(15, 15, 25, 0.85),
+    rgba(25, 25, 40, 0.9)
+  );
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(100, 108, 255, 0.15);
   border: 1px solid rgba(100, 108, 255, 0.2);
@@ -120,11 +122,17 @@
 
 /* Today highlighting for quick reference */
 .today-highlight {
-  background: linear-gradient(135deg, rgba(100, 108, 255, 0.3), rgba(100, 108, 255, 0.2));
+  background: linear-gradient(
+    135deg,
+    rgba(100, 108, 255, 0.3),
+    rgba(100, 108, 255, 0.2)
+  );
   color: rgba(255, 255, 255, 1) !important;
   border-radius: 6px !important;
   font-weight: bold;
-  box-shadow: 0 0 12px rgba(100, 108, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 0 12px rgba(100, 108, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(100, 108, 255, 0.5);
   box-sizing: border-box;
   position: relative;
@@ -153,7 +161,9 @@
   font-size: 0;
   font-weight: 600;
   line-height: 1;
-  box-shadow: 0 0 6px rgba(100, 108, 255, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 6px rgba(100, 108, 255, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.4);
   animation: activity-pulse 2s ease-in-out infinite;
   transition: all 0.2s ease;
 }
@@ -224,25 +234,36 @@
 }
 
 .light-theme .today-highlight {
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.25), rgba(218, 163, 75, 0.2)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(184, 134, 11, 0.25),
+    rgba(218, 163, 75, 0.2)
+  ) !important;
   color: #600a0a !important;
   border: 1px solid rgba(184, 134, 11, 0.5) !important;
-  box-shadow: 0 0 12px rgba(184, 134, 11, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  box-shadow:
+    0 0 12px rgba(184, 134, 11, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
   font-weight: bold;
 }
 
 .light-theme .activity-ping {
   background: linear-gradient(45deg, #b8860b, #daa520);
   border: 1px solid rgba(96, 10, 10, 0.5);
-  box-shadow: 0 0 6px rgba(184, 134, 11, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 0 6px rgba(184, 134, 11, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Styling for adjacent month days */
-.react-calendar--small .react-calendar__month-view__days__day--neighboringMonth {
+.react-calendar--small
+  .react-calendar__month-view__days__day--neighboringMonth {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.light-theme .react-calendar--small .react-calendar__month-view__days__day--neighboringMonth {
+.light-theme
+  .react-calendar--small
+  .react-calendar__month-view__days__day--neighboringMonth {
   color: rgba(96, 10, 10, 0.3);
 }
 
@@ -251,7 +272,9 @@
   color: rgba(255, 180, 180, 0.9);
 }
 
-.light-theme .react-calendar--small .react-calendar__month-view__days__day--weekend {
+.light-theme
+  .react-calendar--small
+  .react-calendar__month-view__days__day--weekend {
   color: rgba(139, 69, 19, 0.8);
 }
 
@@ -259,24 +282,35 @@
 
 /* Subtle tremble animation for interactivity */
 @keyframes gentle-tremble {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-0.5px); }
-  50% { transform: translateX(0.5px); }
-  75% { transform: translateX(-0.5px); }
-  100% { transform: translateX(0); }
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-0.5px);
+  }
+  50% {
+    transform: translateX(0.5px);
+  }
+  75% {
+    transform: translateX(-0.5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 /* Activity pulse animation for engagement indicators */
 @keyframes activity-pulse {
-  0%, 100% { 
+  0%,
+  100% {
     transform: scale(1);
-    box-shadow: 
+    box-shadow:
       0 0 6px rgba(100, 108, 255, 0.6),
       0 1px 3px rgba(0, 0, 0, 0.4);
   }
-  50% { 
+  50% {
     transform: scale(1.15);
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(100, 108, 255, 0.8),
       0 1px 3px rgba(0, 0, 0, 0.4);
   }
@@ -287,15 +321,16 @@
 }
 
 @keyframes light-activity-pulse {
-  0%, 100% { 
+  0%,
+  100% {
     transform: scale(1);
-    box-shadow: 
+    box-shadow:
       0 0 6px rgba(184, 134, 11, 0.4),
       0 1px 3px rgba(0, 0, 0, 0.2);
   }
-  50% { 
+  50% {
     transform: scale(1.15);
-    box-shadow: 
+    box-shadow:
       0 0 10px rgba(184, 134, 11, 0.6),
       0 1px 3px rgba(0, 0, 0, 0.2);
   }
@@ -307,11 +342,11 @@
     max-width: 200px;
     font-size: 9px;
   }
-  
+
   .react-calendar--small .react-calendar__tile {
     padding: 6px 4px;
   }
-  
+
   .react-calendar--small .react-calendar__navigation__label {
     font-size: 0.65rem;
     padding: 4px 8px;
@@ -323,12 +358,12 @@
   .react-calendar--small .react-calendar__tile:hover {
     animation: none;
   }
-  
+
   .activity-ping,
   .light-theme .activity-ping {
     animation: none;
   }
-  
+
   .react-calendar--small:hover {
     transform: none;
   }
@@ -338,11 +373,11 @@
   .react-calendar--small {
     border-width: 2px;
   }
-  
+
   .today-highlight {
     border-width: 2px !important;
   }
-  
+
   .light-theme .today-highlight {
     border-width: 2px !important;
   }

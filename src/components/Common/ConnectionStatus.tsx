@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { getConnectionStatus } from '../../services/hybridAuth';
-import './ConnectionStatus.css';
+import React, { useState, useEffect } from "react";
+import { getConnectionStatus } from "../../services/hybridAuth";
+import "./ConnectionStatus.css";
 
-type ConnectionStatus = 'online' | 'offline' | 'server-offline' | 'checking';
+type ConnectionStatus = "online" | "offline" | "server-offline" | "checking";
 
 interface ConnectionStatusProps {
   className?: string;
@@ -10,12 +10,12 @@ interface ConnectionStatusProps {
   compact?: boolean;
 }
 
-const ConnectionStatus: React.FC<ConnectionStatusProps> = ({ 
-  className = '', 
+const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
+  className = "",
   showText = true,
-  compact = false 
+  compact = false,
 }) => {
-  const [status, setStatus] = useState<ConnectionStatus>('checking');
+  const [status, setStatus] = useState<ConnectionStatus>("checking");
   const [lastChecked, setLastChecked] = useState<Date>(new Date());
 
   const checkConnection = async () => {
@@ -24,7 +24,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       setStatus(connectionStatus);
       setLastChecked(new Date());
     } catch (error) {
-      setStatus('server-offline');
+      setStatus("server-offline");
       setLastChecked(new Date());
     }
   };
@@ -40,53 +40,53 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
     const handleOnline = () => {
       setTimeout(checkConnection, 1000); // Delay to allow connection to stabilize
     };
-    
+
     const handleOffline = () => {
-      setStatus('offline');
+      setStatus("offline");
       setLastChecked(new Date());
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
   const getStatusInfo = () => {
     switch (status) {
-      case 'online':
+      case "online":
         return {
-          text: 'Online',
-          color: '#4CAF50',
-          className: 'status-online'
+          text: "Online",
+          color: "#4CAF50",
+          className: "status-online",
         };
-      case 'offline':
+      case "offline":
         return {
-          text: 'Offline',
-          color: '#FF9800',
-          className: 'status-offline'
+          text: "Offline",
+          color: "#FF9800",
+          className: "status-offline",
         };
-      case 'server-offline':
+      case "server-offline":
         return {
-          text: 'Server Offline',
-          color: '#F44336',
-          className: 'status-server-offline'
+          text: "Server Offline",
+          color: "#F44336",
+          className: "status-server-offline",
         };
-      case 'checking':
+      case "checking":
         return {
-          text: 'Checking...',
-          color: '#2196F3',
-          className: 'status-checking'
+          text: "Checking...",
+          color: "#2196F3",
+          className: "status-checking",
         };
       default:
         return {
-          text: 'Unknown',
-          color: '#757575',
-          className: 'status-unknown'
+          text: "Unknown",
+          color: "#757575",
+          className: "status-unknown",
         };
     }
   };
@@ -94,12 +94,12 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   const statusInfo = getStatusInfo();
 
   return (
-    <div 
-      className={`connection-status ${statusInfo.className} ${compact ? 'compact' : ''} ${className}`}
+    <div
+      className={`connection-status ${statusInfo.className} ${compact ? "compact" : ""} ${className}`}
       title={`Last checked: ${lastChecked.toLocaleTimeString()}`}
     >
-      <div 
-        className="status-indicator" 
+      <div
+        className="status-indicator"
         style={{ backgroundColor: statusInfo.color }}
       />
       {showText && <span className="status-text">{statusInfo.text}</span>}

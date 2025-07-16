@@ -1,5 +1,5 @@
 /**
- * Database type definitions that exactly match your Supabase schema
+ * Database type definitions that exactly match  Supabase schema
  */
 
 // UUID type
@@ -9,7 +9,7 @@ export type UUID = string;
 export type Timestamp = string;
 
 // Common mood enum
-export type MoodScale = 'happy' | 'neutral' | 'sad' | 'excited' | 'tired';
+export type MoodScale = "happy" | "neutral" | "sad" | "excited" | "tired";
 
 /**
  * Users table
@@ -118,20 +118,23 @@ export interface DBChatHistory {
  * Converts a JavaScript Date to YYYY-MM-DD format for database
  */
 export function formatDateForDB(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return date.toISOString().split("T")[0];
 }
 
 /**
  * Converts a JavaScript Date to HH:MM:SS format for database
  */
 export function formatTimeForDB(date: Date): string {
-  return date.toISOString().split('T')[1].split('.')[0];
+  return date.toISOString().split("T")[1].split(".")[0];
 }
 
 /**
  * Parse a database date (YYYY-MM-DD) and time (HH:MM:SS) to JavaScript Date
  */
-export function parseDateAndTimeFromDB(dateStr: string, timeStr?: string | null): Date {
+export function parseDateAndTimeFromDB(
+  dateStr: string,
+  timeStr?: string | null,
+): Date {
   if (timeStr) {
     return new Date(`${dateStr}T${timeStr}`);
   }
@@ -144,9 +147,9 @@ export function parseDateAndTimeFromDB(dateStr: string, timeStr?: string | null)
  */
 export function generateClientUUID(): UUID {
   // Simple UUID v4 generation (for testing only)
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }

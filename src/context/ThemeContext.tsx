@@ -1,4 +1,4 @@
-// Theme command center - handles your digital realm's visual personality
+// Handles Wingman's personality
 import React, {
   createContext,
   useContext,
@@ -20,7 +20,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Utility function to check if database API is ready
 const isDatabaseReady = (): boolean => {
-  return !!(window.electronAPI?.db?.getUserSettings);
+  return !!window.electronAPI?.db?.getUserSettings;
 };
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
@@ -31,7 +31,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   // Load theme with improved initialization order and error handling
   useEffect(() => {
     loadThemeFromDatabase();
-    
+
     // Retry mechanism: check again after 2 seconds if database wasn't ready
     const retryTimer = setTimeout(() => {
       if (!isThemeLoaded) {
@@ -73,21 +73,32 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
         console.log("Database API not ready yet, using localStorage theme");
         setIsThemeLoaded(true);
         return;
-      }      const settings = await window.electronAPI.db.getUserSettings(userId);
+      }
+      const settings = await window.electronAPI.db.getUserSettings(userId);
       if (settings?.theme) {
         console.log(`Theme loaded from database: ${settings.theme}`);
-        
+
         // Ensure theme is valid before setting
-        const validThemes: Theme[] = ["dark", "light", "yandere", "kuudere", "tsundere", "dandere"];
-        const themeValue = validThemes.includes(settings.theme as Theme) ? settings.theme as Theme : "dark";
+        const validThemes: Theme[] = [
+          "dark",
+          "light",
+          "yandere",
+          "kuudere",
+          "tsundere",
+          "dandere",
+        ];
+        const themeValue = validThemes.includes(settings.theme as Theme)
+          ? (settings.theme as Theme)
+          : "dark";
         setThemeState(themeValue);
-        
+
         // Sync localStorage with database
         const localSettings = savedSettings ? JSON.parse(savedSettings) : {};
         const updatedSettings = { ...localSettings, theme: settings.theme };
         localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
+        window.dispatchEvent(new CustomEvent("wingman-theme-updated"));
       }
-      
+
       setIsThemeLoaded(true);
     } catch (error) {
       console.error("Failed to load theme from database:", error);
@@ -97,7 +108,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   // Listen for authentication events to reload theme from database
-  useEffect(() => {    const handleAuthChange = () => {
+  useEffect(() => {
+    const handleAuthChange = () => {
       const userId = getCurrentUserId();
       if (userId && isDatabaseReady()) {
         console.log("User authenticated, syncing theme from database...");
@@ -107,7 +119,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
 
     // Listen for storage changes from other tabs/windows
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'userSettings' && e.newValue) {
+      if (e.key === "userSettings" && e.newValue) {
         try {
           const settings = JSON.parse(e.newValue);
           if (settings.theme && settings.theme !== theme) {
@@ -121,12 +133,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     // Listen for user login events
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('user-authenticated', handleAuthChange);
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("user-authenticated", handleAuthChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('user-authenticated', handleAuthChange);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("user-authenticated", handleAuthChange);
     };
   }, [theme]);
   useEffect(() => {
@@ -139,7 +151,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
       "yandere-theme",
       "kuudere-theme",
       "tsundere-theme",
-      "dandere-theme"
+      "dandere-theme",
     );
 
     // Add new theme class (dark is default, no class needed)
@@ -168,11 +180,13 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
       theme: newTheme,
     };
     localStorage.setItem("userSettings", JSON.stringify(updatedSettings));
-    console.log(`Theme saved to localStorage: ${newTheme}`);    // Then try to save to database (may fail, but localStorage ensures persistence)
+    window.dispatchEvent(new CustomEvent("wingman-theme-updated"));
+    console.log(`Theme saved to localStorage: ${newTheme}`); // Then try to save to database (may fail, but localStorage ensures persistence)
     try {
       const userId = getCurrentUserId();
       if (userId && isDatabaseReady()) {
-        const currentSettings = await window.electronAPI.db.getUserSettings(userId);
+        const currentSettings =
+          await window.electronAPI.db.getUserSettings(userId);
         const updatedDbSettings = {
           ...currentSettings,
           theme: newTheme,
@@ -183,7 +197,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
         console.log("Database not available, theme saved to localStorage only");
       }
     } catch (error) {
-      console.error("Failed to save theme to database (localStorage fallback active):", error);
+      console.error(
+        "Failed to save theme to database (localStorage fallback active):",
+        error,
+      );
     }
   };
   return (

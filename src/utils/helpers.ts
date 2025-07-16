@@ -6,11 +6,11 @@
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout>;
-  
-  return function(...args: Parameters<T>) {
+
+  return function (...args: Parameters<T>) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       func(...args);
@@ -35,13 +35,13 @@ export function truncateText(text: string, maxLength: number): string {
  */
 export const getCurrentUserId = (): string | null => {
   try {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem("user");
     if (!user) return null;
-    
+
     const userData = JSON.parse(user);
     return userData.id || userData.user_id || null;
   } catch (error) {
-    console.error('Error getting current user ID:', error);
+    console.error("Error getting current user ID:", error);
     return null;
   }
 };
@@ -52,7 +52,7 @@ export const getCurrentUserId = (): string | null => {
  */
 export const isUserAuthenticated = (): boolean => {
   const userId = getCurrentUserId();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   return !!(userId && token);
 };
 
@@ -62,10 +62,10 @@ export const isUserAuthenticated = (): boolean => {
  */
 export const getCurrentUser = (): any | null => {
   try {
-    const user = localStorage.getItem('user');
+    const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
   } catch (error) {
-    console.error('Error getting current user:', error);
+    console.error("Error getting current user:", error);
     return null;
   }
 };

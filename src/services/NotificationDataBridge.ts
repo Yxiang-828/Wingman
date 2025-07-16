@@ -1,14 +1,14 @@
 /**
  * DataContext Integration for Professional Notification System
- * 
+ *
  * This service bridges DataContext CRUD operations with the NotificationScheduler
  * to provide real-time, event-driven updates without database polling.
- * 
- * Based on Slack/Discord patterns where data changes immediately update
+ *
+ * Based on Discord patterns where data changes immediately update
  * in-memory state rather than requiring periodic polling.
  */
 
-import { notificationScheduler } from './NotificationScheduler';
+import { notificationScheduler } from "./NotificationScheduler";
 
 class NotificationDataBridge {
   private static instance: NotificationDataBridge | null = null;
@@ -30,9 +30,11 @@ class NotificationDataBridge {
    */
   public activate(): void {
     if (this.isActive) return;
-    
+
     this.isActive = true;
-    console.log('🌉 NotificationDataBridge: Activated - notifications now real-time');
+    console.log(
+      "NotificationDataBridge: Activated - notifications now real-time",
+    );
   }
 
   /**
@@ -40,30 +42,57 @@ class NotificationDataBridge {
    */
   public deactivate(): void {
     this.isActive = false;
-    console.log('🌉 NotificationDataBridge: Deactivated');
+    console.log("NotificationDataBridge: Deactivated");
   }
   /**
    * Setup event listeners for DataContext events
    */
   private setupEventListeners(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Task events - cast to EventListener to fix TypeScript
-    window.addEventListener('task-created', this.handleTaskCreated.bind(this) as EventListener);
-    window.addEventListener('task-updated', this.handleTaskUpdated.bind(this) as EventListener);
-    window.addEventListener('task-deleted', this.handleTaskDeleted.bind(this) as EventListener);
-    window.addEventListener('task-completed', this.handleTaskCompleted.bind(this) as EventListener);
+    window.addEventListener(
+      "task-created",
+      this.handleTaskCreated.bind(this) as EventListener,
+    );
+    window.addEventListener(
+      "task-updated",
+      this.handleTaskUpdated.bind(this) as EventListener,
+    );
+    window.addEventListener(
+      "task-deleted",
+      this.handleTaskDeleted.bind(this) as EventListener,
+    );
+    window.addEventListener(
+      "task-completed",
+      this.handleTaskCompleted.bind(this) as EventListener,
+    );
 
     // Event events
-    window.addEventListener('event-created', this.handleEventCreated.bind(this) as EventListener);
-    window.addEventListener('event-updated', this.handleEventUpdated.bind(this) as EventListener);
-    window.addEventListener('event-deleted', this.handleEventDeleted.bind(this) as EventListener);
+    window.addEventListener(
+      "event-created",
+      this.handleEventCreated.bind(this) as EventListener,
+    );
+    window.addEventListener(
+      "event-updated",
+      this.handleEventUpdated.bind(this) as EventListener,
+    );
+    window.addEventListener(
+      "event-deleted",
+      this.handleEventDeleted.bind(this) as EventListener,
+    );
 
     // Global refresh events
-    window.addEventListener('notifications-refresh', this.handleRefresh.bind(this) as EventListener);
-    window.addEventListener('dashboard-refresh', this.handleRefresh.bind(this) as EventListener);
+    window.addEventListener(
+      "notifications-refresh",
+      this.handleRefresh.bind(this) as EventListener,
+    );
+    window.addEventListener(
+      "dashboard-refresh",
+      this.handleRefresh.bind(this) as EventListener,
+    );
 
-    console.log('🌉 NotificationDataBridge: Event listeners registered');
+    console.log("NotificationDataBridge: Event listeners registered");
   }
 
   /**
@@ -71,13 +100,16 @@ class NotificationDataBridge {
    */
   private handleTaskCreated(event: CustomEvent): void {
     if (!this.isActive) return;
-    
+
     try {
       const task = event.detail;
-      console.log('🌉 NotificationDataBridge: Task created:', task.title);
+      console.log("NotificationDataBridge: Task created:", task.title);
       notificationScheduler.onTaskCreated(task);
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling task created:', error);
+      console.error(
+        "NotificationDataBridge: Error handling task created:",
+        error,
+      );
     }
   }
 
@@ -86,13 +118,16 @@ class NotificationDataBridge {
    */
   private handleTaskUpdated(event: CustomEvent): void {
     if (!this.isActive) return;
-    
+
     try {
       const task = event.detail;
-      console.log('🌉 NotificationDataBridge: Task updated:', task.title);
+      console.log("NotificationDataBridge: Task updated:", task.title);
       notificationScheduler.onTaskUpdated(task);
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling task updated:', error);
+      console.error(
+        "NotificationDataBridge: Error handling task updated:",
+        error,
+      );
     }
   }
 
@@ -101,13 +136,16 @@ class NotificationDataBridge {
    */
   private handleTaskDeleted(event: CustomEvent): void {
     if (!this.isActive) return;
-    
+
     try {
       const { taskId } = event.detail;
-      console.log('🌉 NotificationDataBridge: Task deleted:', taskId);
+      console.log("NotificationDataBridge: Task deleted:", taskId);
       notificationScheduler.onTaskDeleted(taskId);
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling task deleted:', error);
+      console.error(
+        "NotificationDataBridge: Error handling task deleted:",
+        error,
+      );
     }
   }
 
@@ -116,16 +154,19 @@ class NotificationDataBridge {
    */
   private handleTaskCompleted(event: CustomEvent): void {
     if (!this.isActive) return;
-    
+
     try {
       const task = event.detail;
-      console.log('🌉 NotificationDataBridge: Task completed:', task.title);
-      
+      console.log("NotificationDataBridge: Task completed:", task.title);
+
       // Treat completion as an update that will remove from notifications
       task.completed = true;
       notificationScheduler.onTaskUpdated(task);
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling task completed:', error);
+      console.error(
+        "NotificationDataBridge: Error handling task completed:",
+        error,
+      );
     }
   }
 
@@ -134,13 +175,16 @@ class NotificationDataBridge {
    */
   private handleEventCreated(event: CustomEvent): void {
     if (!this.isActive) return;
-    
+
     try {
       const eventData = event.detail;
-      console.log('🌉 NotificationDataBridge: Event created:', eventData.title);
+      console.log("NotificationDataBridge: Event created:", eventData.title);
       notificationScheduler.onEventCreated(eventData);
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling event created:', error);
+      console.error(
+        "NotificationDataBridge: Error handling event created:",
+        error,
+      );
     }
   }
 
@@ -149,13 +193,16 @@ class NotificationDataBridge {
    */
   private handleEventUpdated(event: CustomEvent): void {
     if (!this.isActive) return;
-    
+
     try {
       const eventData = event.detail;
-      console.log('🌉 NotificationDataBridge: Event updated:', eventData.title);
+      console.log("NotificationDataBridge: Event updated:", eventData.title);
       notificationScheduler.onEventUpdated(eventData);
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling event updated:', error);
+      console.error(
+        "NotificationDataBridge: Error handling event updated:",
+        error,
+      );
     }
   }
 
@@ -164,13 +211,16 @@ class NotificationDataBridge {
    */
   private handleEventDeleted(event: CustomEvent): void {
     if (!this.isActive) return;
-    
+
     try {
       const { eventId } = event.detail;
-      console.log('🌉 NotificationDataBridge: Event deleted:', eventId);
+      console.log("NotificationDataBridge: Event deleted:", eventId);
       notificationScheduler.onEventDeleted(eventId);
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling event deleted:', error);
+      console.error(
+        "NotificationDataBridge: Error handling event deleted:",
+        error,
+      );
     }
   }
   /**
@@ -178,17 +228,19 @@ class NotificationDataBridge {
    */
   private handleRefresh(_event: Event): void {
     if (!this.isActive) return;
-    
+
     try {
-      console.log('🌉 NotificationDataBridge: Refresh event received, reinitializing scheduler');
-      
+      console.log(
+        "NotificationDataBridge: Refresh event received, reinitializing scheduler",
+      );
+
       // Get current user and reinitialize
-      const userId = localStorage.getItem('currentUserId');
+      const userId = localStorage.getItem("currentUserId");
       if (userId) {
         notificationScheduler.initialize(userId);
       }
     } catch (error) {
-      console.error('🌉 NotificationDataBridge: Error handling refresh:', error);
+      console.error("NotificationDataBridge: Error handling refresh:", error);
     }
   }
 
@@ -198,7 +250,7 @@ class NotificationDataBridge {
   public getStatus() {
     return {
       isActive: this.isActive,
-      schedulerStatus: notificationScheduler.getStatus()
+      schedulerStatus: notificationScheduler.getStatus(),
     };
   }
 }

@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
-   🎯 OPTIMIZED BASE VARIABLES - No lag, smooth performance
+   BASE VARIABLES
    ═══════════════════════════════════════════════════════════════ */
 :root {
   /* Performance optimizations */
   --transition-smooth: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-fast: 0.1s ease;
   --will-change: transform, opacity, background-color;
-  
+
   /* Layout & Spacing */
   --border-radius: 8px;
   --border-radius-large: 16px;
@@ -17,7 +17,8 @@
   --spacing-xl: 2rem;
 
   /* Typography */
-  --font-family-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  --font-family-primary:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-bold: 600;
@@ -29,13 +30,15 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🌙 DARK THEME (Default) - Enhanced
+   DARK THEME (Default)
    ═══════════════════════════════════════════════════════════════ */
 :root,
 .dark-theme {
   /* Deep space backgrounds */
-  --color-bg-body: transparent; /* Let PNG show through */
-  --color-bg-main: rgba(22, 22, 30, 0.85); /* Semi-transparent overlays */
+  --color-bg-body: transparent;
+  /* Let PNG show through */
+  --color-bg-main: rgba(22, 22, 30, 0.85);
+  /* Semi-transparent overlays */
   --color-bg-card: rgba(30, 30, 45, 0.9);
 
   /* Crisp text hierarchy */
@@ -68,14 +71,13 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   LIGHT THEME - COMPLETE INVERSION
+   LIGHT THEME
    ═══════════════════════════════════════════════════════════════ */
 
-
-  /* ═══════════════════════════════════════════════════════════════
-     ZONE 1: CORE VARIABLES & BASE STYLING
+/* ═══════════════════════════════════════════════════════════════
+     ZONE 1: CORE VARIABLES & BASE STYLING -LIGHT THEME
      ═══════════════════════════════════════════════════════════════ */
-  .light-theme {
+.light-theme {
   /* Core Variables */
   --color-bg-body: transparent;
   --color-bg-main: rgba(248, 248, 240, 0.95);
@@ -189,8 +191,6 @@
 .light-theme .recent-records-container,
 .light-theme .compact-record-item,
 .light-theme .search-form,
-.light-theme .detail-popup,
-.light-theme .chatbot-bubble.wingman,
 .light-theme .datetime-display,
 .light-theme .wingman-avatar-container,
 .light-theme .avatar-message,
@@ -211,18 +211,32 @@
 .light-theme .sidebar-toggle::before,
 .light-theme .diary-tools,
 .light-theme .writing-prompt,
-.light-theme .detail-popup-overlay,
-.light-theme .diary-popup-overlay,
 .light-theme .diary-popup-content {
-  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6), rgba(0, 0, 0, 0.1)) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(193, 191, 162, 0.6),
+    rgba(0, 0, 0, 0.1)
+  ) !important;
 }
 
 .light-theme .mission-category-header,
 .light-theme .mission-item {
   background: rgba(193, 191, 162, 0.6) !important;
 }
+
 .light-theme .day-stat-label,
-.light-theme .diary-date{
+.light-theme .diary-date {
+  color: #600a0a !important;
+}
+
+.light-theme p,
+.light-theme span,
+.light-theme label {
+  color: #600a0a !important;
+}
+
+/* Theme quotes should use proper light theme color */
+.light-theme .theme-quote {
   color: #600a0a !important;
 }
 
@@ -235,9 +249,11 @@
   padding: 1.5rem !important;
   box-shadow: var(--shadow-card) !important;
 }
-.light-theme .day-view-container{
+
+.light-theme .day-view-container {
   background: none !important;
 }
+
 .light-theme .dashboard-item {
   background: rgba(255, 255, 250, 0.9) !important;
   color: #600a0a !important;
@@ -252,15 +268,19 @@
 }
 
 .light-theme .month-header {
-  background: linear-gradient(270deg, rgba(185, 102, 7, 0.15), rgba(193, 191, 162, 0.6)) !important;
+  background: linear-gradient(
+    270deg,
+    rgba(185, 102, 7, 0.15),
+    rgba(193, 191, 162, 0.6)
+  ) !important;
 }
 
-/* Text Elements - EXCLUDE welcome popup elements */
-.light-theme h1:not(.welcome-title):not(.welcome-subtitle), 
-.light-theme h2:not(.welcome-title):not(.welcome-subtitle), 
-.light-theme h3:not(.welcome-title):not(.welcome-subtitle), 
-.light-theme h4:not(.welcome-title):not(.welcome-subtitle), 
-.light-theme h5:not(.welcome-title):not(.welcome-subtitle), 
+/* Text Elements (used to exclude welcome popup elements but we removed welcome popup)*/
+.light-theme h1:not(.welcome-title):not(.welcome-subtitle),
+.light-theme h2:not(.welcome-title):not(.welcome-subtitle),
+.light-theme h3:not(.welcome-title):not(.welcome-subtitle),
+.light-theme h4:not(.welcome-title):not(.welcome-subtitle),
+.light-theme h5:not(.welcome-title):not(.welcome-subtitle),
 .light-theme h6:not(.welcome-title):not(.welcome-subtitle),
 .light-theme .sidebar-submenu-item,
 .light-theme .day-stat-value,
@@ -296,7 +316,7 @@
 .light-theme .mission-objective,
 .light-theme .model-provider-title,
 .light-theme .theme-option-title,
-.light-theme .item-title{
+.light-theme .item-title {
   color: #600a0a !important;
   -webkit-text-fill-color: #600a0a !important;
   background: none !important;
@@ -344,7 +364,7 @@
   box-shadow: var(--shadow-subtle) !important;
 }
 
-.light-theme .chatbot-messages{
+.light-theme .chatbot-messages {
   background: none !important;
 }
 
@@ -356,7 +376,6 @@
   background: var(--color-bg-input-focus) !important;
   outline: none !important;
 }
-
 
 /* Buttons */
 .light-theme .btn-primary,
@@ -388,7 +407,7 @@
   border-radius: 8px !important;
   padding: 0.75rem 1.5rem !important;
   font-weight: 500 !important;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(184, 134, 11, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
@@ -412,8 +431,7 @@
 .light-theme .event-time,
 .light-theme .task-time,
 .light-theme .stat-label,
-.light-theme .item-title-compact
-  {
+.light-theme .item-title-compact {
   color: #600a0a !important;
   font-weight: 500 !important;
 }
@@ -427,10 +445,12 @@
 .light-theme .item-time {
   background: rgba(180, 186, 132, 0.4) !important;
 }
+
 .light-theme .login-subtitle,
-.light-theme .login-switch-text{
+.light-theme .login-switch-text {
   color: #600a0a !important;
 }
+
 /* Stat Numbers */
 .light-theme .day-view-date,
 .light-theme .stat-number,
@@ -479,11 +499,17 @@
   border-radius: 8px !important;
   padding: 0.75rem 1.5rem !important;
 }
-.light-theme .mission-btn{
-  color:black !important;
+
+.light-theme .mission-btn {
+  color: black !important;
 }
+
 .light-theme .mission-tab.active {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  ) !important;
   color: var(--color-text-inverse) !important;
   border-color: var(--color-accent-secondary) !important;
 }
@@ -532,7 +558,11 @@
 
 /* Calendar Widget */
 .light-theme .react-calendar--small {
-  background: linear-gradient(145deg, rgba(193, 191, 162, 0.6), rgba(0, 0, 0, 0.1)) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(193, 191, 162, 0.6),
+    rgba(0, 0, 0, 0.1)
+  ) !important;
   border: 1px solid rgba(184, 134, 11, 0.25) !important;
   box-shadow: 0 2px 12px rgba(184, 134, 11, 0.1) !important;
   color: #600a0a !important;
@@ -549,28 +579,110 @@
 
 /* Animations */
 @keyframes light-golden-scan {
-  0% { background-position: -100% 0; }
-  100% { background-position: 100% 0; }
+  0% {
+    background-position: -100% 0;
+  }
+
+  100% {
+    background-position: 100% 0;
+  }
 }
 
 .light-theme .mission-scan {
-  background: linear-gradient(90deg, transparent, rgba(184, 134, 11, 0.25), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(184, 134, 11, 0.25),
+    transparent
+  );
   animation: light-golden-scan 2s infinite;
 }
 
-
-
 .light-theme .home-title {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  ) !important;
   color: #600a0a !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CHATBOT INTERFACE - LIGHT THEME 
+   ═══════════════════════════════════════════════════════════════ */
+
+/* User Message Bubbles - Golden Brown with proper contrast */
+.light-theme .chatbot-bubble.user {
+  background: rgb(225, 215, 154) !important;
+  color: #600a0a !important;
+  /* Dark brown text for contrast */
+  border: 1px solid rgba(184, 134, 11, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.1) !important;
+}
+
+/* Wingman Message Bubbles - Light gold with dark brown text */
+.light-theme .chatbot-bubble.wingman {
+  background: rgba(255, 248, 220, 0.9) !important;
+  /* Light gold background */
+  color: #600a0a !important;
+  /* Dark brown text for readability */
+  border: 1px solid rgba(200, 180, 160, 0.6) !important;
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.1) !important;
+}
+
+/* ChatBot Container */
+.light-theme .chatbot-container {
+  background: transparent !important;
+  /* Let the light theme PNG show through */
+  border: 1px solid rgba(200, 180, 160, 0.4) !important;
+}
+
+/* ChatBot Input Area */
+.light-theme .chatbot-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #600a0a !important;
+  border: 1px solid rgba(184, 134, 11, 0.3) !important;
+}
+
+.light-theme .chatbot-input:focus {
+  border-color: rgba(184, 134, 11, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.1) !important;
+}
+
+/* Send Button */
+.light-theme .send-button {
+  background: linear-gradient(135deg, #b8860b, #daa520) !important;
+  color: white !important;
+  border: 1px solid rgba(184, 134, 11, 0.3) !important;
+}
+
+.light-theme .send-button:hover {
+  background: linear-gradient(135deg, #cd853f, #daa520) !important;
+}
+
+/* Quick Reply Buttons */
+.light-theme .chatbot-quick-reply {
+  background: rgba(255, 255, 255, 0.7) !important;
+  color: #600a0a !important;
+  border: 1px solid rgba(184, 134, 11, 0.3) !important;
+}
+
+.light-theme .chatbot-quick-reply:hover {
+  background: rgba(218, 165, 32, 0.2) !important;
+  border-color: rgba(184, 134, 11, 0.5) !important;
+}
+
+/* Message Timestamps */
+.light-theme .message-timestamp {
+  color: #666666 !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    ZONE 2: COMPONENT CONTAINERS & LAYOUT
    ═══════════════════════════════════════════════════════════════ */
-
 
 /* Cards with theme-appropriate glows */
 .dashboard-card,
@@ -581,7 +693,9 @@
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-large);
-  box-shadow: var(--shadow-card), 0 0 20px var(--color-accent-glow);
+  box-shadow:
+    var(--shadow-card),
+    0 0 20px var(--color-accent-glow);
   will-change: var(--will-change);
 }
 
@@ -590,7 +704,11 @@
 .save-settings-btn,
 .diary-save-btn,
 .theme-toggle-btn {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  );
   color: var(--color-text-inverse);
   border: none;
   border-radius: var(--border-radius);
@@ -606,7 +724,11 @@
 .save-settings-btn:hover,
 .diary-save-btn:hover,
 .theme-toggle-btn:hover {
-  background: linear-gradient(135deg, var(--color-accent-hover), var(--color-accent-primary));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-hover),
+    var(--color-accent-primary)
+  );
   box-shadow: 0 4px 12px var(--color-accent-glow);
   transform: translateY(-1px);
 }
@@ -642,12 +764,18 @@ select:focus {
 .sidebar {
   background: var(--color-bg-sidebar);
   backdrop-filter: blur(10px);
-  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3), 0 0 20px var(--color-accent-glow);
+  box-shadow:
+    5px 0 25px rgba(0, 0, 0, 0.3),
+    0 0 20px var(--color-accent-glow);
 }
 
 /* Enhanced sidebar toggle */
 .sidebar-toggle {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  );
   box-shadow: 0 0 15px var(--color-accent-glow);
   border-radius: 0 25px 25px 0;
 }
@@ -657,13 +785,20 @@ select:focus {
 }
 
 /* Enhanced text hierarchy */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-text-primary);
   font-weight: var(--font-weight-bold);
 }
 
-p, span, label {
-  color: var(--color-text-secondary);
+p,
+span,
+label {
+  color: white !important;
   font-weight: var(--font-weight-normal);
 }
 
@@ -687,7 +822,7 @@ p, span, label {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   📱 RESPONSIVE LAYOUT
+   RESPONSIVE LAYOUT
    ═══════════════════════════════════════════════════════════════ */
 /* Always 100% of available space */
 .main-content-wrapper {
@@ -704,15 +839,15 @@ p, span, label {
   max-width: calc(100vw - 280px);
 }
 
-
+/* Content adjusts smoothly */
 .main-content-wrapper > * {
   transition: none;
   max-width: 100%;
-  overflow-x: hidden; 
+  overflow-x: hidden;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🎨 GLOBAL BASE STYLES
+   GLOBAL BASE STYLES
    ═══════════════════════════════════════════════════════════════ */
 * {
   margin: 0;
@@ -722,8 +857,9 @@ p, span, label {
 
 body {
   font-family: var(--font-family-primary);
-  background: #0a0a0f; /* Fallback color */
-  background-image: url('./assets/backgrounds/dark-theme.png');
+  background: #0a0a0f;
+  /* Fallback color */
+  background-image: url("./assets/backgrounds/dark-theme.png");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -737,54 +873,59 @@ body {
 
 /* Theme-specific backgrounds */
 body.light-theme {
-  background-image: url('./assets/backgrounds/light-theme.png');
-  background-color: #fefdf8; /* Fallback */
+  background-image: url("./assets/backgrounds/light-theme.png");
+  background-color: #fefdf8;
 }
 
 body.yandere-theme {
-  background-image: url('./assets/backgrounds/yandere-theme.png');
-  background-color: #0e0a0d; /* Fallback */
+  background-image: url("./assets/backgrounds/yandere-theme.png");
+  background-color: #0e0a0d;
 }
 
 body.kuudere-theme {
-  background-image: url('./assets/backgrounds/kuudere-theme.png');
-  background-color: #0a0d12; /* Fallback */
+  background-image: url("./assets/backgrounds/kuudere-theme.png");
+  background-color: #0a0d12;
 }
 
 body.tsundere-theme {
-  background-image: url('./assets/backgrounds/tsundere-theme.png');
-  background-color: #1a0f0a; /* Fallback */
+  background-image: url("./assets/backgrounds/tsundere-theme.png");
+  background-color: #1a0f0a;
 }
 
 body.dandere-theme {
-  background-image: url('./assets/backgrounds/dandere-theme.png');
-  background-color: #0f0a12; /* Fallback */
+  background-image: url("./assets/backgrounds/dandere-theme.png");
+  background-color: #0f0a12;
 }
 
-/* EXCLUDE LOGIN: Don't apply PNG backgrounds to login pages */
 body:not(.login-page) {
-  background: url('./assets/backgrounds/dark-theme.png') center center / cover no-repeat fixed;
+  background: url("./assets/backgrounds/dark-theme.png") center center / cover
+    no-repeat fixed;
 }
 
 /* THEME BACKGROUNDS: Only for non-login pages */
 body.light-theme:not(.login-page) {
-  background: url('./assets/backgrounds/light-theme.png') center center / cover no-repeat fixed;
+  background: url("./assets/backgrounds/light-theme.png") center center / cover
+    no-repeat fixed;
 }
 
 body.yandere-theme:not(.login-page) {
-  background: url('./assets/backgrounds/yandere-theme.png') center center / cover no-repeat fixed;
+  background: url("./assets/backgrounds/yandere-theme.png") center center /
+    cover no-repeat fixed;
 }
 
 body.kuudere-theme:not(.login-page) {
-  background: url('./assets/backgrounds/kuudere-theme.png') center center / cover no-repeat fixed;
+  background: url("./assets/backgrounds/kuudere-theme.png") center center /
+    cover no-repeat fixed;
 }
 
 body.tsundere-theme:not(.login-page) {
-  background: url('./assets/backgrounds/tsundere-theme.png') center center / cover no-repeat fixed;
+  background: url("./assets/backgrounds/tsundere-theme.png") center center /
+    cover no-repeat fixed;
 }
 
 body.dandere-theme:not(.login-page) {
-  background: url('./assets/backgrounds/dandere-theme.png') center center / cover no-repeat fixed;
+  background: url("./assets/backgrounds/dandere-theme.png") center center /
+    cover no-repeat fixed;
 }
 
 /* LOGIN PAGES: Transparent backgrounds only */
@@ -792,17 +933,17 @@ body.login-page {
   background: transparent !important;
 }
 
-/* Base Button Styles - PRESERVED as requested */
+/* Base Button Styles */
 button {
-    border-radius: 8px;
-    border: 1px solid transparent;
-    padding: 0.6em 1.2em;
-    font-size: 1em;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    color: #763333;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  color: white;
 }
 
 button:hover {
@@ -853,7 +994,7 @@ button:focus-visible {
 }
 
 .light-theme .home-stat-card:hover {
-  background: rgba(255, 255, 255, 1.0) !important;
+  background: rgba(255, 255, 255, 1) !important;
   border-color: var(--color-accent-primary) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
 }
@@ -965,27 +1106,38 @@ button:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   END CONSOLIDATED COMPONENT RULES
-   ═══════════════════════════════════════════════════════════════ */
-
-/* ═══════════════════════════════════════════════════════════════
-   NOTIFICATIONS/MISSION CONTROL LIGHT THEME STANDARDIZATION
+   NOTIFICATIONS/MISSION CONTROL - LIGHT THEME 
    ═══════════════════════════════════════════════════════════════ */
 
 /* Mission Control Container - Higher Opacity */
 .light-theme .mission-control-container {
-  background: linear-gradient(145deg, rgba(255, 255, 250, 0.98), rgba(248, 248, 240, 0.95)) !important;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 250, 0.98),
+    rgba(248, 248, 240, 0.95)
+  ) !important;
 }
 
 /* Mission Control Header - Golden Brown Theme */
 .light-theme .mission-control-header {
-  background: linear-gradient(135deg, rgba(255, 255, 250, 0.95), rgba(248, 248, 240, 0.9)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 250, 0.95),
+    rgba(248, 248, 240, 0.9)
+  ) !important;
   border: 2px solid var(--color-accent-primary) !important;
-  box-shadow: 0 8px 32px rgba(184, 134, 11, 0.15), 0 0 20px var(--color-accent-glow) !important;
+  box-shadow:
+    0 8px 32px rgba(184, 134, 11, 0.15),
+    0 0 20px var(--color-accent-glow) !important;
 }
 
 .light-theme .mission-control-header::before {
-  background: linear-gradient(45deg, transparent, var(--color-accent-glow), transparent) !important;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    var(--color-accent-glow),
+    transparent
+  ) !important;
 }
 
 /* Mission Title */
@@ -1032,7 +1184,11 @@ button:focus-visible {
 }
 
 .light-theme .mission-tab.active {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  ) !important;
   color: var(--color-text-inverse) !important;
   border-color: var(--color-accent-secondary) !important;
   box-shadow: 0 4px 12px var(--color-accent-glow) !important;
@@ -1067,30 +1223,49 @@ button:focus-visible {
 }
 
 .light-theme .mission-item::before {
-  background: linear-gradient(90deg, transparent, var(--color-accent-glow), transparent) !important;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-accent-glow),
+    transparent
+  ) !important;
 }
 
 .light-theme .mission-item:hover {
-  background: rgba(255, 255, 255, 1.0) !important;
+  background: rgba(255, 255, 255, 1) !important;
   border-left-color: var(--color-accent-secondary) !important;
   border-color: var(--color-accent-primary) !important;
-  box-shadow: 0 4px 20px rgba(184, 134, 11, 0.2), 0 0 15px var(--color-accent-glow) !important;
+  box-shadow:
+    0 4px 20px rgba(184, 134, 11, 0.2),
+    0 0 15px var(--color-accent-glow) !important;
 }
 
 .light-theme .mission-item.active-mission {
-  background: linear-gradient(135deg, rgba(255, 255, 250, 0.95), rgba(248, 248, 240, 0.9)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 250, 0.95),
+    rgba(248, 248, 240, 0.9)
+  ) !important;
   border-left-color: var(--color-accent-primary) !important;
 }
 
 .light-theme .mission-item.event {
   border-left: 4px solid var(--color-info) !important;
-  background: linear-gradient(135deg, rgba(255, 255, 250, 0.9), rgba(248, 248, 240, 0.85)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 250, 0.9),
+    rgba(248, 248, 240, 0.85)
+  ) !important;
 }
 
 .light-theme .mission-item.event.over {
   opacity: 0.6 !important;
   border-left-color: var(--color-text-muted) !important;
-  background: linear-gradient(135deg, rgba(245, 245, 240, 0.8), rgba(240, 240, 235, 0.7)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(245, 245, 240, 0.8),
+    rgba(240, 240, 235, 0.7)
+  ) !important;
 }
 
 /* Mission Icons */
@@ -1154,17 +1329,29 @@ button:focus-visible {
 
 /* Mission Badges */
 .light-theme .mission-badge {
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  ) !important;
   color: var(--color-text-inverse) !important;
   border: 2px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 .light-theme .mission-badge.completed {
-  background: linear-gradient(135deg, var(--color-success), rgba(34, 139, 34, 0.8)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-success),
+    rgba(34, 139, 34, 0.8)
+  ) !important;
 }
 
 .light-theme .mission-badge.failed {
-  background: linear-gradient(135deg, var(--color-error), rgba(220, 20, 60, 0.8)) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-error),
+    rgba(220, 20, 60, 0.8)
+  ) !important;
 }
 
 /* Mission Operations List */
@@ -1202,7 +1389,7 @@ button:focus-visible {
 }
 
 .light-theme .notification-item:hover {
-  background: rgba(255, 255, 255, 1.0) !important;
+  background: rgba(255, 255, 255, 1) !important;
   border-color: var(--color-accent-primary) !important;
   box-shadow: 0 4px 16px rgba(184, 134, 11, 0.15) !important;
 }
@@ -1219,10 +1406,6 @@ button:focus-visible {
   color: var(--color-text-muted) !important;
   background: rgba(248, 248, 240, 0.8) !important;
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   END NOTIFICATIONS LIGHT THEME
-   ═══════════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════════
    RETRY MISSION POPUP LIGHT THEME
@@ -1293,7 +1476,7 @@ button:focus-visible {
 .light-theme .retry-time-input:focus {
   border-color: var(--color-accent-primary) !important;
   box-shadow: 0 0 0 3px var(--color-accent-glow) !important;
-  background: rgba(255, 255, 255, 1.0) !important;
+  background: rgba(255, 255, 255, 1) !important;
 }
 
 /* Retry Buttons */
@@ -1332,27 +1515,39 @@ button:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   END RETRY MISSION POPUP LIGHT THEME
+   POPUP OVERRIDES - LIGHT THEME 
    ═══════════════════════════════════════════════════════════════ */
 
-/* ═══════════════════════════════════════════════════════════════
-   POPUP OVERRIDES - OPAQUE BACKGROUNDS
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Detail Popup - OPAQUE */
-.light-theme .detail-popup,
+/* Detail Popup Overlay - Gentle brown tint instead of flashbang */
 .light-theme .detail-popup-overlay,
-.light-theme .diary-popup-overlay,
-.light-theme .diary-popup-content,
+.light-theme .diary-popup-overlay {
+  background: rgba(139, 69, 19, 0.15) !important;
+  /* Gentle brown tint */
+}
+
+/* Detail Popup - Clean white background without excessive styling */
+.light-theme .detail-popup,
+.light-theme .diary-popup-content {
+  background: rgba(255, 255, 255, 0.98) !important;
+  /* Clean white */
+  border: none !important;
+  /* Remove borders */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+  /* Subtle shadow only */
+  backdrop-filter: none !important;
+  /* Remove blur effects */
+}
+
+/* Modal Content - Clean design */
 .light-theme .modal-content,
 .light-theme .popup-container {
   background: rgba(255, 255, 255, 0.98) !important;
-  border: 2px solid var(--color-accent-primary) !important;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3) !important;
+  border: none !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
   backdrop-filter: none !important;
 }
 
-/* TEXT CURSOR FIX - Make cursor visible on white backgrounds */
+/* Make cursor visible on white backgrounds */
 .light-theme input,
 .light-theme textarea,
 .light-theme .diary-textarea,
@@ -1367,7 +1562,7 @@ button:focus-visible {
 .light-theme .mood-selector {
   background: rgba(255, 255, 250, 0.9) !important;
   border: 2px solid rgba(184, 134, 11, 0.3) !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(184, 134, 11, 0.2) !important;
 }
@@ -1383,7 +1578,7 @@ button:focus-visible {
 
 .light-theme .mood-selector:hover {
   border-color: rgba(184, 134, 11, 0.5) !important;
-  box-shadow: 
+  box-shadow:
     0 12px 48px rgba(0, 0, 0, 0.25),
     0 0 0 1px rgba(184, 134, 11, 0.4),
     0 0 20px rgba(184, 134, 11, 0.2) !important;
@@ -1407,7 +1602,7 @@ button:focus-visible {
   color: rgba(96, 10, 10, 0.7) !important;
 }
 
-/* DATETIME DISPLAY LIGHT THEME - Remove Purple Outline */
+/* DATETIME DISPLAY LIGHT THEME*/
 .light-theme .datetime-display {
   border: 1px solid rgba(184, 134, 11, 0.25) !important;
   background: rgba(255, 255, 250, 0.95) !important;
@@ -1430,7 +1625,11 @@ button:focus-visible {
   color: var(--color-text-primary);
   margin: 0;
   text-align: center;
-  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1507,7 +1706,7 @@ button:focus-visible {
 }
 
 .light-theme .model-card.selected {
-  border: 2px solid #4CAF50 !important;
+  border: 2px solid #4caf50 !important;
   background: white !important;
 }
 
@@ -1531,14 +1730,22 @@ button:focus-visible {
 
 /* RECOMMENDED BADGE - Light Theme Golden Brown System */
 .light-theme .recommended-badge {
-  background: linear-gradient(135deg, rgba(139, 126, 102, 0.9), rgba(184, 134, 11, 0.8)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 126, 102, 0.9),
+    rgba(184, 134, 11, 0.8)
+  ) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(139, 126, 102, 0.4);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .light-theme .model-option [title="Best Value"] {
-  background: linear-gradient(135deg, rgba(139, 126, 102, 0.9), rgba(184, 134, 11, 0.8)) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 126, 102, 0.9),
+    rgba(184, 134, 11, 0.8)
+  ) !important;
   color: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(139, 126, 102, 0.4) !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -1546,14 +1753,22 @@ button:focus-visible {
 
 /* MODEL OPTIONS - Light Theme Golden Brown System */
 .light-theme .model-option {
-  background: linear-gradient(145deg, rgb(193, 191, 162), rgba(0, 0, 0, 0.2)) !important;
+  background: linear-gradient(
+    145deg,
+    rgb(193, 191, 162),
+    rgba(0, 0, 0, 0.2)
+  ) !important;
   border: 2px solid rgb(139, 126, 102) !important;
   color: var(--color-text-primary) !important;
 }
 
 .light-theme .model-option.selected {
   border-color: rgb(139, 126, 102) !important;
-  background: linear-gradient(145deg, rgb(193, 191, 162), rgba(139, 126, 102, 0.3)) !important;
+  background: linear-gradient(
+    145deg,
+    rgb(193, 191, 162),
+    rgba(139, 126, 102, 0.3)
+  ) !important;
   box-shadow: 0 2px 10px rgba(139, 126, 102, 0.4) !important;
 }
 
@@ -1577,7 +1792,6 @@ button:focus-visible {
   color: rgba(96, 10, 10, 0.8) !important;
 }
 
-
 .light-theme .welcome-subtitle,
 .light-theme .info-text,
 .light-theme .tip-text,
@@ -1588,7 +1802,3 @@ button:focus-visible {
   color: white !important;
   -webkit-text-fill-color: white !important;
 }
-
-
-
-

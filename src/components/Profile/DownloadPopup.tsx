@@ -34,8 +34,8 @@ const DownloadPopup: React.FC<DownloadPopupProps> = ({
             </div>
 
             <div className="progress-bar">
-              <div 
-                className="progress-fill" 
+              <div
+                className="progress-fill"
                 style={{ width: `${progress}%` }}
               />
             </div>

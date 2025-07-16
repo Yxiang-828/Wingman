@@ -11,27 +11,28 @@ interface TimeSession {
 }
 
 /**
- * TimeTracker Component - Your Wingman's Productivity Monitor
- * Tracks time spent on tasks with session management and statistics
- * Your digital timekeeper ensuring every minute counts
+ * TimeTracker Component
  */
 const TimeTracker: React.FC = () => {
-  const [currentSession, setCurrentSession] = useState<TimeSession | null>(null);
+  const [currentSession, setCurrentSession] = useState<TimeSession | null>(
+    null,
+  );
   const [sessions, setSessions] = useState<TimeSession[]>([]);
   const [taskTitle, setTaskTitle] = useState("");
   const [elapsedTime, setElapsedTime] = useState(0);
 
   /**
    * Updates elapsed time for active session
-   * Your Wingman counts every precious second of productivity
    */
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (currentSession && currentSession.isActive) {
       interval = setInterval(() => {
         const now = new Date();
-        const elapsed = Math.floor((now.getTime() - currentSession.startTime.getTime()) / 1000);
+        const elapsed = Math.floor(
+          (now.getTime() - currentSession.startTime.getTime()) / 1000,
+        );
         setElapsedTime(elapsed);
       }, 1000);
     }
@@ -43,7 +44,6 @@ const TimeTracker: React.FC = () => {
 
   /**
    * Starts a new time tracking session
-   * Your Wingman begins monitoring your focused work
    */
   const startSession = useCallback(() => {
     if (!taskTitle.trim()) return;
@@ -63,13 +63,14 @@ const TimeTracker: React.FC = () => {
 
   /**
    * Stops the current tracking session
-   * Your Wingman records the completed work session
    */
   const stopSession = useCallback(() => {
     if (!currentSession) return;
 
     const endTime = new Date();
-    const duration = Math.floor((endTime.getTime() - currentSession.startTime.getTime()) / 1000);
+    const duration = Math.floor(
+      (endTime.getTime() - currentSession.startTime.getTime()) / 1000,
+    );
 
     const completedSession: TimeSession = {
       ...currentSession,
@@ -78,17 +79,20 @@ const TimeTracker: React.FC = () => {
       isActive: false,
     };
 
-    setSessions(prev => [completedSession, ...prev]);
+    setSessions((prev) => [completedSession, ...prev]);
     setCurrentSession(null);
     setElapsedTime(0);
     setTaskTitle("");
-    
-    console.log("Wingman: Time tracking session completed:", duration, "seconds");
+
+    console.log(
+      "Wingman: Time tracking session completed:",
+      duration,
+      "seconds",
+    );
   }, [currentSession]);
 
   /**
    * Formats seconds into readable time format
-   * Your Wingman presents time in warrior-friendly format
    */
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -106,13 +110,16 @@ const TimeTracker: React.FC = () => {
 
   const getTodaysSessions = () => {
     const today = new Date().toDateString();
-    return sessions.filter(session => 
-      session.startTime.toDateString() === today
+    return sessions.filter(
+      (session) => session.startTime.toDateString() === today,
     );
   };
 
   const getTotalTimeToday = () => {
-    return getTodaysSessions().reduce((total, session) => total + session.duration, 0);
+    return getTodaysSessions().reduce(
+      (total, session) => total + session.duration,
+      0,
+    );
   };
 
   return (
@@ -130,7 +137,7 @@ const TimeTracker: React.FC = () => {
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
               className="task-title-input"
-              onKeyPress={(e) => e.key === 'Enter' && startSession()}
+              onKeyPress={(e) => e.key === "Enter" && startSession()}
             />
             <button
               onClick={startSession}
@@ -158,7 +165,9 @@ const TimeTracker: React.FC = () => {
             <span className="stat-label">Sessions Today</span>
           </div>
           <div className="stat-item">
-            <span className="stat-number">{formatTime(getTotalTimeToday())}</span>
+            <span className="stat-number">
+              {formatTime(getTotalTimeToday())}
+            </span>
             <span className="stat-label">Total Time</span>
           </div>
         </div>

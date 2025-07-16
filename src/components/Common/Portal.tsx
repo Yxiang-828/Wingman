@@ -1,5 +1,5 @@
-import { useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 
 interface PortalProps {
   children: React.ReactNode;
@@ -19,10 +19,20 @@ const Portal: React.FC<PortalProps> = ({ children, container }) => {
   // Disable scroll only when needed
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    
+    document.body.style.overflow = "hidden";
+
+    // Prevent wheel events on the modal overlay specifically
+    const preventScroll = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    // Add event listener to prevent scrolling
+    document.addEventListener("wheel", preventScroll, { passive: false });
+
     return () => {
       document.body.style.overflow = originalStyle;
+      document.removeEventListener("wheel", preventScroll);
     };
   }, []);
 

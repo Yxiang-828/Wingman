@@ -11,9 +11,8 @@ interface DiaryCardProps {
 }
 
 /**
- * DiaryCard Component - Your Wingman's Memory Palace
+ * DiaryCard Component
  * Displays recent diary entries with popup details and smooth navigation
- * Your thoughts organized and ready for review, boss
  */
 const DiaryCard: React.FC<DiaryCardProps> = () => {
   const navigate = useNavigate();
@@ -25,7 +24,7 @@ const DiaryCard: React.FC<DiaryCardProps> = () => {
 
   /**
    * Sets up container reference for modal positioning
-   * Your Wingman ensures popups appear in the right place
+   * Ensures popups appear in the right place
    */
   useEffect(() => {
     dashboardRef.current =
@@ -33,8 +32,7 @@ const DiaryCard: React.FC<DiaryCardProps> = () => {
   }, []);
 
   /**
-   * Handles entry click - simplified without position tracking
-   * Your Wingman opens the memory portal perfectly centered
+   * Handles entry click
    */ const handleEntryClick = useCallback((entry: DiaryEntry) => {
     console.log("Wingman: Opening diary entry from dashboard:", entry.title);
     setSelectedEntry(entry);
@@ -46,7 +44,6 @@ const DiaryCard: React.FC<DiaryCardProps> = () => {
 
   /**
    * Formats date for display with fallback handling
-   * Your Wingman ensures dates always look proper
    */
   const formatDateDisplay = (dateStr: string) => {
     try {
@@ -58,7 +55,6 @@ const DiaryCard: React.FC<DiaryCardProps> = () => {
 
   /**
    * Maps mood strings to appropriate emoji representations
-   * Your Wingman understands your emotional expressions
    */
   const getMoodEmoji = (mood: string) => {
     const moods: Record<string, string> = {

@@ -1,7 +1,7 @@
 /**
- * Modal Component Styles - Your Wingman's Command Center Overlays
+ * Modal Component Styles
  * Full-screen modal dialogs with theme integration and smooth animations
- * Provides consistent overlay experience across your command interface
+ * Provides consistent overlay experience across  command interface
  */
 
 /* Main overlay covering entire viewport with backdrop blur */
@@ -209,16 +209,20 @@
 
 /* Animation keyframes for smooth transitions */
 @keyframes modal-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modal-slide-up {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(20px);
   }
-  to { 
+  to {
     opacity: 1;
     transform: translateY(0);
   }
@@ -230,7 +234,7 @@
     padding: 1rem;
     width: 95%;
   }
-  
+
   .modal-small,
   .modal-medium,
   .modal-large {
