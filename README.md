@@ -9,23 +9,18 @@
 
 ## Prerequisites & Setup Requirements
 
-**IMPORTANT: Install these requirements BEFORE downloading Wingman:**
+**Quick Start - Only Ollama Required!**
 
 ### Required Software Installation
 
-**1. Python 3.13 (MANDATORY)**
-For Windows && 64-bit, download Python 3.13 from:
-https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe
-
-For others, visit this site: https://www.python.org/downloads/
-
-**During installation, MUST check "Add Python to PATH"!**
-
-**2. Ollama (For AI Features)**
+**Ollama (For AI Features - MANDATORY)**
 Download and install Ollama from:
 https://ollama.com/download/OllamaSetup.exe
 
-### Installation Guide
+**Python 3.13 - Now Auto-Installed! 🎉**
+Wingman automatically handles Python installation - no manual setup needed!
+
+### Installation Guide **(Outdated - Will be Updated)**
 
 https://drive.google.com/file/d/14EyaZ1VHXKQoU_O_s3SXYPxB2aiKdZmk/view?usp=drive_link
 
@@ -39,8 +34,47 @@ https://github.com/Yxiang-828/Wingman/tags
 
 - llama3.2:1b/3b/8b
 - deepseek-r1:1.5b/7b/14b
+- mistral:7b
 
-### Troubleshooting AI Model Downloads
+### What's New in Milestone 3
+
+**🎯 Finalized offline functionality and LLM chat integration**
+
+**🤖 Added Mistral AI as an LLM option for smooth prompting**
+
+**👤 Added comprehensive avatar system with personality themes**
+
+**🧪 Implemented robust testing framework with Jest**
+
+**✨ Enhanced UI polish and bug fixes for production**
+
+**⚡ Optimized performance and cleaned up codebase**
+
+**🚀 Ready for deployment with all core features complete**
+
+*💡 Tip: Head to Wingman chatbot right away and type '/guide'!*
+
+### Prerequisites (Updated for Milestone 3)
+
+**1. Ollama (For AI Features - MANDATORY)**
+Download and install Ollama from:
+https://ollama.com/download/OllamaSetup.exe
+
+**2. Python 3.13 (Auto-Installed)**
+Wingman now automatically installs Python 3.13 for you! No manual installation required.
+
+*If backend fails to start, you can manually install Python 3.13:*
+- For Windows 64-bit: https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe
+- For others: https://www.python.org/downloads/
+
+### Troubleshooting
+
+**If backend fails to start, manual Python installation:**
+- Windows 64-bit: https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe  
+- Others: https://www.python.org/downloads/
+- **Remember to check "Add Python to PATH" during installation**
+
+**AI Model Downloads**
 
 If you can't download LLM models in the app:
 
@@ -708,145 +742,223 @@ Available Mood States:
 
 ## AI Chat Assistant
 
-Wingman's AI chat system provides an intelligent conversational interface with full Ollama integration, persistent memory, and adaptive personality features.
+Wingman's AI chat system delivers intelligent, personality-driven conversations with sophisticated context preloading and command execution capabilities.
 
-### Core Chat Features
+### LLM Infrastructure
 
-#### Conversation Management
+#### Personality System
 
-- **Persistent chat history**: Up to 50 recent messages stored locally in SQLite
-- **Real-time conversation**: Smooth message exchange with typing indicators
-- **Message threading**: Complete conversation context maintained across sessions
-- **Auto-scroll**: Automatic scrolling to latest messages for seamless experience
+Wingman features **6 distinct AI personalities** that synchronize with your selected theme:
 
-#### AI Integration Architecture
+```mermaid
+graph TD
+    A[Theme Selection] --> B[Personality Sync]
+    B --> C{Personality Type}
+    C --> D[Lumen - Light]
+    C --> E[Umbra - Dark] 
+    C --> F[Velvet - Yandere]
+    C --> G[Frost - Kuudere]
+    C --> H[Echo - Dandere]
+    C --> I[Blaze - Tsundere]
+    
+    D --> J[Response Generation]
+    E --> J
+    F --> J
+    G --> J
+    H --> J
+    I --> J
+```
+
+**Personality Characteristics:**
+
+| Personality | Name | Traits | Response Style | Emoji Usage |
+|-------------|------|--------|----------------|-------------|
+| **Light** | Lumen | Optimistic, encouraging, warm | Positive reinforcement | Moderate (☀️, ✨, 💫) |
+| **Dark** | Umbra | Analytical, direct, efficient | Minimal but insightful | Minimal (🌑, ⚡, 🔍) |
+| **Yandere** | Velvet | Intensely loyal, protective | Highly personalized | Selective (💖, 👁️, 🔒) |
+| **Kuudere** | Frost | Reserved, logical, professional | Analytical with hidden care | Rare (❄️, 📊, 💙) |
+| **Dandere** | Echo | Gentle, shy, soft-spoken | Quiet encouragement | Sweet (🌸, 💕, 🌼) |
+| **Tsundere** | Blaze | Initially distant, caring underneath | Reluctant but thorough | Conflicted (😤, 💢, 💖) |
+
+#### Slash Commands
+
+Wingman supports **4 primary slash commands** for instant data access:
 
 ```
-Chat Flow:
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   User      │ -> │  Frontend   │ -> │  FastAPI    │
-│  Message    │    │  Chat UI    │    │  Backend    │
-└─────────────┘    └─────────────┘    └─────────────┘
-                          |                   |
-                          ▼                   ▼
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  SQLite     │ <- │ Context     │ <- │   Ollama    │
-│  Storage    │    │ Builder     │    │   Service   │
-└─────────────┘    └─────────────┘    └─────────────┘
+/t - Tasks        /e - Events       /d - Diary        /u - Users
 ```
 
-### Ollama Integration
+**Command Structure:**
+```
+/{table} /{filter} {parameter} [options]
+Examples:
+- /t /date 2025-01-15    (tasks on specific date)
+- /e /month jan          (events in January) 
+- /d /mood happy         (diary entries by mood)
+- /u /username           (user information)
+```
 
-#### Model Management
+**Pagination Support:**
+- Results limited to **50 items** (15 for diary entries)
+- `/more` command for additional results
+- Smart pagination maintains query state
 
-- **Dynamic model selection**: Choose from available Ollama models
-- **User preferences**: Persistent model selection stored in user settings
-- **Fallback support**: Graceful degradation when AI service unavailable
-- **Status monitoring**: Real-time checking of Ollama service availability
+#### Context Preloading
 
-#### Context Awareness
+Wingman intelligently preloads relevant context for every conversation:
 
-- **Full conversation history**: Complete context passed to AI for coherent responses
-- **User data integration**: Access to tasks, calendar, and diary for relevant assistance
-- **Date-aware responses**: Context includes current date and relevant daily information
-- **Intelligent prompting**: System prompts designed for helpful, loyal assistant behavior
+**Preloading Limits:**
+- **10 recent chat messages** for conversation flow
+- **8 daily items** (tasks/events) for performance
+- **3 recent diary entries** for emotional context
+- **100 maximum results** for slash commands
 
-### Personality System
+**Preloaded Data Structure:**
+```
+📋 TODAY'S TASKS (2025-01-28):
+   • Morning workout at 07:00 [⏳ PENDING]
+   • Team meeting at 10:00 [✅ COMPLETED]
 
-#### Mood-Based Behavior
+📅 TODAY'S EVENTS (2025-01-28):
+   • Lunch with Sarah at 12:30 (Personal)
+   • Project review at 15:00 (Work)
 
-- **Productive Mode**: Focused, efficiency-oriented responses
-- **Moody Mode**: More expressive, emotionally aware interactions
-- **Visual indicators**: Different avatar icons represent current mood state
-- **Mood synchronization**: Can receive mood changes from external components
-
-#### Humor Settings
-
-- **Serious Mode**: Professional, straightforward communication style
-- **Funny Mode**: Includes humor and personality in responses
-- **User preference**: Setting persists across sessions
-- **Context-appropriate**: AI adjusts tone based on conversation content
-
-### Quick Reply System
-
-#### Custom Prompts
-
-- **User-defined shortcuts**: Create up to 4 custom quick reply prompts
-- **Usage tracking**: Prompts automatically sorted by frequency of use
-- **Inline editing**: Modify prompts directly in the chat interface
-- **Persistent storage**: Custom prompts saved in user's local database
-
-#### Common Quick Replies
-
-Examples of useful quick prompts users can create:
-
-- "What's on my schedule today?"
-- "Help me plan my priorities"
-- "Review my completed tasks"
-- "What should I focus on next?"
+📓 RECENT DIARY:
+   • 2025-01-27: Had a productive day... [Mood: happy]
+   • 2025-01-26: Feeling overwhelmed... [Mood: anxious]
+```
 
 ### Technical Architecture
 
-#### Frontend Components
+#### AI Communication Flow
 
-- **ChatBot/index.tsx**: Main chat interface with conversation management
-- **MessageBubble.tsx**: Individual message rendering with user/AI differentiation
-- **QuickReplies.tsx**: Custom prompt management and usage tracking
-- **HumorSetting.tsx**: Personality configuration interface
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant FE as React Frontend
+    participant API as FastAPI Chat Endpoint
+    participant CC as WingmanChatCoordinator
+    participant CP as CommandParser
+    participant CB as ContextBuilder
+    participant PM as PersonalityManager
+    participant OS as OllamaService
+    participant DB as SQLite Database
+    
+    U->>FE: Send Message
+    FE->>API: POST /chat/
+    API->>DB: Save User Message
+    API->>DB: Get Chat History
+    API->>CC: process_message()
+    
+    rect rgb(255, 230, 230)
+        Note over CC,PM: SLASH COMMAND PATH (/t, /e, /d, /u)
+        CC->>CP: execute_command()
+        CP->>DB: Query Data (tasks/events/diary)
+        CP->>CC: Formatted Results
+        CC->>PM: Add Personality Wrapper
+        PM->>CC: Personality-enhanced Response
+    end
+    
+    rect rgb(230, 230, 255)
+        Note over CC,OS: REGULAR CONVERSATION PATH
+        CC->>PM: sync_theme()
+        CC->>CB: build_context()
+        CB->>DB: Get Today's Tasks/Events
+        CB->>DB: Get Recent Diary Entries
+        CB->>CC: Preloaded Context
+        CC->>PM: get_personality_context()
+        PM->>CC: Enhanced Context + Personality
+        CC->>OS: Send to Ollama LLM
+        OS->>CC: AI Response
+    end
+    
+    CC->>API: Response Data
+    API->>DB: Save AI Message
+    API->>FE: JSON Response
+    FE->>U: Display Message
+```
 
-#### Backend Integration
+#### Technical Architecture
 
-- **LLM Service**: TypeScript service layer for API communication
-- **FastAPI endpoints**: RESTful chat API with context building
-- **Ollama service**: Direct integration with local Ollama installation
-- **Context builder**: Intelligent aggregation of user data for AI context
+**Core Flow Control:**
+
+1. **WingmanChatCoordinator**: Single entry point that routes between slash commands and LLM conversations
+2. **Dual Processing Modes**: Instant command execution vs context-enhanced LLM chat
+3. **WingmanCommandParser**: Direct database queries with formatted markdown tables
+4. **WingmanContextBuilder**: Preloads today's data + recent history for LLM context
+5. **WingmanPersonalityManager**: Theme-synchronized personality injection
+6. **WingmanOllamaService**: Direct HTTP communication with local Ollama server
 
 #### Data Storage & Privacy
 
-##### Local-First Architecture
+**Local-First Architecture:**
+- **SQLite storage**: All chat history stored locally 
+- **No cloud dependency**: Conversations never leave your machine
+- **User isolation**: Complete privacy with per-user histories
+- **Automatic cleanup**: Configurable message retention
 
-- **SQLite storage**: All chat history stored locally on user's device
-- **No cloud dependency**: Conversations never leave the user's machine
-- **User isolation**: Complete privacy with per-user chat histories
-- **Automatic cleanup**: Configurable message retention policies
+**Performance Optimization:**
+- **Context caching**: Efficient data aggregation
+- **Streaming responses**: Real-time AI response generation
+- **Memory management**: Smart cleanup of conversation data
+- **Query optimization**: Indexed database queries with limits
 
-##### Chat History Management
+### Avatar & Personality Integration
 
-- **Message persistence**: All conversations automatically saved
-- **Search capabilities**: Full-text search across chat history
-- **Export functionality**: Users can export their conversation data
-- **Selective deletion**: Remove specific conversations or clear all history
+#### Theme-Avatar Synchronization
+
+Wingman's avatar system seamlessly integrates with AI personalities:
+
+**Theme-Avatar Mapping:**
+```typescript
+themePersonalityMap = {
+  light: { personality: "light", avatar: lightAvatar, name: "Lumen" },
+  dark: { personality: "dark", avatar: darkAvatar, name: "Umbra" },
+  yandere: { personality: "yandere", avatar: yandereAvatar, name: "Velvet" },
+  kuudere: { personality: "kuudere", avatar: kuudereAvatar, name: "Frost" },
+  dandere: { personality: "dandere", avatar: dandereAvatar, name: "Echo" },
+  tsundere: { personality: "tsundere", avatar: tsundereAvatar, name: "Blaze" }
+}
+```
+
+**Real-time Synchronization:**
+- Theme changes instantly update AI personality
+- Avatar appearance matches personality traits
+- Consistent experience across all app components
+- Mood-responsive visual feedback
+
+#### Response Formatting
+
+Each personality formats data uniquely:
+
+**Task List Examples:**
+- **Light**: "Here are your tasks! ✨ You've got this!"
+- **Dark**: "Task list:" (minimal formatting)
+- **Yandere**: "All your tasks... I'll help you with every single one 💖"
+- **Kuudere**: "Your task schedule: Not that I expect you to complete them all."
+- **Dandere**: "I... I made a nice table for your tasks... 🌸"
+- **Tsundere**: "Here are your tasks! Don't procrastinate! 😤"
 
 ### User Experience Features
 
-#### Interface Design
+#### Intelligent Conversation Flow
 
-- **Clean conversation layout**: Clear distinction between user and AI messages
-- **Responsive design**: Optimized for various screen sizes
-- **Keyboard shortcuts**: Enter to send, quick navigation controls
-- **Loading states**: Visual feedback during AI response generation
-
-#### Deep Link Integration
-
-- **Cross-component messaging**: Other parts of Wingman can initiate conversations
-- **Context passing**: Pre-populated messages from other features
-- **Seamless navigation**: Jump to chat with specific topics from anywhere in the app
-
-### AI Service Management
+- **Context-aware responses**: AI references your actual data
+- **Personality consistency**: Maintains character throughout conversations
+- **Command integration**: Seamless slash command execution
+- **Error handling**: Personality-appropriate error messages
 
 #### Health Monitoring
 
-- **Service status checks**: Regular verification of Ollama availability
-- **Error handling**: Graceful fallback when AI service is unavailable
-- **Retry mechanisms**: Automatic retry for temporary connectivity issues
-- **User feedback**: Clear status indicators showing AI availability
+- **Service status**: Real-time Ollama availability checking (30-second intervals)
+- **Error recovery**: Graceful fallbacks when AI unavailable
+- **Status indicators**: Visual feedback for AI readiness
+- **Retry mechanisms**: Automatic reconnection attempts
 
-#### Performance Optimization
+#### Quick Start Guide
 
-- **Streaming responses**: Real-time AI response streaming (where supported)
-- **Context caching**: Efficient context building to reduce response times
-- **Message batching**: Optimized database operations for chat history
-- **Memory management**: Intelligent cleanup of old conversation data
+**New to Wingman? Get started instantly!**
+Type `/guide` in the chat to access the comprehensive setup guide and learn about all features.
 
 ## Background Notifications
 
@@ -1013,26 +1125,97 @@ graph LR
 
 ### Avatar & Personality System
 
-**Wingman Personality Types:**
+Wingman features a comprehensive avatar system with **6 specialized personalities** that integrate seamlessly with themes and AI interactions.
 
-- **Supportive Buddy**: Encouraging and always positive, helps you stay motivated
-- **Strategic Advisor**: Data-driven and logical, helps optimize your productivity
-- **Creative Spark**: Imaginative and inspiring, encourages creative thinking
-- **Focus Master**: Disciplined and goal-oriented, keeps you on track
+#### Avatar Architecture
 
-**Avatar Customization:**
+```mermaid
+graph TD
+    A[Theme Selection] --> B[Avatar Sync]
+    B --> C[Personality Update]
+    C --> D[Visual Avatar]
+    C --> E[AI Personality]
+    D --> F[User Interface]
+    E --> G[Chat Responses]
+    F --> H[Consistent Experience]
+    G --> H
+```
 
-- **Multiple Categories**: Professional, Friendly, Futuristic avatar styles
+#### Personality Profiles
+
+**6 Distinct Wingman Personalities:**
+
+| Avatar | Name | Personality Type | Core Traits | Communication Style |
+|--------|------|------------------|-------------|-------------------|
+| ![Light](src/assets/avatar/light.png) | **Lumen** | Supportive Buddy | Optimistic, encouraging, warm | Positive reinforcement with helpful suggestions |
+| ![Dark](src/assets/avatar/dark.png) | **Umbra** | Strategic Advisor | Analytical, direct, efficient | Minimal but insightful responses |
+| ![Yandere](src/assets/avatar/yandere.png) | **Velvet** | Devoted Companion | Intensely loyal, protective | Highly personalized, remembers everything |
+| ![Kuudere](src/assets/avatar/kuudere.png) | **Frost** | Professional Assistant | Reserved, logical, gradually warming | Analytical with hidden concern |
+| ![Dandere](src/assets/avatar/dandere.png) | **Echo** | Gentle Guide | Shy, soft-spoken, deeply caring | Quiet encouragement and soft support |
+| ![Tsundere](src/assets/avatar/tsundere.png) | **Blaze** | Dynamic Motivator | Initially distant, caring underneath | Reluctant help with underlying affection |
+
+#### Avatar Customization Features
+
+**Visual Customization:**
+- **Avatar Categories**: Professional, Friendly, Futuristic styles
 - **Dynamic Generation**: Powered by DiceBear API for unique avatars
-- **Personality Integration**: Avatar appearance reflects chosen personality traits
-- **Real-time Preview**: See your Wingman in action with sample interactions
+- **Real-time Preview**: Instant visual feedback during customization
+- **Appearance Sync**: Avatar appearance reflects personality traits
 
-**Customization Process:**
+**Personality Integration:**
+- **Contextual Responses**: Mood-aware interactions based on current context
+- **Consistent Behavior**: Personality maintained across all app interactions  
+- **Adaptive Communication**: Response style adapts to diary mood and app context
+- **Memory System**: Personality preferences persist across sessions
 
-1. **Access**: Profile → Avatar section
-2. **Design**: Choose personality, name, and visual style
-3. **Preview**: See sample interactions and behavior patterns
-4. **Apply**: Save configuration with instant app-wide updates
+#### Customization Process
+
+**Step-by-Step Avatar Creation:**
+
+1. **Access Settings**: Profile → Design Your Wingman
+2. **Name Selection**: Choose or customize your Wingman's name (20 character limit)
+3. **Personality Choice**: Select from 6 personality types with trait previews
+4. **Visual Style**: Pick from categorized avatar options
+5. **Preview Interaction**: See sample responses and behavior patterns
+6. **Save Configuration**: Apply changes with instant app-wide updates
+
+**Advanced Features:**
+
+- **Theme Synchronization**: Avatar automatically updates with theme changes
+- **Cross-Component Integration**: Avatar appears consistently throughout app
+- **Behavioral Consistency**: Personality traits influence all AI interactions
+- **Storage Management**: Configuration saved in localStorage with event broadcasting
+
+#### Technical Implementation
+
+**Avatar System Architecture:**
+
+```typescript
+interface WingmanAvatarData {
+  id: string;
+  name: string;
+  imageUrl: string;
+  personality: WingmanPersonality;
+  appearance: AvatarAppearance;
+}
+
+interface WingmanPersonality {
+  name: string;
+  traits: string[];
+  responses: {
+    encouragement: string[];
+    celebration: string[];
+    support: string[];
+    motivation: string[];
+  };
+}
+```
+
+**Real-time Synchronization:**
+- **Event Broadcasting**: Configuration changes trigger app-wide updates
+- **Storage Persistence**: Avatar preferences saved in localStorage
+- **Component Integration**: WingmanAvatar component used throughout app
+- **Mood Responsiveness**: Visual feedback adapts to current user mood
 
 ### Font & Display Settings
 
@@ -1249,64 +1432,73 @@ graph TD
 
 ```mermaid
 graph TD
-    A[Developer runs complete-build.bat] --> B[Environment Validation]
-    B --> C[Check Python 3.13 Installation]
-    B --> D[Verify .env files exist]
-
-    C --> E[Install Dependencies]
-    D --> E
-    E --> F[npm install - Node.js packages]
-    E --> G[Python venv creation]
-    E --> H[pip install - Python packages]
-
-    F --> I[Apply Compatibility Patches]
-    G --> I
-    H --> I
-    I --> J[orjson Python 3.13 compatibility]
-
-    J --> K[Native Dependencies Rebuild]
-    K --> L[better-sqlite3 for Electron]
-
-    L --> M[Backend Preparation]
-    M --> N[Copy Python source to python-dist/]
-    M --> O[Copy requirements.txt]
-    M --> P[Copy app/ directory structure]
-
-    N --> Q[Frontend Build]
-    O --> Q
-    P --> Q
-    Q --> R[vite build - Production bundle]
-
-    R --> S[Electron Packaging]
-    S --> T[electron-builder packages everything]
-    T --> U[Creates distributable executable]
-
-    U --> V[Final Output]
-    V --> W[dist/win-unpacked/Wingman.exe - Portable]
-    V --> X[dist/Wingman Setup 1.0.0.exe - Installer]
+    A[Developer runs complete-build.bat] --> B[Process Cleanup & Port Liberation]
+    B --> C[Environment Validation]
+    C --> D[Check .env Files Exist]
+    D --> E[Portable Python Setup]
+    
+    E --> F{Portable Python Exists?}
+    F -->|No| G[download-python.bat]
+    F -->|Yes| H[Verify Python Functionality]
+    G --> H
+    H --> I[Test Core Dependencies]
+    I --> J{Dependencies OK?}
+    J -->|No| K[Force Reinstall Dependencies]
+    K --> L[Node.js Dependencies]
+    J -->|Yes| L
+    
+    L --> M[Install Jest Testing Framework]
+    M --> N[Apply Python 3.13 Compatibility Patches]
+    N --> O[Rebuild Native Dependencies]
+    O --> P[better-sqlite3 for Electron]
+    
+    P --> Q[Verify Backend File Structure]
+    Q --> R[Frontend Build Process]
+    R --> S[vite build - Production Bundle]
+    
+    S --> T[Electron Packaging]
+    T --> U[extraResources - Backend + Python]
+    U --> V[Create Debug Tools]
+    V --> W[Final Portable Python Verification]
+    
+    W --> X[Build Complete]
+    X --> Y[dist/win-unpacked/Wingman.exe - Portable]
+    X --> Z[dist/Wingman Setup 1.0.0.exe - Installer]
+    X --> AA[debug-wingman.bat - Debug Tool]
 ```
 
 **Production Process Steps:**
 
-1. **Environment Setup**: Validates Python 3.13, creates virtual environment
-2. **Dependency Installation**: All Node.js and Python packages
-3. **Compatibility Patching**: Ensures Python 3.13 compatibility
-4. **Backend Preparation**: Copies Python source files (not compiled)
-5. **Frontend Build**: Production-optimized React bundle
-6. **Electron Packaging**: Creates distributable desktop application
+1. **Process Cleanup**: Kills running Wingman, Python, Electron, and Node processes
+2. **Port Liberation**: Explicitly frees port 8080 for clean restart
+3. **Environment Validation**: Checks for required .env files in root and backend
+4. **Portable Python Setup**: Downloads and configures self-contained Python environment
+5. **Dependency Verification**: Tests and reinstalls FastAPI, Uvicorn, Supabase if needed
+6. **Node.js Dependencies**: Installs all frontend packages
+7. **Jest Installation**: Ensures testing framework is available
+8. **Compatibility Patching**: Applies Python 3.13 fixes via patch-orjson.py
+9. **Native Rebuilding**: Rebuilds better-sqlite3 for Electron compatibility
+10. **Backend Verification**: Confirms all backend files are ready for packaging
+11. **Frontend Build**: Creates production-optimized React bundle
+12. **Electron Packaging**: Packages everything with extraResources for backend
+13. **Debug Tools**: Creates debug-wingman.bat for troubleshooting
+14. **Final Verification**: Tests portable Python execution before completion
 
 #### Key Differences
 
 | Aspect             | Development Mode                 | Production Mode                        |
 | ------------------ | -------------------------------- | -------------------------------------- |
 | **Frontend**       | Vite dev server (localhost:5173) | Built and bundled into Electron app    |
-| **Backend**        | Live Python process via Electron | Python source files in app resources   |
+| **Backend**        | Live Python process via Electron | Python source files + portable Python  |
+| **Python Runtime** | Uses system Python installation  | Self-contained portable Python bundle  |
+| **Dependencies**   | Installed in system/venv         | Bundled with portable Python          |
 | **Hot Reload**     | Enabled for frontend             | Static build                           |
-| **DevTools**       | Available                        | Disabled                               |
+| **DevTools**       | Available                        | Disabled (debug-wingman.bat for issues) |
 | **File Serving**   | Separate dev server              | Bundled in executable                  |
-| **Python Runtime** | Uses system/venv Python          | Requires Python 3.13 on target machine |
-| **Startup Time**   | Fast (development optimized)     | Slower (production packaging)          |
-| **Distribution**   | Not distributable                | Creates installer/portable exe         |
+| **Testing**        | Jest available for development   | Jest included in production build      |
+| **Startup Time**   | Fast (development optimized)     | Slower (includes Python verification) |
+| **Distribution**   | Not distributable                | Creates installer + portable exe       |
+| **Debugging**      | Standard dev tools               | Custom debug launcher with logging    |
 
 #### Process Management Architecture
 
@@ -1527,12 +1719,8 @@ This dual-mode approach ensures optimal development experience while producing p
 
 ### Installation & Setup Issues
 
-**Python 3.13 Installation:**
-Wingman requires Python 3.13 for backend compatibility. **This is mandatory even for distributed builds** as the app runs Python source files, not compiled executables.
-For Windows && 64-bit, download from:
-https://www.python.org/ftp/python/3.13.0/python-3.13.0-amd64.exe
-
-For others, visit this site: https://www.python.org/downloads/
+**Python Installation (Auto-handled in Milestone 3):**
+Wingman now automatically installs and manages Python dependencies. **No manual Python installation required** - the app handles this during first launch. If you encounter Python-related issues, the app will guide you through any necessary setup.
 
 **Ollama Installation & Troubleshooting:**
 For AI functionality, install Ollama from:
@@ -1545,7 +1733,7 @@ https://ollama.com/download/OllamaSetup.exe
 3. Download model manually: `ollama run "your-desired-model"`
 4. Return to the app after downloading
 
-### Installation Guide
+### Installation Guide **(Outdated - Will be Updated)**
 
 https://drive.google.com/file/d/14EyaZ1VHXKQoU_O_s3SXYPxB2aiKdZmk/view?usp=drive_link
 
@@ -1557,8 +1745,8 @@ https://drive.google.com/file/d/14EyaZ1VHXKQoU_O_s3SXYPxB2aiKdZmk/view?usp=drive
 
 ### Known Limitations
 
-- **Python 3.13**: Mandatory requirement for proper orjson compatibility
-- **Ollama**: Requires separate installation for local AI features
+- **Local AI Processing**: Requires Ollama installation for AI functionality
+- **Memory usage**: Large chat histories may impact performance
 - **Memory usage**: Large chat histories may impact performance
 - **Mobile**: Currently desktop-only, mobile app planned
 
