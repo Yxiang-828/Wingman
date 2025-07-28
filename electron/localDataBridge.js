@@ -331,6 +331,19 @@ class LocalDataManager {
    * Used when no schema file is available
    */
   createTablesInline() {
+    const createUsersTable = `
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT,
+        name TEXT,
+        password TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        last_synced_at TEXT
+      )
+    `;
+
     const createTasksTable = `
       CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -410,13 +423,89 @@ class LocalDataManager {
       )
     `;
 
+    const createRecurringTasksTable = `
+      CREATE TABLE IF NOT EXISTS recurring_tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        task_title TEXT NOT NULL,
+        task_time TEXT,
+        weekdays TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    const createQuickPromptsTable = `
+      CREATE TABLE IF NOT EXISTS chat_quick_prompts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        prompt_text TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        last_used_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        usage_count INTEGER DEFAULT 0
+      )
+    `;
+
+    const createDownloadedModelsTable = `
+      CREATE TABLE IF NOT EXISTS downloaded_models (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        model_name TEXT NOT NULL,
+        size_mb INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'completed',
+        download_date TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, model_name)
+      )
+    `;
+
+    const createUserSettingsTable = `
+      CREATE TABLE IF NOT EXISTS user_settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL UNIQUE,
+        ai_model TEXT DEFAULT 'llama3.2:1b',
+        ai_model_auto_selected INTEGER DEFAULT 1,
+        theme TEXT DEFAULT 'dark',
+        notifications_enabled INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
     try {
+      this.db.exec(createUsersTable);
       this.db.exec(createTasksTable);
       this.db.exec(createEventsTable);
       this.db.exec(createDiaryTable);
       this.db.exec(createChatSessionsTable);
       this.db.exec(createChatMessagesTable);
       this.db.exec(createChatHistoryTable);
+      this.db.exec(createRecurringTasksTable);
+      this.db.exec(createQuickPromptsTable);
+      this.db.exec(createDownloadedModelsTable);
+      this.db.exec(createUserSettingsTable);
+
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
+        CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(task_date);
+        CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
+        CREATE INDEX IF NOT EXISTS idx_tasks_failed ON tasks(failed);
+        CREATE INDEX IF NOT EXISTS idx_tasks_recurring_id ON tasks(recurring_id);
+        CREATE INDEX IF NOT EXISTS idx_calendar_user_id ON calendar_events(user_id);
+        CREATE INDEX IF NOT EXISTS idx_calendar_date ON calendar_events(event_date);
+        CREATE INDEX IF NOT EXISTS idx_diary_user_id ON diary_entries(user_id);
+        CREATE INDEX IF NOT EXISTS idx_diary_date ON diary_entries(entry_date);
+        CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id);
+        CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id);
+        CREATE INDEX IF NOT EXISTS idx_chat_messages_user ON chat_messages(user_id);
+        CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id);
+        CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_chat_quick_prompts_user_id ON chat_quick_prompts(user_id);
+        CREATE INDEX IF NOT EXISTS idx_downloaded_models_user_id ON downloaded_models(user_id);
+        CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
+        CREATE INDEX IF NOT EXISTS idx_recurring_tasks_user_id ON recurring_tasks(user_id);
+        CREATE INDEX IF NOT EXISTS idx_recurring_tasks_active ON recurring_tasks(user_id, is_active);
+      `);
+
       console.log("Tables created inline successfully");
     } catch (error) {
       console.error("Error creating tables inline:", error);
@@ -1970,9 +2059,9 @@ class LocalDataManager {
 
       console.log(
         `Chat history cleared successfully for ${userId}. Deleted: ` +
-          `${historyResult.changes} history entries, ` +
-          `${messagesResult.changes} messages, ` +
-          `${sessionsResult.changes} sessions`,
+        `${historyResult.changes} history entries, ` +
+        `${messagesResult.changes} messages, ` +
+        `${sessionsResult.changes} sessions`,
       );
       return {
         success: true,
