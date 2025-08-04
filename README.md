@@ -1717,7 +1717,7 @@ This dual-mode approach ensures optimal development experience while producing p
 ### Installation & Setup Issues
 
 **Python Installation (Auto-handled in Milestone 3):**
-Wingman now automatically installs and manages Python dependencies. **No manual Python installation required** - the app handles this during first launch. If you encounter Python-related issues, the app will guide you through any necessary setup.
+Wingman now automatically installs and manages Python dependencies. **No manual Python installation required** - the app handles this during first launch. 
 
 **Ollama Installation & Troubleshooting:**
 For AI functionality, install Ollama from:
