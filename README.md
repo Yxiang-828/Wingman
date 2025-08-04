@@ -20,9 +20,6 @@ https://ollama.com/download/OllamaSetup.exe
 **Python 3.13 - Now Auto-Installed! 🎉**
 Wingman automatically handles Python installation - no manual setup needed!
 
-### Installation Guide **(Outdated - Will be Updated)**
-
-https://drive.google.com/file/d/14EyaZ1VHXKQoU_O_s3SXYPxB2aiKdZmk/view?usp=drive_link
 
 ### WHERE TO DOWNLOAD?
 
@@ -1732,10 +1729,6 @@ https://ollama.com/download/OllamaSetup.exe
 2. Check available models: `ollama list`
 3. Download model manually: `ollama run "your-desired-model"`
 4. Return to the app after downloading
-
-### Installation Guide **(Outdated - Will be Updated)**
-
-https://drive.google.com/file/d/14EyaZ1VHXKQoU_O_s3SXYPxB2aiKdZmk/view?usp=drive_link
 
 **Currently Supported Models:**
 
