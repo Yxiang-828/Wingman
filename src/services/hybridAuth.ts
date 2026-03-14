@@ -1,6 +1,6 @@
 /**
  * Hybrid Authentication Service
- * Handles online/offline authentication with SQLite + Supabase sync
+ * Handles online/offline authentication with SQLite + SQLite sync
  * Only stores current user's credentials locally for offline access
  */
 
@@ -79,12 +79,12 @@ const generateUUID = (): string => {
 };
 
 /**
- * Sync local user changes to Supabase
+ * Sync local user changes to SQLite
  * Only called when user has local changes that need to be pushed to cloud
  */
 let syncInProgress = false; // Guard against multiple simultaneous syncs
 
-export const syncUserToSupabase = async (
+export const syncUserToSQLite = async (
   userToSync?: any,
 ): Promise<{ success: boolean; error?: string }> => {
   if (syncInProgress) {
@@ -130,7 +130,7 @@ export const syncUserToSupabase = async (
       return { success: true };
     }
 
-    console.log("Syncing user to Supabase...");
+    console.log("Syncing user to SQLite...");
 
     // Check username availability before sync (same as online registration)
     try {
@@ -197,13 +197,13 @@ export const registerUser = async (
     const online = await isOnline();
 
     if (online) {
-      console.log("Online registration - storing in both Supabase and local");
+      console.log("Online registration - storing in both SQLite and local");
 
       // Use provided username or generate from email as fallback
       const finalUsername = username || email.split("@")[0];
 
       try {
-        // Try Supabase first - send plain password, backend handles hashing
+        // Try SQLite first - send plain password, backend handles hashing
         const user = await api.post("/api/v1/user/register", {
           username: finalUsername,
           name,
@@ -211,7 +211,7 @@ export const registerUser = async (
           password, // Send plain password, not hashed
         });
 
-        console.log("Supabase registration response:", user);
+        console.log("SQLite registration response:", user);
         console.log("User timestamps:", {
           created_at: user.created_at,
           updated_at: user.updated_at,
@@ -219,15 +219,15 @@ export const registerUser = async (
           updated_at_type: typeof user.updated_at,
         });
 
-        // Store locally with same password format as Supabase (plain text)
+        // Store locally with same password format as SQLite (plain text)
         const localUserData = {
           username: user.username,
           email: user.email,
           name: user.name,
-          password: password, // Store same plain text password as Supabase
+          password: password, // Store same plain text password as SQLite
           created_at: user.created_at,
-          updated_at: user.updated_at, // Use Supabase timestamp
-          last_synced_at: user.updated_at, // Set to Supabase's updated_at since we just synced
+          updated_at: user.updated_at, // Use SQLite timestamp
+          last_synced_at: user.updated_at, // Set to SQLite's updated_at since we just synced
         };
 
         console.log("Storing local user data:", localUserData);
@@ -284,7 +284,7 @@ export const registerUser = async (
         username: finalUsername,
         email,
         name,
-        password: password, // Store plain text password (same as Supabase format)
+        password: password, // Store plain text password (same as SQLite format)
         created_at: now,
         updated_at: now,
         last_synced_at: null, // NULL = needs sync when online
@@ -365,7 +365,7 @@ export const loginUser = async (
       if (online && needsSync) {
         console.log("Syncing user during login...");
         try {
-          const syncResult = await syncUserToSupabase(completeUser);
+          const syncResult = await syncUserToSQLite(completeUser);
           if (syncResult.success) {
             console.log("Login sync completed successfully");
           } else {
@@ -401,21 +401,21 @@ export const loginUser = async (
       console.log("Local login failed, trying cloud login...");
 
       try {
-        // Try Supabase - send plain password, backend handles hashing
+        // Try SQLite - send plain password, backend handles hashing
         const user = await api.post("/api/v1/user/login", {
           username,
           password, // Send plain password, not hashed
         });
 
-        // Update/create local copy with same password format as Supabase (plain text)
+        // Update/create local copy with same password format as SQLite (plain text)
         await window.electronAPI.db.storeUserCredentials(user.id, {
           username: user.username,
           email: user.email,
           name: user.name,
-          password: password, // Store same plain text password as Supabase
+          password: password, // Store same plain text password as SQLite
           created_at: user.created_at,
-          updated_at: user.updated_at, // Use Supabase timestamp
-          last_synced_at: user.updated_at, // Set to Supabase's updated_at since we just got the latest data
+          updated_at: user.updated_at, // Use SQLite timestamp
+          last_synced_at: user.updated_at, // Set to SQLite's updated_at since we just got the latest data
         });
 
         // Create complete user object for session (including password for sync)
@@ -527,7 +527,7 @@ export const setCurrentUser = (userData: any) => {
 };
 
 /**
- * Update username for a user (both locally and in Supabase if online)
+ * Update username for a user (both locally and in SQLite if online)
  */
 export const updateUsername = async (
   newUsername: string,
@@ -566,8 +566,8 @@ export const updateUsername = async (
         last_synced_at: null, // Mark as needing sync
       };
 
-      // Try to sync to Supabase FIRST
-      const syncResult = await syncUserToSupabase(updatedUserData);
+      // Try to sync to SQLite FIRST
+      const syncResult = await syncUserToSQLite(updatedUserData);
       if (!syncResult.success) {
         return {
           success: false,

@@ -4,10 +4,10 @@ import type { UserLogin } from "../types/user";
 /**
  * User Authentication API
  * Handles all user-related operations through hybrid architecture
- * Routes authentication through apiClient to backend, then to Supabase
+ * Routes authentication through apiClient to backend, then to SQLite Local
  */
 console.info(
-  "User API: Authentication operations route to Supabase via backend",
+  "User API: Authentication operations route to SQLite Local via backend",
 );
 
 /**
@@ -199,17 +199,17 @@ export const verifyToken = async () => {
 };
 
 /**
- * Permanently deletes user account from Supabase
- * @param userId - User ID to delete from Supabase database
+ * Permanently deletes user account from SQLite Local
+ * @param userId - User ID to delete from SQLite Local database
  * @returns Promise with deletion result
  */
 export const deleteUserAccount = async (userId: string) => {
   try {
-    console.log(`Deleting user account from Supabase: ${userId}...`);
+    console.log(`Deleting user account from SQLite Local: ${userId}...`);
 
     const result = await api.delete(`/api/v1/user/delete-account/${userId}`);
 
-    console.log("User account deleted from Supabase successfully");
+    console.log("User account deleted from SQLite Local successfully");
 
     // Clear all authentication data after successful deletion
     localStorage.removeItem("user");
@@ -220,7 +220,7 @@ export const deleteUserAccount = async (userId: string) => {
 
     return result;
   } catch (error) {
-    console.error("Error deleting user account from Supabase:", error);
+    console.error("Error deleting user account from SQLite Local:", error);
     throw error;
   }
 };
@@ -281,8 +281,8 @@ export interface PasswordChangeData {
 
 // Export API information for external validation
 export const userApiInfo = {
-  description: "User authentication API - routes to Supabase via backend",
-  architecture: "Hybrid: Auth in Supabase, Data in SQLite",
+  description: "User authentication API - routes to SQLite Local via backend",
+  architecture: "Hybrid: Auth in SQLite Local, Data in SQLite",
   endpoints: {
     login: "POST /api/v1/user/login",
     register: "POST /api/v1/user/register",

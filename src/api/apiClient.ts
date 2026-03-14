@@ -208,6 +208,6 @@ export function validateHybridUsage() {
   return {
     authEndpoints: "Use api.* methods",
     dataOperations: "Use window.electronAPI.db.*",
-    architecture: "Auth: Supabase | Data: SQLite",
+    architecture: "Auth: SQLite Local | Data: SQLite",
   };
 }

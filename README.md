@@ -1,4 +1,4 @@
-﻿# Wingman - Personal Assistant
+# Wingman - Personal Assistant
 
 <p align="center">
   <img src="./src/assets/icons/productive.png" alt="Wingman Logo" width="64">
@@ -87,7 +87,7 @@ If you can't download LLM models in the app:
   <img src="https://img.shields.io/badge/fastapi-0.110.0-blue?logo=fastapi" alt="FastAPI">
   <img src="https://img.shields.io/badge/python-3.13-blue?logo=python" alt="Python">
   <img src="https://img.shields.io/badge/sqlite-3.45-blue?logo=sqlite" alt="SQLite">
-  <img src="https://img.shields.io/badge/supabase-cloud-green?logo=supabase" alt="Supabase">
+  
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </p>
 
@@ -136,7 +136,7 @@ Wingman is a sophisticated personal assistant application that combines producti
 ### Key Highlights
 
 - **Local-First Design**: All your data stays on your device with SQLite storage
-- **Cloud Authentication**: Secure user accounts via Supabase
+- **Local Authentication**: Offline privacy-focused user management via SQLite
 - **AI-Ready**: Full Ollama integration for local AI models
 - **Professional Notifications**: Smart background notification system
 - **Advanced Automation**: Recurring tasks with intelligent generation
@@ -155,7 +155,7 @@ Wingman is a sophisticated personal assistant application that combines producti
 ### Backend
 
 - **FastAPI** - High-performance Python web framework
-- **Supabase** - PostgreSQL database with realtime capabilities
+
 - **Python 3.13** - Latest Python features with compatibility patches
 
 ### Desktop
@@ -186,15 +186,15 @@ cd Wingman
 Create `.env` in the root directory:
 
 ```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_KEY=your_supabase_key
+# VITE_LOCAL_ONLY=true
+# Offline only
 ```
 
 Create `Wingman-backend/.env`:
 
 ```
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
+# Local SQLite Database
+# No cloud keys required
 ```
 
 #### 4. Start Development Environment
@@ -1470,7 +1470,7 @@ graph TD
 2. **Port Liberation**: Explicitly frees port 8080 for clean restart
 3. **Environment Validation**: Checks for required .env files in root and backend
 4. **Portable Python Setup**: Downloads and configures self-contained Python environment
-5. **Dependency Verification**: Tests and reinstalls FastAPI, Uvicorn, Supabase if needed
+5. **Dependency Verification**: Tests and reinstalls FastAPI, Uvicorn, if needed
 6. **Node.js Dependencies**: Installs all frontend packages
 7. **Jest Installation**: Ensures testing framework is available
 8. **Compatibility Patching**: Applies Python 3.13 fixes via patch-orjson.py
@@ -1612,8 +1612,8 @@ This dual-mode approach ensures optimal development experience while producing p
 
 #### Authentication Security
 
-- **Supabase Auth**: Industry-standard authentication provider
-- **Password hashing**: Handled by Supabase's secure infrastructure
+- **Local SQLite Auth: Fully offline authentication system
+- **Password hashing**: Handled locally
 - **Token validation**: JWT tokens validated on each request
 - **Secure storage**: Credentials stored using Electron's secure storage
 
@@ -1648,7 +1648,7 @@ This dual-mode approach ensures optimal development experience while producing p
 
 - **Advanced Theme System** - 6 complete themes (Dark, Light, Yandere, Kuudere, Tsundere, Dandere)
 - **Ollama AI Integration** - Ready for local LLM deployment
-- **Hybrid Auth Architecture** - Supabase + Local SQLite dual-layer
+- **100% Offline Architecture** - Fully local SQLite database, zero cloud dependency
 - **Model Manager** - AI model download/management system
 - **Notification System** - Mission-style notifications with task completion celebrations
 - **Electron Packaging** - Complete build system with Python bundling

@@ -407,7 +407,7 @@ const ProfileSettings: React.FC = () => {
   const handleDeleteAccount = useCallback(async () => {
     // Safety confirmation using our custom dialog system
     const confirmed = await window.electronAPI.dialogs.confirm(
-      "Delete Account Forever - This will permanently delete your account and ALL data: All tasks and events, All diary entries, All recurring task templates, Chat history, User account from Supabase. This action cannot be undone. Are you absolutely sure?",
+      "Delete Account Forever - This will permanently delete your account and ALL data: All tasks and events, All diary entries, All recurring task templates, Chat history, User account from SQLite Local. This action cannot be undone. Are you absolutely sure?",
     );
 
     if (!confirmed) {
@@ -424,17 +424,17 @@ const ProfileSettings: React.FC = () => {
       await handleDeleteAllEvents();
       await handleDeleteAllDiaryEntries();
       await handleDeleteAllRecurringTasks();
-      await handleClearChatHistory(); // Delete account from Supabase
-      setMessage("🗑️ Deleting user account from Supabase...");
+      await handleClearChatHistory(); // Delete account from SQLite Local
+      setMessage("🗑️ Deleting user account from SQLite Local...");
       try {
         const userId = getCurrentUserId();
         if (!userId) throw new Error("User ID not found");
         await deleteUserAccount(userId);
-        setMessage("User account successfully deleted from Supabase!");
-      } catch (supabaseError) {
-        console.error("Failed to delete Supabase account:", supabaseError);
+        setMessage("User account successfully deleted from SQLite Local!");
+      } catch (sqliteLocalError) {
+        console.error("Failed to delete SQLite Local account:", sqliteLocalError);
         setMessage(
-          "⚠️ Local data deleted, but failed to delete Supabase account. You may need to contact support.",
+          "⚠️ Local data deleted, but failed to delete SQLite Local account. You may need to contact support.",
         );
         setTimeout(() => setMessage(""), 7000);
       } // Clear local session

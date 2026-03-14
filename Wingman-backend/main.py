@@ -37,7 +37,7 @@ app.include_router(chat.router, prefix="/api/v1/chat", tags=["chat"])
 def read_root():
     return {
         "message": "Wingman API - Hybrid Mode with AI", 
-        "architecture": "Auth: Supabase | Data: Local SQLite | AI: Ollama",
+        "architecture": "Auth: SQLite | Data: Local SQLite | AI: Ollama",
         "endpoints": "Auth + Chat AI enabled"
     }
 
@@ -47,7 +47,7 @@ def health_check():
         "status": "healthy",
         "mode": "hybrid",
         "services": {
-            "authentication": "supabase",
+            "authentication": "sqlite_local",
             "data_storage": "local_sqlite",
             "ai": "ollama"
         }

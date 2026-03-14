@@ -28,14 +28,14 @@ REM Check environment files
 echo [DEBUG] Step 3: Checking environment files...
 if not exist ".env" (
   echo ERROR: .env file not found in root directory!
-  echo Create .env with: VITE_SUPABASE_URL and VITE_SUPABASE_KEY
+  echo Create .env with: VITE_LOCAL_ONLY=true
   pause
   exit /b 1
 )
 
 if not exist "Wingman-backend\.env" (
   echo ERROR: .env file not found in Wingman-backend directory!
-  echo Create Wingman-backend\.env with: SUPABASE_URL and SUPABASE_KEY
+  echo Create Wingman-backend\.env with: LOCAL_ONLY=true
   pause
   exit /b 1
 )
@@ -78,11 +78,11 @@ if %errorlevel% neq 0 (
 
 REM Test Python dependencies
 echo [DEBUG] Testing Python dependencies...
-python-dist\python.exe -c "import fastapi, uvicorn, supabase; print('All core dependencies available')"
+python-dist\python.exe -c "import fastapi, uvicorn; print('All core dependencies available')"
 if %errorlevel% neq 0 (
   echo ERROR: Python dependencies are missing or corrupted!
   echo Reinstalling dependencies...
-  python-dist\python.exe -m pip install --force-reinstall fastapi==0.110.0 uvicorn==0.29.0 supabase==2.15.0
+  python-dist\python.exe -m pip install --force-reinstall fastapi==0.110.0 uvicorn==0.29.0 
   if %errorlevel% neq 0 (
     echo ERROR: Failed to reinstall dependencies!
     pause

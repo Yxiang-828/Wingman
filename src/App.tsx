@@ -305,7 +305,7 @@ const App = () => {
         <h2>Unable to connect to database</h2>
         <p>
           {backendError ||
-            "Please check your internet connection and Supabase settings."}
+            "Please check your internet connection and SQLite Local settings."}
         </p>
         <button onClick={() => window.location.reload()}>Retry</button>
       </div>
